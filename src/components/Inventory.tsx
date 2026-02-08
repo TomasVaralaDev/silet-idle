@@ -1,162 +1,269 @@
-import React from 'react';
-// KORJAUS: Lisätty 'type' sana tähän
-import type { EquipmentSlot, GameState } from '../types';
+import { useState } from 'react';
 import { getItemDetails } from '../data';
+import type { GameState, EquipmentSlot } from '../types';
+import QuantityModal from './QuantityModal';
 
 interface InventoryProps {
   inventory: GameState['inventory'];
   equipment: GameState['equipment'];
-  onSellClick: (id: string) => void;
-  onEquip: (id: string, slot: EquipmentSlot) => void;
+  equippedFood: GameState['equippedFood'];
+  combatSettings: GameState['combatSettings'];
+  onSellClick: (itemId: string) => void;
+  onEquip: (itemId: string, slot: EquipmentSlot) => void;
+  onEquipFood: (itemId: string, amount: number) => void;
   onUnequip: (slot: string) => void;
+  onUnequipFood: () => void;
+  onUpdateAutoEat: (threshold: number) => void;
 }
 
-export default function Inventory({ inventory, equipment, onSellClick, onEquip, onUnequip }: InventoryProps) {
+export default function Inventory({ 
+  inventory, equipment, equippedFood, combatSettings, 
+  onSellClick, onEquip, onEquipFood, onUnequip, onUnequipFood, onUpdateAutoEat 
+}: InventoryProps) {
   
-  // Calculate stats for display
-  const playerStats = { attack: 0, defense: 0, strength: 0 };
-  Object.values(equipment).forEach(itemId => {
+  const [foodSelectionId, setFoodSelectionId] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const inventoryItems = Object.entries(inventory)
+    .map(([id, count]) => {
+      const details = getItemDetails(id);
+      if (!details) return null;
+      return { id, count, ...details };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+
+  const playerStats = { attack: 0, defense: 0 };
+
+  Object.values(equipment).forEach((itemId) => {
     if (itemId) {
       const item = getItemDetails(itemId);
-      if (item?.stats) {
+      if (item && item.stats) {
         playerStats.attack += item.stats.attack || 0;
         playerStats.defense += item.stats.defense || 0;
-        playerStats.strength += item.stats.strength || 0;
       }
     }
   });
 
-  const handleDragStart = (e: React.DragEvent, itemId: string) => {
-    e.dataTransfer.setData('itemId', itemId);
-    e.dataTransfer.effectAllowed = 'move';
+  const renderSlot = (slot: string, icon: string) => {
+    const itemId = equipment[slot as keyof typeof equipment];
+    const item = itemId ? getItemDetails(itemId) : null;
+
+    return (
+      <div className="bg-slate-900 border border-slate-700 rounded-lg p-1 relative aspect-square shadow-inner overflow-hidden">
+        <span className="absolute top-1 left-2 text-[10px] uppercase font-bold text-slate-600 tracking-wider pointer-events-none z-10">{slot}</span>
+        {item ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
+             <span className="text-3xl mb-1 drop-shadow-md">{item.icon}</span>
+             <span className="text-[9px] font-bold text-slate-300 text-center leading-tight line-clamp-2 px-1">{item.name}</span>
+             <button 
+               onClick={() => onUnequip(slot)}
+               className="absolute top-1 right-1 text-red-500 hover:text-red-300 hover:bg-red-900/30 rounded px-1 transition-colors text-xs font-bold leading-none w-5 h-5 flex items-center justify-center z-20"
+               title="Unequip"
+             >✕</button>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl opacity-10 grayscale">{icon}</span>
+          </div>
+        )}
+      </div>
+    );
   };
 
-  const handleDrop = (e: React.DragEvent, targetSlot: EquipmentSlot) => {
-    e.preventDefault();
-    const itemId = e.dataTransfer.getData('itemId');
-    if (itemId) onEquip(itemId, targetSlot);
-  };
+  const renderFoodSlot = () => {
+    const item = equippedFood ? getItemDetails(equippedFood.itemId) : null;
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    return (
+      <div className="bg-slate-900 border border-slate-700 rounded-lg p-1 relative aspect-square shadow-inner group overflow-visible">
+        <span className="absolute top-1 left-2 text-[10px] uppercase font-bold text-slate-600 tracking-wider pointer-events-none z-10">Food</span>
+        
+        {/* --- KORJATTU KONTROLLIT (SISÄPUOLELLA) --- */}
+        <div className="absolute top-1 right-1 flex flex-col gap-1 items-end z-30">
+          {item && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onUnequipFood(); }}
+              className="bg-slate-950/80 text-red-500 hover:text-red-300 hover:bg-red-900/50 border border-slate-700 rounded-md text-[10px] font-bold w-5 h-5 flex items-center justify-center shadow-sm transition-all"
+              title="Unequip Food"
+            >
+              ✕
+            </button>
+          )}
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); }}
+            className={`bg-slate-950/80 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] w-5 h-5 flex items-center justify-center shadow-sm transition-all ${showSettings ? 'text-emerald-400 border-emerald-500' : ''}`}
+            title="Auto-Eat Settings"
+          >
+            ⚙️
+          </button>
+        </div>
+
+        {/* --- SETTINGS POPUP --- */}
+        {showSettings && (
+          <div className="absolute top-0 left-full ml-2 w-56 bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-2xl z-50">
+            <div className="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Auto-Eat Settings</h4>
+              <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-red-400 font-bold px-1">✕</button>
+            </div>
+            
+            <div className="flex items-center gap-3 mb-2">
+              <input 
+                type="range" 
+                min="0" 
+                max="95" 
+                step="5"
+                value={combatSettings.autoEatThreshold}
+                onChange={(e) => onUpdateAutoEat(parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+              />
+              <span className="text-sm font-mono font-bold text-emerald-400 w-10 text-right">{combatSettings.autoEatThreshold}%</span>
+            </div>
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              When HP drops to <span className="text-white font-bold">{combatSettings.autoEatThreshold}%</span> or below, one food will be eaten (10s cooldown).
+            </p>
+          </div>
+        )}
+
+        {/* --- SISÄLTÖ (Keskitetty eikä venytä laatikkoa) --- */}
+        {item ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-2 pt-4">
+             <div className="relative">
+                <span className="text-3xl drop-shadow-md">{item.icon}</span>
+                <span className="absolute -bottom-1 -right-2 bg-slate-950 text-white text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700 shadow-sm font-mono">
+                  {equippedFood?.count}
+                </span>
+             </div>
+             <div className="mt-1 flex flex-col items-center w-full">
+               <span className="text-[9px] font-bold text-slate-300 text-center leading-tight line-clamp-1 w-full px-1">{item.name}</span>
+               <span className="text-[9px] text-emerald-400 font-mono font-bold mt-0.5">+{item.healing} HP</span>
+             </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl opacity-10 grayscale">🍎</span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto h-full flex flex-col lg:flex-row gap-8">
-      {/* EQUIPMENT (PAPER DOLL) */}
-      <div className="lg:w-1/3 flex-shrink-0">
-         <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 sticky top-6">
-           <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><span className="text-2xl">🛡️</span> Equipment</h2>
-           
-           <div className="grid grid-cols-3 gap-4 auto-rows-fr">
-              <div></div>
-              {/* HEAD */}
-              <div 
-                onDragOver={handleDragOver} 
-                onDrop={(e) => handleDrop(e, 'head')}
-                onClick={() => onUnequip('head')}
-                className={`aspect-square border-2 border-dashed rounded-xl flex items-center justify-center relative transition-all cursor-pointer hover:bg-slate-800
-                  ${equipment.head ? 'border-violet-500 bg-slate-800 border-solid' : 'border-slate-700'}`}
-              >
-                {equipment.head ? <span className="text-4xl">{getItemDetails(equipment.head)?.icon}</span> : <span className="text-slate-700 text-2xl">🧢</span>}
-                <span className="absolute bottom-1 text-[10px] uppercase text-slate-500 font-bold">Head</span>
-              </div>
-              <div></div>
+    <div className="p-6 flex flex-col md:flex-row gap-6 h-full overflow-hidden relative">
+      
+      {foodSelectionId && (
+        <QuantityModal 
+          itemId={foodSelectionId}
+          maxAmount={Math.min(999, inventory[foodSelectionId] || 0)} 
+          title={`Equip Food: ${getItemDetails(foodSelectionId)?.name}`}
+          onClose={() => setFoodSelectionId(null)}
+          onConfirm={(amount) => {
+            onEquipFood(foodSelectionId, amount);
+            setFoodSelectionId(null);
+          }}
+        />
+      )}
 
-              {/* WEAPON */}
-              <div 
-                onDragOver={handleDragOver} 
-                onDrop={(e) => handleDrop(e, 'weapon')}
-                onClick={() => onUnequip('weapon')}
-                className={`aspect-square border-2 border-dashed rounded-xl flex items-center justify-center relative transition-all cursor-pointer hover:bg-slate-800
-                  ${equipment.weapon ? 'border-amber-600 bg-slate-800 border-solid' : 'border-slate-700'}`}
-              >
-                {equipment.weapon ? <span className="text-4xl">{getItemDetails(equipment.weapon)?.icon}</span> : <span className="text-slate-700 text-2xl">⚔️</span>}
-                <span className="absolute bottom-1 text-[10px] uppercase text-slate-500 font-bold">Weapon</span>
-              </div>
+      <div className="w-full md:w-1/3 flex flex-col gap-4">
+        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 flex flex-col">
+          <h2 className="text-xl font-bold mb-6 text-slate-200 flex items-center gap-2">
+            <span>🛡️</span> Equipment
+          </h2>
+          
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="col-start-2">{renderSlot('head', '🪖')}</div>
+            <div className="col-start-1 row-start-2">{renderSlot('weapon', '⚔️')}</div>
+            <div className="col-start-2 row-start-2">{renderSlot('body', '👕')}</div>
+            <div className="col-start-3 row-start-2">{renderSlot('shield', '🛡️')}</div>
+            <div className="col-start-2 row-start-3">{renderSlot('legs', '👖')}</div>
+            
+            <div className="col-start-3 row-start-3 relative z-10">
+              {renderFoodSlot()}
+            </div>
+          </div>
+        </div>
 
-              {/* BODY */}
-              <div 
-                onDragOver={handleDragOver} 
-                onDrop={(e) => handleDrop(e, 'body')}
-                onClick={() => onUnequip('body')}
-                className={`aspect-square border-2 border-dashed rounded-xl flex items-center justify-center relative transition-all cursor-pointer hover:bg-slate-800
-                  ${equipment.body ? 'border-orange-500 bg-slate-800 border-solid' : 'border-slate-700'}`}
-              >
-                {equipment.body ? <span className="text-4xl">{getItemDetails(equipment.body)?.icon}</span> : <span className="text-slate-700 text-2xl">👕</span>}
-                <span className="absolute bottom-1 text-[10px] uppercase text-slate-500 font-bold">Body</span>
+        <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 shadow-lg">
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-700 pb-2">
+            Combat Stats
+          </h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-500/20 p-2 rounded text-orange-400">⚔️</div>
+                <span className="text-slate-300 font-bold">Attack Power</span>
               </div>
-
-              {/* SHIELD */}
-              <div 
-                onDragOver={handleDragOver} 
-                onDrop={(e) => handleDrop(e, 'shield')}
-                onClick={() => onUnequip('shield')}
-                className={`aspect-square border-2 border-dashed rounded-xl flex items-center justify-center relative transition-all cursor-pointer hover:bg-slate-800
-                  ${equipment.shield ? 'border-blue-500 bg-slate-800 border-solid' : 'border-slate-700'}`}
-              >
-                {equipment.shield ? <span className="text-4xl">{getItemDetails(equipment.shield)?.icon}</span> : <span className="text-slate-700 text-2xl">🛡️</span>}
-                <span className="absolute bottom-1 text-[10px] uppercase text-slate-500 font-bold">Shield</span>
+              <span className="text-xl font-mono font-bold text-orange-400">+{playerStats.attack}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-500/20 p-2 rounded text-blue-400">🛡️</div>
+                <span className="text-slate-300 font-bold">Armor / Def</span>
               </div>
-
-              {/* LEGS */}
-              <div className="col-start-2 aspect-square border-2 border-dashed border-slate-700 rounded-xl flex items-center justify-center relative">
-                 <span className="text-slate-700 text-2xl">👖</span>
-                 <span className="absolute bottom-1 text-[10px] uppercase text-slate-500 font-bold">Legs</span>
-              </div>
-
-              {/* AMMO */}
-              <div 
-                onDragOver={handleDragOver} 
-                onDrop={(e) => handleDrop(e, 'ammo')}
-                onClick={() => onUnequip('ammo')}
-                className={`aspect-square border-2 border-dashed rounded-xl flex items-center justify-center relative transition-all cursor-pointer hover:bg-slate-800
-                  ${equipment.ammo ? 'border-slate-400 bg-slate-800 border-solid' : 'border-slate-700'}`}
-              >
-                {equipment.ammo ? <span className="text-4xl">{getItemDetails(equipment.ammo)?.icon}</span> : <span className="text-slate-700 text-2xl">🏹</span>}
-                <span className="absolute bottom-1 text-[10px] uppercase text-slate-500 font-bold">Ammo</span>
-              </div>
-           </div>
-
-           <div className="mt-8 bg-slate-950 p-4 rounded-xl border border-slate-800">
-              <h3 className="text-xs font-bold text-slate-500 uppercase mb-2">Player Stats</h3>
-              <div className="space-y-2 text-sm">
-                 <div className="flex justify-between"><span>⚔️ Attack</span><span className="text-amber-500 font-mono">{playerStats.attack}</span></div>
-                 <div className="flex justify-between"><span>🛡️ Defense</span><span className="text-blue-400 font-mono">{playerStats.defense}</span></div>
-                 <div className="flex justify-between"><span>💪 Strength</span><span className="text-red-400 font-mono">{playerStats.strength}</span></div>
-              </div>
-           </div>
-         </div>
+              <span className="text-xl font-mono font-bold text-blue-400">+{playerStats.defense}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* INVENTORY GRID */}
-      <div className="flex-1">
-        <header className="mb-8 border-b border-slate-800 pb-6"><h2 className="text-3xl font-bold flex items-center gap-3"><span className="text-4xl">🎒</span> Inventory</h2><p className="text-slate-400 mt-2">Drag items to the left to equip.</p></header>
-        {Object.keys(inventory).length === 0 ? (<div className="text-center py-20 bg-slate-900/50 rounded-2xl border border-slate-800 border-dashed"><p className="text-slate-500 text-lg">Inventory is empty.</p></div>) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {Object.entries(inventory).map(([id, count]) => {
-              const item = getItemDetails(id);
-              if (!item) return null;
-              const isDraggable = !!item.slot;
+      <div className="flex-1 bg-slate-900/50 p-6 rounded-xl border border-slate-800 overflow-y-auto">
+        <h2 className="text-xl font-bold mb-6 text-slate-200 flex items-center gap-2">
+          <span>🎒</span> Backpack
+        </h2>
 
-              return (
-                <div 
-                  key={id} 
-                  draggable={isDraggable}
-                  onDragStart={(e) => handleDragStart(e, id)}
-                  onClick={() => onSellClick(id)} 
-                  className={`group bg-slate-900 aspect-square rounded-xl border border-slate-800 hover:border-violet-500 transition-all hover:shadow-[0_0_15px_rgba(139,92,246,0.2)] flex flex-col items-center justify-center relative active:scale-95 cursor-pointer
-                    ${isDraggable ? 'cursor-grab active:cursor-grabbing border-slate-600' : ''}
-                  `}
-                >
-                  <div className={`text-4xl mb-2 transition-transform group-hover:scale-110 ${item.color}`}>{item.icon}</div>
-                  <span className="text-xs text-slate-400 font-medium group-hover:text-white truncate max-w-[90%]">{item.name}</span>
-                  <div className="absolute top-2 right-2 bg-slate-950 border border-slate-700 text-white text-xs font-mono font-bold px-2 py-0.5 rounded-full shadow-lg">{count}</div>
-                  {item.slot && <span className="absolute top-2 left-2 text-[10px] bg-slate-800 text-slate-500 px-1 rounded border border-slate-700 uppercase">{item.slot}</span>}
+        {inventoryItems.length === 0 ? (
+          <div className="text-center text-slate-600 italic py-20 flex flex-col items-center gap-4">
+            <span className="text-4xl opacity-20">🎒</span>
+            <p>Your inventory is empty.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {inventoryItems.map((item) => (
+              <div key={item.id} className="bg-slate-800 border border-slate-700 p-3 rounded-lg relative group hover:border-slate-500 transition-colors flex flex-col h-full">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-2xl drop-shadow-sm">{item.icon}</span>
+                  <span className="text-xs font-mono font-bold bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 shadow-inner">x{item.count}</span>
                 </div>
-              );
-            })}
+                
+                <div className="mb-2 flex-1">
+                  <div className="text-sm font-bold text-slate-200 leading-tight">{item.name}</div>
+                  {item.stats && (
+                    <div className="text-[10px] text-slate-400 mt-1 flex gap-2">
+                      {item.stats.attack ? <span className="text-orange-400">Atk +{item.stats.attack}</span> : null}
+                      {item.stats.defense ? <span className="text-blue-400">Def +{item.stats.defense}</span> : null}
+                    </div>
+                  )}
+                  {item.healing && (
+                    <div className="text-[10px] text-green-400 mt-1 font-bold">
+                      Heals +{item.healing} HP
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-1 mt-auto">
+                  {item.healing ? (
+                    <button 
+                      onClick={() => setFoodSelectionId(item.id)}
+                      className="flex-1 bg-green-900/40 hover:bg-green-600 text-green-200 text-[10px] font-bold py-1.5 rounded border border-green-800 transition-colors uppercase"
+                    >
+                      Equip
+                    </button>
+                  ) : item.slot ? (
+                    <button 
+                      onClick={() => onEquip(item.id, item.slot as EquipmentSlot)}
+                      className="flex-1 bg-emerald-900/40 hover:bg-emerald-600 text-emerald-200 text-[10px] font-bold py-1.5 rounded border border-emerald-800 transition-colors uppercase"
+                    >
+                      Equip
+                    </button>
+                  ) : null}
+                  
+                  <button 
+                    onClick={() => onSellClick(item.id)}
+                    className="flex-1 bg-slate-700/50 hover:bg-yellow-900/50 hover:text-yellow-200 text-slate-400 text-[10px] font-bold py-1.5 rounded border border-slate-600 transition-colors uppercase"
+                  >
+                    Sell
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

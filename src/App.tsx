@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot } from './types';
-import { GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, getItemDetails } from './data';
+import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient } from './types';
+import { GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, getItemDetails, COMBAT_DATA } from './data';
 
 // FIREBASE
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
@@ -15,6 +15,7 @@ import Shop from './components/Shop';
 import Gamble from './components/Gamble';
 import SellModal from './components/SellModal';
 import AchievementsView from './components/AchievementsView';
+import CombatView from './components/CombatView';
 
 // --- CONSTANTS ---
 const DEFAULT_STATE: GameState = {
@@ -25,33 +26,62 @@ const DEFAULT_STATE: GameState = {
     fishing: { xp: 0, level: 1 },
     farming: { xp: 0, level: 1 },
     crafting: { xp: 0, level: 1 },
+    cooking: { xp: 0, level: 1 },
+    hitpoints: { xp: 0, level: 10 },
+    attack: { xp: 0, level: 1 },
+    defense: { xp: 0, level: 1 },
+    melee: { xp: 0, level: 1 },
+    ranged: { xp: 0, level: 1 },
+    magic: { xp: 0, level: 1 },
   },
   equipment: {
-    head: null, body: null, legs: null, weapon: null, ammo: null, shield: null,
+    head: null, body: null, legs: null, weapon: null, shield: null,
+  },
+  equippedFood: null,
+  combatSettings: {
+    autoEatThreshold: 50
   },
   activeAction: null,
   coins: 0,
   upgrades: [],
   unlockedAchievements: [],
+  combatStats: {
+    hp: 100,
+    currentMapId: null,
+    maxMapCompleted: 0,
+    enemyCurrentHp: 0,
+    respawnTimer: 0,
+    foodTimer: 0 // UUSI
+  }
 };
 
+type ResourceSkillType = Exclude<SkillType, 'hitpoints' | 'attack' | 'defense' | 'melee' | 'ranged' | 'magic'>;
+
 export default function App() {
-  // --- AUTH & LOAD STATE ---
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-
-  // --- GAME STATE ---
   const [currentView, setCurrentView] = useState<ViewType>('woodcutting');
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(null);
   const [notification, setNotification] = useState<{message: string, icon: string} | null>(null);
-  
-  // UUSI: Tila tallennuksen indikaattorille (idle, saving, saved, error)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-
   const [state, setState] = useState<GameState>(DEFAULT_STATE);
 
-  // --- 1. AUTH LISTENER ---
+  const getMaxHp = (hpLevel: number) => hpLevel * 10;
+  const getNextLevelXp = (level: number) => level * 150;
+
+  const getSpeedMultiplier = useCallback((skill: SkillType) => {
+    if (['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic'].includes(skill)) return 1;
+    let multiplier = 1;
+    const ownedUpgrades = SHOP_ITEMS.filter(item => 
+      state.upgrades.includes(item.id) && item.skill === skill
+    );
+    if (ownedUpgrades.length > 0) {
+      multiplier = Math.min(...ownedUpgrades.map(u => u.multiplier));
+    }
+    return multiplier;
+  }, [state.upgrades]);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -60,25 +90,28 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- 2. LOAD DATA ---
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
-
       setIsDataLoaded(false);
       const docRef = doc(db, 'users', user.uid);
-      
       try {
         const docSnap = await getDoc(docRef);
-        
         if (docSnap.exists()) {
-          console.log("Data loaded from Cloud 🔥");
           const cloudData = docSnap.data() as Partial<GameState>;
+          const safeEquipment = { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) };
+          
+          if ('ammo' in safeEquipment) delete (safeEquipment as { ammo?: unknown }).ammo;
+          if ('food' in safeEquipment) delete safeEquipment.food;
+
           setState({
             ...DEFAULT_STATE,
             ...cloudData,
             skills: { ...DEFAULT_STATE.skills, ...(cloudData.skills || {}) },
-            equipment: { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) },
+            equipment: safeEquipment,
+            equippedFood: cloudData.equippedFood || null,
+            combatSettings: { ...DEFAULT_STATE.combatSettings, ...(cloudData.combatSettings || {}) },
+            combatStats: { ...DEFAULT_STATE.combatStats, ...(cloudData.combatStats || {}) },
             unlockedAchievements: cloudData.unlockedAchievements || []
           });
         } else {
@@ -90,104 +123,27 @@ export default function App() {
              setState(DEFAULT_STATE);
           }
         }
-      } catch (err) {
-        console.error("Error loading save:", err);
-      } finally {
-        setIsDataLoaded(true);
-      }
+      } catch (err) { console.error(err); } 
+      finally { setIsDataLoaded(true); }
     };
-
-    if (!loadingAuth) {
-        loadData();
-    }
+    if (!loadingAuth) loadData();
   }, [user, loadingAuth]);
 
-  // --- 3. AUTO-SAVE LOGIC (KORJATTU) ---
-  
   const stateRef = useRef(state);
-  // Päivitetään ref aina kun tila muuttuu
-  useEffect(() => { 
-    stateRef.current = state;
-    // LocalStorage backup (nopea)
-    if (user) {
-      const userSaveKey = `melvor_clone_save_${user.uid}`;
-      localStorage.setItem(userSaveKey, JSON.stringify(state));
-    }
-  }, [state, user]);
-
-  // Pilvitallennus-intervalli (ilman state-riippuvuutta)
+  useEffect(() => { stateRef.current = state; }, [state]);
   useEffect(() => {
     if (!user || !isDataLoaded) return;
-
-    const cloudSaveInterval = setInterval(async () => {
-      try {
-        setSaveStatus('saving'); 
-        
-        const dataToSave = JSON.parse(JSON.stringify(stateRef.current));
-        
-        await setDoc(doc(db, 'users', user.uid), dataToSave);
-        
-        console.log("✅ Auto-saved to Cloud");
-        setSaveStatus('saved');
-        
-        setTimeout(() => setSaveStatus('idle'), 2000);
-
-      } catch (e) {
-        console.error("Cloud save failed:", e);
-        setSaveStatus('error');
-      }
-    }, 300000); // <-- MUUTETTU: 300 000 ms = 5 minuuttia
-
-    return () => clearInterval(cloudSaveInterval);
+    const interval = setInterval(async () => {
+       try {
+         setSaveStatus('saving');
+         await setDoc(doc(db, 'users', user.uid), JSON.parse(JSON.stringify(stateRef.current)));
+         setSaveStatus('saved');
+         setTimeout(() => setSaveStatus('idle'), 2000);
+       } catch { setSaveStatus('error'); }
+    }, 300000);
+    return () => clearInterval(interval);
   }, [user, isDataLoaded]);
 
-  // --- HELPERS ---
-
-  const getNextLevelXp = (level: number) => level * 150;
-
-  const getSpeedMultiplier = useCallback((skill: SkillType) => {
-    let multiplier = 1;
-    const ownedUpgrades = SHOP_ITEMS.filter(item => 
-      state.upgrades.includes(item.id) && item.skill === skill
-    );
-    if (ownedUpgrades.length > 0) {
-      multiplier = Math.min(...ownedUpgrades.map(u => u.multiplier));
-    }
-    return multiplier;
-  }, [state.upgrades]);
-
-  // --- ACHIEVEMENT LOGIC ---
-  useEffect(() => {
-    if (!isDataLoaded) return;
-
-    const newUnlocks: string[] = [];
-    let notificationData: { message: string, icon: string } | null = null;
-    
-    ACHIEVEMENTS.forEach(ach => {
-      if (!state.unlockedAchievements.includes(ach.id) && ach.condition(state)) {
-        newUnlocks.push(ach.id);
-        notificationData = { message: `Achievement Unlocked: ${ach.name}`, icon: ach.icon };
-      }
-    });
-
-    if (newUnlocks.length > 0) {
-      const timer = setTimeout(() => {
-        setState(prev => ({
-          ...prev,
-          unlockedAchievements: [...prev.unlockedAchievements, ...newUnlocks]
-        }));
-
-        if (notificationData) {
-          setNotification(notificationData);
-          setTimeout(() => setNotification(null), 3000);
-        }
-      }, 0);
-
-      return () => clearTimeout(timer);
-    }
-  }, [state, isDataLoaded]); 
-
-  // --- LEVEL UP LOGIC ---
   const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
     let newXp = currentXp + xpReward;
     let newLevel = currentLevel;
@@ -200,58 +156,190 @@ export default function App() {
     return { level: newLevel, xp: newXp };
   };
 
-  // --- GAME LOOP ---
   useEffect(() => {
     let intervalId: number | undefined;
 
-    if (state.activeAction && isDataLoaded) {
-      const { skill, resourceId } = state.activeAction;
-      const resource = GAME_DATA[skill].find(r => r.id === resourceId);
+    // A) COMBAT LOOP
+    if (state.activeAction?.skill === 'combat' && state.combatStats.currentMapId && isDataLoaded) {
+      intervalId = window.setInterval(() => {
+        setState(prev => {
+          const map = COMBAT_DATA.find(m => m.id === prev.combatStats.currentMapId);
+          if (!map) return prev;
 
-      if (resource) {
-        const multiplier = getSpeedMultiplier(skill);
-        const actualInterval = resource.interval * multiplier;
+          let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer } = prev.combatStats;
+          let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
+          
+          // Vähennetään timereita
+          if (respawnTimer > 0) {
+            respawnTimer -= 1;
+            if (respawnTimer === 0) enemyCurrentHp = map.enemyHp;
+            return { ...prev, combatStats: { ...prev.combatStats, respawnTimer, enemyCurrentHp, foodTimer: Math.max(0, foodTimer - 1) } };
+          }
 
-        intervalId = window.setInterval(() => {
-          setState(prev => {
-            if (resource.inputs) {
-              const canAfford = resource.inputs.every(req => (prev.inventory[req.id] || 0) >= req.count);
-              if (!canAfford) {
-                clearInterval(intervalId);
-                return { ...prev, activeAction: null }; 
+          if (foodTimer > 0) foodTimer -= 1;
+
+          const newInventory = { ...prev.inventory };
+          const newSkills = { ...prev.skills };
+          let notify = null;
+
+          // 1. PLAYER ATTACK
+          const weaponId = prev.equipment.weapon;
+          const weaponItem = weaponId ? getItemDetails(weaponId) : null;
+          const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
+          
+          const skillLevel = prev.skills[combatStyle].level;
+          const weaponPower = weaponItem?.stats?.attack || 0;
+          const playerDmg = Math.floor(1 + weaponPower + (skillLevel * 0.5));
+          enemyCurrentHp -= playerDmg;
+
+          // 2. ENEMY DEATH
+          if (enemyCurrentHp <= 0) {
+            enemyCurrentHp = 0;
+            respawnTimer = 3;
+
+            const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward);
+            newSkills[combatStyle] = styleXpGain;
+
+            const hpXpReward = Math.ceil(map.xpReward * 0.33);
+            const hpXpGain = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, hpXpReward);
+            newSkills.hitpoints = hpXpGain;
+
+            const atkXpReward = Math.ceil(map.xpReward * 0.33);
+            const atkXpGain = calculateXpGain(newSkills.attack.level, newSkills.attack.xp, atkXpReward);
+            newSkills.attack = atkXpGain;
+
+            const defXpReward = Math.ceil(map.xpReward * 0.33);
+            const defXpGain = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, defXpReward);
+            newSkills.defense = defXpGain;
+
+            map.drops.forEach(drop => {
+              if (Math.random() <= drop.chance) {
+                const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
+                newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
+                if (drop.itemId === 'frozen_key') notify = { message: "Found Frozen Key!", icon: "🗝️" };
               }
-              const newInventory = { ...prev.inventory };
-              resource.inputs.forEach(req => {
-                newInventory[req.id] -= req.count;
-                if (newInventory[req.id] <= 0) delete newInventory[req.id];
-              });
-              newInventory[resourceId] = (newInventory[resourceId] || 0) + 1;
-              const currentSkill = prev.skills[skill];
-              const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward);
-              return { ...prev, inventory: newInventory, skills: { ...prev.skills, [skill]: { level, xp } } };
-            }
+            });
 
-            const currentSkill = prev.skills[skill];
-            const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward);
+            if (map.id > maxMapCompleted) {
+              maxMapCompleted = map.id;
+              notify = { message: `Map ${map.id} Cleared!`, icon: "⚔️" };
+            }
+          } else {
+            // 3. ENEMY ATTACK
+            const defenseLvl = prev.skills.defense.level;
+            const armorBonus = Object.values(prev.equipment).reduce((sum, itemId) => {
+              if (!itemId) return sum;
+              const item = getItemDetails(itemId);
+              return sum + (item?.stats?.defense || 0);
+            }, 0);
+
+            const totalDefense = defenseLvl + armorBonus;
+            const dmgReduction = Math.min(0.75, totalDefense * 0.01); 
+            const incomingDmg = Math.max(0, Math.ceil(map.enemyAttack * (1 - dmgReduction)));
+            
+            hp -= incomingDmg;
+
+            // --- AUTO-EAT LOGIC (10s COOLDOWN) ---
+            const maxHp = getMaxHp(prev.skills.hitpoints.level);
+            const eatThresholdHp = maxHp * (prev.combatSettings.autoEatThreshold / 100);
+
+            if (hp <= eatThresholdHp && equippedFood && equippedFood.count > 0 && foodTimer === 0 && hp < maxHp) {
+              const foodItem = getItemDetails(equippedFood.itemId);
+              if (foodItem && foodItem.healing) {
+                equippedFood.count -= 1;
+                if (equippedFood.count <= 0) equippedFood = null;
+                
+                hp = Math.min(maxHp, hp + foodItem.healing);
+                foodTimer = 10; // Aseta cooldown 10 sekuntia
+              }
+            }
+          }
+
+          // 4. PLAYER DEATH
+          if (hp <= 0) {
+            hp = 0;
             return {
               ...prev,
-              inventory: { ...prev.inventory, [resourceId]: (prev.inventory[resourceId] || 0) + 1 },
-              skills: { ...prev.skills, [skill]: { level, xp } } 
+              activeAction: null,
+              combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0, respawnTimer: 0, foodTimer: 0 }
             };
-          });
-        }, actualInterval);
+          }
+
+          if (notify) {
+             setNotification(notify);
+             setTimeout(() => setNotification(null), 3000);
+          }
+
+          return {
+            ...prev,
+            inventory: newInventory,
+            skills: newSkills,
+            equippedFood: equippedFood,
+            combatStats: { ...prev.combatStats, hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer }
+          };
+        });
+      }, 1000);
+    } 
+    // B) SKILL LOOP
+    else if (state.activeAction && state.activeAction.skill !== 'combat' && isDataLoaded) {
+      const { skill, resourceId } = state.activeAction;
+      
+      if (!['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic'].includes(skill)) {
+        const resourceSkill = skill as ResourceSkillType;
+        const skillData = GAME_DATA[resourceSkill];
+        const resource = skillData?.find((r: Resource) => r.id === resourceId);
+
+        if (resource) {
+          const multiplier = getSpeedMultiplier(skill);
+          const actualInterval = resource.interval * multiplier;
+
+          intervalId = window.setInterval(() => {
+            setState(prev => {
+              if (resource.inputs) {
+                const canAfford = resource.inputs.every((req: Ingredient) => (prev.inventory[req.id] || 0) >= req.count);
+                if (!canAfford) {
+                  clearInterval(intervalId);
+                  return { ...prev, activeAction: null }; 
+                }
+                const newInventory = { ...prev.inventory };
+                resource.inputs.forEach((req: Ingredient) => {
+                  newInventory[req.id] -= req.count;
+                  if (newInventory[req.id] <= 0) delete newInventory[req.id];
+                });
+                newInventory[resourceId] = (newInventory[resourceId] || 0) + 1;
+                const currentSkill = prev.skills[resourceSkill];
+                const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward);
+                const newSkills = { ...prev.skills, [resourceSkill]: { level, xp } };
+                return { ...prev, inventory: newInventory, skills: newSkills };
+              }
+
+              const currentSkill = prev.skills[resourceSkill];
+              const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward);
+              const newSkills = { ...prev.skills, [resourceSkill]: { level, xp } };
+
+              return {
+                ...prev,
+                inventory: { ...prev.inventory, [resourceId]: (prev.inventory[resourceId] || 0) + 1 },
+                skills: newSkills
+              };
+            });
+          }, actualInterval);
+        }
       }
     }
     return () => clearInterval(intervalId);
-  }, [state.activeAction, getSpeedMultiplier, isDataLoaded]);
+  }, [state.activeAction, getSpeedMultiplier, isDataLoaded, state.combatStats.currentMapId]);
 
-  // --- HANDLERS ---
   const toggleAction = (skill: SkillType, resourceId: string) => {
     setState(prev => {
       if (prev.activeAction?.resourceId === resourceId) return { ...prev, activeAction: null };
-      const resource = GAME_DATA[skill].find(r => r.id === resourceId);
+      if (['hitpoints', 'melee', 'ranged', 'magic', 'defense', 'attack'].includes(skill)) return prev;
+
+      const resourceSkill = skill as ResourceSkillType;
+      const resource = GAME_DATA[resourceSkill].find((r: Resource) => r.id === resourceId);
+      
       if (resource?.inputs) {
-        const canAfford = resource.inputs.every(req => (prev.inventory[req.id] || 0) >= req.count);
+        const canAfford = resource.inputs.every((req: Ingredient) => (prev.inventory[req.id] || 0) >= req.count);
         if (!canAfford) {
           alert("Not enough materials!");
           return prev;
@@ -259,6 +347,35 @@ export default function App() {
       }
       return { ...prev, activeAction: { skill, resourceId } };
     });
+  };
+
+  const startCombat = (mapId: number) => {
+    const map = COMBAT_DATA.find(m => m.id === mapId);
+    if (!map) return;
+    
+    setState(prev => {
+      const currentMaxHp = getMaxHp(prev.skills.hitpoints.level);
+      return {
+        ...prev,
+        activeAction: { skill: 'combat', resourceId: mapId.toString() },
+        combatStats: { 
+          ...prev.combatStats, 
+          currentMapId: mapId, 
+          enemyCurrentHp: map.enemyHp,
+          hp: prev.combatStats.hp > 0 ? prev.combatStats.hp : currentMaxHp,
+          respawnTimer: 0,
+          foodTimer: 0
+        }
+      };
+    });
+  };
+
+  const stopCombat = () => {
+    setState(prev => ({
+      ...prev,
+      activeAction: null,
+      combatStats: { ...prev.combatStats, currentMapId: null }
+    }));
   };
 
   const sellItem = (itemId: string, amountToSell: number | 'all') => {
@@ -280,17 +397,11 @@ export default function App() {
 
   const buyUpgrade = (item: ShopItem) => {
     if (item.id === 'test_money') {
-      if (state.coins >= item.cost) {
-        setState(prev => ({ ...prev, coins: prev.coins - item.cost + 1000 }));
-      }
+      if (state.coins >= item.cost) setState(prev => ({ ...prev, coins: prev.coins - item.cost + 1000 }));
       return;
     }
     if (state.coins >= item.cost && !state.upgrades.includes(item.id)) {
-      setState(prev => ({
-        ...prev,
-        coins: prev.coins - item.cost,
-        upgrades: [...prev.upgrades, item.id]
-      }));
+      setState(prev => ({ ...prev, coins: prev.coins - item.cost, upgrades: [...prev.upgrades, item.id] }));
     }
   };
 
@@ -314,32 +425,80 @@ export default function App() {
 
   const handleEquip = (itemId: string, targetSlot: EquipmentSlot) => {
     const item = getItemDetails(itemId);
-    if (item?.slot !== targetSlot) return;
+    if (!item || !('slot' in item) || item.slot !== targetSlot) return;
+    
     setState(prev => {
       const newInventory = { ...prev.inventory };
       const newEquipment = { ...prev.equipment };
+      
       const currentEquipped = newEquipment[targetSlot];
+
       newInventory[itemId] -= 1;
       if (newInventory[itemId] <= 0) delete newInventory[itemId];
       if (currentEquipped) {
         newInventory[currentEquipped] = (newInventory[currentEquipped] || 0) + 1;
       }
+      
       newEquipment[targetSlot] = itemId;
       return { ...prev, inventory: newInventory, equipment: newEquipment };
     });
   };
 
-  const handleUnequip = (slot: string) => {
+  const handleEquipFood = (itemId: string, amount: number) => {
+    const item = getItemDetails(itemId);
+    if (!item || !item.healing) return;
+
     setState(prev => {
-      const itemId = prev.equipment[slot];
+      const newInventory = { ...prev.inventory };
+      let newEquippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
+
+      if (newEquippedFood) {
+        newInventory[newEquippedFood.itemId] = (newInventory[newEquippedFood.itemId] || 0) + newEquippedFood.count;
+      }
+
+      if (newInventory[itemId] >= amount) {
+        newInventory[itemId] -= amount;
+        if (newInventory[itemId] <= 0) delete newInventory[itemId];
+        
+        newEquippedFood = { itemId, count: amount };
+      }
+
+      return { ...prev, inventory: newInventory, equippedFood: newEquippedFood };
+    });
+  };
+
+  const handleUnequipFood = () => {
+    setState(prev => {
+      if (!prev.equippedFood) return prev;
+      
+      const newInventory = { ...prev.inventory };
+      newInventory[prev.equippedFood.itemId] = (newInventory[prev.equippedFood.itemId] || 0) + prev.equippedFood.count;
+      
+      return { ...prev, inventory: newInventory, equippedFood: null };
+    });
+  };
+
+  const handleUnequip = (slot: string) => {
+    if (!['head', 'body', 'legs', 'weapon', 'shield', 'food'].includes(slot)) return;
+    const validSlot = slot as EquipmentSlot;
+
+    setState(prev => {
+      const itemId = prev.equipment[validSlot];
       if (!itemId) return prev;
-      const newEquipment = { ...prev.equipment, [slot]: null };
+      
+      const newEquipment = { ...prev.equipment, [validSlot]: null };
       const newInventory = { ...prev.inventory, [itemId]: (prev.inventory[itemId] || 0) + 1 };
+      
       return { ...prev, equipment: newEquipment, inventory: newInventory };
     });
   };
 
-  // --- RENDER ---
+  const handleUpdateAutoEat = (threshold: number) => {
+    setState(prev => ({
+      ...prev,
+      combatSettings: { ...prev.combatSettings, autoEatThreshold: threshold }
+    }));
+  };
 
   if (loadingAuth) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading User...</div>;
   if (!user) return <Auth />;
@@ -354,28 +513,19 @@ export default function App() {
         skills={state.skills} 
         onReset={hardReset}
         onLogout={() => signOut(auth)} 
+        onStopAction={() => setState(prev => ({ ...prev, activeAction: null }))}
       />
 
       <main className="flex-1 bg-slate-950 relative overflow-y-auto h-screen">
-        
-        {/* UUSI: Tyylikäs ja huomaamaton tallennusindikaattori */}
         <div className="fixed top-4 right-6 z-50 flex items-center gap-2 pointer-events-none">
            {saveStatus === 'saving' && (
-             <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700 text-xs text-slate-300 animate-pulse">
-               <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
-               Saving to Cloud...
-             </div>
+             <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700 text-xs text-slate-300 animate-pulse"><span className="w-2 h-2 bg-yellow-400 rounded-full"></span>Saving...</div>
            )}
            {saveStatus === 'saved' && (
-             <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-emerald-900/50 text-xs text-emerald-400 transition-opacity duration-500">
-               <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-               Cloud Saved
-             </div>
+             <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-emerald-900/50 text-xs text-emerald-400"><span className="w-2 h-2 bg-emerald-500 rounded-full"></span>Cloud Saved</div>
            )}
            {saveStatus === 'error' && (
-             <div className="flex items-center gap-2 bg-red-900/80 px-3 py-1 rounded-full border border-red-700 text-xs text-red-200">
-               ⚠️ Save Failed
-             </div>
+             <div className="flex items-center gap-2 bg-red-900/80 px-3 py-1 rounded-full border border-red-700 text-xs text-red-200">⚠️ Save Failed</div>
            )}
         </div>
 
@@ -383,20 +533,26 @@ export default function App() {
           <div className="fixed bottom-6 right-6 bg-slate-800 border-l-4 border-yellow-400 p-4 rounded shadow-2xl flex items-center gap-4 animate-bounce z-50">
             <span className="text-4xl">{notification.icon}</span>
             <div>
-              <p className="font-bold text-yellow-400 text-sm uppercase">Achievement Unlocked!</p>
+              <p className="font-bold text-yellow-400 text-sm uppercase">Unlocked!</p>
               <p className="font-bold">{notification.message}</p>
             </div>
           </div>
         )}
 
-        <SellModal 
-          itemId={selectedItemForSale} 
-          inventory={state.inventory} 
-          onClose={() => setSelectedItemForSale(null)} 
-          onSell={sellItem} 
-        />
+        <SellModal itemId={selectedItemForSale} inventory={state.inventory} onClose={() => setSelectedItemForSale(null)} onSell={sellItem} />
 
-        {['woodcutting', 'mining', 'fishing', 'farming', 'crafting'].includes(currentView) && (
+        {currentView === 'combat' && (
+          <CombatView 
+            combatState={{...state.combatStats, maxHp: getMaxHp(state.skills.hitpoints.level)}}
+            inventory={state.inventory}
+            equippedFood={state.equippedFood}
+            onEquipFood={handleEquipFood}
+            onStartCombat={startCombat}
+            onStopCombat={stopCombat}
+          />
+        )}
+
+        {['woodcutting', 'mining', 'fishing', 'farming', 'crafting', 'cooking'].includes(currentView) && (
           <SkillView 
             skill={currentView as SkillType} 
             level={state.skills[currentView as SkillType].level}
@@ -406,40 +562,35 @@ export default function App() {
             onToggleAction={toggleAction}
             speedMultiplier={getSpeedMultiplier(currentView as SkillType)}
             nextLevelXp={getNextLevelXp(state.skills[currentView as SkillType].level)}
+            maxMapCompleted={state.combatStats.maxMapCompleted}
           />
         )}
 
         {currentView === 'inventory' && (
           <Inventory 
             inventory={state.inventory} 
-            equipment={state.equipment}
-            onSellClick={setSelectedItemForSale}
-            onEquip={handleEquip}
-            onUnequip={handleUnequip}
+            equipment={state.equipment} 
+            equippedFood={state.equippedFood}
+            combatSettings={state.combatSettings}
+            onSellClick={setSelectedItemForSale} 
+            onEquip={handleEquip} 
+            onEquipFood={handleEquipFood}
+            onUnequip={handleUnequip} 
+            onUnequipFood={handleUnequipFood}
+            onUpdateAutoEat={handleUpdateAutoEat}
           />
         )}
 
         {currentView === 'shop' && (
-          <Shop 
-            items={SHOP_ITEMS} 
-            coins={state.coins} 
-            upgrades={state.upgrades} 
-            onBuy={buyUpgrade} 
-          />
+          <Shop items={SHOP_ITEMS} coins={state.coins} upgrades={state.upgrades} onBuy={buyUpgrade} />
         )}
 
         {currentView === 'gamble' && (
-          <Gamble 
-            coins={state.coins} 
-            onGamble={handleGamble} 
-          />
+          <Gamble coins={state.coins} onGamble={handleGamble} />
         )}
 
         {currentView === 'achievements' && (
-          <AchievementsView 
-            achievements={ACHIEVEMENTS} 
-            unlockedIds={state.unlockedAchievements} 
-          />
+          <AchievementsView achievements={ACHIEVEMENTS} unlockedIds={state.unlockedAchievements} />
         )}
       </main>
 

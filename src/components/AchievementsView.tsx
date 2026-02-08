@@ -10,7 +10,8 @@ export default function AchievementsView({ achievements, unlockedIds }: Achievem
     <div className="p-6">
       <header className="mb-6 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
         <h2 className="text-3xl font-bold mb-2 text-yellow-500 flex items-center gap-3">
-          <span>🏆</span> Achievements
+          <img src="/assets/ui/icon_achievements.png" className="w-8 h-8 pixelated" alt="Trophy" />
+          Achievements
         </h2>
         <p className="text-slate-400 text-sm">
           Unlocked: <span className="text-white font-bold">{unlockedIds.length} / {achievements.length}</span>
@@ -29,9 +30,9 @@ export default function AchievementsView({ achievements, unlockedIds }: Achievem
                   : 'bg-slate-900/50 border-slate-800 opacity-60 grayscale'
                 }`}
             >
-              <div className={`text-4xl p-3 rounded-full border 
-                ${isUnlocked ? 'bg-slate-900 border-yellow-600 text-yellow-400' : 'bg-slate-950 border-slate-700 text-slate-600'}`}>
-                {ach.icon}
+              <div className={`p-3 rounded-full border 
+                ${isUnlocked ? 'bg-slate-900 border-yellow-600' : 'bg-slate-950 border-slate-700'}`}>
+                <img src={ach.icon} alt={ach.name} className="w-10 h-10 pixelated" />
               </div>
               
               <div>

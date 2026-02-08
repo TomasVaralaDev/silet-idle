@@ -25,7 +25,6 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
       case 'fishing': return { bg: 'bg-cyan-500' };
       case 'farming': return { bg: 'bg-lime-500' };
       case 'crafting': return { bg: 'bg-violet-500' };
-      // UUSI: Cooking väri
       case 'cooking': return { bg: 'bg-yellow-500' };
       default: return { bg: 'bg-slate-500' };
     }
@@ -53,22 +52,20 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
   });
 
   const craftingTabs = [
-    { id: 'all', label: 'All', icon: '♾️' },
-    { id: 'weapons', label: 'Weapons', icon: '⚔️' },
-    { id: 'armor', label: 'Armor', icon: '🛡️' },
+    { id: 'all', label: 'All', icon: '/assets/ui/icon_all.png' },
+    { id: 'weapons', label: 'Weapons', icon: '/assets/ui/icon_weapon.png' },
+    { id: 'armor', label: 'Armor', icon: '/assets/ui/icon_armor.png' },
   ];
 
   return (
     <div className="p-6">
       <header className="mb-6 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl select-none pointer-events-none">
-          {skill === 'woodcutting' ? '🪓' : skill === 'mining' ? '⛏️' : skill === 'fishing' ? '🎣' : skill === 'farming' ? '🌱' : skill === 'cooking' ? '🍳' : '🔨'}
+        <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+           <img src={`/assets/skills/${skill}.png`} className="w-32 h-32 pixelated" alt="Background Icon" />
         </div>
         <div className="flex justify-between items-center mb-4 relative z-10">
           <h2 className="text-3xl font-bold capitalize flex items-center gap-3 text-white">
-            <span className="text-4xl">
-              {skill === 'woodcutting' ? '🌲' : skill === 'mining' ? '⛰️' : skill === 'fishing' ? '🌊' : skill === 'farming' ? '🌻' : skill === 'cooking' ? '🔥' : '🗡️'}
-            </span>
+            <img src={`/assets/skills/${skill}.png`} className="w-10 h-10 pixelated" alt={skill} />
             {skill.charAt(0).toUpperCase() + skill.slice(1)}
           </h2>
           <div className="text-right">
@@ -98,8 +95,8 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                   : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-800'
                 }`}
             >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
+              {/* Jos sinulla ei ole ikoneita näille, voit käyttää tekstiä tai geneeristä ikonia */}
+              <span>{tab.label}</span> 
             </button>
           ))}
         </div>
@@ -108,18 +105,13 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredResources.map((resource: Resource) => {
           const isLevelLocked = level < resource.levelRequired;
-          
           const isMapLocked = resource.requiresMapCompletion 
             ? maxMapCompleted < resource.requiresMapCompletion 
             : false;
-
           const isActive = activeAction?.resourceId === resource.id;
           const currentInterval = resource.interval * speedMultiplier;
-          
           const canAfford = resource.inputs ? resource.inputs.every((req: Ingredient) => (inventory[req.id] || 0) >= req.count) : true;
-          
           const isLocked = isLevelLocked || isMapLocked;
-          
           const lockedText = isMapLocked 
              ? `Beat Map 1-${resource.requiresMapCompletion}` 
              : `Lvl ${resource.levelRequired}`;
@@ -127,7 +119,9 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
           return (
             <div key={resource.id} className={`relative p-5 rounded-xl border transition-all duration-200 ${isLocked ? 'bg-slate-900/50 border-slate-800 opacity-50 grayscale' : isActive ? `bg-slate-800 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]` : 'bg-slate-900 border-slate-800 hover:border-slate-600 hover:bg-slate-800'}`}>
               <div className="flex justify-between items-start mb-4">
-                <div className={`text-4xl p-3 bg-slate-950 rounded-lg border border-slate-800 ${resource.color}`}>{resource.icon}</div>
+                <div className={`p-3 bg-slate-950 rounded-lg border border-slate-800`}>
+                  <img src={resource.icon} alt={resource.name} className="w-10 h-10 pixelated" />
+                </div>
                 {!isLocked && <span className="text-xs font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">{(currentInterval / 1000).toFixed(1)}s</span>}
               </div>
               
@@ -153,7 +147,6 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                 </div>
               )}
 
-              {/* UUSI: Näytä healing-arvo korteissa */}
               {resource.healing && (
                 <div className="flex flex-wrap gap-2 mb-3 mt-2">
                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-green-900 bg-green-900/20 text-green-400">
@@ -173,7 +166,7 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                        const hasEnough = (inventory[input.id] || 0) >= input.count;
                        return (
                          <div key={input.id} className={`text-xs px-2 py-0.5 rounded border flex items-center gap-1 ${hasEnough ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-red-900/20 border-red-900/50 text-red-400'}`}>
-                           <span>{inputItem?.icon}</span>
+                           {inputItem && <img src={inputItem.icon} className="w-3 h-3 pixelated" alt="mat" />}
                            <span>{inventory[input.id] || 0}/{input.count}</span>
                          </div>
                        );

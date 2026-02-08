@@ -61,69 +61,71 @@ export const COMBAT_DATA: CombatMap[] = [
 // --- SKILL RESOURCES ---
 export const GAME_DATA: Record<Exclude<SkillType, 'hitpoints' | 'melee' | 'ranged' | 'magic' | 'defense' | 'attack'>, Resource[]> = {
   woodcutting: [
-    { id: 'log_normal', name: 'Normal Log', levelRequired: 1, xpReward: 10, interval: 3000, value: 1, icon: '🌲', color: 'text-emerald-400', description: 'Common wood.', requiresMapCompletion: undefined },
-    { id: 'log_oak', name: 'Oak Log', levelRequired: 15, xpReward: 25, interval: 4500, value: 5, icon: '🌳', color: 'text-amber-700', description: 'Sturdy wood.', requiresMapCompletion: 5 },
-    { id: 'log_willow', name: 'Willow Log', levelRequired: 30, xpReward: 45, interval: 6000, value: 10, icon: '🎋', color: 'text-emerald-800', description: 'Flexible wood.', requiresMapCompletion: 8 },
+    { id: 'log_normal', name: 'Normal Log', levelRequired: 1, xpReward: 10, interval: 3000, value: 1, icon: '/assets/resources/log_normal.png', color: 'text-emerald-400', description: 'Common wood.', requiresMapCompletion: undefined },
+    { id: 'log_oak', name: 'Oak Log', levelRequired: 15, xpReward: 25, interval: 4500, value: 5, icon: '/assets/resources/log_oak.png', color: 'text-amber-700', description: 'Sturdy wood.', requiresMapCompletion: 5 },
+    { id: 'log_willow', name: 'Willow Log', levelRequired: 30, xpReward: 45, interval: 6000, value: 10, icon: '/assets/resources/log_willow.png', color: 'text-emerald-800', description: 'Flexible wood.', requiresMapCompletion: 8 },
   ],
   mining: [
-    { id: 'ore_copper', name: 'Copper Ore', levelRequired: 1, xpReward: 15, interval: 3000, value: 3, icon: '🟤', color: 'text-orange-400', description: 'Soft metal.', requiresMapCompletion: undefined },
-    { id: 'ore_tin', name: 'Tin Ore', levelRequired: 1, xpReward: 15, interval: 3000, value: 3, icon: '⚪', color: 'text-slate-300', description: 'Shiny metal.', requiresMapCompletion: 5 },
-    { id: 'ore_iron', name: 'Iron Ore', levelRequired: 15, xpReward: 35, interval: 5000, value: 10, icon: '⚫', color: 'text-slate-500', description: 'Strong metal.', requiresMapCompletion: 7 },
+    { id: 'ore_copper', name: 'Copper Ore', levelRequired: 1, xpReward: 15, interval: 3000, value: 3, icon: '/assets/resources/ore_copper.png', color: 'text-orange-400', description: 'Soft metal.', requiresMapCompletion: undefined },
+    { id: 'ore_tin', name: 'Tin Ore', levelRequired: 1, xpReward: 15, interval: 3000, value: 3, icon: '/assets/resources/ore_tin.png', color: 'text-slate-300', description: 'Shiny metal.', requiresMapCompletion: 5 },
+    { id: 'ore_iron', name: 'Iron Ore', levelRequired: 15, xpReward: 35, interval: 5000, value: 10, icon: '/assets/resources/ore_iron.png', color: 'text-slate-500', description: 'Strong metal.', requiresMapCompletion: 7 },
   ],
   fishing: [
-    { id: 'fish_shrimp', name: 'Raw Shrimp', levelRequired: 1, xpReward: 10, interval: 2500, value: 2, icon: '🦐', color: 'text-pink-400', description: 'Small raw shrimp.', requiresMapCompletion: undefined },
-    { id: 'fish_sardine', name: 'Raw Sardine', levelRequired: 10, xpReward: 20, interval: 4000, value: 5, icon: '🐟', color: 'text-blue-300', description: 'Common raw fish.', requiresMapCompletion: 4 }
+    { id: 'fish_shrimp', name: 'Raw Shrimp', levelRequired: 1, xpReward: 10, interval: 2500, value: 2, icon: '/assets/resources/fish_shrimp.png', color: 'text-pink-400', description: 'Small raw shrimp.', requiresMapCompletion: undefined },
+    { id: 'fish_sardine', name: 'Raw Sardine', levelRequired: 10, xpReward: 20, interval: 4000, value: 5, icon: '/assets/resources/fish_sardine.png', color: 'text-blue-300', description: 'Common raw fish.', requiresMapCompletion: 4 }
   ],
   farming: [
-    { id: 'crop_potato', name: 'Raw Potato', levelRequired: 1, xpReward: 10, interval: 10000, value: 3, icon: '🥔', color: 'text-yellow-600', description: 'Basic raw food.', requiresMapCompletion: undefined }
+    { id: 'crop_potato', name: 'Raw Potato', levelRequired: 1, xpReward: 10, interval: 10000, value: 3, icon: '/assets/resources/crop_potato.png', color: 'text-yellow-600', description: 'Basic raw food.', requiresMapCompletion: undefined }
   ],
   cooking: [
-    { id: 'food_shrimp_cooked', name: 'Cooked Shrimp', levelRequired: 1, xpReward: 15, interval: 2000, value: 5, icon: '🍤', color: 'text-orange-400', description: 'Heals 10 HP.', inputs: [{ id: 'fish_shrimp', count: 1 }], slot: 'food', healing: 10 },
-    { id: 'food_potato_baked', name: 'Baked Potato', levelRequired: 5, xpReward: 20, interval: 3000, value: 8, icon: '🥔', color: 'text-yellow-500', description: 'Heals 15 HP.', inputs: [{ id: 'crop_potato', count: 1 }], slot: 'food', healing: 15 },
-    { id: 'food_sardine_cooked', name: 'Cooked Sardine', levelRequired: 10, xpReward: 30, interval: 4000, value: 12, icon: '🐟', color: 'text-slate-400', description: 'Heals 25 HP.', inputs: [{ id: 'fish_sardine', count: 1 }], slot: 'food', healing: 25 }
+    { id: 'food_shrimp_cooked', name: 'Cooked Shrimp', levelRequired: 1, xpReward: 15, interval: 2000, value: 5, icon: '/assets/items/food_shrimp.png', color: 'text-orange-400', description: 'Heals 10 HP.', inputs: [{ id: 'fish_shrimp', count: 1 }], slot: 'food', healing: 10 },
+    { id: 'food_potato_baked', name: 'Baked Potato', levelRequired: 5, xpReward: 20, interval: 3000, value: 8, icon: '/assets/items/food_potato.png', color: 'text-yellow-500', description: 'Heals 15 HP.', inputs: [{ id: 'crop_potato', count: 1 }], slot: 'food', healing: 15 },
+    { id: 'food_sardine_cooked', name: 'Cooked Sardine', levelRequired: 10, xpReward: 30, interval: 4000, value: 12, icon: '/assets/items/food_sardine.png', color: 'text-slate-400', description: 'Heals 25 HP.', inputs: [{ id: 'fish_sardine', count: 1 }], slot: 'food', healing: 25 }
   ],
   crafting: [
-    { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '⚔️', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'weapon', stats: { attack: 8 }, category: 'weapons', combatStyle: 'melee' },
-    { id: 'weapon_sword_iron', name: 'Iron Sword', levelRequired: 15, xpReward: 50, interval: 5000, value: 50, icon: '🗡️', color: 'text-slate-400', description: 'Sharp and reliable.', inputs: [{ id: 'ore_iron', count: 3 }], slot: 'weapon', stats: { attack: 18 }, category: 'weapons', combatStyle: 'melee' },
-    { id: 'weapon_shortbow_normal', name: 'Shortbow', levelRequired: 1, xpReward: 20, interval: 2000, value: 10, icon: '🏹', color: 'text-amber-600', description: 'Simple wooden bow.', inputs: [{ id: 'log_normal', count: 2 }], slot: 'weapon', stats: { attack: 6 }, category: 'weapons', combatStyle: 'ranged' },
-    { id: 'weapon_shortbow_oak', name: 'Oak Shortbow', levelRequired: 15, xpReward: 40, interval: 3000, value: 30, icon: '🏹', color: 'text-amber-700', description: 'Sturdy oak bow.', inputs: [{ id: 'log_oak', count: 2 }], slot: 'weapon', stats: { attack: 14 }, category: 'weapons', combatStyle: 'ranged' },
-    { id: 'weapon_shortbow_willow', name: 'Willow Shortbow', levelRequired: 30, xpReward: 80, interval: 4000, value: 80, icon: '🏹', color: 'text-emerald-800', description: 'High quality bow.', inputs: [{ id: 'log_willow', count: 3 }], slot: 'weapon', stats: { attack: 24 }, category: 'weapons', combatStyle: 'ranged' },
-    { id: 'weapon_wand_basic', name: 'Basic Wand', levelRequired: 1, xpReward: 25, interval: 2500, value: 20, icon: '✨', color: 'text-blue-300', description: 'Channels weak magic.', inputs: [{ id: 'log_normal', count: 3 }], slot: 'weapon', stats: { attack: 5 }, category: 'weapons', combatStyle: 'magic' },
-    { id: 'weapon_wand_oak', name: 'Oak Wand', levelRequired: 15, xpReward: 50, interval: 3500, value: 45, icon: '🔮', color: 'text-amber-600', description: 'Focused magic power.', inputs: [{ id: 'log_oak', count: 3 }], slot: 'weapon', stats: { attack: 12 }, category: 'weapons', combatStyle: 'magic' },
-    { id: 'weapon_staff_willow', name: 'Willow Staff', levelRequired: 30, xpReward: 90, interval: 5000, value: 100, icon: '🔱', color: 'text-emerald-600', description: 'Powerful magical staff.', inputs: [{ id: 'log_willow', count: 4 }], slot: 'weapon', stats: { attack: 22 }, category: 'weapons', combatStyle: 'magic' },
-    { id: 'armor_bronze_helm', name: 'Bronze Helm', levelRequired: 1, xpReward: 20, interval: 3000, value: 10, icon: '🪖', color: 'text-orange-700', description: 'Simple bronze protection.', inputs: [{ id: 'ore_copper', count: 1 }, { id: 'ore_tin', count: 1 }], slot: 'head', stats: { defense: 2 }, category: 'armor' },
-    { id: 'armor_bronze_body', name: 'Bronze Platebody', levelRequired: 1, xpReward: 40, interval: 4000, value: 25, icon: '👕', color: 'text-orange-700', description: 'Covers the chest.', inputs: [{ id: 'ore_copper', count: 3 }, { id: 'ore_tin', count: 1 }], slot: 'body', stats: { defense: 5 }, category: 'armor' },
-    { id: 'armor_bronze_legs', name: 'Bronze Platelegs', levelRequired: 1, xpReward: 30, interval: 3500, value: 20, icon: '👖', color: 'text-orange-700', description: 'Protects legs.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'legs', stats: { defense: 4 }, category: 'armor' },
-    { id: 'armor_bronze_shield', name: 'Bronze Shield', levelRequired: 1, xpReward: 25, interval: 3000, value: 15, icon: '🛡️', color: 'text-orange-700', description: 'Blocks weak attacks.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'shield', stats: { defense: 3 }, category: 'armor' },
-    { id: 'armor_iron_helm', name: 'Iron Helm', levelRequired: 15, xpReward: 50, interval: 4500, value: 40, icon: '🪖', color: 'text-slate-400', description: 'Sturdy iron helm.', inputs: [{ id: 'ore_iron', count: 2 }], slot: 'head', stats: { defense: 5 }, category: 'armor' },
-    { id: 'armor_iron_body', name: 'Iron Platebody', levelRequired: 15, xpReward: 100, interval: 6000, value: 100, icon: '👕', color: 'text-slate-400', description: 'Heavy iron armor.', inputs: [{ id: 'ore_iron', count: 5 }], slot: 'body', stats: { defense: 12 }, category: 'armor' },
-    { id: 'armor_iron_legs', name: 'Iron Platelegs', levelRequired: 15, xpReward: 80, interval: 5000, value: 80, icon: '👖', color: 'text-slate-400', description: 'Iron leg guards.', inputs: [{ id: 'ore_iron', count: 3 }], slot: 'legs', stats: { defense: 9 }, category: 'armor' },
-    { id: 'armor_iron_shield', name: 'Iron Shield', levelRequired: 15, xpReward: 60, interval: 4500, value: 60, icon: '🛡️', color: 'text-slate-400', description: 'Solid iron shield.', inputs: [{ id: 'ore_iron', count: 3 }], slot: 'shield', stats: { defense: 7 }, category: 'armor' },
+    // --- WEAPONS ---
+    { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '/assets/items/sword_bronze.png', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'weapon', stats: { attack: 8 }, category: 'weapons', combatStyle: 'melee' },
+    { id: 'weapon_sword_iron', name: 'Iron Sword', levelRequired: 15, xpReward: 50, interval: 5000, value: 50, icon: '/assets/items/sword_iron.png', color: 'text-slate-400', description: 'Sharp and reliable.', inputs: [{ id: 'ore_iron', count: 3 }], slot: 'weapon', stats: { attack: 18 }, category: 'weapons', combatStyle: 'melee' },
+    { id: 'weapon_shortbow_normal', name: 'Shortbow', levelRequired: 1, xpReward: 20, interval: 2000, value: 10, icon: '/assets/items/bow_normal.png', color: 'text-amber-600', description: 'Simple wooden bow.', inputs: [{ id: 'log_normal', count: 2 }], slot: 'weapon', stats: { attack: 6 }, category: 'weapons', combatStyle: 'ranged' },
+    { id: 'weapon_shortbow_oak', name: 'Oak Shortbow', levelRequired: 15, xpReward: 40, interval: 3000, value: 30, icon: '/assets/items/bow_oak.png', color: 'text-amber-700', description: 'Sturdy oak bow.', inputs: [{ id: 'log_oak', count: 2 }], slot: 'weapon', stats: { attack: 14 }, category: 'weapons', combatStyle: 'ranged' },
+    { id: 'weapon_shortbow_willow', name: 'Willow Shortbow', levelRequired: 30, xpReward: 80, interval: 4000, value: 80, icon: '/assets/items/bow_willow.png', color: 'text-emerald-800', description: 'High quality bow.', inputs: [{ id: 'log_willow', count: 3 }], slot: 'weapon', stats: { attack: 24 }, category: 'weapons', combatStyle: 'ranged' },
+    { id: 'weapon_wand_basic', name: 'Basic Wand', levelRequired: 1, xpReward: 25, interval: 2500, value: 20, icon: '/assets/items/wand_basic.png', color: 'text-blue-300', description: 'Channels weak magic.', inputs: [{ id: 'log_normal', count: 3 }], slot: 'weapon', stats: { attack: 5 }, category: 'weapons', combatStyle: 'magic' },
+    { id: 'weapon_wand_oak', name: 'Oak Wand', levelRequired: 15, xpReward: 50, interval: 3500, value: 45, icon: '/assets/items/wand_oak.png', color: 'text-amber-600', description: 'Focused magic power.', inputs: [{ id: 'log_oak', count: 3 }], slot: 'weapon', stats: { attack: 12 }, category: 'weapons', combatStyle: 'magic' },
+    { id: 'weapon_staff_willow', name: 'Willow Staff', levelRequired: 30, xpReward: 90, interval: 5000, value: 100, icon: '/assets/items/staff_willow.png', color: 'text-emerald-600', description: 'Powerful magical staff.', inputs: [{ id: 'log_willow', count: 4 }], slot: 'weapon', stats: { attack: 22 }, category: 'weapons', combatStyle: 'magic' },
+
+    // --- ARMOR ---
+    { id: 'armor_bronze_helm', name: 'Bronze Helm', levelRequired: 1, xpReward: 20, interval: 3000, value: 10, icon: '/assets/items/helm_bronze.png', color: 'text-orange-700', description: 'Simple bronze protection.', inputs: [{ id: 'ore_copper', count: 1 }, { id: 'ore_tin', count: 1 }], slot: 'head', stats: { defense: 2 }, category: 'armor' },
+    { id: 'armor_bronze_body', name: 'Bronze Platebody', levelRequired: 1, xpReward: 40, interval: 4000, value: 25, icon: '/assets/items/body_bronze.png', color: 'text-orange-700', description: 'Covers the chest.', inputs: [{ id: 'ore_copper', count: 3 }, { id: 'ore_tin', count: 1 }], slot: 'body', stats: { defense: 5 }, category: 'armor' },
+    { id: 'armor_bronze_legs', name: 'Bronze Platelegs', levelRequired: 1, xpReward: 30, interval: 3500, value: 20, icon: '/assets/items/legs_bronze.png', color: 'text-orange-700', description: 'Protects legs.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'legs', stats: { defense: 4 }, category: 'armor' },
+    { id: 'armor_bronze_shield', name: 'Bronze Shield', levelRequired: 1, xpReward: 25, interval: 3000, value: 15, icon: '/assets/items/shield_bronze.png', color: 'text-orange-700', description: 'Blocks weak attacks.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'shield', stats: { defense: 3 }, category: 'armor' },
+    { id: 'armor_iron_helm', name: 'Iron Helm', levelRequired: 15, xpReward: 50, interval: 4500, value: 40, icon: '/assets/items/helm_iron.png', color: 'text-slate-400', description: 'Sturdy iron helm.', inputs: [{ id: 'ore_iron', count: 2 }], slot: 'head', stats: { defense: 5 }, category: 'armor' },
+    { id: 'armor_iron_body', name: 'Iron Platebody', levelRequired: 15, xpReward: 100, interval: 6000, value: 100, icon: '/assets/items/body_iron.png', color: 'text-slate-400', description: 'Heavy iron armor.', inputs: [{ id: 'ore_iron', count: 5 }], slot: 'body', stats: { defense: 12 }, category: 'armor' },
+    { id: 'armor_iron_legs', name: 'Iron Platelegs', levelRequired: 15, xpReward: 80, interval: 5000, value: 80, icon: '/assets/items/legs_iron.png', color: 'text-slate-400', description: 'Iron leg guards.', inputs: [{ id: 'ore_iron', count: 3 }], slot: 'legs', stats: { defense: 9 }, category: 'armor' },
+    { id: 'armor_iron_shield', name: 'Iron Shield', levelRequired: 15, xpReward: 60, interval: 4500, value: 60, icon: '/assets/items/shield_iron.png', color: 'text-slate-400', description: 'Solid iron shield.', inputs: [{ id: 'ore_iron', count: 3 }], slot: 'shield', stats: { defense: 7 }, category: 'armor' },
   ]
 };
 
 // --- SHOP ITEMS ---
 export const SHOP_ITEMS: ShopItem[] = [
-  { id: 'axe_steel', name: 'Steel Axe', cost: 100, multiplier: 0.9, skill: 'woodcutting', icon: '🪓', description: '10% faster chopping.' },
-  { id: 'axe_mithril', name: 'Mithril Axe', cost: 500, multiplier: 0.75, skill: 'woodcutting', icon: '🪓', description: '25% faster chopping.' },
-  { id: 'pickaxe_steel', name: 'Steel Pickaxe', cost: 150, multiplier: 0.9, skill: 'mining', icon: '⛏️', description: '10% faster mining.' },
-  { id: 'pickaxe_mithril', name: 'Mithril Pickaxe', cost: 750, multiplier: 0.75, skill: 'mining', icon: '⛏️', description: '25% faster mining.' },
-  { id: 'test_money', name: 'Dev Money', cost: 0, multiplier: 1, skill: 'woodcutting', icon: '💰', description: 'Get 1000 coins (Test).' }
+  { id: 'axe_steel', name: 'Steel Axe', cost: 100, multiplier: 0.9, skill: 'woodcutting', icon: '/assets/items/axe_steel.png', description: '10% faster chopping.' },
+  { id: 'axe_mithril', name: 'Mithril Axe', cost: 500, multiplier: 0.75, skill: 'woodcutting', icon: '/assets/items/axe_mithril.png', description: '25% faster chopping.' },
+  { id: 'pickaxe_steel', name: 'Steel Pickaxe', cost: 150, multiplier: 0.9, skill: 'mining', icon: '/assets/items/pickaxe_steel.png', description: '10% faster mining.' },
+  { id: 'pickaxe_mithril', name: 'Mithril Pickaxe', cost: 750, multiplier: 0.75, skill: 'mining', icon: '/assets/items/pickaxe_mithril.png', description: '25% faster mining.' },
+  { id: 'test_money', name: 'Dev Money', cost: 0, multiplier: 1, skill: 'woodcutting', icon: '/assets/ui/coins.png', description: 'Get 1000 coins (Test).' }
 ];
 
 // --- ACHIEVEMENTS ---
-// LISÄTTY: Descriptionit
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'first_log', name: 'First Chop', icon: '🪵', description: 'Chop your first normal log.', condition: (state) => (state.inventory['log_normal'] || 0) >= 1 },
-  { id: 'rich_noob', name: 'Rich Noob', icon: '💰', description: 'Accumulate 1000 coins.', condition: (state) => state.coins >= 1000 },
-  { id: 'novice_woodcutter', name: 'Novice Woodcutter', icon: '🌲', description: 'Reach Woodcutting Level 10.', condition: (state) => state.skills.woodcutting.level >= 10 },
-  { id: 'combat_initiate', name: 'First Blood', icon: '⚔️', description: 'Complete the first combat map.', condition: (state) => state.combatStats.maxMapCompleted >= 1 }
+  { id: 'first_log', name: 'First Chop', icon: '/assets/resources/log_normal.png', description: 'Chop your first normal log.', condition: (state) => (state.inventory['log_normal'] || 0) >= 1 },
+  { id: 'rich_noob', name: 'Rich Noob', icon: '/assets/ui/coins.png', description: 'Accumulate 1000 coins.', condition: (state) => state.coins >= 1000 },
+  { id: 'novice_woodcutter', name: 'Novice Woodcutter', icon: '/assets/skills/woodcutting.png', description: 'Reach Woodcutting Level 10.', condition: (state) => state.skills.woodcutting.level >= 10 },
+  { id: 'combat_initiate', name: 'First Blood', icon: '/assets/skills/attack.png', description: 'Complete the first combat map.', condition: (state) => state.combatStats.maxMapCompleted >= 1 }
 ];
 
 // --- HELPER ---
 export const getItemDetails = (id: string) => {
-  if (id === 'coins') return { name: 'Coins', value: 1, icon: '🟡' };
-  if (id === 'frozen_key') return { name: 'Frozen Key', value: 100, icon: '🗝️', description: 'Opens the Boss door.' };
+  if (id === 'coins') return { name: 'Coins', value: 1, icon: '/assets/ui/coins.png' };
+  if (id === 'frozen_key') return { name: 'Frozen Key', value: 100, icon: '/assets/items/key_frozen.png', description: 'Opens the Boss door.' };
   
   for (const skill of Object.keys(GAME_DATA)) {
     // @ts-expect-error: Iteroidaan dynaamisesti

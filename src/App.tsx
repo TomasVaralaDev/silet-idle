@@ -51,7 +51,7 @@ const DEFAULT_STATE: GameState = {
     maxMapCompleted: 0,
     enemyCurrentHp: 0,
     respawnTimer: 0,
-    foodTimer: 0 // UUSI
+    foodTimer: 0
   }
 };
 
@@ -101,6 +101,7 @@ export default function App() {
           const cloudData = docSnap.data() as Partial<GameState>;
           const safeEquipment = { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) };
           
+          // Siivotaan vanhat kentät, jotka on korvattu uudella järjestelmällä
           if ('ammo' in safeEquipment) delete (safeEquipment as { ammo?: unknown }).ammo;
           if ('food' in safeEquipment) delete safeEquipment.food;
 
@@ -169,11 +170,20 @@ export default function App() {
           let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer } = prev.combatStats;
           let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
           
-          // Vähennetään timereita
+          // 1. Vähennetään ajastimia
           if (respawnTimer > 0) {
             respawnTimer -= 1;
+            // Kun respawn loppuu, vihollinen ilmestyy
             if (respawnTimer === 0) enemyCurrentHp = map.enemyHp;
-            return { ...prev, combatStats: { ...prev.combatStats, respawnTimer, enemyCurrentHp, foodTimer: Math.max(0, foodTimer - 1) } };
+            return { 
+              ...prev, 
+              combatStats: { 
+                ...prev.combatStats, 
+                respawnTimer, 
+                enemyCurrentHp, 
+                foodTimer: Math.max(0, foodTimer - 1) 
+              } 
+            };
           }
 
           if (foodTimer > 0) foodTimer -= 1;
@@ -182,7 +192,7 @@ export default function App() {
           const newSkills = { ...prev.skills };
           let notify = null;
 
-          // 1. PLAYER ATTACK
+          // 2. PLAYER ATTACK
           const weaponId = prev.equipment.weapon;
           const weaponItem = weaponId ? getItemDetails(weaponId) : null;
           const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
@@ -192,11 +202,12 @@ export default function App() {
           const playerDmg = Math.floor(1 + weaponPower + (skillLevel * 0.5));
           enemyCurrentHp -= playerDmg;
 
-          // 2. ENEMY DEATH
+          // 3. ENEMY DEATH
           if (enemyCurrentHp <= 0) {
             enemyCurrentHp = 0;
-            respawnTimer = 3;
+            respawnTimer = 3; // 3 sekunnin respawn
 
+            // XP Distribution
             const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward);
             newSkills[combatStyle] = styleXpGain;
 
@@ -212,20 +223,21 @@ export default function App() {
             const defXpGain = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, defXpReward);
             newSkills.defense = defXpGain;
 
+            // Loot
             map.drops.forEach(drop => {
               if (Math.random() <= drop.chance) {
                 const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
                 newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
-                if (drop.itemId === 'frozen_key') notify = { message: "Found Frozen Key!", icon: "🗝️" };
+                if (drop.itemId === 'frozen_key') notify = { message: "Found Frozen Key!", icon: "/assets/items/key_frozen.png" };
               }
             });
 
             if (map.id > maxMapCompleted) {
               maxMapCompleted = map.id;
-              notify = { message: `Map ${map.id} Cleared!`, icon: "⚔️" };
+              notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
             }
           } else {
-            // 3. ENEMY ATTACK
+            // 4. ENEMY ATTACK (Vain jos vihollinen on elossa)
             const defenseLvl = prev.skills.defense.level;
             const armorBonus = Object.values(prev.equipment).reduce((sum, itemId) => {
               if (!itemId) return sum;
@@ -243,6 +255,7 @@ export default function App() {
             const maxHp = getMaxHp(prev.skills.hitpoints.level);
             const eatThresholdHp = maxHp * (prev.combatSettings.autoEatThreshold / 100);
 
+            // Syö jos HP on rajan alla JA ruokaa on JA cooldown on 0 JA HP ei ole täysi
             if (hp <= eatThresholdHp && equippedFood && equippedFood.count > 0 && foodTimer === 0 && hp < maxHp) {
               const foodItem = getItemDetails(equippedFood.itemId);
               if (foodItem && foodItem.healing) {
@@ -250,12 +263,12 @@ export default function App() {
                 if (equippedFood.count <= 0) equippedFood = null;
                 
                 hp = Math.min(maxHp, hp + foodItem.healing);
-                foodTimer = 10; // Aseta cooldown 10 sekuntia
+                foodTimer = 10; // 10 sekunnin jäähy
               }
             }
           }
 
-          // 4. PLAYER DEATH
+          // 5. PLAYER DEATH
           if (hp <= 0) {
             hp = 0;
             return {
@@ -531,7 +544,7 @@ export default function App() {
 
         {notification && (
           <div className="fixed bottom-6 right-6 bg-slate-800 border-l-4 border-yellow-400 p-4 rounded shadow-2xl flex items-center gap-4 animate-bounce z-50">
-            <span className="text-4xl">{notification.icon}</span>
+            <img src={notification.icon} className="w-10 h-10 pixelated" alt="Notify" />
             <div>
               <p className="font-bold text-yellow-400 text-sm uppercase">Unlocked!</p>
               <p className="font-bold">{notification.message}</p>

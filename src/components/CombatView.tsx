@@ -6,8 +6,8 @@ import QuantityModal from './QuantityModal';
 interface CombatViewProps {
   combatState: CombatState;
   inventory: Record<string, number>;
-  equippedFood: GameState['equippedFood']; // UUSI prop
-  onEquipFood: (itemId: string, amount: number) => void; // UUSI prop
+  equippedFood: GameState['equippedFood'];
+  onEquipFood: (itemId: string, amount: number) => void;
   onStartCombat: (mapId: number) => void;
   onStopCombat: () => void;
 }
@@ -23,7 +23,6 @@ export default function CombatView({
   const [showFoodModal, setShowFoodModal] = useState(false);
   const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
 
-  // Etsi kaikki ruuat inventorysta valikkoa varten
   const availableFoods = Object.keys(inventory).filter(id => {
     const item = getItemDetails(id);
     return item && item.healing;
@@ -34,7 +33,6 @@ export default function CombatView({
   return (
     <div className="p-6 relative">
       
-      {/* MODAL: SELECT FOOD AMOUNT */}
       {selectedFoodId && (
         <QuantityModal 
           itemId={selectedFoodId}
@@ -49,7 +47,6 @@ export default function CombatView({
         />
       )}
 
-      {/* MODAL: CHOOSE FOOD TYPE */}
       {showFoodModal && !selectedFoodId && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800 border border-slate-600 p-6 rounded-xl w-full max-w-md shadow-2xl">
@@ -66,7 +63,7 @@ export default function CombatView({
                     onClick={() => setSelectedFoodId(foodId)}
                     className="bg-slate-700 hover:bg-slate-600 p-3 rounded flex flex-col items-center gap-1 border border-slate-600"
                   >
-                    <span className="text-2xl">{item?.icon}</span>
+                    <img src={item?.icon} className="w-8 h-8 pixelated" alt={item?.name} />
                     <span className="text-[10px] text-slate-300 font-bold text-center leading-tight">{item?.name}</span>
                     <span className="text-[9px] text-emerald-400">+{item?.healing} HP</span>
                     <span className="text-[9px] text-slate-500">x{inventory[foodId]}</span>
@@ -80,15 +77,17 @@ export default function CombatView({
       )}
 
       <h2 className="text-3xl font-bold mb-6 text-red-500 flex items-center gap-3">
-        <span>⚔️</span> Combat Zone - World 1
+        <img src="/assets/skills/combat.png" className="w-8 h-8 pixelated" alt="Combat" />
+        Combat Zone - World 1
       </h2>
 
       {/* PLAYER STATS & FOOD */}
       <div className="mb-8 flex gap-4">
-        {/* HP BAR */}
         <div className="flex-1 bg-slate-900 p-6 rounded-xl border border-slate-800 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-white">Hero</h3>
+            <h3 className="text-xl font-bold text-white flex gap-2 items-center">
+              <img src="/assets/ui/avatar.png" className="w-6 h-6 rounded pixelated" alt="Hero" /> Hero
+            </h3>
             <p className="text-slate-400 text-sm">HP: {Math.round(hp)} / {maxHp}</p>
           </div>
           <div className="w-1/2 h-6 bg-slate-950 rounded-full border border-slate-700 overflow-hidden relative">
@@ -102,7 +101,6 @@ export default function CombatView({
           </div>
         </div>
 
-        {/* FOOD SLOT IN COMBAT */}
         <button 
           onClick={() => setShowFoodModal(true)}
           className="w-24 bg-slate-900 p-2 rounded-xl border border-slate-800 flex flex-col items-center justify-center relative hover:border-slate-600 transition-colors group"
@@ -110,11 +108,10 @@ export default function CombatView({
           <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">Eat</span>
           {activeFoodItem ? (
             <>
-              <span className="text-3xl drop-shadow-md">{activeFoodItem.icon}</span>
+              <img src={activeFoodItem.icon} className="w-8 h-8 pixelated drop-shadow-md" alt="Food" />
               <span className="absolute bottom-1 right-1 bg-slate-950 text-white text-[10px] font-bold px-1.5 rounded border border-slate-700">
                 {equippedFood?.count}
               </span>
-              {/* COOLDOWN OVERLAY */}
               {foodTimer > 0 && (
                 <div className="absolute inset-0 bg-slate-900/80 rounded-xl flex items-center justify-center backdrop-blur-[1px]">
                   <span className="text-white font-bold font-mono text-lg">{foodTimer}s</span>
@@ -122,15 +119,13 @@ export default function CombatView({
               )}
             </>
           ) : (
-            <span className="text-3xl opacity-20 grayscale">🍎</span>
+            <img src="/assets/ui/slot_food.png" className="w-8 h-8 opacity-20 grayscale pixelated" alt="Empty" />
           )}
         </button>
       </div>
 
-      {/* ACTIVE BATTLE */}
       {activeMap && (
         <div className="mb-8 bg-slate-800 p-6 rounded-xl border border-red-900/50 shadow-lg relative overflow-hidden">
-          
           {respawnTimer > 0 && (
             <div className="absolute inset-0 bg-slate-900/80 z-10 flex flex-col items-center justify-center backdrop-blur-sm">
               <span className="text-4xl animate-bounce mb-2">💀</span>
@@ -156,7 +151,6 @@ export default function CombatView({
         </div>
       )}
 
-      {/* MAP SELECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {COMBAT_DATA.map(map => {
           const isUnlocked = map.id === 1 || maxMapCompleted >= (map.id - 1);

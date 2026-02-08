@@ -44,7 +44,7 @@ export default function Inventory({
     }
   });
 
-  const renderSlot = (slot: string, icon: string) => {
+  const renderSlot = (slot: string, placeholderIcon: string) => {
     const itemId = equipment[slot as keyof typeof equipment];
     const item = itemId ? getItemDetails(itemId) : null;
 
@@ -53,8 +53,8 @@ export default function Inventory({
         <span className="absolute top-1 left-2 text-[10px] uppercase font-bold text-slate-600 tracking-wider pointer-events-none z-10">{slot}</span>
         {item ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
-             <span className="text-3xl mb-1 drop-shadow-md">{item.icon}</span>
-             <span className="text-[9px] font-bold text-slate-300 text-center leading-tight line-clamp-2 px-1">{item.name}</span>
+             <img src={item.icon} alt={item.name} className="w-8 h-8 pixelated drop-shadow-md" />
+             <span className="text-[9px] font-bold text-slate-300 text-center leading-tight line-clamp-2 px-1 mt-1">{item.name}</span>
              <button 
                onClick={() => onUnequip(slot)}
                className="absolute top-1 right-1 text-red-500 hover:text-red-300 hover:bg-red-900/30 rounded px-1 transition-colors text-xs font-bold leading-none w-5 h-5 flex items-center justify-center z-20"
@@ -63,7 +63,7 @@ export default function Inventory({
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl opacity-10 grayscale">{icon}</span>
+            <img src={placeholderIcon} alt="Empty Slot" className="w-8 h-8 opacity-20 pixelated grayscale" />
           </div>
         )}
       </div>
@@ -77,40 +77,30 @@ export default function Inventory({
       <div className="bg-slate-900 border border-slate-700 rounded-lg p-1 relative aspect-square shadow-inner group overflow-visible">
         <span className="absolute top-1 left-2 text-[10px] uppercase font-bold text-slate-600 tracking-wider pointer-events-none z-10">Food</span>
         
-        {/* --- KORJATTU KONTROLLIT (SISÄPUOLELLA) --- */}
         <div className="absolute top-1 right-1 flex flex-col gap-1 items-end z-30">
           {item && (
             <button 
               onClick={(e) => { e.stopPropagation(); onUnequipFood(); }}
               className="bg-slate-950/80 text-red-500 hover:text-red-300 hover:bg-red-900/50 border border-slate-700 rounded-md text-[10px] font-bold w-5 h-5 flex items-center justify-center shadow-sm transition-all"
               title="Unequip Food"
-            >
-              ✕
-            </button>
+            >✕</button>
           )}
           <button 
             onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); }}
             className={`bg-slate-950/80 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700 rounded-md text-[10px] w-5 h-5 flex items-center justify-center shadow-sm transition-all ${showSettings ? 'text-emerald-400 border-emerald-500' : ''}`}
             title="Auto-Eat Settings"
-          >
-            ⚙️
-          </button>
+          >⚙️</button>
         </div>
 
-        {/* --- SETTINGS POPUP --- */}
         {showSettings && (
           <div className="absolute top-0 left-full ml-2 w-56 bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-2xl z-50">
             <div className="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">Auto-Eat Settings</h4>
               <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-red-400 font-bold px-1">✕</button>
             </div>
-            
             <div className="flex items-center gap-3 mb-2">
               <input 
-                type="range" 
-                min="0" 
-                max="95" 
-                step="5"
+                type="range" min="0" max="95" step="5"
                 value={combatSettings.autoEatThreshold}
                 onChange={(e) => onUpdateAutoEat(parseInt(e.target.value))}
                 className="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -123,11 +113,10 @@ export default function Inventory({
           </div>
         )}
 
-        {/* --- SISÄLTÖ (Keskitetty eikä venytä laatikkoa) --- */}
         {item ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-2 pt-4">
              <div className="relative">
-                <span className="text-3xl drop-shadow-md">{item.icon}</span>
+                <img src={item.icon} alt={item.name} className="w-8 h-8 pixelated drop-shadow-md" />
                 <span className="absolute -bottom-1 -right-2 bg-slate-950 text-white text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700 shadow-sm font-mono">
                   {equippedFood?.count}
                 </span>
@@ -139,7 +128,7 @@ export default function Inventory({
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl opacity-10 grayscale">🍎</span>
+            <img src="/assets/ui/slot_food.png" alt="Empty Food" className="w-8 h-8 opacity-20 pixelated grayscale" />
           </div>
         )}
       </div>
@@ -165,19 +154,18 @@ export default function Inventory({
       <div className="w-full md:w-1/3 flex flex-col gap-4">
         <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 flex flex-col">
           <h2 className="text-xl font-bold mb-6 text-slate-200 flex items-center gap-2">
-            <span>🛡️</span> Equipment
+            {/* Equipment-otsikon ikoni vaihdettu */}
+            <img src="/assets/ui/icon_equipment.png" alt="Equipment" className="w-6 h-6 pixelated" />
+            <span>Equipment</span>
           </h2>
           
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="col-start-2">{renderSlot('head', '🪖')}</div>
-            <div className="col-start-1 row-start-2">{renderSlot('weapon', '⚔️')}</div>
-            <div className="col-start-2 row-start-2">{renderSlot('body', '👕')}</div>
-            <div className="col-start-3 row-start-2">{renderSlot('shield', '🛡️')}</div>
-            <div className="col-start-2 row-start-3">{renderSlot('legs', '👖')}</div>
-            
-            <div className="col-start-3 row-start-3 relative z-10">
-              {renderFoodSlot()}
-            </div>
+            <div className="col-start-2">{renderSlot('head', '/assets/ui/slot_head.png')}</div>
+            <div className="col-start-1 row-start-2">{renderSlot('weapon', '/assets/ui/slot_weapon.png')}</div>
+            <div className="col-start-2 row-start-2">{renderSlot('body', '/assets/ui/slot_body.png')}</div>
+            <div className="col-start-3 row-start-2">{renderSlot('shield', '/assets/ui/slot_shield.png')}</div>
+            <div className="col-start-2 row-start-3">{renderSlot('legs', '/assets/ui/slot_legs.png')}</div>
+            <div className="col-start-3 row-start-3 relative z-10">{renderFoodSlot()}</div>
           </div>
         </div>
 
@@ -188,14 +176,14 @@ export default function Inventory({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-orange-500/20 p-2 rounded text-orange-400">⚔️</div>
+                <img src="/assets/skills/attack.png" className="w-4 h-4 pixelated" alt="Attack" />
                 <span className="text-slate-300 font-bold">Attack Power</span>
               </div>
               <span className="text-xl font-mono font-bold text-orange-400">+{playerStats.attack}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-500/20 p-2 rounded text-blue-400">🛡️</div>
+                <img src="/assets/skills/defense.png" className="w-4 h-4 pixelated" alt="Defense" />
                 <span className="text-slate-300 font-bold">Armor / Def</span>
               </div>
               <span className="text-xl font-mono font-bold text-blue-400">+{playerStats.defense}</span>
@@ -206,12 +194,15 @@ export default function Inventory({
 
       <div className="flex-1 bg-slate-900/50 p-6 rounded-xl border border-slate-800 overflow-y-auto">
         <h2 className="text-xl font-bold mb-6 text-slate-200 flex items-center gap-2">
-          <span>🎒</span> Backpack
+          {/* Backpack-otsikon ikoni vaihdettu */}
+          <img src="/assets/ui/icon_inventory.png" alt="Backpack" className="w-6 h-6 pixelated" />
+          <span>Backpack</span>
         </h2>
 
         {inventoryItems.length === 0 ? (
           <div className="text-center text-slate-600 italic py-20 flex flex-col items-center gap-4">
-            <span className="text-4xl opacity-20">🎒</span>
+            {/* Tyhjän inventoryn ikoni vaihdettu */}
+            <img src="/assets/ui/icon_inventory.png" className="w-16 h-16 opacity-20 grayscale pixelated" alt="Empty" />
             <p>Your inventory is empty.</p>
           </div>
         ) : (
@@ -219,7 +210,7 @@ export default function Inventory({
             {inventoryItems.map((item) => (
               <div key={item.id} className="bg-slate-800 border border-slate-700 p-3 rounded-lg relative group hover:border-slate-500 transition-colors flex flex-col h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-2xl drop-shadow-sm">{item.icon}</span>
+                  <img src={item.icon} alt={item.name} className="w-8 h-8 pixelated drop-shadow-sm" />
                   <span className="text-xs font-mono font-bold bg-slate-950 px-1.5 py-0.5 rounded text-slate-400 shadow-inner">x{item.count}</span>
                 </div>
                 
@@ -254,7 +245,6 @@ export default function Inventory({
                       Equip
                     </button>
                   ) : null}
-                  
                   <button 
                     onClick={() => onSellClick(item.id)}
                     className="flex-1 bg-slate-700/50 hover:bg-yellow-900/50 hover:text-yellow-200 text-slate-400 text-[10px] font-bold py-1.5 rounded border border-slate-600 transition-colors uppercase"

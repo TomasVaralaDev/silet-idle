@@ -59,7 +59,6 @@ export const COMBAT_DATA: CombatMap[] = [
 ];
 
 // --- SKILL RESOURCES ---
-// Huom: Poistetaan 'cooking' Excludesta, jotta se sallitaan tässä objektissa
 export const GAME_DATA: Record<Exclude<SkillType, 'hitpoints' | 'melee' | 'ranged' | 'magic' | 'defense' | 'attack'>, Resource[]> = {
   woodcutting: [
     { id: 'log_normal', name: 'Normal Log', levelRequired: 1, xpReward: 10, interval: 3000, value: 1, icon: '🌲', color: 'text-emerald-400', description: 'Common wood.', requiresMapCompletion: undefined },
@@ -78,25 +77,12 @@ export const GAME_DATA: Record<Exclude<SkillType, 'hitpoints' | 'melee' | 'range
   farming: [
     { id: 'crop_potato', name: 'Raw Potato', levelRequired: 1, xpReward: 10, interval: 10000, value: 3, icon: '🥔', color: 'text-yellow-600', description: 'Basic raw food.', requiresMapCompletion: undefined }
   ],
-  
-  // UUSI: COOKING SKILL
   cooking: [
-    { 
-      id: 'food_shrimp_cooked', name: 'Cooked Shrimp', levelRequired: 1, xpReward: 15, interval: 2000, value: 5, icon: '🍤', color: 'text-orange-400', description: 'Heals 10 HP.',
-      inputs: [{ id: 'fish_shrimp', count: 1 }], slot: 'food', healing: 10
-    },
-    { 
-      id: 'food_potato_baked', name: 'Baked Potato', levelRequired: 5, xpReward: 20, interval: 3000, value: 8, icon: '🥔', color: 'text-yellow-500', description: 'Heals 15 HP.',
-      inputs: [{ id: 'crop_potato', count: 1 }], slot: 'food', healing: 15
-    },
-    { 
-      id: 'food_sardine_cooked', name: 'Cooked Sardine', levelRequired: 10, xpReward: 30, interval: 4000, value: 12, icon: '🐟', color: 'text-slate-400', description: 'Heals 25 HP.',
-      inputs: [{ id: 'fish_sardine', count: 1 }], slot: 'food', healing: 25
-    }
+    { id: 'food_shrimp_cooked', name: 'Cooked Shrimp', levelRequired: 1, xpReward: 15, interval: 2000, value: 5, icon: '🍤', color: 'text-orange-400', description: 'Heals 10 HP.', inputs: [{ id: 'fish_shrimp', count: 1 }], slot: 'food', healing: 10 },
+    { id: 'food_potato_baked', name: 'Baked Potato', levelRequired: 5, xpReward: 20, interval: 3000, value: 8, icon: '🥔', color: 'text-yellow-500', description: 'Heals 15 HP.', inputs: [{ id: 'crop_potato', count: 1 }], slot: 'food', healing: 15 },
+    { id: 'food_sardine_cooked', name: 'Cooked Sardine', levelRequired: 10, xpReward: 30, interval: 4000, value: 12, icon: '🐟', color: 'text-slate-400', description: 'Heals 25 HP.', inputs: [{ id: 'fish_sardine', count: 1 }], slot: 'food', healing: 25 }
   ],
-
   crafting: [
-    // --- WEAPONS ---
     { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '⚔️', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'weapon', stats: { attack: 8 }, category: 'weapons', combatStyle: 'melee' },
     { id: 'weapon_sword_iron', name: 'Iron Sword', levelRequired: 15, xpReward: 50, interval: 5000, value: 50, icon: '🗡️', color: 'text-slate-400', description: 'Sharp and reliable.', inputs: [{ id: 'ore_iron', count: 3 }], slot: 'weapon', stats: { attack: 18 }, category: 'weapons', combatStyle: 'melee' },
     { id: 'weapon_shortbow_normal', name: 'Shortbow', levelRequired: 1, xpReward: 20, interval: 2000, value: 10, icon: '🏹', color: 'text-amber-600', description: 'Simple wooden bow.', inputs: [{ id: 'log_normal', count: 2 }], slot: 'weapon', stats: { attack: 6 }, category: 'weapons', combatStyle: 'ranged' },
@@ -105,8 +91,6 @@ export const GAME_DATA: Record<Exclude<SkillType, 'hitpoints' | 'melee' | 'range
     { id: 'weapon_wand_basic', name: 'Basic Wand', levelRequired: 1, xpReward: 25, interval: 2500, value: 20, icon: '✨', color: 'text-blue-300', description: 'Channels weak magic.', inputs: [{ id: 'log_normal', count: 3 }], slot: 'weapon', stats: { attack: 5 }, category: 'weapons', combatStyle: 'magic' },
     { id: 'weapon_wand_oak', name: 'Oak Wand', levelRequired: 15, xpReward: 50, interval: 3500, value: 45, icon: '🔮', color: 'text-amber-600', description: 'Focused magic power.', inputs: [{ id: 'log_oak', count: 3 }], slot: 'weapon', stats: { attack: 12 }, category: 'weapons', combatStyle: 'magic' },
     { id: 'weapon_staff_willow', name: 'Willow Staff', levelRequired: 30, xpReward: 90, interval: 5000, value: 100, icon: '🔱', color: 'text-emerald-600', description: 'Powerful magical staff.', inputs: [{ id: 'log_willow', count: 4 }], slot: 'weapon', stats: { attack: 22 }, category: 'weapons', combatStyle: 'magic' },
-
-    // --- ARMOR ---
     { id: 'armor_bronze_helm', name: 'Bronze Helm', levelRequired: 1, xpReward: 20, interval: 3000, value: 10, icon: '🪖', color: 'text-orange-700', description: 'Simple bronze protection.', inputs: [{ id: 'ore_copper', count: 1 }, { id: 'ore_tin', count: 1 }], slot: 'head', stats: { defense: 2 }, category: 'armor' },
     { id: 'armor_bronze_body', name: 'Bronze Platebody', levelRequired: 1, xpReward: 40, interval: 4000, value: 25, icon: '👕', color: 'text-orange-700', description: 'Covers the chest.', inputs: [{ id: 'ore_copper', count: 3 }, { id: 'ore_tin', count: 1 }], slot: 'body', stats: { defense: 5 }, category: 'armor' },
     { id: 'armor_bronze_legs', name: 'Bronze Platelegs', levelRequired: 1, xpReward: 30, interval: 3500, value: 20, icon: '👖', color: 'text-orange-700', description: 'Protects legs.', inputs: [{ id: 'ore_copper', count: 2 }, { id: 'ore_tin', count: 1 }], slot: 'legs', stats: { defense: 4 }, category: 'armor' },
@@ -128,11 +112,12 @@ export const SHOP_ITEMS: ShopItem[] = [
 ];
 
 // --- ACHIEVEMENTS ---
+// LISÄTTY: Descriptionit
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'first_log', name: 'First Chop', icon: '🪵', condition: (state) => (state.inventory['log_normal'] || 0) >= 1 },
-  { id: 'rich_noob', name: 'Rich Noob', icon: '💰', condition: (state) => state.coins >= 1000 },
-  { id: 'novice_woodcutter', name: 'Novice Woodcutter', icon: '🌲', condition: (state) => state.skills.woodcutting.level >= 10 },
-  { id: 'combat_initiate', name: 'First Blood', icon: '⚔️', condition: (state) => state.combatStats.maxMapCompleted >= 1 }
+  { id: 'first_log', name: 'First Chop', icon: '🪵', description: 'Chop your first normal log.', condition: (state) => (state.inventory['log_normal'] || 0) >= 1 },
+  { id: 'rich_noob', name: 'Rich Noob', icon: '💰', description: 'Accumulate 1000 coins.', condition: (state) => state.coins >= 1000 },
+  { id: 'novice_woodcutter', name: 'Novice Woodcutter', icon: '🌲', description: 'Reach Woodcutting Level 10.', condition: (state) => state.skills.woodcutting.level >= 10 },
+  { id: 'combat_initiate', name: 'First Blood', icon: '⚔️', description: 'Complete the first combat map.', condition: (state) => state.combatStats.maxMapCompleted >= 1 }
 ];
 
 // --- HELPER ---

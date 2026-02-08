@@ -56,7 +56,7 @@ export interface CombatState {
   maxMapCompleted: number;
   enemyCurrentHp: number;
   respawnTimer: number;
-  foodTimer: number; // UUSI: Ruuan cooldown ajastin
+  foodTimer: number;
 }
 
 export type ActiveAction = { skill: SkillType | 'combat'; resourceId: string };
@@ -98,5 +98,6 @@ export interface Achievement {
   id: string;
   name: string;
   icon: string;
+  description: string; // TÄMÄ PUUTTUI
   condition: (state: GameState) => boolean;
 }

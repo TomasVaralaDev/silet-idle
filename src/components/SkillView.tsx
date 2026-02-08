@@ -17,16 +17,29 @@ interface SkillViewProps {
 export default function SkillView({ skill, level, xp, activeAction, inventory, onToggleAction, speedMultiplier, nextLevelXp, maxMapCompleted }: SkillViewProps) {
   
   const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const getSkillName = (s: SkillType) => {
+    switch(s) {
+      case 'woodcutting': return 'Excavation Protocol';
+      case 'mining': return 'Salvage Operations';
+      case 'fishing': return 'Gathering Systems';
+      case 'farming': return 'Bio-Cultivation';
+      case 'crafting': return 'Matter Forging';
+      case 'cooking': return 'Energy Refining';
+      default: return 'Unknown Protocol';
+    }
+  };
 
   const getThemeColors = (s: SkillType) => {
     switch (s) {
-      case 'woodcutting': return { bg: 'bg-emerald-500' };
-      case 'mining': return { bg: 'bg-orange-500' };
-      case 'fishing': return { bg: 'bg-cyan-500' };
-      case 'farming': return { bg: 'bg-lime-500' };
-      case 'crafting': return { bg: 'bg-violet-500' };
-      case 'cooking': return { bg: 'bg-yellow-500' };
-      default: return { bg: 'bg-slate-500' };
+      case 'woodcutting': return { bg: 'bg-emerald-900', border: 'border-emerald-800', text: 'text-emerald-400' };
+      case 'mining': return { bg: 'bg-amber-900', border: 'border-amber-800', text: 'text-amber-400' };
+      case 'fishing': return { bg: 'bg-cyan-900', border: 'border-cyan-800', text: 'text-cyan-400' };
+      case 'farming': return { bg: 'bg-lime-900', border: 'border-lime-800', text: 'text-lime-400' };
+      case 'crafting': return { bg: 'bg-slate-700', border: 'border-slate-600', text: 'text-slate-300' };
+      case 'cooking': return { bg: 'bg-orange-900', border: 'border-orange-800', text: 'text-orange-400' };
+      default: return { bg: 'bg-slate-800', border: 'border-slate-700', text: 'text-slate-400' };
     }
   };
 
@@ -36,8 +49,8 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
 
   if (!isResourceSkill(skill)) {
     return (
-      <div className="p-10 text-center text-slate-500 italic">
-        This skill is leveled up through Combat, not resources.
+      <div className="p-10 text-center text-slate-500 font-mono text-sm uppercase tracking-widest">
+        // Protocol Mismatch: Combat System Required //
       </div>
     );
   }
@@ -46,165 +59,228 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
   const resources = GAME_DATA[skill];
 
   const filteredResources = resources.filter((resource: Resource) => {
+    const matchesSearch = resource.name.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+
     if (skill !== 'crafting') return true;
     if (activeTab === 'all') return true;
     return resource.category === activeTab;
   });
 
   const craftingTabs = [
-    { id: 'all', label: 'All', icon: '/assets/ui/icon_all.png' },
-    { id: 'weapons', label: 'Weapons', icon: '/assets/ui/icon_weapon.png' },
-    { id: 'armor', label: 'Armor', icon: '/assets/ui/icon_armor.png' },
+    { id: 'all', label: 'ALL SCHEMATICS' },
+    { id: 'weapons', label: 'SHAPERS' },
+    { id: 'armor', label: 'STABILIZERS' },
   ];
 
   return (
-    <div className="p-6">
-      <header className="mb-6 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+    <div className="p-6 h-full flex flex-col bg-slate-950 overflow-y-auto custom-scrollbar">
+      
+      {/* HEADER */}
+      <header className="mb-8 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0">
+        <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none grayscale">
            <img src={`/assets/skills/${skill}.png`} className="w-32 h-32 pixelated" alt="Background Icon" />
         </div>
-        <div className="flex justify-between items-center mb-4 relative z-10">
-          <h2 className="text-3xl font-bold capitalize flex items-center gap-3 text-white">
-            <img src={`/assets/skills/${skill}.png`} className="w-10 h-10 pixelated" alt={skill} />
-            {skill.charAt(0).toUpperCase() + skill.slice(1)}
-          </h2>
+        
+        <div className="flex justify-between items-end mb-5 relative z-10">
+          <div className="flex items-center gap-5">
+            <div className={`w-16 h-16 flex items-center justify-center bg-slate-950 rounded-xl border-2 ${theme.border} shadow-lg`}>
+               <img src={`/assets/skills/${skill}.png`} className="w-10 h-10 pixelated drop-shadow-md" alt={skill} />
+            </div>
+            <div>
+              <h2 className={`text-2xl font-bold uppercase tracking-widest ${theme.text} mb-1`}>
+                {getSkillName(skill)}
+              </h2>
+              <p className="text-xs text-slate-500 font-mono tracking-widest uppercase font-bold">System Stability: Lv.{level}</p>
+            </div>
+          </div>
+          
           <div className="text-right">
-            <div className="text-sm text-slate-400 font-bold uppercase tracking-wider">Level {level}</div>
-            <div className="text-xs text-slate-500 font-mono">{xp} XP</div>
+            <div className="text-[10px] text-slate-500 font-mono font-bold mb-1">PROGRESS TO NEXT TIER</div>
+            <div className={`text-xl font-mono ${theme.text}`}>{Math.floor(xp)} / {nextLevelXp}</div>
           </div>
         </div>
-        <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800 relative z-10">
-          <div className={`h-full transition-all duration-300 ${theme.bg}`} style={{ width: `${(xp / nextLevelXp) * 100}%` }}></div>
+
+        <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
+          <div className={`h-full transition-all duration-300 ${theme.bg} opacity-90`} style={{ width: `${(xp / nextLevelXp) * 100}%` }}></div>
         </div>
+
         {speedMultiplier < 1 && (
-          <div className="mt-4 inline-flex items-center gap-2 bg-slate-950/50 px-3 py-1 rounded-full border border-emerald-900 text-emerald-400 text-xs font-bold uppercase tracking-wide">
-            <span>⚡ Speed Bonus: +{Math.round((1 - speedMultiplier) * 100)}%</span>
+          <div className="mt-4 flex items-center gap-2 text-xs text-emerald-400 font-mono uppercase bg-emerald-950/30 w-fit px-3 py-1 rounded-lg border border-emerald-900/50">
+            <span className="animate-pulse">●</span> 
+            Overclocking Active: +{Math.round((1 - speedMultiplier) * 100)}% Speed
           </div>
         )}
       </header>
 
-      {skill === 'crafting' && (
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {craftingTabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all
-                ${activeTab === tab.id 
-                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/50' 
-                  : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-800'
-                }`}
-            >
-              {/* Jos sinulla ei ole ikoneita näille, voit käyttää tekstiä tai geneeristä ikonia */}
-              <span>{tab.label}</span> 
-            </button>
-          ))}
-        </div>
-      )}
+      {/* CONTROLS */}
+      <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4 border-b border-slate-800 pb-2">
+        {skill === 'crafting' ? (
+          <div className="flex gap-2">
+            {craftingTabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg
+                  ${activeTab === tab.id 
+                    ? 'bg-slate-800 text-slate-200 border-t-2 border-x border-slate-700' 
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                  }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="text-xs text-slate-500 font-mono uppercase tracking-widest py-2">
+            Available Operations
+          </div>
+        )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="relative w-full sm:w-64">
+          <input 
+            type="text" 
+            placeholder="Search protocols..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 text-xs text-slate-200 placeholder-slate-600 rounded-lg px-3 py-2 outline-none focus:border-cyan-500/50 focus:bg-slate-800 transition-all font-mono"
+          />
+          <span className="absolute right-3 top-2 text-slate-600 text-xs">🔍</span>
+        </div>
+      </div>
+
+      {/* GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5 pb-10">
         {filteredResources.map((resource: Resource) => {
           const isLevelLocked = level < resource.levelRequired;
-          const isMapLocked = resource.requiresMapCompletion 
-            ? maxMapCompleted < resource.requiresMapCompletion 
-            : false;
+          const isMapLocked = resource.requiresMapCompletion ? maxMapCompleted < resource.requiresMapCompletion : false;
           const isActive = activeAction?.resourceId === resource.id;
           const currentInterval = resource.interval * speedMultiplier;
           const canAfford = resource.inputs ? resource.inputs.every((req: Ingredient) => (inventory[req.id] || 0) >= req.count) : true;
           const isLocked = isLevelLocked || isMapLocked;
+          
           const lockedText = isMapLocked 
-             ? `Beat Map 1-${resource.requiresMapCompletion}` 
-             : `Lvl ${resource.levelRequired}`;
+             ? `REQ: ZONE ${resource.requiresMapCompletion}` 
+             : `REQ: LVL ${resource.levelRequired}`;
 
           return (
-            <div key={resource.id} className={`relative p-5 rounded-xl border transition-all duration-200 ${isLocked ? 'bg-slate-900/50 border-slate-800 opacity-50 grayscale' : isActive ? `bg-slate-800 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]` : 'bg-slate-900 border-slate-800 hover:border-slate-600 hover:bg-slate-800'}`}>
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-3 bg-slate-950 rounded-lg border border-slate-800`}>
-                  <img src={resource.icon} alt={resource.name} className="w-10 h-10 pixelated" />
-                </div>
-                {!isLocked && <span className="text-xs font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">{(currentInterval / 1000).toFixed(1)}s</span>}
-              </div>
-              
-              <h3 className="text-lg font-bold mb-1 text-slate-200">{resource.name}</h3>
-
-              {resource.stats && (
-                <div className="flex flex-wrap gap-2 mb-3 mt-2">
-                  {resource.stats.attack !== undefined && resource.stats.attack > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-orange-900 bg-orange-900/20 text-orange-400">
-                      ⚔️ Atk +{resource.stats.attack}
-                    </span>
-                  )}
-                  {resource.stats.strength !== undefined && resource.stats.strength > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-red-900 bg-red-900/20 text-red-400">
-                      💪 Str +{resource.stats.strength}
-                    </span>
-                  )}
-                  {resource.stats.defense !== undefined && resource.stats.defense > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-900 bg-blue-900/20 text-blue-400">
-                      🛡️ Def +{resource.stats.defense}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {resource.healing && (
-                <div className="flex flex-wrap gap-2 mb-3 mt-2">
-                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-green-900 bg-green-900/20 text-green-400">
-                      ❤️ Heals +{resource.healing}
-                   </span>
-                </div>
-              )}
-              
-              <p className="text-xs text-slate-500 mb-4 h-10 overflow-hidden">{resource.description}</p>
-              
-              {resource.inputs && (
-                <div className="mb-4 bg-slate-950/50 p-2 rounded border border-slate-800/50">
-                  <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Materials:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {resource.inputs.map((input: Ingredient) => {
-                       const inputItem = getItemDetails(input.id);
-                       const hasEnough = (inventory[input.id] || 0) >= input.count;
-                       return (
-                         <div key={input.id} className={`text-xs px-2 py-0.5 rounded border flex items-center gap-1 ${hasEnough ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-red-900/20 border-red-900/50 text-red-400'}`}>
-                           {inputItem && <img src={inputItem.icon} className="w-3 h-3 pixelated" alt="mat" />}
-                           <span>{inventory[input.id] || 0}/{input.count}</span>
-                         </div>
-                       );
-                    })}
+            <div key={resource.id} className={`relative p-4 rounded-xl border-2 transition-all duration-200 group flex flex-col min-h-[220px]
+              ${isLocked 
+                ? 'bg-slate-950 border-slate-800 opacity-50 grayscale cursor-not-allowed' 
+                : isActive 
+                  ? `bg-slate-900 border-cyan-500/50 shadow-[0_0_20px_rgba(6,182,212,0.15)]` 
+                  : 'bg-slate-900 border-slate-800 hover:border-slate-600 hover:bg-slate-800/80'
+              }`}
+            >
+              <div className="flex gap-5 mb-4 flex-1">
+                
+                {/* --- 1. LEFT: BIG VISUAL ANCHOR --- */}
+                <div className="flex-shrink-0">
+                  <div className="w-24 h-24 bg-slate-950 rounded-xl border border-slate-700 shadow-inner flex items-center justify-center relative overflow-hidden">
+                    <img src={resource.icon} alt={resource.name} className="w-20 h-20 pixelated drop-shadow-xl object-contain transition-transform duration-500 group-hover:scale-110" />
                   </div>
                 </div>
-              )}
 
-              <button 
-                disabled={isLocked || (resource.inputs && !canAfford && !isActive)} 
-                onClick={() => onToggleAction(skill, resource.id)} 
-                className={`w-full py-2 px-4 rounded-lg font-bold text-sm uppercase tracking-wide transition-all 
-                  ${isActive 
-                    ? 'bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/50' 
-                    : isLocked 
-                      ? 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700' 
-                      : !canAfford && resource.inputs
-                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg'
-                  }`}
-              >
-                {isActive ? 'Stop' : isLocked ? lockedText : (resource.inputs && !canAfford) ? 'Need Mats' : 'Start'}
-              </button>
+                {/* --- 2. RIGHT: CONTENT BLOCK --- */}
+                <div className="flex-1 flex flex-col justify-between">
+                  
+                  {/* Title & Description */}
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide leading-tight mb-1">{resource.name}</h3>
+                    <p className="text-xs text-slate-500 leading-snug italic mb-3">"{resource.description}"</p>
+                    
+                    {/* Requirements (BIGGER & TOOLTIP) */}
+                    {resource.inputs && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {resource.inputs.map((input: Ingredient) => {
+                           const inputItem = getItemDetails(input.id);
+                           const hasEnough = (inventory[input.id] || 0) >= input.count;
+                           return (
+                             <div 
+                               key={input.id} 
+                               className={`relative group/item flex items-center gap-2 px-3 py-1.5 rounded-md border-2 cursor-help transition-colors
+                                 ${hasEnough 
+                                   ? 'bg-slate-950/50 border-slate-700 text-slate-300 hover:border-slate-500' 
+                                   : 'bg-red-950/20 border-red-900/50 text-red-400 hover:border-red-800'
+                                 }`}
+                             >
+                               {/* HOVER TOOLTIP */}
+                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/item:block bg-slate-900 text-slate-200 text-xs px-2 py-1 rounded border border-slate-600 shadow-xl z-50 whitespace-nowrap">
+                                 {inputItem?.name}
+                                 {/* Arrow */}
+                                 <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-600"></div>
+                               </div>
+
+                               {inputItem && <img src={inputItem.icon} className="w-5 h-5 pixelated drop-shadow-md" alt="mat" />}
+                               <span className="text-xs font-mono font-bold">
+                                 {inventory[input.id] || 0}/{input.count}
+                               </span>
+                             </div>
+                           );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* --- 3. HORIZONTAL DATA MODULES (Time, XP, Out) --- */}
+                  <div className="grid grid-cols-3 gap-2 mt-auto">
+                    
+                    {/* Module 1: Time */}
+                    <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
+                      <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Time</span>
+                      <span className="text-xs font-mono font-bold text-slate-300">
+                        {isLocked ? '--' : `${(currentInterval / 1000).toFixed(1)}s`}
+                      </span>
+                    </div>
+
+                    {/* Module 2: XP */}
+                    <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
+                      <span className="text-[8px] font-bold text-cyan-700 uppercase tracking-wider mb-0.5">Exp</span>
+                      <span className="text-xs font-mono font-bold text-cyan-400">+{resource.xpReward}</span>
+                    </div>
+
+                    {/* Module 3: Out */}
+                    <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
+                      <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Out</span>
+                      <div className="flex items-center gap-1">
+                        <img src={resource.icon} className="w-4 h-4 pixelated" alt="Out" />
+                        <span className="text-xs font-bold text-slate-300">1x</span>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="mt-auto">
+                <button 
+                  disabled={isLocked || (resource.inputs && !canAfford && !isActive)} 
+                  onClick={() => onToggleAction(skill, resource.id)} 
+                  className={`w-full py-3 text-xs font-bold uppercase tracking-[0.15em] transition-all rounded-lg border-2
+                    ${isActive 
+                      ? 'bg-red-950/30 text-red-400 border-red-500/50 hover:bg-red-900/50' 
+                      : isLocked 
+                        ? 'bg-transparent text-slate-600 border-slate-800' 
+                        : !canAfford && resource.inputs
+                          ? 'bg-transparent text-slate-500 border-slate-700'
+                          : 'bg-slate-900 text-cyan-400 border-cyan-800 hover:bg-cyan-950 hover:border-cyan-500 hover:text-cyan-100 shadow-lg'
+                    }`}
+                >
+                  {isActive ? 'TERMINATE PROCESS' : isLocked ? lockedText : (resource.inputs && !canAfford) ? 'INSUFFICIENT MATTER' : 'INITIATE PROCESS'}
+                </button>
+              </div>
               
+              {/* Active Animation Bar */}
               {isActive && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-950 rounded-b-xl overflow-hidden">
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-900 rounded-b-xl overflow-hidden">
                    <div className={`h-full ${theme.bg} origin-left`} style={{ animation: `progress ${currentInterval}ms linear infinite`, width: '100%' }}></div>
                 </div>
               )}
             </div>
           );
         })}
-        
-        {filteredResources.length === 0 && (
-          <div className="col-span-full py-10 text-center text-slate-500 italic">
-            No items found in this category.
-          </div>
-        )}
       </div>
     </div>
   );

@@ -101,7 +101,6 @@ export default function App() {
           const cloudData = docSnap.data() as Partial<GameState>;
           const safeEquipment = { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) };
           
-          // Siivotaan vanhat kentät, jotka on korvattu uudella järjestelmällä
           if ('ammo' in safeEquipment) delete (safeEquipment as { ammo?: unknown }).ammo;
           if ('food' in safeEquipment) delete safeEquipment.food;
 
@@ -132,18 +131,28 @@ export default function App() {
 
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
+
+  // --- FORCE SAVE FUNCTION (KORJATTU: useCallback) ---
+  const handleForceSave = useCallback(async () => {
+    if (!user || !isDataLoaded) return;
+    try {
+      setSaveStatus('saving');
+      await setDoc(doc(db, 'users', user.uid), JSON.parse(JSON.stringify(stateRef.current)));
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('error');
+    }
+  }, [user, isDataLoaded]); // Riippuvuudet lisätty tänne
+
+  // Auto-save interval
   useEffect(() => {
     if (!user || !isDataLoaded) return;
-    const interval = setInterval(async () => {
-       try {
-         setSaveStatus('saving');
-         await setDoc(doc(db, 'users', user.uid), JSON.parse(JSON.stringify(stateRef.current)));
-         setSaveStatus('saved');
-         setTimeout(() => setSaveStatus('idle'), 2000);
-       } catch { setSaveStatus('error'); }
-    }, 300000);
+    const interval = setInterval(() => {
+       handleForceSave();
+    }, 300000); // 5 minuutin välein
     return () => clearInterval(interval);
-  }, [user, isDataLoaded]);
+  }, [user, isDataLoaded, handleForceSave]); // handleForceSave lisätty riippuvuuksiin
 
   const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
     let newXp = currentXp + xpReward;
@@ -170,10 +179,8 @@ export default function App() {
           let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer } = prev.combatStats;
           let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
           
-          // 1. Vähennetään ajastimia
           if (respawnTimer > 0) {
             respawnTimer -= 1;
-            // Kun respawn loppuu, vihollinen ilmestyy
             if (respawnTimer === 0) enemyCurrentHp = map.enemyHp;
             return { 
               ...prev, 
@@ -192,7 +199,7 @@ export default function App() {
           const newSkills = { ...prev.skills };
           let notify = null;
 
-          // 2. PLAYER ATTACK
+          // 1. PLAYER ATTACK
           const weaponId = prev.equipment.weapon;
           const weaponItem = weaponId ? getItemDetails(weaponId) : null;
           const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
@@ -202,12 +209,11 @@ export default function App() {
           const playerDmg = Math.floor(1 + weaponPower + (skillLevel * 0.5));
           enemyCurrentHp -= playerDmg;
 
-          // 3. ENEMY DEATH
+          // 2. ENEMY DEATH
           if (enemyCurrentHp <= 0) {
             enemyCurrentHp = 0;
-            respawnTimer = 3; // 3 sekunnin respawn
+            respawnTimer = 3;
 
-            // XP Distribution
             const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward);
             newSkills[combatStyle] = styleXpGain;
 
@@ -223,7 +229,6 @@ export default function App() {
             const defXpGain = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, defXpReward);
             newSkills.defense = defXpGain;
 
-            // Loot
             map.drops.forEach(drop => {
               if (Math.random() <= drop.chance) {
                 const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
@@ -237,7 +242,7 @@ export default function App() {
               notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
             }
           } else {
-            // 4. ENEMY ATTACK (Vain jos vihollinen on elossa)
+            // 3. ENEMY ATTACK
             const defenseLvl = prev.skills.defense.level;
             const armorBonus = Object.values(prev.equipment).reduce((sum, itemId) => {
               if (!itemId) return sum;
@@ -251,11 +256,9 @@ export default function App() {
             
             hp -= incomingDmg;
 
-            // --- AUTO-EAT LOGIC (10s COOLDOWN) ---
             const maxHp = getMaxHp(prev.skills.hitpoints.level);
             const eatThresholdHp = maxHp * (prev.combatSettings.autoEatThreshold / 100);
 
-            // Syö jos HP on rajan alla JA ruokaa on JA cooldown on 0 JA HP ei ole täysi
             if (hp <= eatThresholdHp && equippedFood && equippedFood.count > 0 && foodTimer === 0 && hp < maxHp) {
               const foodItem = getItemDetails(equippedFood.itemId);
               if (foodItem && foodItem.healing) {
@@ -263,12 +266,12 @@ export default function App() {
                 if (equippedFood.count <= 0) equippedFood = null;
                 
                 hp = Math.min(maxHp, hp + foodItem.healing);
-                foodTimer = 10; // 10 sekunnin jäähy
+                foodTimer = 10;
               }
             }
           }
 
-          // 5. PLAYER DEATH
+          // 4. PLAYER DEATH
           if (hp <= 0) {
             hp = 0;
             return {
@@ -527,6 +530,7 @@ export default function App() {
         onReset={hardReset}
         onLogout={() => signOut(auth)} 
         onStopAction={() => setState(prev => ({ ...prev, activeAction: null }))}
+        onForceSave={handleForceSave}
       />
 
       <main className="flex-1 bg-slate-950 relative overflow-y-auto h-screen">

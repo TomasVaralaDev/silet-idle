@@ -9,6 +9,7 @@ interface SidebarProps {
   onReset: () => void;
   onLogout: () => void;
   onStopAction: () => void;
+  onForceSave: () => void;
 }
 
 const NavButton = ({ 
@@ -27,25 +28,22 @@ const NavButton = ({
   onClick: (view: ViewType) => void
 }) => {
   const isActive = currentView === view;
-  let baseStyle = 'hover:bg-slate-800 text-slate-400';
+  // Tech/System aesthetic for active state
+  let baseStyle = 'hover:bg-slate-800/80 text-slate-400 border border-transparent';
   
   if (isActive) {
-     if (view === 'inventory') baseStyle = 'bg-violet-600/20 text-violet-300 border border-violet-500/50';
-     else if (view === 'shop') baseStyle = 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/50';
-     else if (view === 'gamble') baseStyle = 'bg-pink-600/20 text-pink-300 border border-pink-500/50';
-     else if (view === 'achievements') baseStyle = 'bg-yellow-900/20 text-yellow-200 border border-yellow-500/50';
-     else if (view === 'combat') baseStyle = 'bg-red-900/20 text-red-300 border border-red-500/50';
-     else if (view === 'cooking') baseStyle = 'bg-orange-600/20 text-orange-300 border border-orange-500/50';
-     else baseStyle = 'bg-slate-700 text-white border border-slate-600';
+     if (['inventory', 'shop', 'gamble', 'achievements'].includes(view)) baseStyle = 'bg-slate-800/90 text-cyan-400 border-cyan-500/40 shadow-[0_0_15px_rgba(34,211,238,0.15)] font-bold';
+     else if (view === 'combat') baseStyle = 'bg-red-950/40 text-red-400 border-red-500/40 shadow-[0_0_15px_rgba(248,113,113,0.15)] font-bold';
+     else baseStyle = 'bg-slate-800 text-emerald-400 border-emerald-500/40 shadow-[0_0_15px_rgba(52,211,153,0.15)] font-bold';
   }
 
   return (
-    <button onClick={() => onClick(view)} className={`w-full text-left p-2 rounded-lg flex items-center justify-between transition-colors mb-1 ${baseStyle}`}>
+    <button onClick={() => onClick(view)} className={`w-full text-left p-3 rounded flex items-center justify-between transition-all duration-200 mb-1.5 font-mono group ${baseStyle}`}>
       <div className="flex items-center gap-3">
-        <img src={iconPath} alt={label} className="w-5 h-5 pixelated" />
-        <span className="font-medium text-sm">{label}</span>
+        <img src={iconPath} alt={label} className="w-6 h-6 pixelated opacity-90 group-hover:scale-110 transition-transform" />
+        <span className="text-sm uppercase tracking-wider">{label}</span>
       </div>
-      {level !== undefined && <span className="text-[10px] font-bold bg-slate-950 px-1.5 py-0.5 rounded text-slate-500">Lv {level}</span>}
+      {level !== undefined && <span className="text-xs font-bold bg-slate-950 px-2 py-1 rounded text-slate-500 border border-slate-800">Lv.{level}</span>}
     </button>
   );
 };
@@ -55,22 +53,22 @@ const StatRow = ({ label, level, xp, iconPath, textColor, bgColor }: { label: st
   const progress = Math.min(100, Math.max(0, (xp / nextLevelXp) * 100));
 
   return (
-    <div className="py-1.5 group cursor-help" title={`${Math.floor(xp)} / ${nextLevelXp} XP`}>
-      <div className="flex items-center justify-between text-[10px] mb-1">
+    <div className="py-2 group cursor-help" title={`${Math.floor(xp)} / ${nextLevelXp} XP`}>
+      <div className="flex items-center justify-between text-xs mb-1.5 font-mono">
         <div className="flex items-center gap-2">
-          <img src={iconPath} alt={label} className="w-4 h-4 pixelated" />
-          <span className="text-slate-400 font-bold">{label}</span>
+          <img src={iconPath} alt={label} className="w-5 h-5 pixelated opacity-80" />
+          <span className="text-slate-400 uppercase tracking-tight font-bold">{label}</span>
         </div>
         <div className="flex items-center gap-2">
-           <span className="text-[9px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity font-mono">
+           <span className="text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
              {progress.toFixed(1)}%
            </span>
-           <span className={`font-mono font-bold ${textColor}`}>Lv {level}</span>
+           <span className={`font-bold text-sm ${textColor}`}>L.{level}</span>
         </div>
       </div>
-      <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800/50 relative shadow-inner">
+      <div className="w-full h-1.5 bg-slate-950/80 overflow-hidden border border-slate-800/50 rounded-sm">
         <div 
-          className={`h-full ${bgColor} transition-all duration-500 ease-out shadow-[0_0_10px_rgba(0,0,0,0.5)]`} 
+          className={`h-full ${bgColor} opacity-90`} 
           style={{ width: `${progress}%` }}
         ></div>
       </div>
@@ -78,9 +76,10 @@ const StatRow = ({ label, level, xp, iconPath, textColor, bgColor }: { label: st
   );
 };
 
-export default function Sidebar({ currentView, setView, coins, skills, onReset, onLogout, onStopAction }: SidebarProps) {
+export default function Sidebar({ currentView, setView, coins, skills, onReset, onLogout, onStopAction, onForceSave }: SidebarProps) {
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [saveCooldown, setSaveCooldown] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -93,102 +92,170 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuRef]);
 
+  useEffect(() => {
+    let timer: number;
+    if (saveCooldown > 0) {
+      timer = window.setInterval(() => {
+        setSaveCooldown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [saveCooldown]);
+
+  const handleForceSaveClick = () => {
+    if (saveCooldown === 0) {
+      onForceSave();
+      setSaveCooldown(60);
+    }
+  };
+
   const totalLevel = Object.values(skills).reduce((acc, skill) => acc + skill.level, 0);
 
   return (
-    <nav className="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative">
+    <nav className="w-full md:w-72 bg-slate-950 border-r border-slate-800/50 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative font-sans">
       
-      {/* --- COMPACT HEADER --- */}
-      <div className="p-4 border-b border-slate-800 bg-slate-950/30">
-        <div className="flex justify-between items-center mb-3">
+      {/* --- HEADER: SYSTEM ID --- */}
+      {/* HUOM: Poistin 'overflow-hidden' tästä divistä, jotta menu voi näkyä kokonaan */}
+      <div className="p-5 border-b border-slate-800/50 bg-slate-950 relative z-20">
+        
+        {/* Scanline effect (nyt pidetty parentin sisällä ilman overflow:hiddeniä, koska absolute position) */}
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-slate-900/20 pointer-events-none opacity-20" style={{backgroundSize: '100% 4px'}}></div>
+
+        <div className="flex justify-between items-center mb-4 relative z-10">
           <div className="flex flex-col justify-center">
-            <h1 className="text-xl font-black italic text-emerald-500 tracking-tighter leading-none">
-              GGEZ <span className="text-slate-600 font-light">IDLE</span>
+            <h1 className="text-2xl font-bold text-slate-200 tracking-widest uppercase flex flex-col leading-none">
+              Time<span className="text-cyan-500 text-3xl">Ring</span>
             </h1>
+            <span className="text-[10px] text-slate-500 tracking-[0.3em] uppercase mt-1">System v1.0</span>
           </div>
 
+          {/* PROFILE BUTTON */}
           <div className="relative" ref={menuRef}>
             <button 
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2 hover:bg-slate-800 p-1 rounded-lg transition-all border border-transparent hover:border-slate-700"
+              className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded border border-slate-800 hover:border-slate-700 transition-all group"
             >
               <div className="text-right hidden sm:block">
-                <div className="text-[10px] font-bold text-slate-300 leading-none">Mitsiio</div>
-                <div className="text-[9px] text-yellow-600 font-mono leading-none mt-0.5">TL: {totalLevel}</div>
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider group-hover:text-cyan-400 transition-colors">Restorer</div>
+                <div className="text-[10px] text-cyan-500 font-mono leading-none mt-1">SYNC: {totalLevel}</div>
               </div>
-              <div className="w-8 h-8 bg-slate-800 rounded-md border border-slate-600 flex items-center justify-center shadow-lg relative overflow-hidden">
-                 <img src="/assets/ui/avatar.png" alt="Profile" className="w-full h-full object-cover pixelated" />
+              <div className="w-10 h-10 bg-slate-900 rounded border border-slate-700 flex items-center justify-center relative overflow-hidden">
+                 <img src="/assets/ui/avatar.png" alt="Restorer" className="w-full h-full object-cover pixelated opacity-90 hover:opacity-100" />
               </div>
             </button>
 
+            {/* --- DROPDOWN MENU --- */}
             {isProfileOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-1.5 flex flex-col gap-1 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                <div className="px-2 py-1.5 border-b border-slate-700 mb-1">
-                  <p className="text-xs font-bold text-white">Mitsiio</p>
-                  <p className="text-[10px] text-slate-400">Total Level: {totalLevel}</p>
+              <div className="absolute top-full right-0 mt-2 w-56 bg-slate-900 border border-slate-700 shadow-[0_0_30px_rgba(0,0,0,0.8)] p-1 flex flex-col gap-0.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-2 border-b border-slate-800 mb-1">
+                  <p className="text-xs text-slate-400 uppercase">Unit ID: Mitsiio</p>
+                  <p className="text-xs text-cyan-500 font-mono">Status: Active</p>
                 </div>
-                <button onClick={() => alert("Profile Coming Soon")} className="flex items-center gap-2 w-full py-1.5 px-2 hover:bg-slate-700 text-slate-300 rounded text-xs font-medium transition-colors text-left">
-                  <span>👤</span> View Profile
+                
+                <button onClick={() => alert("Profile View Coming Soon")} className="w-full py-3 px-3 hover:bg-slate-800 text-slate-300 text-xs uppercase tracking-wider text-left flex items-center gap-2">
+                  <span className="text-cyan-500">👤</span> Access Profile
                 </button>
-                <div className="h-px bg-slate-700 my-0.5"></div>
-                <button onClick={onLogout} className="flex items-center gap-2 w-full py-1.5 px-2 hover:bg-red-900/30 text-red-400 hover:text-red-300 rounded text-xs font-medium transition-colors text-left">
-                  <span>🚪</span> Logout
+                
+                <button onClick={() => alert("Settings Coming Soon")} className="w-full py-3 px-3 hover:bg-slate-800 text-slate-300 text-xs uppercase tracking-wider text-left flex items-center gap-2">
+                  <span className="text-amber-500">⚙️</span> System Config
+                </button>
+
+                <div className="h-px bg-slate-800 my-0.5"></div>
+                
+                <button onClick={onLogout} className="w-full py-3 px-3 hover:bg-red-950/30 text-red-400 hover:text-red-300 text-xs uppercase tracking-wider text-left flex items-center gap-2">
+                  <span>🚪</span> Terminate Session
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex items-center justify-between shadow-inner">
-          <div className="flex items-center gap-2">
-            <img src="/assets/ui/coins.png" className="w-4 h-4 pixelated" alt="Coins" />
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Coins</span>
+        {/* MEMORY CHIPS */}
+        <div className="bg-slate-900/50 p-3 border-l-4 border-l-amber-600/50 border-y border-r border-slate-800/50 flex items-center justify-between relative z-0">
+          <div className="flex items-center gap-3">
+            <img src="/assets/ui/coins.png" className="w-5 h-5 pixelated opacity-90" alt="Memory" />
+            <span className="text-xs uppercase font-bold tracking-wider text-slate-400">Memory Fragments</span>
           </div>
-          <span className="font-mono text-xs font-bold text-yellow-500">{coins.toLocaleString()}</span>
+          <span className="font-mono text-base font-bold text-amber-500">{coins.toLocaleString()}</span>
         </div>
       </div>
       
       {/* --- NAVIGATION --- */}
-      <div className="p-3 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+      <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10">
+        
         <div>
-          <p className="text-[9px] font-black text-slate-700 uppercase px-2 mb-1.5 tracking-widest">General</p>
-          <NavButton view="inventory" label="Inventory" iconPath="/assets/ui/icon_inventory.png" currentView={currentView} onClick={setView} />
-          <NavButton view="shop" label="Shop" iconPath="/assets/ui/icon_shop.png" currentView={currentView} onClick={setView} />
-          <NavButton view="gamble" label="Casino" iconPath="/assets/ui/icon_casino.png" currentView={currentView} onClick={setView} />
-          <NavButton view="achievements" label="Achievements" iconPath="/assets/ui/icon_achievements.png" currentView={currentView} onClick={setView} />
+          <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Core Systems</p>
+          <NavButton view="inventory" label="Fragment Storage" iconPath="/assets/ui/icon_inventory.png" currentView={currentView} onClick={setView} />
+          <NavButton view="shop" label="Requisition" iconPath="/assets/ui/icon_shop.png" currentView={currentView} onClick={setView} />
+          <NavButton view="achievements" label="Milestones" iconPath="/assets/ui/icon_achievements.png" currentView={currentView} onClick={setView} />
+          <NavButton view="gamble" label="Entropy" iconPath="/assets/ui/icon_casino.png" currentView={currentView} onClick={setView} />
         </div>
 
         <div>
-          <p className="text-[9px] font-black text-slate-700 uppercase px-2 mb-1.5 tracking-widest">Skills</p>
-          <NavButton view="woodcutting" label="Woodcutting" iconPath="/assets/skills/woodcutting.png" level={skills.woodcutting.level} currentView={currentView} onClick={setView} />
-          <NavButton view="mining" label="Mining" iconPath="/assets/skills/mining.png" level={skills.mining.level} currentView={currentView} onClick={setView} />
-          <NavButton view="fishing" label="Fishing" iconPath="/assets/skills/fishing.png" level={skills.fishing.level} currentView={currentView} onClick={setView} />
-          <NavButton view="farming" label="Farming" iconPath="/assets/skills/farming.png" level={skills.farming.level} currentView={currentView} onClick={setView} />
-          <NavButton view="crafting" label="Crafting" iconPath="/assets/skills/crafting.png" level={skills.crafting.level} currentView={currentView} onClick={setView} />
-          <NavButton view="cooking" label="Cooking" iconPath="/assets/skills/cooking.png" level={skills.cooking.level} currentView={currentView} onClick={setView} />
+          <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Restoration Protocols</p>
+          <NavButton view="woodcutting" label="Excavation" iconPath="/assets/skills/woodcutting.png" level={skills.woodcutting.level} currentView={currentView} onClick={setView} />
+          <NavButton view="mining" label="Salvaging" iconPath="/assets/skills/mining.png" level={skills.mining.level} currentView={currentView} onClick={setView} />
+          <NavButton view="fishing" label="Gathering" iconPath="/assets/skills/fishing.png" level={skills.fishing.level} currentView={currentView} onClick={setView} />
+          <NavButton view="farming" label="Cultivation" iconPath="/assets/skills/farming.png" level={skills.farming.level} currentView={currentView} onClick={setView} />
+          <NavButton view="crafting" label="Forging" iconPath="/assets/skills/crafting.png" level={skills.crafting.level} currentView={currentView} onClick={setView} />
+          <NavButton view="cooking" label="Refining" iconPath="/assets/skills/cooking.png" level={skills.cooking.level} currentView={currentView} onClick={setView} />
         </div>
 
         <div>
-          <p className="text-[9px] font-black text-slate-700 uppercase px-2 mb-1.5 tracking-widest">Adventure</p>
-          <NavButton view="combat" label="Combat" iconPath="/assets/skills/combat.png" currentView={currentView} onClick={setView} />
+          <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Stabilization</p>
+          <NavButton view="combat" label="Stabilize Zone" iconPath="/assets/skills/combat.png" currentView={currentView} onClick={setView} />
           
-          <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800 mt-2 space-y-0.5">
-            <StatRow label="Hitpoints" level={skills.hitpoints.level} xp={skills.hitpoints.xp} iconPath="/assets/skills/hitpoints.png" textColor="text-red-400" bgColor="bg-red-500" />
-            <StatRow label="Attack" level={skills.attack.level} xp={skills.attack.xp} iconPath="/assets/skills/attack.png" textColor="text-orange-400" bgColor="bg-orange-500" />
-            <StatRow label="Melee" level={skills.melee.level} xp={skills.melee.xp} iconPath="/assets/skills/melee.png" textColor="text-red-500" bgColor="bg-red-600" />
-            <StatRow label="Ranged" level={skills.ranged.level} xp={skills.ranged.xp} iconPath="/assets/skills/ranged.png" textColor="text-emerald-400" bgColor="bg-emerald-500" />
-            <StatRow label="Magic" level={skills.magic.level} xp={skills.magic.xp} iconPath="/assets/skills/magic.png" textColor="text-blue-400" bgColor="bg-blue-500" />
-            <StatRow label="Defense" level={skills.defense.level} xp={skills.defense.xp} iconPath="/assets/skills/defense.png" textColor="text-slate-300" bgColor="bg-slate-400" />
+          <div className="bg-slate-900/30 p-3 border border-slate-800/50 mt-4 rounded">
+            <p className="text-[9px] text-slate-500 uppercase mb-3 text-center tracking-widest font-bold">Unit Metrics</p>
+            <div className="space-y-1">
+              <StatRow label="Integrity" level={skills.hitpoints.level} xp={skills.hitpoints.xp} iconPath="/assets/skills/hitpoints.png" textColor="text-red-400" bgColor="bg-red-900" />
+              <StatRow label="Force" level={skills.attack.level} xp={skills.attack.xp} iconPath="/assets/skills/attack.png" textColor="text-orange-400" bgColor="bg-orange-900" />
+              <StatRow label="Shielding" level={skills.defense.level} xp={skills.defense.xp} iconPath="/assets/skills/defense.png" textColor="text-cyan-400" bgColor="bg-cyan-900" />
+              <StatRow label="Melee Sys" level={skills.melee.level} xp={skills.melee.xp} iconPath="/assets/skills/melee.png" textColor="text-slate-400" bgColor="bg-slate-700" />
+              <StatRow label="Ranged Sys" level={skills.ranged.level} xp={skills.ranged.xp} iconPath="/assets/skills/ranged.png" textColor="text-emerald-400" bgColor="bg-emerald-900" />
+              <StatRow label="Magic Sys" level={skills.magic.level} xp={skills.magic.xp} iconPath="/assets/skills/magic.png" textColor="text-blue-400" bgColor="bg-blue-900" />
+            </div>
           </div>
         </div>
+
       </div>
 
-      <div className="p-3 border-t border-slate-800">
-        <button onClick={onStopAction} className="w-full py-1.5 text-[10px] font-bold uppercase text-yellow-600 hover:text-yellow-500 hover:bg-yellow-900/10 rounded border border-slate-800 hover:border-yellow-900/30 transition-colors mb-2">
-           Stop Action
+      {/* FOOTER */}
+      <div className="p-4 border-t border-slate-800/50 bg-slate-950/50 relative z-20">
+        <button onClick={onStopAction} className="w-full py-3 text-xs font-bold uppercase tracking-widest text-amber-500 hover:text-amber-400 border border-amber-900/30 hover:bg-amber-900/10 mb-3 transition-colors rounded-sm">
+           Halt Process
         </button>
-        <button onClick={onReset} className="w-full py-1.5 text-[10px] font-bold uppercase text-red-800 hover:text-red-500 hover:bg-red-900/10 rounded border border-transparent transition-colors">Reset Save</button>
-        <p className="text-[9px] text-slate-700 text-center mt-1">Auto-save on</p>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button 
+            onClick={onReset} 
+            className="py-3 text-[10px] font-bold uppercase tracking-wider text-red-500/70 hover:text-red-400 border border-red-900/20 hover:bg-red-900/10 transition-colors rounded-sm"
+          >
+            Reboot
+          </button>
+
+          <button 
+            onClick={handleForceSaveClick} 
+            disabled={saveCooldown > 0}
+            className={`py-3 text-[10px] font-bold uppercase tracking-wider border transition-colors rounded-sm flex items-center justify-center
+              ${saveCooldown > 0 
+                ? 'text-slate-600 border-slate-800 bg-slate-900 cursor-not-allowed' 
+                : 'text-emerald-500/70 hover:text-emerald-400 border-emerald-900/20 hover:bg-emerald-900/10'
+              }`}
+          >
+            {saveCooldown > 0 ? (
+              <span className="font-mono">{saveCooldown}s</span>
+            ) : (
+              "Cloud Save"
+            )}
+          </button>
+        </div>
+        
+        <div className="mt-4 text-center">
+          <p className="text-[10px] text-slate-500 italic leading-tight">
+            "The world didn't need a hero.<br/>It needed a Restorer."
+          </p>
+        </div>
       </div>
     </nav>
   );

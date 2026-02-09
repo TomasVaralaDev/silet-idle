@@ -1,15 +1,34 @@
 export type SkillType = 
-  | 'woodcutting' | 'mining' | 'fishing' | 'farming' | 'crafting' | 'cooking'
-  | 'hitpoints' | 'melee' | 'ranged' | 'magic' | 'defense' | 'attack';
+  | 'woodcutting' 
+  | 'mining' 
+  | 'fishing' 
+  | 'farming' 
+  | 'cooking' 
+  | 'crafting'  // Assembly (Aseet + Lankut)
+  | 'smithing'  // Foundry (Armor + Ingots)
+  | 'hitpoints' 
+  | 'attack' 
+  | 'defense' 
+  | 'melee' 
+  | 'ranged' 
+  | 'magic'
+  | 'combat';
+
+export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements';
+
+export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'food';
+
+export type CombatStyle = 'melee' | 'ranged' | 'magic';
+
+export interface ItemStats {
+  attack?: number;
+  defense?: number;
+}
 
 export interface Ingredient {
   id: string;
   count: number;
 }
-
-export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield';
-
-export type CombatStyle = 'melee' | 'ranged' | 'magic';
 
 export interface Resource {
   id: string;
@@ -18,35 +37,46 @@ export interface Resource {
   xpReward: number;
   interval: number;
   value: number;
-  icon: string;
+  icon: string;         // Pieni ikoni (Inventory / Drop)
+  actionImage?: string; // Iso kuva (Skill Action, esim. Puu)
   color: string;
-  description: string;
+  description?: string;
+  requiresMapCompletion?: number;
   inputs?: Ingredient[];
-  slot?: EquipmentSlot | 'food';
+  slot?: EquipmentSlot;
+  stats?: ItemStats;
   healing?: number;
-  stats?: { attack?: number; defense?: number; strength?: number };
   category?: string;
-  requiresMapCompletion?: number; 
   combatStyle?: CombatStyle;
-}
-
-export interface MapDrop {
-  itemId: string;
-  chance: number; 
-  amount: [number, number]; 
-}
-
-export interface CombatMap {
-  id: number;
-  world: number;
-  name: string;
-  enemyName: string;
-  enemyHp: number;
-  enemyAttack: number;
-  xpReward: number;
-  drops: MapDrop[];
   isBoss?: boolean;
-  keyRequired?: string;
+}
+
+export interface ActiveAction {
+  skill: SkillType;
+  resourceId: string;
+}
+
+export interface GameState {
+  inventory: Record<string, number>;
+  skills: {
+    [key in SkillType]: { xp: number, level: number };
+  };
+  equipment: {
+    head: string | null;
+    body: string | null;
+    legs: string | null;
+    weapon: string | null;
+    shield: string | null;
+  };
+  equippedFood: { itemId: string, count: number } | null;
+  combatSettings: {
+    autoEatThreshold: number;
+  };
+  activeAction: ActiveAction | null;
+  coins: number;
+  upgrades: string[];
+  unlockedAchievements: string[];
+  combatStats: CombatState;
 }
 
 export interface CombatState {
@@ -59,45 +89,33 @@ export interface CombatState {
   foodTimer: number;
 }
 
-export type ActiveAction = { skill: SkillType | 'combat'; resourceId: string };
-
-export interface GameState {
-  inventory: Record<string, number>;
-  skills: Record<SkillType, { xp: number; level: number }>;
-  equipment: {
-    head: string | null;
-    body: string | null;
-    legs: string | null;
-    weapon: string | null;
-    shield: string | null;
-  };
-  equippedFood: { itemId: string; count: number } | null;
-  combatSettings: {
-    autoEatThreshold: number;
-  };
-  activeAction: ActiveAction | null;
-  coins: number;
-  upgrades: string[];
-  unlockedAchievements: string[];
-  combatStats: CombatState;
+export interface ShopItem {
+  id: string;
+  name: string;
+  cost: number;
+  multiplier: number;
+  skill: SkillType;
+  icon: string;
+  description: string;
 }
-
-export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements' | 'combat';
-
-export type ShopItem = { 
-  id: string; 
-  name: string; 
-  cost: number; 
-  multiplier: number; 
-  skill: SkillType; 
-  icon: string; 
-  description: string; 
-};
 
 export interface Achievement {
   id: string;
   name: string;
   icon: string;
-  description: string; // TÄMÄ PUUTTUI
+  description: string;
   condition: (state: GameState) => boolean;
+}
+
+export interface CombatMap {
+  id: number;
+  world: number;
+  name: string;
+  enemyName: string;
+  enemyHp: number;
+  enemyAttack: number;
+  xpReward: number;
+  drops: { itemId: string, chance: number, amount: [number, number] }[];
+  isBoss?: boolean;
+  keyRequired?: string;
 }

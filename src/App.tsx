@@ -25,7 +25,10 @@ const DEFAULT_STATE: GameState = {
     mining: { xp: 0, level: 1 },
     fishing: { xp: 0, level: 1 },
     farming: { xp: 0, level: 1 },
+    
     crafting: { xp: 0, level: 1 },
+    smithing: { xp: 0, level: 1 },
+    
     cooking: { xp: 0, level: 1 },
     hitpoints: { xp: 0, level: 10 },
     attack: { xp: 0, level: 1 },
@@ -33,6 +36,7 @@ const DEFAULT_STATE: GameState = {
     melee: { xp: 0, level: 1 },
     ranged: { xp: 0, level: 1 },
     magic: { xp: 0, level: 1 },
+    combat: { xp: 0, level: 1 }, // KORJAUS: Lisätty combat skill
   },
   equipment: {
     head: null, body: null, legs: null, weapon: null, shield: null,
@@ -55,7 +59,12 @@ const DEFAULT_STATE: GameState = {
   }
 };
 
-type ResourceSkillType = Exclude<SkillType, 'hitpoints' | 'attack' | 'defense' | 'melee' | 'ranged' | 'magic'>;
+type ResourceSkillType = Exclude<SkillType, 'hitpoints' | 'attack' | 'defense' | 'melee' | 'ranged' | 'magic' | 'combat'>;
+
+// Apufunktio type guardiksi
+function isEquipmentSlot(slot: string): slot is keyof GameState['equipment'] {
+  return ['head', 'body', 'legs', 'weapon', 'shield'].includes(slot);
+}
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -71,7 +80,7 @@ export default function App() {
   const getNextLevelXp = (level: number) => level * 150;
 
   const getSpeedMultiplier = useCallback((skill: SkillType) => {
-    if (['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic'].includes(skill)) return 1;
+    if (['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic', 'combat'].includes(skill)) return 1;
     let multiplier = 1;
     const ownedUpgrades = SHOP_ITEMS.filter(item => 
       state.upgrades.includes(item.id) && item.skill === skill
@@ -132,7 +141,6 @@ export default function App() {
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
-  // --- FORCE SAVE FUNCTION (KORJATTU: useCallback) ---
   const handleForceSave = useCallback(async () => {
     if (!user || !isDataLoaded) return;
     try {
@@ -143,16 +151,15 @@ export default function App() {
     } catch {
       setSaveStatus('error');
     }
-  }, [user, isDataLoaded]); // Riippuvuudet lisätty tänne
+  }, [user, isDataLoaded]);
 
-  // Auto-save interval
   useEffect(() => {
     if (!user || !isDataLoaded) return;
     const interval = setInterval(() => {
        handleForceSave();
-    }, 300000); // 5 minuutin välein
+    }, 300000);
     return () => clearInterval(interval);
-  }, [user, isDataLoaded, handleForceSave]); // handleForceSave lisätty riippuvuuksiin
+  }, [user, isDataLoaded, handleForceSave]);
 
   const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
     let newXp = currentXp + xpReward;
@@ -201,7 +208,7 @@ export default function App() {
 
           // 1. PLAYER ATTACK
           const weaponId = prev.equipment.weapon;
-          const weaponItem = weaponId ? getItemDetails(weaponId) : null;
+          const weaponItem = weaponId ? getItemDetails(weaponId) as Resource : null;
           const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
           
           const skillLevel = prev.skills[combatStyle].level;
@@ -246,7 +253,7 @@ export default function App() {
             const defenseLvl = prev.skills.defense.level;
             const armorBonus = Object.values(prev.equipment).reduce((sum, itemId) => {
               if (!itemId) return sum;
-              const item = getItemDetails(itemId);
+              const item = getItemDetails(itemId) as Resource;
               return sum + (item?.stats?.defense || 0);
             }, 0);
 
@@ -260,7 +267,8 @@ export default function App() {
             const eatThresholdHp = maxHp * (prev.combatSettings.autoEatThreshold / 100);
 
             if (hp <= eatThresholdHp && equippedFood && equippedFood.count > 0 && foodTimer === 0 && hp < maxHp) {
-              const foodItem = getItemDetails(equippedFood.itemId);
+              const foodItem = getItemDetails(equippedFood.itemId) as Resource;
+              
               if (foodItem && foodItem.healing) {
                 equippedFood.count -= 1;
                 if (equippedFood.count <= 0) equippedFood = null;
@@ -300,7 +308,7 @@ export default function App() {
     else if (state.activeAction && state.activeAction.skill !== 'combat' && isDataLoaded) {
       const { skill, resourceId } = state.activeAction;
       
-      if (!['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic'].includes(skill)) {
+      if (!['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic', 'combat'].includes(skill)) {
         const resourceSkill = skill as ResourceSkillType;
         const skillData = GAME_DATA[resourceSkill];
         const resource = skillData?.find((r: Resource) => r.id === resourceId);
@@ -349,7 +357,7 @@ export default function App() {
   const toggleAction = (skill: SkillType, resourceId: string) => {
     setState(prev => {
       if (prev.activeAction?.resourceId === resourceId) return { ...prev, activeAction: null };
-      if (['hitpoints', 'melee', 'ranged', 'magic', 'defense', 'attack'].includes(skill)) return prev;
+      if (['hitpoints', 'melee', 'ranged', 'magic', 'defense', 'attack', 'combat'].includes(skill)) return prev;
 
       const resourceSkill = skill as ResourceSkillType;
       const resource = GAME_DATA[resourceSkill].find((r: Resource) => r.id === resourceId);
@@ -439,9 +447,17 @@ export default function App() {
     }
   };
 
+  // --- KORJATTU: handleEquip ---
   const handleEquip = (itemId: string, targetSlot: EquipmentSlot) => {
-    const item = getItemDetails(itemId);
-    if (!item || !('slot' in item) || item.slot !== targetSlot) return;
+    // 1. Tarkista ettei slotti ole 'food'
+    if (targetSlot === 'food') return;
+
+    // 2. Type assertion, jotta TS ymmärtää että targetSlot on kelvollinen avain equipment-objektille
+    if (!isEquipmentSlot(targetSlot)) return;
+
+    const item = getItemDetails(itemId) as Resource;
+    // Varmistetaan vielä että itemin slotti täsmää (eikä ole esim. food vahingossa)
+    if (!item || !item.slot || item.slot !== targetSlot) return;
     
     setState(prev => {
       const newInventory = { ...prev.inventory };
@@ -461,7 +477,7 @@ export default function App() {
   };
 
   const handleEquipFood = (itemId: string, amount: number) => {
-    const item = getItemDetails(itemId);
+    const item = getItemDetails(itemId) as Resource;
     if (!item || !item.healing) return;
 
     setState(prev => {
@@ -475,7 +491,6 @@ export default function App() {
       if (newInventory[itemId] >= amount) {
         newInventory[itemId] -= amount;
         if (newInventory[itemId] <= 0) delete newInventory[itemId];
-        
         newEquippedFood = { itemId, count: amount };
       }
 
@@ -486,23 +501,25 @@ export default function App() {
   const handleUnequipFood = () => {
     setState(prev => {
       if (!prev.equippedFood) return prev;
-      
       const newInventory = { ...prev.inventory };
       newInventory[prev.equippedFood.itemId] = (newInventory[prev.equippedFood.itemId] || 0) + prev.equippedFood.count;
-      
       return { ...prev, inventory: newInventory, equippedFood: null };
     });
   };
 
+  // --- KORJATTU: handleUnequip ---
   const handleUnequip = (slot: string) => {
-    if (!['head', 'body', 'legs', 'weapon', 'shield', 'food'].includes(slot)) return;
-    const validSlot = slot as EquipmentSlot;
+    // 1. Tarkista ettei slotti ole 'food'
+    if (slot === 'food') return;
+
+    // 2. Type guard
+    if (!isEquipmentSlot(slot)) return;
 
     setState(prev => {
-      const itemId = prev.equipment[validSlot];
+      const itemId = prev.equipment[slot];
       if (!itemId) return prev;
       
-      const newEquipment = { ...prev.equipment, [validSlot]: null };
+      const newEquipment = { ...prev.equipment, [slot]: null };
       const newInventory = { ...prev.inventory, [itemId]: (prev.inventory[itemId] || 0) + 1 };
       
       return { ...prev, equipment: newEquipment, inventory: newInventory };
@@ -569,7 +586,7 @@ export default function App() {
           />
         )}
 
-        {['woodcutting', 'mining', 'fishing', 'farming', 'crafting', 'cooking'].includes(currentView) && (
+        {['woodcutting', 'mining', 'fishing', 'farming', 'crafting', 'smithing', 'cooking'].includes(currentView) && (
           <SkillView 
             skill={currentView as SkillType} 
             level={state.skills[currentView as SkillType].level}

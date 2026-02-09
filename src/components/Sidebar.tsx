@@ -114,11 +114,9 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
   return (
     <nav className="w-full md:w-72 bg-slate-950 border-r border-slate-800/50 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative font-sans">
       
-      {/* --- HEADER: SYSTEM ID --- */}
-      {/* HUOM: Poistin 'overflow-hidden' tästä divistä, jotta menu voi näkyä kokonaan */}
+      {/* --- HEADER --- */}
       <div className="p-5 border-b border-slate-800/50 bg-slate-950 relative z-20">
         
-        {/* Scanline effect (nyt pidetty parentin sisällä ilman overflow:hiddeniä, koska absolute position) */}
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-slate-900/20 pointer-events-none opacity-20" style={{backgroundSize: '100% 4px'}}></div>
 
         <div className="flex justify-between items-center mb-4 relative z-10">
@@ -129,7 +127,6 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
             <span className="text-[10px] text-slate-500 tracking-[0.3em] uppercase mt-1">System v1.0</span>
           </div>
 
-          {/* PROFILE BUTTON */}
           <div className="relative" ref={menuRef}>
             <button 
               onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -144,7 +141,6 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
               </div>
             </button>
 
-            {/* --- DROPDOWN MENU --- */}
             {isProfileOpen && (
               <div className="absolute top-full right-0 mt-2 w-56 bg-slate-900 border border-slate-700 shadow-[0_0_30px_rgba(0,0,0,0.8)] p-1 flex flex-col gap-0.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                 <div className="px-3 py-2 border-b border-slate-800 mb-1">
@@ -170,7 +166,6 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
           </div>
         </div>
 
-        {/* MEMORY CHIPS */}
         <div className="bg-slate-900/50 p-3 border-l-4 border-l-amber-600/50 border-y border-r border-slate-800/50 flex items-center justify-between relative z-0">
           <div className="flex items-center gap-3">
             <img src="/assets/ui/coins.png" className="w-5 h-5 pixelated opacity-90" alt="Memory" />
@@ -197,7 +192,10 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
           <NavButton view="mining" label="Salvaging" iconPath="/assets/skills/mining.png" level={skills.mining.level} currentView={currentView} onClick={setView} />
           <NavButton view="fishing" label="Gathering" iconPath="/assets/skills/fishing.png" level={skills.fishing.level} currentView={currentView} onClick={setView} />
           <NavButton view="farming" label="Cultivation" iconPath="/assets/skills/farming.png" level={skills.farming.level} currentView={currentView} onClick={setView} />
-          <NavButton view="crafting" label="Forging" iconPath="/assets/skills/crafting.png" level={skills.crafting.level} currentView={currentView} onClick={setView} />
+          
+          <NavButton view="smithing" label="Foundry" iconPath="/assets/skills/crafting.png" level={skills.smithing.level} currentView={currentView} onClick={setView} />
+          <NavButton view="crafting" label="Assembly" iconPath="/assets/skills/crafting.png" level={skills.crafting.level} currentView={currentView} onClick={setView} />
+          
           <NavButton view="cooking" label="Refining" iconPath="/assets/skills/cooking.png" level={skills.cooking.level} currentView={currentView} onClick={setView} />
         </div>
 

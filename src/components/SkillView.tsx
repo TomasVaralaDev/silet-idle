@@ -16,7 +16,12 @@ interface SkillViewProps {
 
 export default function SkillView({ skill, level, xp, activeAction, inventory, onToggleAction, speedMultiplier, nextLevelXp, maxMapCompleted }: SkillViewProps) {
   
-  const [activeTab, setActiveTab] = useState('all');
+  // Tila Foundry-tabeille (Smithing)
+  const [smithingMode, setSmithingMode] = useState<'smelting' | 'forging'>('smelting');
+  
+  // Tila Assembly-tabeille (Crafting) - UUSI
+  const [assemblyMode, setAssemblyMode] = useState<'refining' | 'creation'>('refining');
+  
   const [searchQuery, setSearchQuery] = useState('');
 
   const getSkillName = (s: SkillType) => {
@@ -25,7 +30,8 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
       case 'mining': return 'Salvage Operations';
       case 'fishing': return 'Gathering Systems';
       case 'farming': return 'Bio-Cultivation';
-      case 'crafting': return 'Matter Forging';
+      case 'crafting': return 'Assembly Protocol';
+      case 'smithing': return 'Foundry Protocol';
       case 'cooking': return 'Energy Refining';
       default: return 'Unknown Protocol';
     }
@@ -37,13 +43,14 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
       case 'mining': return { bg: 'bg-amber-900', border: 'border-amber-800', text: 'text-amber-400' };
       case 'fishing': return { bg: 'bg-cyan-900', border: 'border-cyan-800', text: 'text-cyan-400' };
       case 'farming': return { bg: 'bg-lime-900', border: 'border-lime-800', text: 'text-lime-400' };
-      case 'crafting': return { bg: 'bg-slate-700', border: 'border-slate-600', text: 'text-slate-300' };
+      case 'crafting': return { bg: 'bg-amber-900/60', border: 'border-amber-700', text: 'text-amber-200' };
+      case 'smithing': return { bg: 'bg-red-950', border: 'border-red-800', text: 'text-red-400' };
       case 'cooking': return { bg: 'bg-orange-900', border: 'border-orange-800', text: 'text-orange-400' };
       default: return { bg: 'bg-slate-800', border: 'border-slate-700', text: 'text-slate-400' };
     }
   };
 
-  const isResourceSkill = (s: SkillType): s is keyof typeof GAME_DATA => {
+  const isResourceSkill = (s: string): s is keyof typeof GAME_DATA => {
     return s in GAME_DATA;
   };
 
@@ -59,19 +66,36 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
   const resources = GAME_DATA[skill];
 
   const filteredResources = resources.filter((resource: Resource) => {
+    // 1. Hakufiltteri
     const matchesSearch = resource.name.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
 
-    if (skill !== 'crafting') return true;
-    if (activeTab === 'all') return true;
-    return resource.category === activeTab;
-  });
+    // 2. Smithing Tabit (Foundry)
+    if (skill === 'smithing') {
+      if (smithingMode === 'smelting') {
+        // Näytä vain Harkot (tunnistetaan esim. ID:n päätteestä "_smelted" tai kategoriasta jos olisi)
+        return resource.id.includes('_smelted');
+      }
+      if (smithingMode === 'forging') {
+        // Näytä vain Armor
+        return resource.category === 'armor';
+      }
+    }
 
-  const craftingTabs = [
-    { id: 'all', label: 'ALL SCHEMATICS' },
-    { id: 'weapons', label: 'SHAPERS' },
-    { id: 'armor', label: 'STABILIZERS' },
-  ];
+    // 3. Crafting Tabit (Assembly) - UUSI
+    if (skill === 'crafting') {
+      if (assemblyMode === 'refining') {
+        // Näytä vain Lankut
+        return resource.category === 'wood_refining';
+      }
+      if (assemblyMode === 'creation') {
+        // Näytä vain Aseet
+        return resource.category === 'weapons';
+      }
+    }
+
+    return true;
+  });
 
   return (
     <div className="p-6 h-full flex flex-col bg-slate-950 overflow-y-auto custom-scrollbar">
@@ -115,21 +139,55 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
 
       {/* CONTROLS */}
       <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4 border-b border-slate-800 pb-2">
-        {skill === 'crafting' ? (
+        
+        {/* SMITHING TABS */}
+        {skill === 'smithing' ? (
           <div className="flex gap-2">
-            {craftingTabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg
-                  ${activeTab === tab.id 
-                    ? 'bg-slate-800 text-slate-200 border-t-2 border-x border-slate-700' 
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                  }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            <button
+              onClick={() => setSmithingMode('smelting')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+                ${smithingMode === 'smelting' 
+                  ? 'bg-red-900/40 text-red-200 border-t-2 border-x border-red-700/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>🔥</span> Smelting
+            </button>
+            <button
+              onClick={() => setSmithingMode('forging')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+                ${smithingMode === 'forging' 
+                  ? 'bg-slate-700/40 text-slate-200 border-t-2 border-x border-slate-500/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>⚒️</span> Forging
+            </button>
+          </div>
+        ) 
+        // CRAFTING (ASSEMBLY) TABS - UUSI
+        : skill === 'crafting' ? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setAssemblyMode('refining')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+                ${assemblyMode === 'refining' 
+                  ? 'bg-amber-900/40 text-amber-200 border-t-2 border-x border-amber-700/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>🪚</span> Refining
+            </button>
+            <button
+              onClick={() => setAssemblyMode('creation')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+                ${assemblyMode === 'creation' 
+                  ? 'bg-slate-700/40 text-slate-200 border-t-2 border-x border-slate-500/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>⚔️</span> Creation
+            </button>
           </div>
         ) : (
           <div className="text-xs text-slate-500 font-mono uppercase tracking-widest py-2">
@@ -151,6 +209,12 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
 
       {/* GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5 pb-10">
+        {filteredResources.length === 0 && (
+          <div className="col-span-full py-12 text-center border border-slate-800 rounded-xl bg-slate-900/50 border-dashed">
+            <p className="text-slate-500 text-sm font-mono uppercase tracking-wider">No protocols found in this sector.</p>
+          </div>
+        )}
+
         {filteredResources.map((resource: Resource) => {
           const isLevelLocked = level < resource.levelRequired;
           const isMapLocked = resource.requiresMapCompletion ? maxMapCompleted < resource.requiresMapCompletion : false;
@@ -163,6 +227,9 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
              ? `REQ: ZONE ${resource.requiresMapCompletion}` 
              : `REQ: LVL ${resource.levelRequired}`;
 
+          // Use actionImage if available (for Trees), otherwise standard icon
+          const displayImage = resource.actionImage || resource.icon;
+
           return (
             <div key={resource.id} className={`relative p-4 rounded-xl border-2 transition-all duration-200 group flex flex-col min-h-[220px]
               ${isLocked 
@@ -174,22 +241,28 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
             >
               <div className="flex gap-5 mb-4 flex-1">
                 
-                {/* --- 1. LEFT: BIG VISUAL ANCHOR --- */}
+                {/* --- LEFT: BIG ACTION IMAGE --- */}
                 <div className="flex-shrink-0">
                   <div className="w-24 h-24 bg-slate-950 rounded-xl border border-slate-700 shadow-inner flex items-center justify-center relative overflow-hidden">
-                    <img src={resource.icon} alt={resource.name} className="w-20 h-20 pixelated drop-shadow-xl object-contain transition-transform duration-500 group-hover:scale-110" />
+                    <img src={displayImage} alt={resource.name} className="w-20 h-20 pixelated drop-shadow-xl object-contain transition-transform duration-500 group-hover:scale-110" />
                   </div>
                 </div>
 
-                {/* --- 2. RIGHT: CONTENT BLOCK --- */}
+                {/* --- RIGHT: CONTENT --- */}
                 <div className="flex-1 flex flex-col justify-between">
                   
-                  {/* Title & Description */}
                   <div>
                     <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide leading-tight mb-1">{resource.name}</h3>
                     <p className="text-xs text-slate-500 leading-snug italic mb-3">"{resource.description}"</p>
                     
-                    {/* Requirements (BIGGER & TOOLTIP) */}
+                    {/* Effects / Stats Tags */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                        {resource.stats?.attack && <span className="text-[10px] font-bold text-orange-400 bg-orange-950/40 px-2 py-0.5 rounded border border-orange-900/50">FORCE +{resource.stats.attack}</span>}
+                        {resource.stats?.defense && <span className="text-[10px] font-bold text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/50">SHIELD +{resource.stats.defense}</span>}
+                        {resource.healing && <span className="text-[10px] font-bold text-green-400 bg-green-950/40 px-2 py-0.5 rounded border border-green-900/50">REPAIR +{resource.healing}</span>}
+                    </div>
+
+                    {/* Requirements */}
                     {resource.inputs && (
                       <div className="flex flex-wrap gap-2 mb-3">
                         {resource.inputs.map((input: Ingredient) => {
@@ -204,10 +277,8 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                                    : 'bg-red-950/20 border-red-900/50 text-red-400 hover:border-red-800'
                                  }`}
                              >
-                               {/* HOVER TOOLTIP */}
                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/item:block bg-slate-900 text-slate-200 text-xs px-2 py-1 rounded border border-slate-600 shadow-xl z-50 whitespace-nowrap">
                                  {inputItem?.name}
-                                 {/* Arrow */}
                                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-600"></div>
                                </div>
 
@@ -222,10 +293,9 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                     )}
                   </div>
 
-                  {/* --- 3. HORIZONTAL DATA MODULES (Time, XP, Out) --- */}
+                  {/* --- STATS --- */}
                   <div className="grid grid-cols-3 gap-2 mt-auto">
                     
-                    {/* Module 1: Time */}
                     <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
                       <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Time</span>
                       <span className="text-xs font-mono font-bold text-slate-300">
@@ -233,16 +303,15 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                       </span>
                     </div>
 
-                    {/* Module 2: XP */}
                     <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
                       <span className="text-[8px] font-bold text-cyan-700 uppercase tracking-wider mb-0.5">Exp</span>
                       <span className="text-xs font-mono font-bold text-cyan-400">+{resource.xpReward}</span>
                     </div>
 
-                    {/* Module 3: Out */}
                     <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
                       <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Out</span>
                       <div className="flex items-center gap-1">
+                        {/* Always use icon for output */}
                         <img src={resource.icon} className="w-4 h-4 pixelated" alt="Out" />
                         <span className="text-xs font-bold text-slate-300">1x</span>
                       </div>

@@ -366,16 +366,30 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                 </button>
               </div>
               
-              {/* Active Animation Bar */}
+              {/* Active Animation Bar - FIXED */}
               {isActive && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-900 rounded-b-xl overflow-hidden">
-                   <div className={`h-full ${theme.bg} origin-left`} style={{ animation: `progress ${currentInterval}ms linear infinite`, width: '100%' }}></div>
+                <div className="absolute bottom-0 left-0 w-full h-1.5 bg-slate-900 rounded-b-xl overflow-hidden z-20">
+                   <div 
+                     className={`h-full ${theme.bg} origin-left`} 
+                     style={{ 
+                        width: '100%',
+                        animation: `progress ${currentInterval}ms linear infinite` 
+                     }}
+                   ></div>
                 </div>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* --- ANIMATION KEYFRAMES --- */}
+      <style>{`
+        @keyframes progress {
+          from { transform: scaleX(0); }
+          to { transform: scaleX(1); }
+        }
+      `}</style>
     </div>
   );
 }

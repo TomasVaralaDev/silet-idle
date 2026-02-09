@@ -60,7 +60,7 @@ export const COMBAT_DATA: CombatMap[] = [
 
 // --- GAME DATA ---
 export const GAME_DATA: Record<string, Resource[]> = {
-  // --- WOODCUTTING: Updated IDs (pine_log, etc.) ---
+  // --- WOODCUTTING ---
   woodcutting: [
     { 
       id: 'pine_log', name: 'Pine Tree', levelRequired: 1, xpReward: 10, interval: 3000, value: 1, 
@@ -112,6 +112,7 @@ export const GAME_DATA: Record<string, Resource[]> = {
     },
   ],
   
+  // --- MINING ---
   mining: [
     { id: 'ore_copper', name: 'Copper Ore', levelRequired: 1, xpReward: 10, interval: 3000, value: 2, icon: '/assets/resources/ore/ore_copper.png', color: 'text-orange-500', description: 'Basic conductive metal.' },
     { id: 'ore_iron', name: 'Iron Ore', levelRequired: 10, xpReward: 20, interval: 4500, value: 5, icon: '/assets/resources/ore/ore_iron.png', color: 'text-slate-400', description: 'Strong structural metal.', requiresMapCompletion: 3 },
@@ -123,7 +124,7 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'ore_starfallalloy', name: 'Starfall Ore', levelRequired: 99, xpReward: 250, interval: 20000, value: 500, icon: '/assets/resources/ore/ore_starfallalloy.png', color: 'text-indigo-400', description: 'Material from the cosmos.' }
   ],
 
-  // --- SMITHING (FOUNDRY PROTOCOL): Ores -> Ingots & Armors ---
+  // --- SMITHING (FOUNDRY PROTOCOL) ---
   smithing: [
     // INGOTS
     { id: 'ore_copper_smelted', name: 'Copper Ingot', levelRequired: 1, xpReward: 5, interval: 2000, value: 5, icon: '/assets/resources/ore/ore_copper_smelted.png', color: 'text-orange-500', description: 'Smelted copper ingot.', inputs: [{ id: 'ore_copper', count: 1 }] },
@@ -176,9 +177,9 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'armor_starfall_legs', name: 'Starfall Greaves', levelRequired: 99, xpReward: 1500, interval: 22000, value: 8000, icon: '/assets/items/armor/armor_legs_starfallalloy.png', color: 'text-indigo-400', description: 'Cosmic protection.', inputs: [{ id: 'ore_starfallalloy_smelted', count: 3 }], slot: 'legs', stats: { defense: 100 }, category: 'armor' },
   ],
 
-  // --- CRAFTING (ASSEMBLY PROTOCOL): Wood -> Planks & Weapons ---
+  // --- CRAFTING (ASSEMBLY PROTOCOL) ---
   crafting: [
-    // --- WOOD REFINING (Planks) ---
+    // WOOD REFINING (Planks)
     { id: 'pine_plank', name: 'Pine Plank', levelRequired: 1, xpReward: 5, interval: 1500, value: 2, icon: '/assets/resources/tree/pine_plank.png', color: 'text-amber-200', description: 'Refined pine wood.', inputs: [{ id: 'pine_log', count: 1 }], category: 'wood_refining' },
     { id: 'oak_plank', name: 'Oak Plank', levelRequired: 15, xpReward: 12, interval: 2200, value: 10, icon: '/assets/resources/tree/oak_plank.png', color: 'text-amber-600', description: 'Refined oak wood.', inputs: [{ id: 'oak_log', count: 1 }], category: 'wood_refining' },
     { id: 'willow_plank', name: 'Willow Plank', levelRequired: 30, xpReward: 22, interval: 3000, value: 20, icon: '/assets/resources/tree/willow_plank.png', color: 'text-emerald-700', description: 'Refined willow wood.', inputs: [{ id: 'willow_log', count: 1 }], category: 'wood_refining' },
@@ -187,32 +188,120 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'frostbark_plank', name: 'Frostbark Plank', levelRequired: 75, xpReward: 75, interval: 6500, value: 240, icon: '/assets/resources/tree/frostbark_plank.png', color: 'text-cyan-200', description: 'Refined frostbark.', inputs: [{ id: 'frostbark_log', count: 1 }], category: 'wood_refining' },
     { id: 'heartwood_plank', name: 'Heartwood Plank', levelRequired: 85, xpReward: 110, interval: 8000, value: 500, icon: '/assets/resources/tree/heartwood_plank.png', color: 'text-purple-400', description: 'Refined heartwood.', inputs: [{ id: 'heartwood_log', count: 1 }], category: 'wood_refining' },
     { id: 'bloodwood_plank', name: 'Bloodwood Plank', levelRequired: 99, xpReward: 175, interval: 10000, value: 1000, icon: '/assets/resources/tree/bloodwood_plank.png', color: 'text-red-600', description: 'Refined bloodwood.', inputs: [{ id: 'bloodwood_log', count: 1 }], category: 'wood_refining' },
-    // --- WEAPONS ---
+
+    // WEAPONS
     { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '/assets/items/sword_bronze.png', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper_smelted', count: 2 }], slot: 'weapon', stats: { attack: 8 }, category: 'weapons', combatStyle: 'melee' },
     { id: 'weapon_sword_iron', name: 'Iron Sword', levelRequired: 15, xpReward: 50, interval: 5000, value: 50, icon: '/assets/items/sword_iron.png', color: 'text-slate-400', description: 'Sharp and reliable.', inputs: [{ id: 'ore_iron_smelted', count: 3 }], slot: 'weapon', stats: { attack: 18 }, category: 'weapons', combatStyle: 'melee' },
     
     // Bows now use new logs
-    { id: 'weapon_shortbow_normal', name: 'Pine Shortbow', levelRequired: 1, xpReward: 20, interval: 2000, value: 10, icon: '/assets/items/bow_normal.png', color: 'text-amber-600', description: 'Simple pine bow.', inputs: [{ id: 'log_pine', count: 2 }], slot: 'weapon', stats: { attack: 6 }, category: 'weapons', combatStyle: 'ranged' },
-    { id: 'weapon_shortbow_oak', name: 'Oak Shortbow', levelRequired: 15, xpReward: 40, interval: 3000, value: 30, icon: '/assets/items/bow_oak.png', color: 'text-amber-700', description: 'Sturdy oak bow.', inputs: [{ id: 'log_oak', count: 2 }], slot: 'weapon', stats: { attack: 14 }, category: 'weapons', combatStyle: 'ranged' },
-    { id: 'weapon_shortbow_willow', name: 'Willow Shortbow', levelRequired: 30, xpReward: 80, interval: 4000, value: 80, icon: '/assets/items/bow_willow.png', color: 'text-emerald-800', description: 'High quality bow.', inputs: [{ id: 'log_willow', count: 3 }], slot: 'weapon', stats: { attack: 24 }, category: 'weapons', combatStyle: 'ranged' },
+    { id: 'weapon_shortbow_normal', name: 'Pine Shortbow', levelRequired: 1, xpReward: 20, interval: 2000, value: 10, icon: '/assets/items/bow_normal.png', color: 'text-amber-600', description: 'Simple pine bow.', inputs: [{ id: 'pine_log', count: 2 }], slot: 'weapon', stats: { attack: 6 }, category: 'weapons', combatStyle: 'ranged' },
+    { id: 'weapon_shortbow_oak', name: 'Oak Shortbow', levelRequired: 15, xpReward: 40, interval: 3000, value: 30, icon: '/assets/items/bow_oak.png', color: 'text-amber-700', description: 'Sturdy oak bow.', inputs: [{ id: 'oak_log', count: 2 }], slot: 'weapon', stats: { attack: 14 }, category: 'weapons', combatStyle: 'ranged' },
+    { id: 'weapon_shortbow_willow', name: 'Willow Shortbow', levelRequired: 30, xpReward: 80, interval: 4000, value: 80, icon: '/assets/items/bow_willow.png', color: 'text-emerald-800', description: 'High quality bow.', inputs: [{ id: 'willow_log', count: 3 }], slot: 'weapon', stats: { attack: 24 }, category: 'weapons', combatStyle: 'ranged' },
     
     // Wands now use new logs
-    { id: 'weapon_wand_basic', name: 'Pine Wand', levelRequired: 1, xpReward: 25, interval: 2500, value: 20, icon: '/assets/items/wand_basic.png', color: 'text-blue-300', description: 'Channels weak magic.', inputs: [{ id: 'log_pine', count: 3 }], slot: 'weapon', stats: { attack: 5 }, category: 'weapons', combatStyle: 'magic' },
-    { id: 'weapon_wand_oak', name: 'Oak Wand', levelRequired: 15, xpReward: 50, interval: 3500, value: 45, icon: '/assets/items/wand_oak.png', color: 'text-amber-600', description: 'Focused magic power.', inputs: [{ id: 'log_oak', count: 3 }], slot: 'weapon', stats: { attack: 12 }, category: 'weapons', combatStyle: 'magic' },
-    { id: 'weapon_staff_willow', name: 'Willow Staff', levelRequired: 30, xpReward: 90, interval: 5000, value: 100, icon: '/assets/items/staff_willow.png', color: 'text-emerald-600', description: 'Powerful magical staff.', inputs: [{ id: 'log_willow', count: 4 }], slot: 'weapon', stats: { attack: 22 }, category: 'weapons', combatStyle: 'magic' },
+    { id: 'weapon_wand_basic', name: 'Pine Wand', levelRequired: 1, xpReward: 25, interval: 2500, value: 20, icon: '/assets/items/wand_basic.png', color: 'text-blue-300', description: 'Channels weak magic.', inputs: [{ id: 'pine_log', count: 3 }], slot: 'weapon', stats: { attack: 5 }, category: 'weapons', combatStyle: 'magic' },
+    { id: 'weapon_wand_oak', name: 'Oak Wand', levelRequired: 15, xpReward: 50, interval: 3500, value: 45, icon: '/assets/items/wand_oak.png', color: 'text-amber-600', description: 'Focused magic power.', inputs: [{ id: 'oak_log', count: 3 }], slot: 'weapon', stats: { attack: 12 }, category: 'weapons', combatStyle: 'magic' },
+    { id: 'weapon_staff_willow', name: 'Willow Staff', levelRequired: 30, xpReward: 90, interval: 5000, value: 100, icon: '/assets/items/staff_willow.png', color: 'text-emerald-600', description: 'Powerful magical staff.', inputs: [{ id: 'willow_log', count: 4 }], slot: 'weapon', stats: { attack: 22 }, category: 'weapons', combatStyle: 'magic' },
   ],
 
+  // --- FISHING: Updated Fish List ---
   fishing: [
-    { id: 'fish_shrimp', name: 'Raw Shrimp', levelRequired: 1, xpReward: 10, interval: 2500, value: 2, icon: '/assets/resources/fish_shrimp.png', color: 'text-pink-400', description: 'Small raw shrimp.', requiresMapCompletion: undefined },
-    { id: 'fish_sardine', name: 'Raw Sardine', levelRequired: 10, xpReward: 20, interval: 4000, value: 5, icon: '/assets/resources/fish_sardine.png', color: 'text-blue-300', description: 'Common raw fish.', requiresMapCompletion: 4 }
+    { 
+      id: 'fish_riverminnow', name: 'River Minnow', levelRequired: 1, xpReward: 10, interval: 2500, value: 2, 
+      icon: '/assets/resources/fish/fish_riverminnow.png', 
+      color: 'text-blue-300', description: 'Small freshwater fish.', requiresMapCompletion: undefined 
+    },
+    { 
+      id: 'fish_redfinsalmon', name: 'Redfin Salmon', levelRequired: 15, xpReward: 25, interval: 4000, value: 5, 
+      icon: '/assets/resources/fish/fish_redfinsalmon.png', 
+      color: 'text-red-400', description: 'Strong swimmer.', requiresMapCompletion: 2 
+    },
+    { 
+      id: 'fish_silvercarp', name: 'Silver Carp', levelRequired: 30, xpReward: 45, interval: 5500, value: 12, 
+      icon: '/assets/resources/fish/fish_silvercarp.png', 
+      color: 'text-slate-300', description: 'Shimmers in the light.', requiresMapCompletion: 4 
+    },
+    { 
+      id: 'fish_brineshrimp', name: 'Brine Shrimp', levelRequired: 45, xpReward: 70, interval: 7000, value: 25, 
+      icon: '/assets/resources/fish/fish_brineshrimp.png', 
+      color: 'text-pink-400', description: 'Salty crustacean.', requiresMapCompletion: 5 
+    },
+    { 
+      id: 'fish_sandstar', name: 'Sand Star', levelRequired: 60, xpReward: 100, interval: 8500, value: 50, 
+      icon: '/assets/resources/fish/fish_sandstar.png', 
+      color: 'text-amber-200', description: 'Found on the ocean floor.', requiresMapCompletion: 7 
+    },
+    { 
+      id: 'fish_stormcrab', name: 'Storm Crab', levelRequired: 75, xpReward: 150, interval: 10000, value: 100, 
+      icon: '/assets/resources/fish/fish_stormcrab.png', 
+      color: 'text-indigo-400', description: 'Crackling with energy.', requiresMapCompletion: 8 
+    },
+    { 
+      id: 'fish_deepwatereel', name: 'Deepwater Eel', levelRequired: 85, xpReward: 220, interval: 12000, value: 200, 
+      icon: '/assets/resources/fish/fish_deepwatereel.png', 
+      color: 'text-cyan-600', description: 'Lurks in the abyss.', requiresMapCompletion: 9 
+    },
+    { 
+      id: 'fish_eternalcthulhu', name: 'Eternal Cthulhu', levelRequired: 99, xpReward: 350, interval: 15000, value: 500, 
+      icon: '/assets/resources/fish/fish_eternalcthulhu.png', 
+      color: 'text-purple-600', description: 'The old one sleeps no more.', requiresMapCompletion: 10 
+    },
   ],
+
   farming: [
     { id: 'crop_potato', name: 'Raw Potato', levelRequired: 1, xpReward: 10, interval: 10000, value: 3, icon: '/assets/resources/crop_potato.png', color: 'text-yellow-600', description: 'Basic raw food.', requiresMapCompletion: undefined }
   ],
+
+  // --- COOKING: Updated to use new fish ---
   cooking: [
-    { id: 'food_shrimp_cooked', name: 'Cooked Shrimp', levelRequired: 1, xpReward: 15, interval: 2000, value: 5, icon: '/assets/items/food_shrimp.png', color: 'text-orange-400', description: 'Heals 10 HP.', inputs: [{ id: 'fish_shrimp', count: 1 }], slot: 'food', healing: 10 },
-    { id: 'food_potato_baked', name: 'Baked Potato', levelRequired: 5, xpReward: 20, interval: 3000, value: 8, icon: '/assets/items/food_potato.png', color: 'text-yellow-500', description: 'Heals 15 HP.', inputs: [{ id: 'crop_potato', count: 1 }], slot: 'food', healing: 15 },
-    { id: 'food_sardine_cooked', name: 'Cooked Sardine', levelRequired: 10, xpReward: 30, interval: 4000, value: 12, icon: '/assets/items/food_sardine.png', color: 'text-slate-400', description: 'Heals 25 HP.', inputs: [{ id: 'fish_sardine', count: 1 }], slot: 'food', healing: 25 }
+    { 
+      id: 'food_minnow_cooked', name: 'Cooked Minnow', levelRequired: 1, xpReward: 15, interval: 2000, value: 5, 
+      icon: '/assets/items/food_minnow.png', 
+      color: 'text-blue-200', description: 'Heals 10 HP.', healing: 10, slot: 'food',
+      inputs: [{ id: 'fish_riverminnow', count: 1 }] 
+    },
+    { 
+      id: 'food_potato_baked', name: 'Baked Potato', levelRequired: 5, xpReward: 20, interval: 3000, value: 8, 
+      icon: '/assets/items/food_potato.png', 
+      color: 'text-yellow-500', description: 'Heals 15 HP.', healing: 15, slot: 'food',
+      inputs: [{ id: 'crop_potato', count: 1 }] 
+    },
+    { 
+      id: 'food_salmon_cooked', name: 'Smoked Salmon', levelRequired: 15, xpReward: 35, interval: 3500, value: 15, 
+      icon: '/assets/items/food_salmon.png', 
+      color: 'text-red-300', description: 'Heals 30 HP.', healing: 30, slot: 'food',
+      inputs: [{ id: 'fish_redfinsalmon', count: 1 }] 
+    },
+    { 
+      id: 'food_carp_cooked', name: 'Roasted Carp', levelRequired: 30, xpReward: 60, interval: 4500, value: 30, 
+      icon: '/assets/items/food_carp.png', 
+      color: 'text-slate-200', description: 'Heals 50 HP.', healing: 50, slot: 'food',
+      inputs: [{ id: 'fish_silvercarp', count: 1 }] 
+    },
+    { 
+      id: 'food_shrimp_cooked', name: 'Grilled Shrimp', levelRequired: 45, xpReward: 90, interval: 5500, value: 60, 
+      icon: '/assets/items/food_shrimp.png', 
+      color: 'text-pink-300', description: 'Heals 80 HP.', healing: 80, slot: 'food',
+      inputs: [{ id: 'fish_brineshrimp', count: 1 }] 
+    },
+    { 
+      id: 'food_crab_cooked', name: 'Steamed Crab', levelRequired: 60, xpReward: 130, interval: 6500, value: 120, 
+      icon: '/assets/items/food_crab.png', 
+      color: 'text-indigo-300', description: 'Heals 120 HP.', healing: 120, slot: 'food',
+      inputs: [{ id: 'fish_stormcrab', count: 1 }] 
+    },
+    { 
+      id: 'food_eel_cooked', name: 'Eel Stew', levelRequired: 75, xpReward: 180, interval: 8000, value: 250, 
+      icon: '/assets/items/food_eel.png', 
+      color: 'text-cyan-400', description: 'Heals 200 HP.', healing: 200, slot: 'food',
+      inputs: [{ id: 'fish_deepwatereel', count: 1 }] 
+    },
+    { 
+      id: 'food_cthulhu_cooked', name: 'Cosmic Soup', levelRequired: 90, xpReward: 300, interval: 10000, value: 600, 
+      icon: '/assets/items/food_cthulhu.png', 
+      color: 'text-purple-400', description: 'Heals 500 HP.', healing: 500, slot: 'food',
+      inputs: [{ id: 'fish_eternalcthulhu', count: 1 }] 
+    },
   ],
 };
 
@@ -227,8 +316,8 @@ export const SHOP_ITEMS: ShopItem[] = [
 
 // --- ACHIEVEMENTS ---
 export const ACHIEVEMENTS: Achievement[] = [
-  // Updated condition to check for 'log_pine' since 'log_normal' no longer exists
-  { id: 'first_log', name: 'First Chop', icon: '/assets/resources/log_pine.png', description: 'Chop your first pine log.', condition: (state) => (state.inventory['log_pine'] || 0) >= 1 },
+  // Updated condition to check for 'pine_log' since 'log_normal' no longer exists
+  { id: 'first_log', name: 'First Chop', icon: '/assets/resources/tree/pine_log.png', description: 'Chop your first pine log.', condition: (state) => (state.inventory['pine_log'] || 0) >= 1 },
   { id: 'rich_noob', name: 'Rich Noob', icon: '/assets/ui/coins.png', description: 'Accumulate 1000 coins.', condition: (state) => state.coins >= 1000 },
   { id: 'novice_woodcutter', name: 'Novice Woodcutter', icon: '/assets/skills/woodcutting.png', description: 'Reach Woodcutting Level 10.', condition: (state) => state.skills.woodcutting.level >= 10 },
   { id: 'combat_initiate', name: 'First Blood', icon: '/assets/skills/attack.png', description: 'Complete the first combat map.', condition: (state) => state.combatStats.maxMapCompleted >= 1 }

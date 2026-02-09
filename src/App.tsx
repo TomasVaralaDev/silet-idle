@@ -36,10 +36,19 @@ const DEFAULT_STATE: GameState = {
     melee: { xp: 0, level: 1 },
     ranged: { xp: 0, level: 1 },
     magic: { xp: 0, level: 1 },
-    combat: { xp: 0, level: 1 }, // KORJAUS: Lisätty combat skill
+    combat: { xp: 0, level: 1 },
   },
   equipment: {
-    head: null, body: null, legs: null, weapon: null, shield: null,
+    head: null, 
+    body: null, 
+    legs: null, 
+    weapon: null, 
+    shield: null,
+    // UUDET SLOTIT:
+    necklace: null,
+    ring: null,
+    rune: null,
+    skill: null
   },
   equippedFood: null,
   combatSettings: {
@@ -61,9 +70,9 @@ const DEFAULT_STATE: GameState = {
 
 type ResourceSkillType = Exclude<SkillType, 'hitpoints' | 'attack' | 'defense' | 'melee' | 'ranged' | 'magic' | 'combat'>;
 
-// Apufunktio type guardiksi
+// Apufunktio type guardiksi - PÄIVITETTY UUSILLA SLOTEILLA
 function isEquipmentSlot(slot: string): slot is keyof GameState['equipment'] {
-  return ['head', 'body', 'legs', 'weapon', 'shield'].includes(slot);
+  return ['head', 'body', 'legs', 'weapon', 'shield', 'necklace', 'ring', 'rune', 'skill'].includes(slot);
 }
 
 export default function App() {
@@ -108,6 +117,7 @@ export default function App() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as Partial<GameState>;
+          // Turvallinen equipment-merge: varmistaa että uudet slotit tulevat mukaan vanhoihinkin saveihin
           const safeEquipment = { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) };
           
           if ('ammo' in safeEquipment) delete (safeEquipment as { ammo?: unknown }).ammo;
@@ -447,16 +457,13 @@ export default function App() {
     }
   };
 
-  // --- KORJATTU: handleEquip ---
   const handleEquip = (itemId: string, targetSlot: EquipmentSlot) => {
-    // 1. Tarkista ettei slotti ole 'food'
     if (targetSlot === 'food') return;
 
-    // 2. Type assertion, jotta TS ymmärtää että targetSlot on kelvollinen avain equipment-objektille
+    // Type guard / validointi
     if (!isEquipmentSlot(targetSlot)) return;
 
     const item = getItemDetails(itemId) as Resource;
-    // Varmistetaan vielä että itemin slotti täsmää (eikä ole esim. food vahingossa)
     if (!item || !item.slot || item.slot !== targetSlot) return;
     
     setState(prev => {
@@ -507,12 +514,10 @@ export default function App() {
     });
   };
 
-  // --- KORJATTU: handleUnequip ---
   const handleUnequip = (slot: string) => {
-    // 1. Tarkista ettei slotti ole 'food'
     if (slot === 'food') return;
 
-    // 2. Type guard
+    // Type guard
     if (!isEquipmentSlot(slot)) return;
 
     setState(prev => {

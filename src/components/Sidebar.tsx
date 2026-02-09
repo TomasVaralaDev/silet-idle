@@ -193,8 +193,8 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
           <NavButton view="fishing" label="Gathering" iconPath="/assets/skills/fishing.png" level={skills.fishing.level} currentView={currentView} onClick={setView} />
           <NavButton view="farming" label="Cultivation" iconPath="/assets/skills/farming.png" level={skills.farming.level} currentView={currentView} onClick={setView} />
           
-          <NavButton view="smithing" label="Foundry" iconPath="/assets/skills/crafting.png" level={skills.smithing.level} currentView={currentView} onClick={setView} />
-          <NavButton view="crafting" label="Assembly" iconPath="/assets/skills/crafting.png" level={skills.crafting.level} currentView={currentView} onClick={setView} />
+          <NavButton view="smithing" label="Foundry" iconPath="/assets/skills/foundry.png" level={skills.smithing.level} currentView={currentView} onClick={setView} />
+          <NavButton view="crafting" label="Assembly" iconPath="/assets/skills/assembly.png" level={skills.crafting.level} currentView={currentView} onClick={setView} />
           
           <NavButton view="cooking" label="Refining" iconPath="/assets/skills/cooking.png" level={skills.cooking.level} currentView={currentView} onClick={setView} />
         </div>

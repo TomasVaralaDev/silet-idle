@@ -4,8 +4,8 @@ export type SkillType =
   | 'fishing' 
   | 'farming' 
   | 'cooking' 
-  | 'crafting'  // Assembly (Aseet + Lankut)
-  | 'smithing'  // Foundry (Armor + Ingots)
+  | 'crafting' 
+  | 'smithing' 
   | 'hitpoints' 
   | 'attack' 
   | 'defense' 
@@ -16,7 +16,8 @@ export type SkillType =
 
 export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements';
 
-export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'food';
+// KORJAUS: Lisätty necklace, ring, rune, skill
+export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'food' | 'necklace' | 'ring' | 'rune' | 'skill';
 
 export type CombatStyle = 'melee' | 'ranged' | 'magic';
 
@@ -37,8 +38,8 @@ export interface Resource {
   xpReward: number;
   interval: number;
   value: number;
-  icon: string;         // Pieni ikoni (Inventory / Drop)
-  actionImage?: string; // Iso kuva (Skill Action, esim. Puu)
+  icon: string;
+  actionImage?: string;
   color: string;
   description?: string;
   requiresMapCompletion?: number;
@@ -61,12 +62,17 @@ export interface GameState {
   skills: {
     [key in SkillType]: { xp: number, level: number };
   };
+  // KORJAUS: Equipment-objekti päivitetty
   equipment: {
     head: string | null;
     body: string | null;
     legs: string | null;
     weapon: string | null;
     shield: string | null;
+    necklace: string | null;
+    ring: string | null;
+    rune: string | null;
+    skill: string | null;
   };
   equippedFood: { itemId: string, count: number } | null;
   combatSettings: {

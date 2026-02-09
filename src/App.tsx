@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient } from './types';
+import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient, Expedition } from './types';
 import { GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, getItemDetails, COMBAT_DATA } from './data';
 
 // FIREBASE
@@ -16,6 +16,7 @@ import Gamble from './components/Gamble';
 import SellModal from './components/SellModal';
 import AchievementsView from './components/AchievementsView';
 import CombatView from './components/CombatView';
+import ScavengerView from './components/ScavengerView'; // UUSI
 
 // --- CONSTANTS ---
 const DEFAULT_STATE: GameState = {
@@ -25,10 +26,8 @@ const DEFAULT_STATE: GameState = {
     mining: { xp: 0, level: 1 },
     fishing: { xp: 0, level: 1 },
     farming: { xp: 0, level: 1 },
-    
     crafting: { xp: 0, level: 1 },
     smithing: { xp: 0, level: 1 },
-    
     cooking: { xp: 0, level: 1 },
     hitpoints: { xp: 0, level: 10 },
     attack: { xp: 0, level: 1 },
@@ -37,22 +36,20 @@ const DEFAULT_STATE: GameState = {
     ranged: { xp: 0, level: 1 },
     magic: { xp: 0, level: 1 },
     combat: { xp: 0, level: 1 },
+    scavenging: { xp: 0, level: 1 }, // UUSI
   },
   equipment: {
-    head: null, 
-    body: null, 
-    legs: null, 
-    weapon: null, 
-    shield: null,
-    // UUDET SLOTIT:
-    necklace: null,
-    ring: null,
-    rune: null,
-    skill: null
+    head: null, body: null, legs: null, weapon: null, shield: null,
+    necklace: null, ring: null, rune: null, skill: null
   },
   equippedFood: null,
   combatSettings: {
     autoEatThreshold: 50
+  },
+  // UUSI
+  scavenger: {
+    activeExpeditions: [],
+    unlockedSlots: 1
   },
   activeAction: null,
   coins: 0,
@@ -68,9 +65,8 @@ const DEFAULT_STATE: GameState = {
   }
 };
 
-type ResourceSkillType = Exclude<SkillType, 'hitpoints' | 'attack' | 'defense' | 'melee' | 'ranged' | 'magic' | 'combat'>;
+type ResourceSkillType = Exclude<SkillType, 'hitpoints' | 'attack' | 'defense' | 'melee' | 'ranged' | 'magic' | 'combat' | 'scavenging'>;
 
-// Apufunktio type guardiksi - PÄIVITETTY UUSILLA SLOTEILLA
 function isEquipmentSlot(slot: string): slot is keyof GameState['equipment'] {
   return ['head', 'body', 'legs', 'weapon', 'shield', 'necklace', 'ring', 'rune', 'skill'].includes(slot);
 }
@@ -89,7 +85,7 @@ export default function App() {
   const getNextLevelXp = (level: number) => level * 150;
 
   const getSpeedMultiplier = useCallback((skill: SkillType) => {
-    if (['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic', 'combat'].includes(skill)) return 1;
+    if (['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic', 'combat', 'scavenging'].includes(skill)) return 1;
     let multiplier = 1;
     const ownedUpgrades = SHOP_ITEMS.filter(item => 
       state.upgrades.includes(item.id) && item.skill === skill
@@ -117,7 +113,6 @@ export default function App() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const cloudData = docSnap.data() as Partial<GameState>;
-          // Turvallinen equipment-merge: varmistaa että uudet slotit tulevat mukaan vanhoihinkin saveihin
           const safeEquipment = { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) };
           
           if ('ammo' in safeEquipment) delete (safeEquipment as { ammo?: unknown }).ammo;
@@ -128,6 +123,7 @@ export default function App() {
             ...cloudData,
             skills: { ...DEFAULT_STATE.skills, ...(cloudData.skills || {}) },
             equipment: safeEquipment,
+            scavenger: { ...DEFAULT_STATE.scavenger, ...(cloudData.scavenger || {}) }, // Merge scavenger state
             equippedFood: cloudData.equippedFood || null,
             combatSettings: { ...DEFAULT_STATE.combatSettings, ...(cloudData.combatSettings || {}) },
             combatStats: { ...DEFAULT_STATE.combatStats, ...(cloudData.combatStats || {}) },
@@ -171,6 +167,37 @@ export default function App() {
     return () => clearInterval(interval);
   }, [user, isDataLoaded, handleForceSave]);
 
+  // --- SCAVENGER LOGIC LOOP ---
+  // Tarkistetaan sekunnin välein, onko jokin retki valmistunut.
+  useEffect(() => {
+    if (!isDataLoaded) return;
+    
+    const interval = setInterval(() => {
+      setState(prev => {
+        const now = Date.now();
+        let hasChanges = false;
+        
+        const updatedExpeditions = prev.scavenger.activeExpeditions.map(exp => {
+          if (!exp.completed && now >= exp.startTime + exp.duration) {
+            hasChanges = true;
+            return { ...exp, completed: true };
+          }
+          return exp;
+        });
+
+        if (hasChanges) {
+          return {
+            ...prev,
+            scavenger: { ...prev.scavenger, activeExpeditions: updatedExpeditions }
+          };
+        }
+        return prev;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isDataLoaded]);
+
   const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
     let newXp = currentXp + xpReward;
     let newLevel = currentLevel;
@@ -183,11 +210,13 @@ export default function App() {
     return { level: newLevel, xp: newXp };
   };
 
+  // ... (COMBAT LOOP & SKILL LOOP pysyvät samana kuin aiemmin) ...
   useEffect(() => {
     let intervalId: number | undefined;
 
     // A) COMBAT LOOP
     if (state.activeAction?.skill === 'combat' && state.combatStats.currentMapId && isDataLoaded) {
+      // ... (Tämä koodi on sama kuin aiemmin, ei muutoksia) ...
       intervalId = window.setInterval(() => {
         setState(prev => {
           const map = COMBAT_DATA.find(m => m.id === prev.combatStats.currentMapId);
@@ -216,7 +245,6 @@ export default function App() {
           const newSkills = { ...prev.skills };
           let notify = null;
 
-          // 1. PLAYER ATTACK
           const weaponId = prev.equipment.weapon;
           const weaponItem = weaponId ? getItemDetails(weaponId) as Resource : null;
           const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
@@ -226,7 +254,6 @@ export default function App() {
           const playerDmg = Math.floor(1 + weaponPower + (skillLevel * 0.5));
           enemyCurrentHp -= playerDmg;
 
-          // 2. ENEMY DEATH
           if (enemyCurrentHp <= 0) {
             enemyCurrentHp = 0;
             respawnTimer = 3;
@@ -259,7 +286,6 @@ export default function App() {
               notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
             }
           } else {
-            // 3. ENEMY ATTACK
             const defenseLvl = prev.skills.defense.level;
             const armorBonus = Object.values(prev.equipment).reduce((sum, itemId) => {
               if (!itemId) return sum;
@@ -289,7 +315,6 @@ export default function App() {
             }
           }
 
-          // 4. PLAYER DEATH
           if (hp <= 0) {
             hp = 0;
             return {
@@ -318,7 +343,7 @@ export default function App() {
     else if (state.activeAction && state.activeAction.skill !== 'combat' && isDataLoaded) {
       const { skill, resourceId } = state.activeAction;
       
-      if (!['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic', 'combat'].includes(skill)) {
+      if (!['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic', 'combat', 'scavenging'].includes(skill)) {
         const resourceSkill = skill as ResourceSkillType;
         const skillData = GAME_DATA[resourceSkill];
         const resource = skillData?.find((r: Resource) => r.id === resourceId);
@@ -367,7 +392,7 @@ export default function App() {
   const toggleAction = (skill: SkillType, resourceId: string) => {
     setState(prev => {
       if (prev.activeAction?.resourceId === resourceId) return { ...prev, activeAction: null };
-      if (['hitpoints', 'melee', 'ranged', 'magic', 'defense', 'attack', 'combat'].includes(skill)) return prev;
+      if (['hitpoints', 'melee', 'ranged', 'magic', 'defense', 'attack', 'combat', 'scavenging'].includes(skill)) return prev;
 
       const resourceSkill = skill as ResourceSkillType;
       const resource = GAME_DATA[resourceSkill].find((r: Resource) => r.id === resourceId);
@@ -382,6 +407,94 @@ export default function App() {
       return { ...prev, activeAction: { skill, resourceId } };
     });
   };
+
+  // --- SCAVENGER HANDLERS ---
+
+  const handleStartExpedition = (mapId: number, durationMinutes: number) => {
+    setState(prev => {
+      if (prev.scavenger.activeExpeditions.length >= prev.scavenger.unlockedSlots) return prev;
+
+      const newExpedition: Expedition = {
+        id: Date.now().toString(),
+        mapId,
+        startTime: Date.now(),
+        duration: durationMinutes * 60 * 1000,
+        completed: false
+      };
+
+      return {
+        ...prev,
+        scavenger: {
+          ...prev.scavenger,
+          activeExpeditions: [...prev.scavenger.activeExpeditions, newExpedition]
+        }
+      };
+    });
+  };
+
+  const handleCancelExpedition = (expeditionId: string) => {
+    if (confirm("Cancel expedition? The team will return empty-handed.")) {
+      setState(prev => ({
+        ...prev,
+        scavenger: {
+          ...prev.scavenger,
+          activeExpeditions: prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId)
+        }
+      }));
+    }
+  };
+
+  const handleClaimExpedition = (expeditionId: string) => {
+    setState(prev => {
+      const expedition = prev.scavenger.activeExpeditions.find(e => e.id === expeditionId);
+      if (!expedition || !expedition.completed) return prev;
+
+      const map = COMBAT_DATA.find(m => m.id === expedition.mapId);
+      if (!map) return prev;
+
+      // Loot Logic: 1 roll per minute
+      const minutesSpent = Math.floor(expedition.duration / 60000);
+      const lootRolls = minutesSpent; 
+      
+      const newInventory = { ...prev.inventory };
+      const gainedItems: Record<string, number> = {};
+
+      for (let i = 0; i < lootRolls; i++) {
+        map.drops.forEach(drop => {
+          if (Math.random() <= drop.chance) {
+            // Scavenging yields slightly less than active combat (approx 50% efficiency)
+            const amount = Math.max(1, Math.floor((Math.random() * (drop.amount[1] - drop.amount[0] + 1) + drop.amount[0]) * 0.5));
+            
+            newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
+            gainedItems[drop.itemId] = (gainedItems[drop.itemId] || 0) + amount;
+          }
+        });
+      }
+
+      // Remove expedition
+      const remainingExpeditions = prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId);
+
+      // Notification
+      const itemNames = Object.keys(gainedItems).map(id => {
+        const item = getItemDetails(id);
+        return `${gainedItems[id]}x ${item?.name || id}`;
+      }).join(', ');
+      
+      if (itemNames) {
+        setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}${itemNames.length > 50 ? '...' : ''}`, icon: '/assets/skills/scavenging.png' });
+      } else {
+        setNotification({ message: `Expedition returned empty handed...`, icon: '/assets/skills/scavenging.png' });
+      }
+
+      return {
+        ...prev,
+        inventory: newInventory,
+        scavenger: { ...prev.scavenger, activeExpeditions: remainingExpeditions }
+      };
+    });
+  };
+
+  // --- ACTIONS ---
 
   const startCombat = (mapId: number) => {
     const map = COMBAT_DATA.find(m => m.id === mapId);
@@ -459,8 +572,6 @@ export default function App() {
 
   const handleEquip = (itemId: string, targetSlot: EquipmentSlot) => {
     if (targetSlot === 'food') return;
-
-    // Type guard / validointi
     if (!isEquipmentSlot(targetSlot)) return;
 
     const item = getItemDetails(itemId) as Resource;
@@ -516,8 +627,6 @@ export default function App() {
 
   const handleUnequip = (slot: string) => {
     if (slot === 'food') return;
-
-    // Type guard
     if (!isEquipmentSlot(slot)) return;
 
     setState(prev => {
@@ -588,6 +697,16 @@ export default function App() {
             onEquipFood={handleEquipFood}
             onStartCombat={startCombat}
             onStopCombat={stopCombat}
+          />
+        )}
+
+        {currentView === 'scavenger' && (
+          <ScavengerView 
+            scavengerState={state.scavenger}
+            maxMapCompleted={state.combatStats.maxMapCompleted}
+            onStart={handleStartExpedition}
+            onCancel={handleCancelExpedition}
+            onClaim={handleClaimExpedition}
           />
         )}
 

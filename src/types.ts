@@ -12,11 +12,11 @@ export type SkillType =
   | 'melee' 
   | 'ranged' 
   | 'magic'
-  | 'combat';
+  | 'combat'
+  | 'scavenging'; // UUSI
 
-export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements';
+export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements' | 'scavenger'; // UUSI
 
-// KORJAUS: Lisätty necklace, ring, rune, skill
 export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'food' | 'necklace' | 'ring' | 'rune' | 'skill';
 
 export type CombatStyle = 'melee' | 'ranged' | 'magic';
@@ -57,12 +57,20 @@ export interface ActiveAction {
   resourceId: string;
 }
 
+// UUSI: Expedition rakenne
+export interface Expedition {
+  id: string;           // Timestamp ID
+  mapId: number;        // Kohde zone
+  startTime: number;    // Aloitusaika (Date.now())
+  duration: number;     // Kesto ms
+  completed: boolean;   // Onko valmis
+}
+
 export interface GameState {
   inventory: Record<string, number>;
   skills: {
     [key in SkillType]: { xp: number, level: number };
   };
-  // KORJAUS: Equipment-objekti päivitetty
   equipment: {
     head: string | null;
     body: string | null;
@@ -77,6 +85,11 @@ export interface GameState {
   equippedFood: { itemId: string, count: number } | null;
   combatSettings: {
     autoEatThreshold: number;
+  };
+  // UUSI: Scavenger tila
+  scavenger: {
+    activeExpeditions: Expedition[];
+    unlockedSlots: number;
   };
   activeAction: ActiveAction | null;
   coins: number;

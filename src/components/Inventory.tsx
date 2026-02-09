@@ -30,6 +30,7 @@ export default function Inventory({
   
   const [filter, setFilter] = useState<'all' | 'resources' | 'consumables' | 'equipment'>('all');
   const [sortOrder, setSortOrder] = useState<'name' | 'value' | 'amount'>('amount');
+  const [foodToEquip, setFoodToEquip] = useState<{ id: string, name: string, max: number } | null>(null);
 
   const getResource = (id: string): Resource | null => {
     const item = getItemDetails(id);
@@ -57,7 +58,6 @@ export default function Inventory({
 
   const getEquippedItem = (slot: EquipmentSlot) => {
     if (slot === 'food') return null; 
-    // Nyt kun types.ts on päivitetty, tämä on turvallinen ilman 'as keyof' kikkailua
     const id = equipment[slot as keyof typeof equipment];
     if (!id) return null;
     return getResource(id);
@@ -69,8 +69,20 @@ export default function Inventory({
   };
 
   return (
-    <div className="p-6 h-full flex flex-col lg:flex-row gap-6 bg-slate-950 overflow-y-auto custom-scrollbar">
+    <div className="p-6 h-full flex flex-col lg:flex-row gap-6 bg-slate-950 overflow-y-auto custom-scrollbar relative">
       
+      {/* --- MODAL: EQUIP FOOD --- */}
+      {foodToEquip && (
+        <EquipFoodModal 
+          item={foodToEquip} 
+          onClose={() => setFoodToEquip(null)} 
+          onConfirm={(amount) => {
+            onEquipFood(foodToEquip.id, amount);
+            setFoodToEquip(null);
+          }} 
+        />
+      )}
+
       {/* --- LEFT: EQUIPMENT & STATS --- */}
       <div className="w-full lg:w-[600px] flex-shrink-0 flex flex-col gap-6">
         
@@ -79,62 +91,65 @@ export default function Inventory({
           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 text-center border-b border-slate-800 pb-2">Active Loadout</h3>
           
           {/* CONTAINER */}
-          <div className="relative w-full h-[450px] bg-slate-950/50 rounded-lg border border-slate-800/50 mb-4 flex items-center justify-center overflow-hidden shadow-inner">
+          <div className="relative w-full h-[600px] bg-slate-950/50 rounded-lg border border-slate-800/50 mb-4 flex items-center justify-center overflow-hidden shadow-inner">
              
-             {/* --- EQUIPMENT SLOTS --- */}
+             {/* Character Silhouette */}
+             <img src="/assets/ui/character_silhouette.png" className="h-[75%] opacity-10 object-contain pixelated pointer-events-none -translate-y-20" alt="Silhouette" />
              
-             {/* TOP ROW */}
-             {/* SKILL (Left of Head - Symmetrinen 22%) */}
-             <div className="absolute top-[5%] left-[22%] -translate-x-1/2 z-10">
-                <EquipmentSlotBox item={getEquippedItem('skill')} slot="skill" onUnequip={() => onUnequip('skill')} />
-             </div>
-
-             {/* HEAD (Center - 50%) */}
-             <div className="absolute top-[5%] left-[50%] -translate-x-1/2 z-10">
+             {/* --- MAIN ARMOR SLOTS (Relative to top) --- */}
+             
+             {/* HEAD (Top Center) */}
+             <div className="absolute top-[5%] left-1/2 -translate-x-1/2 z-10">
                 <EquipmentSlotBox item={getEquippedItem('head')} slot="head" onUnequip={() => onUnequip('head')} />
              </div>
-
-             {/* NECKLACE (Right of Head - Symmetrinen 78%) */}
-             <div className="absolute top-[5%] left-[78%] -translate-x-1/2 z-10">
-                <EquipmentSlotBox item={getEquippedItem('necklace')} slot="necklace" onUnequip={() => onUnequip('necklace')} />
-             </div>
              
-             {/* MIDDLE ROW */}
-             {/* WEAPON (Left) */}
-             <div className="absolute top-[38%] left-[10%] z-10">
-                <EquipmentSlotBox item={getEquippedItem('weapon')} slot="weapon" onUnequip={() => onUnequip('weapon')} />
-             </div>
-
              {/* BODY (Center) */}
-             <div className="absolute top-[38%] left-[50%] -translate-x-1/2 z-10">
+             <div className="absolute top-[28%] left-1/2 -translate-x-1/2 z-10">
                 <EquipmentSlotBox item={getEquippedItem('body')} slot="body" onUnequip={() => onUnequip('body')} />
              </div>
              
+             {/* WEAPON (Left) */}
+             <div className="absolute top-[28%] left-[12%] z-10">
+                <EquipmentSlotBox item={getEquippedItem('weapon')} slot="weapon" onUnequip={() => onUnequip('weapon')} />
+             </div>
+             
              {/* SHIELD (Right) */}
-             <div className="absolute top-[38%] right-[10%] z-10">
+             <div className="absolute top-[28%] right-[12%] z-10">
                 <EquipmentSlotBox item={getEquippedItem('shield')} slot="shield" onUnequip={() => onUnequip('shield')} />
              </div>
 
-             {/* BOTTOM ROW */}
-             {/* RING (Left of Legs - Symmetrinen 22%) */}
-             <div className="absolute bottom-[5%] left-[22%] -translate-x-1/2 z-10">
-                <EquipmentSlotBox item={getEquippedItem('ring')} slot="ring" onUnequip={() => onUnequip('ring')} />
-             </div>
-
-             {/* LEGS (Bottom Center - 50%) */}
-             <div className="absolute bottom-[5%] left-[50%] -translate-x-1/2 z-10">
+             {/* LEGS (Under Body) */}
+             <div className="absolute top-[52%] left-1/2 -translate-x-1/2 z-10">
                 <EquipmentSlotBox item={getEquippedItem('legs')} slot="legs" onUnequip={() => onUnequip('legs')} />
              </div>
 
-             {/* RUNE (Right of Legs - Symmetrinen 78%) */}
-             <div className="absolute bottom-[5%] left-[78%] -translate-x-1/2 z-10">
+             {/* --- ACCESSORY ROW (BOTTOM - SPACED OUT) --- */}
+             {/* KORJATTU: Poistettu 'as any' ja 'as EquipmentSlot' */}
+
+             {/* 1. SKILL */}
+             <div className="absolute bottom-[5%] left-[20%] -translate-x-1/2 z-10">
+                <EquipmentSlotBox item={getEquippedItem('skill')} slot="skill" onUnequip={() => onUnequip('skill')} />
+             </div>
+
+             {/* 2. NECKLACE */}
+             <div className="absolute bottom-[5%] left-[40%] -translate-x-1/2 z-10">
+                <EquipmentSlotBox item={getEquippedItem('necklace')} slot="necklace" onUnequip={() => onUnequip('necklace')} />
+             </div>
+
+             {/* 3. RING */}
+             <div className="absolute bottom-[5%] left-[60%] -translate-x-1/2 z-10">
+                <EquipmentSlotBox item={getEquippedItem('ring')} slot="ring" onUnequip={() => onUnequip('ring')} />
+             </div>
+
+             {/* 4. RUNE */}
+             <div className="absolute bottom-[5%] left-[80%] -translate-x-1/2 z-10">
                 <EquipmentSlotBox item={getEquippedItem('rune')} slot="rune" onUnequip={() => onUnequip('rune')} />
              </div>
 
              {/* Connection Lines (Decoration) */}
              <div className="absolute inset-0 pointer-events-none opacity-10">
-                <div className="absolute top-[50%] left-[20%] right-[20%] h-0.5 bg-slate-400"></div>
-                <div className="absolute top-[20%] bottom-[20%] left-[50%] w-0.5 bg-slate-400 -translate-x-1/2"></div>
+                <div className="absolute top-[38%] left-[22%] right-[22%] h-0.5 bg-slate-400"></div>
+                <div className="absolute top-[16%] bottom-[40%] left-1/2 w-0.5 bg-slate-400 -translate-x-1/2"></div>
              </div>
           </div>
 
@@ -159,21 +174,22 @@ export default function Inventory({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
           <div className="flex items-center gap-6">
             <div 
-              className={`w-20 h-20 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-all relative shadow-xl overflow-hidden
+              className={`w-24 h-24 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-all relative shadow-xl overflow-hidden
               ${equippedFood ? 'bg-slate-800 border-green-600 shadow-green-900/20' : 'bg-slate-950 border-slate-800 border-dashed hover:border-slate-600'}`}
               onClick={onUnequipFood}
               title="Click to unequip food"
             >
               {equippedFood ? (
                 <>
-                  <img src={getEquippedFoodItem()?.icon} className="w-12 h-12 pixelated drop-shadow-lg" alt="Food" />
-                  <span className="absolute -bottom-2 -right-2 bg-slate-900 text-xs font-mono font-bold text-white px-2 py-0.5 rounded border border-slate-600 shadow-sm">
-                    {equippedFood.count}
-                  </span>
+                  <img src={getEquippedFoodItem()?.icon} className="w-14 h-14 pixelated drop-shadow-lg" alt="Food" />
+                  <div className="absolute bottom-1 right-1 bg-slate-950/90 text-xs font-mono font-bold text-white px-2 py-0.5 rounded border border-slate-600 shadow-md backdrop-blur-sm">
+                    x{equippedFood.count}
+                  </div>
                 </>
               ) : (
-                <div className="text-center flex items-center justify-center h-full w-full">
-                  <img src="/assets/ui/slots/slot_food.png" className="w-10 h-10 opacity-20 pixelated" alt="Empty Food" />
+                <div className="text-center flex flex-col items-center justify-center h-full w-full opacity-30">
+                  <img src="/assets/ui/slots/slot_food.png" className="w-10 h-10 pixelated mb-1" alt="Empty Food" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Empty</span>
                 </div>
               )}
             </div>
@@ -284,7 +300,7 @@ export default function Inventory({
                     {item.slot ? (
                       item.slot === 'food' ? (
                         <button 
-                          onClick={() => onEquipFood(item.id, item.count)}
+                          onClick={() => setFoodToEquip({ id: item.id, name: item.name, max: item.count })}
                           className="py-2 bg-slate-950 hover:bg-green-950/40 text-[9px] font-bold uppercase text-slate-500 hover:text-green-400 rounded transition-colors border border-slate-800 hover:border-green-900/50"
                         >
                           Equip
@@ -307,6 +323,61 @@ export default function Inventory({
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// --- NEW COMPONENT: Equip Food Modal ---
+function EquipFoodModal({ item, onClose, onConfirm }: { item: {id: string, name: string, max: number}, onClose: () => void, onConfirm: (amount: number) => void }) {
+  const [amount, setAmount] = useState<number>(1);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-sm shadow-2xl relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">✕</button>
+        
+        <h3 className="text-lg font-bold text-slate-200 mb-1 uppercase tracking-wide">Equip Rations</h3>
+        <p className="text-sm text-green-400 font-bold mb-6">{item.name}</p>
+
+        <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-800 mb-6">
+          <div className="flex justify-between text-xs text-slate-400 mb-2 font-bold uppercase">
+            <span>Amount</span>
+            <span>Max: {item.max}</span>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <input 
+              type="number" 
+              min="1" 
+              max={item.max} 
+              value={amount} 
+              onChange={(e) => setAmount(Math.min(item.max, Math.max(1, parseInt(e.target.value) || 0)))}
+              className="w-20 bg-slate-900 border border-slate-700 rounded p-2 text-center text-white font-mono outline-none focus:border-green-500"
+            />
+            <input 
+              type="range" 
+              min="1" 
+              max={item.max} 
+              value={amount} 
+              onChange={(e) => setAmount(parseInt(e.target.value))}
+              className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-green-500"
+            />
+          </div>
+          
+          <div className="flex gap-2 mt-4">
+            <button onClick={() => setAmount(1)} className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 border border-slate-700">1</button>
+            <button onClick={() => setAmount(Math.ceil(item.max / 2))} className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 border border-slate-700">50%</button>
+            <button onClick={() => setAmount(item.max)} className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 border border-slate-700">ALL</button>
+          </div>
+        </div>
+
+        <button 
+          onClick={() => onConfirm(amount)}
+          className="w-full py-3 bg-green-700 hover:bg-green-600 text-white font-bold uppercase tracking-widest rounded shadow-lg shadow-green-900/20 transition-all active:scale-[0.98]"
+        >
+          Confirm
+        </button>
       </div>
     </div>
   );

@@ -307,10 +307,29 @@ export const GAME_DATA: Record<string, Resource[]> = {
 
 // --- SHOP ITEMS ---
 export const SHOP_ITEMS: ShopItem[] = [
+  // Woodcutting Axes
   { id: 'axe_steel', name: 'Steel Axe', cost: 100, multiplier: 0.9, skill: 'woodcutting', icon: '/assets/items/axe_steel.png', description: '10% faster chopping.' },
   { id: 'axe_mithril', name: 'Mithril Axe', cost: 500, multiplier: 0.75, skill: 'woodcutting', icon: '/assets/items/axe_mithril.png', description: '25% faster chopping.' },
+  
+  // Mining Pickaxes
   { id: 'pickaxe_steel', name: 'Steel Pickaxe', cost: 150, multiplier: 0.9, skill: 'mining', icon: '/assets/items/pickaxe_steel.png', description: '10% faster mining.' },
   { id: 'pickaxe_mithril', name: 'Mithril Pickaxe', cost: 750, multiplier: 0.75, skill: 'mining', icon: '/assets/items/pickaxe_mithril.png', description: '25% faster mining.' },
+
+  // Fishing Rods
+  { id: 'rod_reinforced', name: 'Reinforced Rod', cost: 250, multiplier: 0.9, skill: 'fishing', icon: '/assets/items/rod_reinforced.png', description: '10% faster fishing.' },
+  { id: 'rod_master', name: 'Master Rod', cost: 1000, multiplier: 0.75, skill: 'fishing', icon: '/assets/items/rod_master.png', description: '25% faster fishing.' },
+
+  // Cooking Utensils
+  { id: 'cooking_pot_iron', name: 'Iron Pot', cost: 300, multiplier: 0.9, skill: 'cooking', icon: '/assets/items/pot_iron.png', description: '10% faster cooking.' },
+  { id: 'cooking_pot_steel', name: 'Steel Pot', cost: 1200, multiplier: 0.75, skill: 'cooking', icon: '/assets/items/pot_steel.png', description: '25% faster cooking.' },
+
+  // Smithing Hammers
+  { id: 'hammer_steel', name: 'Heavy Hammer', cost: 500, multiplier: 0.9, skill: 'smithing', icon: '/assets/items/hammer_steel.png', description: '10% faster smithing.' },
+
+  // Crafting Tools
+  { id: 'chisel_steel', name: 'Precision Tools', cost: 500, multiplier: 0.9, skill: 'crafting', icon: '/assets/items/chisel_steel.png', description: '10% faster crafting.' },
+
+  // Dev Tool
   { id: 'test_money', name: 'Dev Money', cost: 0, multiplier: 1, skill: 'woodcutting', icon: '/assets/ui/coins.png', description: 'Get 1000 coins (Test).' }
 ];
 
@@ -329,6 +348,7 @@ export const getItemDetails = (id: string) => {
   if (id === 'frozen_key') return { name: 'Frozen Key', value: 100, icon: '/assets/items/key_frozen.png', description: 'Opens the Boss door.' };
   
   for (const skill of Object.keys(GAME_DATA)) {
+    // @ts-expect-error: Iteroidaan dynaamisesti
     const item = GAME_DATA[skill].find(i => i.id === id);
     if (item) return item;
   }

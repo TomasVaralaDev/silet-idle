@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { getItemDetails } from '../data';
-import type { GameState, EquipmentSlot } from '../types';
-import QuantityModal from './QuantityModal';
+import type { GameState, EquipmentSlot, Resource } from '../types';
 
 interface InventoryProps {
   inventory: GameState['inventory'];
@@ -16,304 +15,288 @@ interface InventoryProps {
   onUpdateAutoEat: (threshold: number) => void;
 }
 
-type FilterType = 'all' | 'gear' | 'resources' | 'food' | 'misc';
-
 export default function Inventory({ 
-  inventory, equipment, equippedFood, combatSettings, 
-  onSellClick, onEquip, onEquipFood, onUnequip, onUnequipFood, onUpdateAutoEat 
+  inventory, 
+  equipment, 
+  equippedFood,
+  combatSettings,
+  onSellClick, 
+  onEquip, 
+  onEquipFood,
+  onUnequip,
+  onUnequipFood,
+  onUpdateAutoEat
 }: InventoryProps) {
   
-  const [foodSelectionId, setFoodSelectionId] = useState<string | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [searchQuery, setSearchQuery] = useState(''); // UUSI: Haku-state
+  const [filter, setFilter] = useState<'all' | 'resources' | 'consumables' | 'equipment'>('all');
+  const [sortOrder, setSortOrder] = useState<'name' | 'value' | 'amount'>('amount');
 
-  const getItemCategory = (item: { id: string; slot?: string; healing?: number }): FilterType => {
-    if (item.slot && item.slot !== 'food') return 'gear';
-    if (item.healing || item.slot === 'food') return 'food';
-    if (item.id.includes('log') || item.id.includes('ore') || item.id.includes('fish_') || item.id.includes('crop')) return 'resources';
-    return 'misc';
+  // Helper to safely get resource item
+  const getResource = (id: string): Resource | null => {
+    const item = getItemDetails(id);
+    return item as Resource;
   };
 
-  const inventoryItems = Object.entries(inventory)
-    .map(([id, count]) => {
-      const details = getItemDetails(id);
-      if (!details) return null;
-      return { id, count, ...details };
-    })
-    .filter((item): item is NonNullable<typeof item> => item !== null)
-    .filter((item) => {
-      // 1. Kategoria-suodatus
-      const matchesCategory = activeFilter === 'all' || getItemCategory(item) === activeFilter;
-      // 2. Haku-suodatus (Case insensitive)
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      return matchesCategory && matchesSearch;
-    });
+  const inventoryItems = Object.entries(inventory).map(([id, count]) => {
+    const details = getResource(id);
+    return details ? { ...details, count, id } : null;
+  }).filter((item): item is NonNullable<typeof item> => item !== null);
 
-  const playerStats = { attack: 0, defense: 0 };
-
-  Object.values(equipment).forEach((itemId) => {
-    if (itemId) {
-      const item = getItemDetails(itemId);
-      if (item && item.stats) {
-        playerStats.attack += item.stats.attack || 0;
-        playerStats.defense += item.stats.defense || 0;
-      }
-    }
+  const filteredItems = inventoryItems.filter(item => {
+    if (filter === 'all') return true;
+    if (filter === 'equipment') return item.slot !== undefined && item.slot !== 'food';
+    if (filter === 'consumables') return item.healing !== undefined;
+    if (filter === 'resources') return !item.slot && !item.healing;
+    return true;
   });
 
-  // --- EQUIPMENT SLOT RENDERER ---
-  const renderSlot = (slot: string, placeholderIcon: string) => {
-    const itemId = equipment[slot as keyof typeof equipment];
-    const item = itemId ? getItemDetails(itemId) : null;
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (sortOrder === 'amount') return b.count - a.count;
+    if (sortOrder === 'value') return b.value - a.value;
+    return a.name.localeCompare(b.name);
+  });
 
-    return (
-      <div className="bg-slate-900 border border-slate-700 rounded-lg relative aspect-square shadow-[inset_0_0_15px_rgba(0,0,0,0.6)] overflow-hidden group">
-        <span className={`absolute top-1.5 left-2 text-[10px] uppercase font-bold text-slate-600 tracking-wider pointer-events-none z-10 transition-opacity ${item ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
-          {slot}
-        </span>
-        
-        {item ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
-             <img src={item.icon} alt={item.name} className="w-16 h-16 pixelated drop-shadow-2xl hover:scale-110 transition-transform duration-200" />
-             
-             <div className="absolute bottom-0 w-full bg-slate-950/90 text-[10px] font-bold text-slate-300 text-center py-1 truncate border-t border-slate-800">
-               {item.name}
-             </div>
-
-             <button 
-               onClick={() => onUnequip(slot)}
-               className="absolute top-1 right-1 bg-red-950/80 text-red-500 hover:text-white border border-red-900 rounded p-1 transition-colors z-20 opacity-0 group-hover:opacity-100"
-               title="Unequip"
-             >
-               <span className="text-xs font-bold leading-none">✕</span>
-             </button>
-          </div>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img src={placeholderIcon} alt="Empty Slot" className="w-12 h-12 opacity-10 pixelated grayscale" />
-          </div>
-        )}
-      </div>
-    );
+  // KORJAUS 1: Tarkistetaan, ettei slot ole 'food' ennen equipment-objektin hakua
+  const getEquippedItem = (slot: EquipmentSlot) => {
+    if (slot === 'food') return null; // Food käsitellään erikseen
+    
+    // Type assertion: Tiedämme nyt varmasti, että slot on validi avain equipmentille
+    const id = equipment[slot as keyof typeof equipment];
+    
+    if (!id) return null;
+    return getResource(id);
   };
 
-  const renderFoodSlot = () => {
-    const item = equippedFood ? getItemDetails(equippedFood.itemId) : null;
-
-    return (
-      <div className="bg-slate-900 border border-slate-700 rounded-lg relative aspect-square shadow-[inset_0_0_15px_rgba(0,0,0,0.6)] group overflow-visible">
-        <span className={`absolute top-1.5 left-2 text-[10px] uppercase font-bold text-slate-600 tracking-wider pointer-events-none z-10 transition-opacity ${item ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
-          Food
-        </span>
-        
-        <div className="absolute -top-2 -right-2 flex flex-col gap-1 items-end z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-          {item && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onUnequipFood(); }}
-              className="bg-slate-800 text-red-500 hover:text-white border border-slate-600 rounded-full w-6 h-6 flex items-center justify-center shadow-lg"
-              title="Unequip Food"
-            >✕</button>
-          )}
-          <button 
-            onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); }}
-            className={`bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full w-6 h-6 flex items-center justify-center shadow-lg ${showSettings ? 'text-cyan-400 border-cyan-500' : 'text-slate-400'}`}
-            title="Settings"
-          >⚙️</button>
-        </div>
-
-        {showSettings && (
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-900 border border-cyan-900/50 p-3 shadow-2xl z-50 rounded-lg">
-            <div className="flex justify-between items-center mb-2 border-b border-slate-800 pb-1">
-              <h4 className="text-[10px] font-bold text-cyan-500 uppercase tracking-wider">Auto-Eat</h4>
-              <button onClick={() => setShowSettings(false)} className="text-slate-500 hover:text-white text-xs">✕</button>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <input 
-                type="range" min="0" max="95" step="5"
-                value={combatSettings.autoEatThreshold}
-                onChange={(e) => onUpdateAutoEat(parseInt(e.target.value))}
-                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-              />
-              <span className="text-xs font-mono font-bold text-cyan-400 w-8 text-right">{combatSettings.autoEatThreshold}%</span>
-            </div>
-          </div>
-        )}
-
-        {item ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
-             <div className="relative">
-                <img src={item.icon} alt={item.name} className="w-16 h-16 pixelated drop-shadow-md hover:scale-110 transition-transform duration-200" />
-                <span className="absolute -bottom-1 -right-2 bg-slate-950 text-white text-xs font-bold px-1.5 rounded border border-slate-600 shadow-md font-mono">
-                  {equippedFood?.count}
-                </span>
-             </div>
-             <div className="absolute bottom-0 w-full bg-slate-950/90 text-[10px] font-bold text-center py-1 truncate text-emerald-400 border-t border-slate-800">
-               +{item.healing} HP
-             </div>
-          </div>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img src="/assets/ui/slot_food.png" alt="Empty" className="w-12 h-12 opacity-10 pixelated grayscale" />
-          </div>
-        )}
-      </div>
-    );
+  const getEquippedFoodItem = () => {
+    if (!equippedFood) return null;
+    return getResource(equippedFood.itemId);
   };
 
   return (
-    <div className="p-6 flex flex-col xl:flex-row gap-6 h-full overflow-hidden relative bg-slate-950">
+    <div className="p-6 h-full flex flex-col md:flex-row gap-6 bg-slate-950 overflow-y-auto custom-scrollbar">
       
-      {foodSelectionId && (
-        <QuantityModal 
-          itemId={foodSelectionId}
-          maxAmount={Math.min(999, inventory[foodSelectionId] || 0)} 
-          title={`Equip: ${getItemDetails(foodSelectionId)?.name}`}
-          onClose={() => setFoodSelectionId(null)}
-          onConfirm={(amount) => {
-            onEquipFood(foodSelectionId, amount);
-            setFoodSelectionId(null);
-          }}
-        />
-      )}
-
-      {/* --- LEFT COLUMN --- */}
-      <div className="w-full xl:w-[420px] flex-shrink-0 flex flex-col gap-4">
+      {/* --- LEFT: EQUIPMENT & STATS --- */}
+      <div className="w-full md:w-80 flex-shrink-0 flex flex-col gap-6">
         
-        {/* Equipment */}
-        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 shadow-lg flex flex-col">
-          <h2 className="text-sm font-bold mb-5 text-slate-300 flex items-center gap-3 uppercase tracking-widest border-b border-slate-800 pb-3">
-            <img src="/assets/ui/icon_equipment.png" alt="Equipment" className="w-5 h-5 pixelated opacity-70" />
-            <span>Active Modules</span>
-          </h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-start-2">{renderSlot('head', '/assets/ui/slot_head.png')}</div>
-            <div className="col-start-1 row-start-2">{renderSlot('weapon', '/assets/ui/slot_weapon.png')}</div>
-            <div className="col-start-2 row-start-2">{renderSlot('body', '/assets/ui/slot_body.png')}</div>
-            <div className="col-start-3 row-start-2">{renderSlot('shield', '/assets/ui/slot_shield.png')}</div>
-            <div className="col-start-2 row-start-3">{renderSlot('legs', '/assets/ui/slot_legs.png')}</div>
-            <div className="col-start-3 row-start-3">{renderFoodSlot()}</div>
+        {/* CHARACTER DOLL */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 relative">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 text-center">Active Loadout</h3>
+          
+          <div className="relative w-full aspect-[3/4] bg-slate-950/50 rounded-lg border border-slate-800/50 mb-4 flex items-center justify-center">
+             <img src="/assets/ui/character_silhouette.png" className="w-3/4 h-3/4 opacity-10 object-contain pixelated" alt="Silhouette" />
+             
+             {/* Slot Positions (Absolute) */}
+             <div className="absolute top-4 left-1/2 -translate-x-1/2">
+                <EquipmentSlotBox item={getEquippedItem('head')} slot="head" onUnequip={() => onUnequip('head')} />
+             </div>
+             <div className="absolute top-1/3 left-1/2 -translate-x-1/2">
+                <EquipmentSlotBox item={getEquippedItem('body')} slot="body" onUnequip={() => onUnequip('body')} />
+             </div>
+             <div className="absolute bottom-16 left-1/2 -translate-x-1/2">
+                <EquipmentSlotBox item={getEquippedItem('legs')} slot="legs" onUnequip={() => onUnequip('legs')} />
+             </div>
+             <div className="absolute top-1/2 left-4 -translate-y-1/2">
+                <EquipmentSlotBox item={getEquippedItem('weapon')} slot="weapon" onUnequip={() => onUnequip('weapon')} />
+             </div>
+             <div className="absolute top-1/2 right-4 -translate-y-1/2">
+                <EquipmentSlotBox item={getEquippedItem('shield')} slot="shield" onUnequip={() => onUnequip('shield')} />
+             </div>
+          </div>
+
+          {/* COMBAT STATS SUMMARY */}
+          <div className="grid grid-cols-2 gap-2 text-center">
+             <div className="bg-slate-950/50 p-2 rounded border border-slate-800/50">
+               <span className="text-[10px] text-slate-500 font-bold uppercase block">Attack</span>
+               <span className="text-orange-400 font-mono font-bold">
+                 +{Object.values(equipment).reduce((acc, id) => acc + (id ? (getResource(id)?.stats?.attack || 0) : 0), 0)}
+               </span>
+             </div>
+             <div className="bg-slate-950/50 p-2 rounded border border-slate-800/50">
+               <span className="text-[10px] text-slate-500 font-bold uppercase block">Defense</span>
+               <span className="text-cyan-400 font-mono font-bold">
+                 +{Object.values(equipment).reduce((acc, id) => acc + (id ? (getResource(id)?.stats?.defense || 0) : 0), 0)}
+               </span>
+             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="bg-slate-900/50 p-5 rounded-xl border border-slate-800 shadow-lg">
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">System Output</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800/50 pb-2">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-orange-950/30 rounded border border-orange-900/30">
-                  <img src="/assets/skills/attack.png" className="w-4 h-4 pixelated" alt="Attack" />
-                </div>
-                <span className="text-slate-300 text-sm font-medium">Kinetic Force</span>
-              </div>
-              <span className="font-mono text-lg font-bold text-orange-400">+{playerStats.attack}</span>
+        {/* FOOD & AUTO-EAT */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Consumables</h3>
+          
+          <div className="flex items-center gap-4 mb-4">
+            <div 
+              className={`w-12 h-12 rounded border-2 flex items-center justify-center cursor-pointer transition-all relative
+              ${equippedFood ? 'bg-slate-800 border-green-700' : 'bg-slate-950 border-slate-800 border-dashed hover:border-slate-600'}`}
+              onClick={onUnequipFood}
+              title="Click to unequip food"
+            >
+              {equippedFood ? (
+                <>
+                  <img src={getEquippedFoodItem()?.icon} className="w-8 h-8 pixelated" alt="Food" />
+                  <span className="absolute -bottom-2 -right-2 bg-slate-950 text-[10px] font-mono font-bold text-white px-1 rounded border border-slate-700">
+                    {equippedFood.count}
+                  </span>
+                </>
+              ) : (
+                <span className="text-slate-700 text-xs">EMPTY</span>
+              )}
             </div>
-            <div className="flex items-center justify-between border-b border-slate-800/50 pb-2">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-blue-950/30 rounded border border-blue-900/30">
-                  <img src="/assets/skills/defense.png" className="w-4 h-4 pixelated" alt="Defense" />
-                </div>
-                <span className="text-slate-300 text-sm font-medium">Structure Integrity</span>
+            
+            <div className="flex-1">
+              <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Auto-Eat Threshold</div>
+              <div className="flex items-center gap-2">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={combatSettings.autoEatThreshold} 
+                  onChange={(e) => onUpdateAutoEat(Number(e.target.value))}
+                  className="flex-1 h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-green-600"
+                />
+                <span className="text-xs font-mono font-bold text-green-400 w-8 text-right">{combatSettings.autoEatThreshold}%</span>
               </div>
-              <span className="font-mono text-lg font-bold text-blue-400">+{playerStats.defense}</span>
             </div>
           </div>
         </div>
+
       </div>
 
-      {/* --- RIGHT COLUMN: BACKPACK --- */}
-      <div className="flex-1 bg-slate-900/50 p-6 rounded-xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
+      {/* --- RIGHT: INVENTORY GRID --- */}
+      <div className="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
         
-        {/* Header & Controls */}
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-5 gap-4 border-b border-slate-800 pb-4">
-          <h2 className="text-lg font-bold text-slate-200 flex items-center gap-3 uppercase tracking-widest">
-            <img src="/assets/ui/icon_inventory.png" alt="Backpack" className="w-6 h-6 pixelated opacity-70" />
-            <span>Fragment Storage</span>
-          </h2>
+        {/* TOOLBAR */}
+        <div className="p-4 border-b border-slate-800 flex flex-wrap gap-4 items-center justify-between bg-slate-900 z-10">
+          <div className="flex gap-2">
+            {(['all', 'equipment', 'consumables', 'resources'] as const).map(f => (
+              <button 
+                key={f}
+                onClick={() => setFilter(f)} 
+                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded border transition-all
+                  ${filter === f 
+                    ? 'bg-slate-800 text-cyan-400 border-cyan-500/50' 
+                    : 'text-slate-500 border-slate-700 hover:text-slate-300 hover:bg-slate-800'}`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
-            {/* UUSI: SEARCH BAR */}
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Search fragments..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-48 bg-slate-950 border border-slate-700 text-xs text-slate-200 placeholder-slate-600 rounded-lg px-3 py-1.5 outline-none focus:border-cyan-500/50 focus:bg-slate-900 transition-all font-mono"
-              />
-              <span className="absolute right-3 top-1.5 text-slate-600 text-xs">🔍</span>
-            </div>
-
-            {/* FILTERS */}
-            <div className="flex flex-wrap gap-1">
-              {(['all', 'gear', 'resources', 'food', 'misc'] as FilterType[]).map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded transition-all border
-                    ${activeFilter === filter 
-                      ? 'bg-cyan-950 text-cyan-400 border-cyan-800 shadow-[0_0_10px_rgba(6,182,212,0.2)]' 
-                      : 'bg-slate-950 text-slate-500 border-slate-800 hover:text-slate-300 hover:border-slate-600'
-                    }`}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-500 font-bold uppercase">Sort:</span>
+            <select 
+              value={sortOrder} 
+              // KORJAUS 2: Korvattu 'any' union-tyypillä
+              onChange={(e) => setSortOrder(e.target.value as 'name' | 'value' | 'amount')}
+              className="bg-slate-950 border border-slate-700 text-slate-300 text-xs py-1 px-2 rounded outline-none focus:border-cyan-500"
+            >
+              <option value="amount">Amount</option>
+              <option value="value">Value</option>
+              <option value="name">Name</option>
+            </select>
           </div>
         </div>
 
-        {/* Scrollable Grid Area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
-          {inventoryItems.length === 0 ? (
-            <div className="text-center text-slate-700 italic py-20 flex flex-col items-center gap-4">
-              <img src="/assets/ui/icon_inventory.png" className="w-20 h-20 opacity-5 grayscale pixelated" alt="Empty" />
-              <p className="text-sm uppercase tracking-widest font-bold">Storage Empty</p>
-              {searchQuery && <p className="text-xs text-slate-600">No results found for "{searchQuery}"</p>}
+        {/* GRID CONTENT */}
+        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+          {sortedItems.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-600">
+              <span className="text-4xl mb-2 opacity-50">📦</span>
+              <p className="text-xs font-mono uppercase tracking-widest">Storage Empty</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-              {inventoryItems.map((item) => (
-                <div key={item.id} className="bg-slate-950 border border-slate-800 p-2 rounded-lg relative group hover:border-slate-600 transition-all hover:shadow-lg hover:-translate-y-0.5 flex flex-col items-center text-center min-h-[140px]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {sortedItems.map((item) => (
+                <div key={item.id} className="group relative bg-slate-950 border border-slate-800 hover:border-slate-600 rounded-lg p-3 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-lg">
                   
-                  <div className="absolute top-2 right-2 z-10">
-                    <span className="text-[10px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded shadow-sm">
-                      x{item.count}
-                    </span>
+                  {/* Top Stats (Values) */}
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] font-mono text-amber-500/80">{item.value}g</span>
+                    {item.count > 1 && <span className="text-[10px] font-mono text-slate-500">x{item.count}</span>}
                   </div>
 
-                  <div className="flex-1 flex items-center justify-center w-full py-4">
-                    <img src={item.icon} alt={item.name} className="w-14 h-14 pixelated drop-shadow-lg" />
+                  {/* Icon */}
+                  <div className="flex-1 flex items-center justify-center mb-3">
+                    <img src={item.icon} alt={item.name} className="w-10 h-10 pixelated drop-shadow-md group-hover:scale-110 transition-transform" />
                   </div>
-                  
-                  <div className="w-full mt-1 bg-slate-900/50 p-2 rounded border border-slate-800/50">
-                    <div className="text-xs font-bold text-slate-200 leading-tight mb-1 truncate">{item.name}</div>
+
+                  {/* Name & Type */}
+                  <div className="text-center mb-3">
+                    <h4 className={`text-xs font-bold leading-tight ${item.color} mb-0.5`}>{item.name}</h4>
+                    <p className="text-[9px] text-slate-600 uppercase tracking-wider font-bold">
+                      {item.slot ? item.slot : item.healing ? 'Food' : 'Resource'}
+                    </p>
+                  </div>
+
+                  {/* Item Specific Stats (Tooltip-ish info) */}
+                  {(item.stats?.attack || item.stats?.defense || item.healing) && (
+                    <div className="flex justify-center gap-1.5 mb-3">
+                      {item.stats?.attack && <span className="text-[9px] font-bold px-1.5 py-0.5 bg-orange-950/30 text-orange-400 rounded border border-orange-900/30">ATK {item.stats.attack}</span>}
+                      {item.stats?.defense && <span className="text-[9px] font-bold px-1.5 py-0.5 bg-cyan-950/30 text-cyan-400 rounded border border-cyan-900/30">DEF {item.stats.defense}</span>}
+                      {item.healing && <span className="text-[9px] font-bold px-1.5 py-0.5 bg-green-950/30 text-green-400 rounded border border-green-900/30">HP {item.healing}</span>}
+                    </div>
+                  )}
+
+                  {/* Actions Overlay */}
+                  <div className="mt-auto grid grid-cols-2 gap-1 pt-2 border-t border-slate-900">
+                    <button 
+                      onClick={() => onSellClick(item.id)} 
+                      className="py-1.5 bg-slate-900 hover:bg-red-950/30 text-[9px] font-bold uppercase text-slate-400 hover:text-red-400 rounded transition-colors"
+                    >
+                      Sell
+                    </button>
                     
-                    <div className="flex items-center justify-center gap-1.5 mb-2 min-h-[16px]">
-                      {item.stats?.attack && <span className="text-[10px] font-mono font-bold text-orange-400 bg-orange-950/40 px-1.5 rounded border border-orange-900/30">FRC+{item.stats.attack}</span>}
-                      {item.stats?.defense && <span className="text-[10px] font-mono font-bold text-blue-400 bg-blue-950/40 px-1.5 rounded border border-blue-900/30">DEF+{item.stats.defense}</span>}
-                      {item.healing && <span className="text-[10px] font-mono font-bold text-green-400 bg-green-950/40 px-1.5 rounded border border-green-900/30">HP+{item.healing}</span>}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {item.healing ? (
-                        <button onClick={() => setFoodSelectionId(item.id)} className="bg-emerald-900/30 hover:bg-emerald-600 text-emerald-300 border border-emerald-900 text-[10px] font-bold py-1 rounded uppercase tracking-wider transition-colors">Load</button>
-                      ) : item.slot ? (
-                        <button onClick={() => onEquip(item.id, item.slot as EquipmentSlot)} className="bg-cyan-900/30 hover:bg-cyan-600 text-cyan-300 border border-cyan-900 text-[10px] font-bold py-1 rounded uppercase tracking-wider transition-colors">Install</button>
+                    {item.slot ? (
+                      item.slot === 'food' ? (
+                        <button 
+                          onClick={() => onEquipFood(item.id, item.count)}
+                          className="py-1.5 bg-slate-900 hover:bg-green-950/30 text-[9px] font-bold uppercase text-slate-400 hover:text-green-400 rounded transition-colors"
+                        >
+                          Equip
+                        </button>
                       ) : (
-                        <div className="col-span-1"></div>
-                      )}
-                      
-                      <button onClick={() => onSellClick(item.id)} className="bg-slate-800 hover:bg-amber-900/40 hover:text-amber-200 text-slate-400 border border-slate-700 text-[10px] font-bold py-1 rounded uppercase tracking-wider transition-colors">Sell</button>
-                    </div>
+                        <button 
+                          onClick={() => onEquip(item.id, item.slot!)} // ! assertion is safe because filter checks item.slot
+                          className="py-1.5 bg-slate-900 hover:bg-cyan-950/30 text-[9px] font-bold uppercase text-slate-400 hover:text-cyan-400 rounded transition-colors"
+                        >
+                          Equip
+                        </button>
+                      )
+                    ) : (
+                      <div className="bg-transparent"></div> // Spacer
+                    )}
                   </div>
+
                 </div>
               ))}
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Sub-component for equipment slot
+function EquipmentSlotBox({ item, slot, onUnequip }: { item: Resource | null, slot: string, onUnequip: () => void }) {
+  if (!item) {
+    return (
+      <div className="w-10 h-10 bg-slate-900/80 border border-slate-700 border-dashed rounded flex items-center justify-center group cursor-default">
+        <span className="text-[8px] text-slate-600 font-bold uppercase tracking-widest opacity-50 group-hover:opacity-100">{slot[0]}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      onClick={onUnequip}
+      className="w-10 h-10 bg-slate-900 border border-slate-600 rounded flex items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-950/20 transition-all relative group"
+      title={`Unequip ${item.name}`}
+    >
+      <img src={item.icon} alt={slot} className="w-7 h-7 pixelated" />
+      {/* Unequip indicator */}
+      <div className="absolute inset-0 bg-red-950/80 items-center justify-center rounded hidden group-hover:flex">
+        <span className="text-xs font-bold text-red-400">✕</span>
       </div>
     </div>
   );

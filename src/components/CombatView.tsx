@@ -26,6 +26,18 @@ const WORLD_NAMES: Record<number, string> = {
   8: "Eternal Nexus"
 };
 
+// Määritellään taustakuvat maailmoittain
+const BACKGROUND_IMAGES: Record<number, string> = {
+  1: "/assets/backgrounds/bg_greenvale.png",
+  2: "/assets/backgrounds/bg_stonefall.png",
+  3: "/assets/backgrounds/bg_ashbridge.png", // Huom: tiedostonimi kuvassa oli ashbridge (b-kirjaimella)
+  4: "/assets/backgrounds/bg_frostreach.png",
+  5: "/assets/backgrounds/bg_duskwood.png",
+  6: "/assets/backgrounds/bg_stormcoast.png",
+  7: "/assets/backgrounds/bg_voidexpanse.png",
+  8: "/assets/backgrounds/bg_eternalnexus.png"
+};
+
 export default function CombatView({ 
   combatState, 
   inventory, 
@@ -87,6 +99,14 @@ export default function CombatView({
     ? COMBAT_DATA.find(m => m.id === combatState.currentMapId) 
     : null;
 
+  // Jos ollaan taistelussa, käytetään sen mapin worldia taustana. Muuten valittua worldia.
+  // Tai yksinkertaisemmin: Käytetään aina `selectedWorld` taustana, koska se on se mitä pelaaja katselee.
+  // Jos haluat että tausta vaihtuu automaattisesti kun auto-progress etenee seuraavaan worldiin,
+  // voimme päivittää selectedWorldin useEffectillä (mutta pidetään tämä yksinkertaisena ensin).
+  // Käytetään tässä `currentMap.world` jos taistelu on käynnissä, muuten `selectedWorld`.
+  const activeBackgroundWorld = currentMap ? currentMap.world : selectedWorld;
+  const backgroundImage = BACKGROUND_IMAGES[activeBackgroundWorld];
+
   const playerHpPercent = combatState.maxHp ? (combatState.hp / combatState.maxHp) * 100 : 0;
   const enemyHpPercent = currentMap ? (combatState.enemyCurrentHp / currentMap.enemyHp) * 100 : 0;
 
@@ -106,7 +126,22 @@ export default function CombatView({
         
         {/* 1. BATTLE ARENA */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-1 relative overflow-hidden shadow-2xl flex flex-col min-h-[420px]">
-          <div className="absolute inset-0 bg-[url('/assets/bg/combat_grid.png')] opacity-10 pointer-events-none"></div>
+          
+          {/* --- DYNAMIC BACKGROUND IMAGE --- */}
+          {/* Oletustausta (grid) jos kuvaa ei löydy, muuten kuva */}
+          <div className="absolute inset-0 z-0">
+             {backgroundImage ? (
+               <img 
+                 src={backgroundImage} 
+                 alt="Battle Background" 
+                 className="w-full h-full object-cover opacity-40 blur-[2px] scale-105" 
+               />
+             ) : (
+               <div className="w-full h-full bg-[url('/assets/bg/combat_grid.png')] opacity-10"></div>
+             )}
+             {/* Gradient overlay to make UI elements pop */}
+             <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-900/60 to-slate-950/90"></div>
+          </div>
           
           {/* --- AUTO PROGRESS TOGGLE (VISIBLE IN COMBAT & IDLE) --- */}
           <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-lg border border-slate-700 backdrop-blur-sm">
@@ -119,7 +154,7 @@ export default function CombatView({
             </button>
           </div>
 
-          <div className="flex-1 bg-gradient-to-b from-slate-900 via-slate-900/50 to-slate-950 rounded-xl relative z-10 flex flex-col justify-between p-8">
+          <div className="flex-1 rounded-xl relative z-10 flex flex-col justify-between p-8">
             
             {currentMap ? (
               <>
@@ -127,21 +162,21 @@ export default function CombatView({
                 <div className="flex flex-col items-center animate-in fade-in zoom-in duration-500">
                   <div className="relative group mb-6">
                      {/* ENEMY IMAGE CONTAINER */}
-                     <div className="w-28 h-28 bg-slate-950 rounded-full border-4 border-red-900/60 flex items-center justify-center shadow-[0_0_40px_rgba(220,38,38,0.15)] group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                     <div className="w-28 h-28 bg-slate-950/80 backdrop-blur-sm rounded-full border-4 border-red-900/60 flex items-center justify-center shadow-[0_0_40px_rgba(220,38,38,0.15)] group-hover:scale-105 transition-transform duration-300 overflow-hidden">
                         {currentMap.image ? (
                           <img src={currentMap.image} className="w-full h-full object-cover pixelated" alt={currentMap.enemyName} />
                         ) : (
                           <span className="text-6xl drop-shadow-lg">👾</span>
                         )}
                      </div>
-                     <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-red-950 border border-red-800 px-4 py-1 rounded-full text-xs font-bold text-red-200 uppercase tracking-wider whitespace-nowrap">
+                     <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-red-950 border border-red-800 px-4 py-1 rounded-full text-xs font-bold text-red-200 uppercase tracking-wider whitespace-nowrap shadow-lg">
                        Lvl.{currentMap.enemyAttack * 2}
                      </div>
                   </div>
                   
                   <div className="text-center w-full max-w-md">
-                    <h2 className="text-xl font-bold text-red-100 uppercase tracking-widest mb-2 drop-shadow-md">{currentMap.enemyName}</h2>
-                    <div className="w-full h-6 bg-slate-950 rounded-full border border-slate-700 relative overflow-hidden shadow-inner">
+                    <h2 className="text-xl font-bold text-red-100 uppercase tracking-widest mb-2 drop-shadow-md text-shadow-sm">{currentMap.enemyName}</h2>
+                    <div className="w-full h-6 bg-slate-950/80 rounded-full border border-slate-700 relative overflow-hidden shadow-inner backdrop-blur-sm">
                       <div className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-300 ease-out" style={{ width: `${enemyHpPercent}%` }}></div>
                       <span className="absolute inset-0 flex items-center justify-center text-xs font-mono font-bold text-white/90 drop-shadow-sm">
                         {Math.ceil(combatState.enemyCurrentHp)} / {currentMap.enemyHp}
@@ -150,16 +185,16 @@ export default function CombatView({
                   </div>
                 </div>
 
-                <div className="text-center py-4 opacity-20 text-6xl font-black italic tracking-widest text-slate-500 select-none">VS</div>
+                <div className="text-center py-4 opacity-40 text-6xl font-black italic tracking-widest text-slate-400 select-none drop-shadow-lg">VS</div>
 
                 {/* PLAYER (BOTTOM) */}
                 <div className="flex flex-col items-center">
                   <div className="w-full max-w-md mb-8">
-                    <div className="flex justify-between text-sm font-bold text-slate-400 mb-1 px-1">
+                    <div className="flex justify-between text-sm font-bold text-slate-300 mb-1 px-1 drop-shadow-sm">
                       <span>YOU</span>
                       <span>{Math.ceil(combatState.hp)} / {combatState.maxHp} HP</span>
                     </div>
-                    <div className="w-full h-8 bg-slate-950 rounded-full border border-slate-700 relative overflow-hidden shadow-lg">
+                    <div className="w-full h-8 bg-slate-950/80 rounded-full border border-slate-700 relative overflow-hidden shadow-lg backdrop-blur-sm">
                       <div className="h-full bg-gradient-to-r from-emerald-700 to-emerald-500 transition-all duration-300 ease-out" style={{ width: `${playerHpPercent}%` }}></div>
                     </div>
                   </div>
@@ -167,7 +202,7 @@ export default function CombatView({
                   <div className="flex items-center gap-6">
                     {/* Active Food Display */}
                     <div className="relative group cursor-help">
-                      <div className={`w-16 h-16 bg-slate-900 border-2 rounded-xl flex items-center justify-center relative shadow-lg transition-all
+                      <div className={`w-16 h-16 bg-slate-900/90 backdrop-blur-sm border-2 rounded-xl flex items-center justify-center relative shadow-lg transition-all
                           ${equippedFood ? 'border-emerald-500 shadow-emerald-900/20' : 'border-slate-800 border-dashed opacity-50'}`}>
                         {foodItem ? (
                           <>
@@ -182,7 +217,7 @@ export default function CombatView({
                             )}
                           </>
                         ) : (
-                          <span className="text-xs text-slate-600 font-bold uppercase">Empty</span>
+                          <span className="text-xs text-slate-500 font-bold uppercase">Empty</span>
                         )}
                       </div>
                     </div>
@@ -197,12 +232,12 @@ export default function CombatView({
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-600">
-                <div className="w-28 h-28 rounded-full border-4 border-slate-800 flex items-center justify-center mb-6 opacity-50">
-                  <span className="text-5xl">⚔️</span>
+              <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+                <div className="w-28 h-28 rounded-full border-4 border-slate-700/50 flex items-center justify-center mb-6 bg-slate-900/50 backdrop-blur-sm">
+                  <span className="text-5xl opacity-50">⚔️</span>
                 </div>
-                <p className="text-lg font-bold uppercase tracking-widest">Zone Secure</p>
-                <p className="text-sm opacity-50 mt-2">Select a location to engage</p>
+                <p className="text-lg font-bold uppercase tracking-widest drop-shadow-md">Zone Secure</p>
+                <p className="text-sm opacity-70 mt-2">Select a location to engage</p>
               </div>
             )}
           </div>

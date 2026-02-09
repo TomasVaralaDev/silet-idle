@@ -3,19 +3,47 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-slate-900 text-slate-100 antialiased;
+  /* FIREFOX TUKI */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #020617; /* Thumb (Slate-700) & Track (Slate-950) */
+  }
+
+  /* CHROME, EDGE, SAFARI TUKI */
+  ::-webkit-scrollbar {
+    width: 8px;  /* Pystypalkin leveys */
+    height: 8px; /* Vaakapalkin korkeus */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #020617; /* Tailwind bg-slate-950 */
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #1e293b; /* Tailwind bg-slate-800 */
+    border-radius: 4px;
+    border: 2px solid #020617; /* Tekee pienen "reunuksen" palkin ympärille */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #475569; /* Tailwind bg-slate-600 (vaaleampi kun hiiri päällä) */
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: #020617;
   }
 }
-body {
-  font-family: "Saira", sans-serif;
-}
-/* Pieni animaatio edistymispalkille */
-@keyframes progress {
-  from { width: 0%; }
-  to { width: 100%; }
-}
 
-.progress-animation {
-  animation: progress 2s linear infinite;
+/* KUSTOMOITU LUOKKA (Varmuuden vuoksi, jos haluat pakottaa tiettyyn diviin) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 20px;
+  border: transparent;
 }

@@ -16,11 +16,11 @@ interface SkillViewProps {
 
 export default function SkillView({ skill, level, xp, activeAction, inventory, onToggleAction, speedMultiplier, nextLevelXp, maxMapCompleted }: SkillViewProps) {
   
-  // Tila Foundry-tabeille (Smithing)
-  const [smithingMode, setSmithingMode] = useState<'smelting' | 'forging'>('smelting');
+  // Tila Foundry-tabeille (Smithing) - PÄIVITETTY: Lisätty 'rings'
+  const [smithingMode, setSmithingMode] = useState<'smelting' | 'forging' | 'rings'>('smelting');
   
-  // Tila Assembly-tabeille (Crafting) - UUSI
-  const [assemblyMode, setAssemblyMode] = useState<'refining' | 'creation'>('refining');
+  // Tila Assembly-tabeille (Crafting)
+  const [assemblyMode, setAssemblyMode] = useState<'refining' | 'creation' | 'jewelry'>('refining');
   
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -70,27 +70,32 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
     const matchesSearch = resource.name.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
 
-    // 2. Smithing Tabit (Foundry)
+    // 2. Smithing Tabit (Foundry) - PÄIVITETTY LOGIIKKA
     if (skill === 'smithing') {
       if (smithingMode === 'smelting') {
-        // Näytä vain Harkot (tunnistetaan esim. ID:n päätteestä "_smelted" tai kategoriasta jos olisi)
+        // Näytä vain Harkot (tunnistetaan ID:n päätteestä)
         return resource.id.includes('_smelted');
       }
       if (smithingMode === 'forging') {
-        // Näytä vain Armor
+        // Näytä vain Armor (kategoria 'armor')
         return resource.category === 'armor';
+      }
+      if (smithingMode === 'rings') {
+        // Näytä vain Sormukset (kategoria 'rings')
+        return resource.category === 'rings';
       }
     }
 
-    // 3. Crafting Tabit (Assembly) - UUSI
+    // 3. Crafting Tabit (Assembly)
     if (skill === 'crafting') {
       if (assemblyMode === 'refining') {
-        // Näytä vain Lankut
         return resource.category === 'wood_refining';
       }
       if (assemblyMode === 'creation') {
-        // Näytä vain Aseet
         return resource.category === 'weapons';
+      }
+      if (assemblyMode === 'jewelry') {
+        return resource.category === 'jewelry';
       }
     }
 
@@ -140,7 +145,7 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
       {/* CONTROLS */}
       <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4 border-b border-slate-800 pb-2">
         
-        {/* SMITHING TABS */}
+        {/* SMITHING TABS - PÄIVITETTY */}
         {skill === 'smithing' ? (
           <div className="flex gap-2">
             <button
@@ -163,9 +168,19 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
             >
               <span>⚒️</span> Forging
             </button>
+            <button
+              onClick={() => setSmithingMode('rings')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+                ${smithingMode === 'rings' 
+                  ? 'bg-indigo-900/40 text-indigo-200 border-t-2 border-x border-indigo-700/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>💍</span> Rings
+            </button>
           </div>
         ) 
-        // CRAFTING (ASSEMBLY) TABS - UUSI
+        // CRAFTING (ASSEMBLY) TABS
         : skill === 'crafting' ? (
           <div className="flex gap-2">
             <button
@@ -187,6 +202,16 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                 }`}
             >
               <span>⚔️</span> Creation
+            </button>
+            <button
+              onClick={() => setAssemblyMode('jewelry')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+                ${assemblyMode === 'jewelry' 
+                  ? 'bg-purple-900/40 text-purple-200 border-t-2 border-x border-purple-700/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>💎</span> Jewelry
             </button>
           </div>
         ) : (

@@ -44,7 +44,8 @@ const DEFAULT_STATE: GameState = {
   },
   equippedFood: null,
   combatSettings: {
-    autoEatThreshold: 50
+    autoEatThreshold: 50,
+    autoProgress: false
   },
   scavenger: {
     activeExpeditions: [],
@@ -115,7 +116,7 @@ export default function App() {
           const safeEquipment = { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) };
           
           if ('ammo' in safeEquipment) delete (safeEquipment as { ammo?: unknown }).ammo;
-          if ('food' in safeEquipment) delete safeEquipment.food;
+          if ('food' in safeEquipment) delete (safeEquipment as { food?: unknown }).food;
 
           setState({
             ...DEFAULT_STATE,
@@ -216,22 +217,54 @@ export default function App() {
     if (state.activeAction?.skill === 'combat' && state.combatStats.currentMapId && isDataLoaded) {
       intervalId = window.setInterval(() => {
         setState(prev => {
-          const map = COMBAT_DATA.find(m => m.id === prev.combatStats.currentMapId);
+          let map = COMBAT_DATA.find(m => m.id === prev.combatStats.currentMapId);
           if (!map) return prev;
 
-          let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer } = prev.combatStats;
+          let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer, currentMapId } = prev.combatStats;
           let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
-          let stopCombatFlag = false; 
           
+          let notify = null;
+
+          // --- 0. RESPAWN TIMER LOGIC (HANDLE MAP SWITCH HERE) ---
           if (respawnTimer > 0) {
             respawnTimer -= 1;
-            if (respawnTimer === 0) enemyCurrentHp = map.enemyHp;
+            
+            // Kun timer loppuu, spawnaa uusi vihollinen
+            if (respawnTimer === 0) {
+              
+              // TARKISTA AUTO-PROGRESS
+              if (prev.combatSettings.autoProgress) {
+                const nextMap = COMBAT_DATA.find(m => m.id === (currentMapId || 0) + 1);
+                
+                // Jos seuraava mappi löytyy...
+                if (nextMap) {
+                  let canSwitch = true;
+                  // Tarkista avain ennen vaihtoa
+                  if (nextMap.keyRequired) {
+                    const keyCount = prev.inventory[nextMap.keyRequired] || 0;
+                    if (keyCount <= 0) {
+                      canSwitch = false; 
+                    }
+                  }
+
+                  if (canSwitch) {
+                    currentMapId = nextMap.id;
+                    map = nextMap; // Päivitä viittaus uuteen mappiin
+                  }
+                }
+              }
+
+              // Aseta HP täysiin (uudelle tai vanhalle mapille)
+              enemyCurrentHp = map.enemyHp;
+            }
+
             return { 
               ...prev, 
               combatStats: { 
                 ...prev.combatStats, 
                 respawnTimer, 
                 enemyCurrentHp, 
+                currentMapId, 
                 foodTimer: Math.max(0, foodTimer - 1) 
               } 
             };
@@ -241,8 +274,7 @@ export default function App() {
 
           const newInventory = { ...prev.inventory };
           const newSkills = { ...prev.skills };
-          let notify = null;
-
+          
           // 1. PLAYER ATTACK
           const weaponId = prev.equipment.weapon;
           const weaponItem = weaponId ? getItemDetails(weaponId) as Resource : null;
@@ -256,8 +288,12 @@ export default function App() {
           // 2. ENEMY DEATH
           if (enemyCurrentHp <= 0) {
             enemyCurrentHp = 0;
-            respawnTimer = 3;
+            respawnTimer = 2; // Viive ennen seuraavaa (näyttää 0 HP hetken)
 
+            let validKill = true;
+            let stopCombatNow = false;
+
+            // --- BOSS KEY CONSUMPTION ---
             if (map.keyRequired) {
               const currentKeys = newInventory[map.keyRequired] || 0;
               if (currentKeys > 0) {
@@ -265,15 +301,17 @@ export default function App() {
                 
                 if (newInventory[map.keyRequired] <= 0) {
                   delete newInventory[map.keyRequired];
-                  stopCombatFlag = true; 
-                  notify = { message: "Out of keys! Returning...", icon: "/assets/items/bosskey/bosskey_w1.png" };
+                  notify = { message: "Last key used!", icon: "/assets/items/key_frozen.png" };
                 }
               } else {
-                stopCombatFlag = true;
+                validKill = false;
+                stopCombatNow = true;
+                notify = { message: "Out of keys!", icon: "/assets/items/key_frozen.png" };
               }
             }
 
-            if (!stopCombatFlag) {
+            // REWARDS
+            if (validKill) {
               const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward);
               newSkills[combatStyle] = styleXpGain;
 
@@ -302,6 +340,20 @@ export default function App() {
                 notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
               }
             }
+
+            // Jos avaimet loppuivat kesken taistelun, pysäytä
+            if (stopCombatNow) {
+               if (notify) {
+                 setNotification(notify);
+                 setTimeout(() => setNotification(null), 1500);
+               }
+               return {
+                 ...prev,
+                 combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0 },
+                 activeAction: null
+               };
+            }
+
           } else {
             // 3. ENEMY ATTACK
             const defenseLvl = prev.skills.defense.level;
@@ -317,22 +369,22 @@ export default function App() {
             
             hp -= incomingDmg;
 
+            // Auto-Eat
             const maxHp = getMaxHp(prev.skills.hitpoints.level);
             const eatThresholdHp = maxHp * (prev.combatSettings.autoEatThreshold / 100);
 
             if (hp <= eatThresholdHp && equippedFood && equippedFood.count > 0 && foodTimer === 0 && hp < maxHp) {
               const foodItem = getItemDetails(equippedFood.itemId) as Resource;
-              
               if (foodItem && foodItem.healing) {
                 equippedFood.count -= 1;
                 if (equippedFood.count <= 0) equippedFood = null;
-                
                 hp = Math.min(maxHp, hp + foodItem.healing);
                 foodTimer = 10;
               }
             }
           }
 
+          // 4. PLAYER DEATH
           if (hp <= 0) {
             hp = 0;
             return {
@@ -342,22 +394,9 @@ export default function App() {
             };
           }
 
-          if (stopCombatFlag) {
-             if (notify) {
-               setNotification(notify); 
-               setTimeout(() => setNotification(null), 1500); // KORJAUS: Lisätty timeout out-of-keys ilmoitukseen
-             }
-             return {
-               ...prev,
-               inventory: newInventory,
-               activeAction: null,
-               combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0 }
-             };
-          }
-
           if (notify) {
              setNotification(notify);
-             setTimeout(() => setNotification(null), 1500); // Lyhennetty 3000 -> 1500
+             setTimeout(() => setNotification(null), 1500); 
           }
 
           return {
@@ -365,7 +404,15 @@ export default function App() {
             inventory: newInventory,
             skills: newSkills,
             equippedFood: equippedFood,
-            combatStats: { ...prev.combatStats, hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer }
+            combatStats: { 
+                ...prev.combatStats, 
+                hp, 
+                enemyCurrentHp, 
+                maxMapCompleted, 
+                respawnTimer, 
+                foodTimer,
+                currentMapId 
+            }
           };
         });
       }, 1000);
@@ -439,6 +486,17 @@ export default function App() {
     });
   };
 
+  // --- TOGGLE AUTO PROGRESS ---
+  const toggleAutoProgress = () => {
+    setState(prev => ({
+      ...prev,
+      combatSettings: {
+        ...prev.combatSettings,
+        autoProgress: !prev.combatSettings.autoProgress
+      }
+    }));
+  };
+
   // --- SCAVENGER HANDLERS ---
   const handleStartExpedition = (mapId: number, durationMinutes: number) => {
     setState(prev => {
@@ -506,10 +564,10 @@ export default function App() {
       
       if (itemNames) {
         setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}`, icon: '/assets/skills/scavenging.png' });
-        setTimeout(() => setNotification(null), 1500); // Lyhennetty
+        setTimeout(() => setNotification(null), 1500); 
       } else {
         setNotification({ message: `Expedition returned empty handed...`, icon: '/assets/skills/scavenging.png' });
-        setTimeout(() => setNotification(null), 1500); // Lyhennetty
+        setTimeout(() => setNotification(null), 1500); 
       }
 
       return {
@@ -531,9 +589,9 @@ export default function App() {
         const keyItem = getItemDetails(map.keyRequired);
         setNotification({ 
           message: `Missing: ${keyItem?.name || 'Boss Key'}`, 
-          icon: "/assets/items/bosskey/bosskey_w1.png" 
+          icon: "/assets/items/key_frozen.png" 
         });
-        setTimeout(() => setNotification(null), 1500); // Lyhennetty
+        setTimeout(() => setNotification(null), 1500); 
         return; 
       }
     }
@@ -709,6 +767,10 @@ export default function App() {
             combatState={{...state.combatStats, maxHp: getMaxHp(state.skills.hitpoints.level)}}
             inventory={state.inventory}
             equippedFood={state.equippedFood}
+            skills={state.skills}
+            equipment={state.equipment}
+            autoProgress={state.combatSettings.autoProgress}
+            onToggleAutoProgress={toggleAutoProgress}
             onEquipFood={handleEquipFood}
             onStartCombat={startCombat}
             onStopCombat={stopCombat}

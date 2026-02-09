@@ -11,8 +11,6 @@ export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'ne
 
 export type CombatStyle = 'melee' | 'ranged' | 'magic';
 
-// --- NEW INTERFACES (Fixes for errors) ---
-
 export interface ActiveAction {
   skill: SkillType;
   resourceId: string;
@@ -25,10 +23,8 @@ export interface CombatState {
   enemyCurrentHp: number;
   respawnTimer: number;
   foodTimer: number;
-  maxHp?: number; // Optional property for UI
+  maxHp?: number; 
 }
-
-// ----------------------------------------
 
 export interface Ingredient {
   id: string;
@@ -76,6 +72,7 @@ export interface CombatMap {
   drops: Drop[];
   isBoss?: boolean;
   keyRequired?: string; 
+  image?: string; // UUSI: Polku vihollisen kuvaan
 }
 
 export interface ShopItem {
@@ -121,9 +118,9 @@ export interface GameState {
   equippedFood: { itemId: string, count: number } | null;
   combatSettings: CombatSettings;
   scavenger: ScavengerState;
-  activeAction: ActiveAction | null; // Käytetään nyt määriteltyä rajapintaa
+  activeAction: ActiveAction | null;
   coins: number;
   upgrades: string[]; 
   unlockedAchievements: string[];
-  combatStats: CombatState; // Käytetään nyt määriteltyä rajapintaa
+  combatStats: CombatState;
 }

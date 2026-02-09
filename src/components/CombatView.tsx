@@ -126,8 +126,13 @@ export default function CombatView({
                 {/* ENEMY (TOP) */}
                 <div className="flex flex-col items-center animate-in fade-in zoom-in duration-500">
                   <div className="relative group mb-6">
-                     <div className="w-28 h-28 bg-slate-950 rounded-full border-4 border-red-900/60 flex items-center justify-center shadow-[0_0_40px_rgba(220,38,38,0.15)] group-hover:scale-105 transition-transform duration-300">
-                        <span className="text-6xl drop-shadow-lg">👾</span>
+                     {/* ENEMY IMAGE CONTAINER */}
+                     <div className="w-28 h-28 bg-slate-950 rounded-full border-4 border-red-900/60 flex items-center justify-center shadow-[0_0_40px_rgba(220,38,38,0.15)] group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                        {currentMap.image ? (
+                          <img src={currentMap.image} className="w-full h-full object-cover pixelated" alt={currentMap.enemyName} />
+                        ) : (
+                          <span className="text-6xl drop-shadow-lg">👾</span>
+                        )}
                      </div>
                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-red-950 border border-red-800 px-4 py-1 rounded-full text-xs font-bold text-red-200 uppercase tracking-wider whitespace-nowrap">
                        Lvl.{currentMap.enemyAttack * 2}
@@ -345,7 +350,7 @@ export default function CombatView({
             return (
               <button
                 key={map.id}
-                disabled={!isUnlocked} // Muutettu: Ei estetä klikkausta vaikka combat on käynnissä!
+                disabled={!isUnlocked || (combatState.currentMapId !== null && !isActive)}
                 onClick={() => onStartCombat(map.id)}
                 className={`w-full p-4 rounded-lg border-l-4 text-left transition-all relative group shadow-sm hover:shadow-md
                   ${isActive

@@ -6,7 +6,10 @@ export default {
   ],
   theme: {
     extend: {
-      // Voit lisätä tänne omia värejä myöhemmin
+      fontFamily: {
+        // Asetetaan Saira oletusfontiksi
+        sans: ['"Saira"', 'sans-serif'],
+      },
     },
   },
   plugins: [],

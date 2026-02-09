@@ -1,61 +1,103 @@
 import type { Resource, ShopItem, Achievement, CombatMap } from './types';
 
-// --- COMBAT DATA (WORLD 1) ---
+// --- COMBAT DATA ---
+// Updated to include 8 Worlds (80 Zones) with names provided
 export const COMBAT_DATA: CombatMap[] = [
-  { 
-    id: 1, world: 1, name: "Slime Fields (1-1)", enemyName: "Green Slime", 
-    enemyHp: 20, enemyAttack: 2, xpReward: 10,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [2, 5] }] 
-  },
-  { 
-    id: 2, world: 1, name: "Rat Cave (1-2)", enemyName: "Giant Rat", 
-    enemyHp: 35, enemyAttack: 4, xpReward: 15,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [5, 10] }] 
-  },
-  { 
-    id: 3, world: 1, name: "Goblin Outpost (1-3)", enemyName: "Goblin Scout", 
-    enemyHp: 50, enemyAttack: 6, xpReward: 20,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [10, 15] }] 
-  },
-  { 
-    id: 4, world: 1, name: "Spider Nest (1-4)", enemyName: "Cave Spider", 
-    enemyHp: 65, enemyAttack: 8, xpReward: 30,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [12, 20] }] 
-  },
-  { 
-    id: 5, world: 1, name: "Deep Woods (1-5)", enemyName: "Dire Wolf", 
-    enemyHp: 80, enemyAttack: 12, xpReward: 40,
-    drops: [
-      { itemId: 'coins', chance: 1.0, amount: [15, 30] },
-      { itemId: 'frozen_key', chance: 0.05, amount: [1, 1] } 
-    ]
-  },
-  { 
-    id: 6, world: 1, name: "Bandit Camp (1-6)", enemyName: "Bandit", 
-    enemyHp: 100, enemyAttack: 15, xpReward: 50,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [20, 40] }, { itemId: 'frozen_key', chance: 0.1, amount: [1, 1] }] 
-  },
-  { 
-    id: 7, world: 1, name: "Old Ruins (1-7)", enemyName: "Skeleton", 
-    enemyHp: 120, enemyAttack: 18, xpReward: 60,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [25, 50] }, { itemId: 'frozen_key', chance: 0.1, amount: [1, 1] }] 
-  },
-  { 
-    id: 8, world: 1, name: "Cursed Lake (1-8)", enemyName: "Water Spirit", 
-    enemyHp: 150, enemyAttack: 22, xpReward: 75,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [30, 60] }, { itemId: 'frozen_key', chance: 0.15, amount: [1, 1] }] 
-  },
-  { 
-    id: 9, world: 1, name: "Ice Gate (1-9)", enemyName: "Gatekeeper", 
-    enemyHp: 200, enemyAttack: 25, xpReward: 100,
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [50, 80] }, { itemId: 'frozen_key', chance: 0.2, amount: [1, 1] }] 
-  },
-  { 
-    id: 10, world: 1, name: "Ice Cavern (BOSS)", enemyName: "Ice Golem King", 
-    enemyHp: 500, enemyAttack: 40, xpReward: 1000,
-    isBoss: true, keyRequired: 'frozen_key',
-    drops: [{ itemId: 'coins', chance: 1.0, amount: [1000, 2000] }]
-  }
+  // --- WORLD 1: GREENVALE (1–10) ---
+  { id: 1, world: 1, name: "Greenvale Plains", enemyName: "Field Rat", enemyHp: 25, enemyAttack: 3, xpReward: 10, drops: [{ itemId: 'coins', chance: 1.0, amount: [3, 6] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 2, world: 1, name: "Tall Grass", enemyName: "Wild Boar", enemyHp: 40, enemyAttack: 5, xpReward: 15, drops: [{ itemId: 'coins', chance: 1.0, amount: [6, 12] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 3, world: 1, name: "Forest Edge", enemyName: "Forest Spider", enemyHp: 55, enemyAttack: 7, xpReward: 20, drops: [{ itemId: 'coins', chance: 1.0, amount: [10, 18] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 4, world: 1, name: "Woodland Path", enemyName: "Timber Wolf", enemyHp: 70, enemyAttack: 9, xpReward: 30, drops: [{ itemId: 'coins', chance: 1.0, amount: [15, 25] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 5, world: 1, name: "Thorn Grove", enemyName: "Thorn Crawler", enemyHp: 90, enemyAttack: 12, xpReward: 40, drops: [{ itemId: 'coins', chance: 1.0, amount: [20, 35] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 6, world: 1, name: "Mossy Clearing", enemyName: "Moss Beetle", enemyHp: 110, enemyAttack: 14, xpReward: 50, drops: [{ itemId: 'coins', chance: 1.0, amount: [25, 45] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 7, world: 1, name: "Serpent Hollow", enemyName: "Grove Serpent", enemyHp: 135, enemyAttack: 17, xpReward: 65, drops: [{ itemId: 'coins', chance: 1.0, amount: [30, 55] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 8, world: 1, name: "Bandit Trail", enemyName: "Bandit Scout", enemyHp: 160, enemyAttack: 20, xpReward: 80, drops: [{ itemId: 'coins', chance: 1.0, amount: [40, 70] }, { itemId: 'bosskey_w1', chance: 0.01, amount: [1, 1] }] },
+  { id: 9, world: 1, name: "Deep Woods", enemyName: "Woodland Stalker", enemyHp: 190, enemyAttack: 24, xpReward: 100, drops: [{ itemId: 'coins', chance: 1.0, amount: [60, 90] }, { itemId: 'bosskey_w1', chance: 1, amount: [1, 1] }] },
+  { id: 10, world: 1, name: "Ancient Grove (BOSS)", enemyName: "Oakroot Guardian", enemyHp: 500, enemyAttack: 40, xpReward: 500, isBoss: true, keyRequired: 'bosskey_w1', drops: [{ itemId: 'coins', chance: 1.0, amount: [500, 800] }, { itemId: 'item_ice_heart', chance: 1.0, amount: [1, 1] }] },
+
+  // --- WORLD 2: STONEFALL (11–20) ---
+  { id: 11, world: 2, name: "Rocky Pass", enemyName: "Cave Bat", enemyHp: 220, enemyAttack: 26, xpReward: 120, drops: [{ itemId: 'coins', chance: 1.0, amount: [70, 110] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 12, world: 2, name: "Stone Tunnels", enemyName: "Rock Crab", enemyHp: 260, enemyAttack: 30, xpReward: 140, drops: [{ itemId: 'coins', chance: 1.0, amount: [80, 130] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 13, world: 2, name: "Collapsed Mine", enemyName: "Tunnel Rat", enemyHp: 300, enemyAttack: 34, xpReward: 170, drops: [{ itemId: 'coins', chance: 1.0, amount: [90, 150] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 14, world: 2, name: "Stoneworks", enemyName: "Stone Golem", enemyHp: 360, enemyAttack: 40, xpReward: 200, drops: [{ itemId: 'coins', chance: 1.0, amount: [120, 180] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 15, world: 2, name: "Crystal Vein", enemyName: "Ironback Beetle", enemyHp: 420, enemyAttack: 46, xpReward: 240, drops: [{ itemId: 'coins', chance: 1.0, amount: [150, 220] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 16, world: 2, name: "Mine Depths", enemyName: "Mine Crawler", enemyHp: 480, enemyAttack: 52, xpReward: 280, drops: [{ itemId: 'coins', chance: 1.0, amount: [180, 260] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 17, world: 2, name: "Gravel Fields", enemyName: "Gravel Hound", enemyHp: 550, enemyAttack: 60, xpReward: 330, drops: [{ itemId: 'coins', chance: 1.0, amount: [220, 320] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 18, world: 2, name: "Crystal Cavern", enemyName: "Crystal Lurker", enemyHp: 620, enemyAttack: 68, xpReward: 380, drops: [{ itemId: 'coins', chance: 1.0, amount: [260, 380] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 19, world: 2, name: "Abandoned Shaft", enemyName: "Rogue Miner", enemyHp: 700, enemyAttack: 75, xpReward: 450, drops: [{ itemId: 'coins', chance: 1.0, amount: [300, 450] }, { itemId: 'bosskey_w2', chance: 0.01, amount: [1, 1] }] },
+  { id: 20, world: 2, name: "Stonefall Core (BOSS)", enemyName: "Stone Colossus", enemyHp: 1500, enemyAttack: 120, xpReward: 1500, isBoss: true, keyRequired: 'bosskey_w2', drops: [{ itemId: 'coins', chance: 1.0, amount: [1200, 1800] }, { itemId: 'item_golden_ankh', chance: 1.0, amount: [1, 1] }] },
+
+  // --- WORLD 3: ASHRIDGE (21–30) ---
+  { id: 21, world: 3, name: "Ash Plains", enemyName: "Ash Imp", enemyHp: 780, enemyAttack: 85, xpReward: 520, drops: [{ itemId: 'coins', chance: 1.0, amount: [350, 520] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 22, world: 3, name: "Cinder Path", enemyName: "Scorchling", enemyHp: 860, enemyAttack: 95, xpReward: 600, drops: [{ itemId: 'coins', chance: 1.0, amount: [400, 600] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 23, world: 3, name: "Burned Ridge", enemyName: "Ember Wolf", enemyHp: 950, enemyAttack: 105, xpReward: 700, drops: [{ itemId: 'coins', chance: 1.0, amount: [480, 700] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 24, world: 3, name: "Lava Fields", enemyName: "Lava Beetle", enemyHp: 1050, enemyAttack: 120, xpReward: 820, drops: [{ itemId: 'coins', chance: 1.0, amount: [560, 820] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 25, world: 3, name: "Molten Gorge", enemyName: "Cinder Serpent", enemyHp: 1180, enemyAttack: 135, xpReward: 960, drops: [{ itemId: 'coins', chance: 1.0, amount: [650, 960] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 26, world: 3, name: "Ash Crypt", enemyName: "Firebound Skeleton", enemyHp: 1320, enemyAttack: 150, xpReward: 1120, drops: [{ itemId: 'coins', chance: 1.0, amount: [750, 1120] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 27, world: 3, name: "Smolder Pits", enemyName: "Magma Slime", enemyHp: 1500, enemyAttack: 170, xpReward: 1300, drops: [{ itemId: 'coins', chance: 1.0, amount: [880, 1300] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 28, world: 3, name: "Lava Rise", enemyName: "Smolder Drake", enemyHp: 1700, enemyAttack: 190, xpReward: 1500, drops: [{ itemId: 'coins', chance: 1.0, amount: [1000, 1500] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 29, world: 3, name: "Cult Grounds", enemyName: "Flame Cultist", enemyHp: 1950, enemyAttack: 215, xpReward: 1800, drops: [{ itemId: 'coins', chance: 1.0, amount: [1200, 1800] }, { itemId: 'bosskey_w3', chance: 0.01, amount: [1, 1] }] },
+  { id: 30, world: 3, name: "Ashridge Core (BOSS)", enemyName: "Inferno Warden", enemyHp: 4000, enemyAttack: 350, xpReward: 4000, isBoss: true, keyRequired: 'bosskey_w3', drops: [{ itemId: 'coins', chance: 1.0, amount: [3000, 5000] }, { itemId: 'item_hydra_scale', chance: 1.0, amount: [1, 1] }] },
+
+  // --- WORLD 4: FROSTREACH (31–40) ---
+  { id: 31, world: 4, name: "Frozen Flats", enemyName: "Frost Rat", enemyHp: 2200, enemyAttack: 240, xpReward: 2100, drops: [{ itemId: 'coins', chance: 1.0, amount: [1400, 2100] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 32, world: 4, name: "Ice Caves", enemyName: "Ice Spider", enemyHp: 2450, enemyAttack: 270, xpReward: 2400, drops: [{ itemId: 'coins', chance: 1.0, amount: [1600, 2400] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 33, world: 4, name: "Snow Fields", enemyName: "Snow Wolf", enemyHp: 2750, enemyAttack: 300, xpReward: 2800, drops: [{ itemId: 'coins', chance: 1.0, amount: [1900, 2800] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 34, world: 4, name: "Frozen Battlefield", enemyName: "Frozen Soldier", enemyHp: 3100, enemyAttack: 340, xpReward: 3300, drops: [{ itemId: 'coins', chance: 1.0, amount: [2200, 3300] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 35, world: 4, name: "Glacier Pass", enemyName: "Glacier Beetle", enemyHp: 3500, enemyAttack: 380, xpReward: 3900, drops: [{ itemId: 'coins', chance: 1.0, amount: [2600, 3900] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 36, world: 4, name: "Icebound Ruins", enemyName: "Frost Wraith", enemyHp: 3950, enemyAttack: 420, xpReward: 4600, drops: [{ itemId: 'coins', chance: 1.0, amount: [3000, 4600] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 37, world: 4, name: "Frozen Depths", enemyName: "Icebound Golem", enemyHp: 4500, enemyAttack: 470, xpReward: 5400, drops: [{ itemId: 'coins', chance: 1.0, amount: [3600, 5400] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 38, world: 4, name: "Blizzard Ridge", enemyName: "Blizzard Stalker", enemyHp: 5100, enemyAttack: 520, xpReward: 6300, drops: [{ itemId: 'coins', chance: 1.0, amount: [4200, 6300] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 39, world: 4, name: "Tundra Arena", enemyName: "Tundra Brute", enemyHp: 5800, enemyAttack: 580, xpReward: 7400, drops: [{ itemId: 'coins', chance: 1.0, amount: [5000, 7400] }, { itemId: 'bosskey_w4', chance: 0.01, amount: [1, 1] }] },
+  { id: 40, world: 4, name: "Frozen Throne (BOSS)", enemyName: "Icebound King", enemyHp: 12000, enemyAttack: 950, xpReward: 12000, isBoss: true, keyRequired: 'bosskey_w4', drops: [{ itemId: 'coins', chance: 1.0, amount: [9000, 14000] }, { itemId: 'item_crown_of_winter', chance: 1.0, amount: [1, 1] }] },
+
+  // --- WORLD 5: DUSKWOOD (41–50) ---
+  { id: 41, world: 5, name: "Twilight Edge", enemyName: "Shadow Rat", enemyHp: 6500, enemyAttack: 640, xpReward: 8500, drops: [{ itemId: 'coins', chance: 1.0, amount: [6000, 8500] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 42, world: 5, name: "Rot Grove", enemyName: "Rotting Wolf", enemyHp: 7400, enemyAttack: 710, xpReward: 9800, drops: [{ itemId: 'coins', chance: 1.0, amount: [7000, 9800] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 43, world: 5, name: "Blight Nest", enemyName: "Blight Spider", enemyHp: 8500, enemyAttack: 790, xpReward: 11500, drops: [{ itemId: 'coins', chance: 1.0, amount: [8500, 11500] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 44, world: 5, name: "Cursed Clearing", enemyName: "Cursed Dryad", enemyHp: 9800, enemyAttack: 880, xpReward: 13500, drops: [{ itemId: 'coins', chance: 1.0, amount: [10000, 13500] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 45, world: 5, name: "Night Paths", enemyName: "Night Stalker", enemyHp: 11300, enemyAttack: 980, xpReward: 16000, drops: [{ itemId: 'coins', chance: 1.0, amount: [12000, 16000] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 46, world: 5, name: "Gravewood", enemyName: "Grave Hound", enemyHp: 13000, enemyAttack: 1080, xpReward: 19000, drops: [{ itemId: 'coins', chance: 1.0, amount: [14500, 19000] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 47, world: 5, name: "Withered Hollow", enemyName: "Withered Treant", enemyHp: 15000, enemyAttack: 1200, xpReward: 22500, drops: [{ itemId: 'coins', chance: 1.0, amount: [17500, 22500] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 48, world: 5, name: "Dark Shrine", enemyName: "Dark Ritualist", enemyHp: 17300, enemyAttack: 1350, xpReward: 26500, drops: [{ itemId: 'coins', chance: 1.0, amount: [21000, 26500] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 49, world: 5, name: "Shadow Vale", enemyName: "Shade Horror", enemyHp: 20000, enemyAttack: 1550, xpReward: 31000, drops: [{ itemId: 'coins', chance: 1.0, amount: [25000, 31000] }, { itemId: 'bosskey_w5', chance: 0.01, amount: [1, 1] }] },
+  { id: 50, world: 5, name: "Dreadwood Heart (BOSS)", enemyName: "Dreadwood Sovereign", enemyHp: 42000, enemyAttack: 2600, xpReward: 60000, isBoss: true, keyRequired: 'bosskey_w5', drops: [{ itemId: 'coins', chance: 1.0, amount: [45000, 70000] }, { itemId: 'item_fire_essence', chance: 1.0, amount: [1, 1] }] },
+
+  // --- WORLD 6: STORMCOAST (51–60) ---
+  { id: 51, world: 6, name: "Shoreline", enemyName: "Tide Crawler", enemyHp: 24000, enemyAttack: 1750, xpReward: 35000, drops: [{ itemId: 'coins', chance: 1.0, amount: [28000, 35000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 52, world: 6, name: "Reef Break", enemyName: "Reef Shark", enemyHp: 28000, enemyAttack: 1950, xpReward: 41000, drops: [{ itemId: 'coins', chance: 1.0, amount: [33000, 41000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 53, world: 6, name: "Cliff Winds", enemyName: "Storm Gull", enemyHp: 32000, enemyAttack: 2150, xpReward: 48000, drops: [{ itemId: 'coins', chance: 1.0, amount: [38000, 48000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 54, world: 6, name: "Deep Waters", enemyName: "Sea Serpent", enemyHp: 37000, enemyAttack: 2400, xpReward: 56000, drops: [{ itemId: 'coins', chance: 1.0, amount: [45000, 56000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 55, world: 6, name: "Brine Flats", enemyName: "Brine Brute", enemyHp: 43000, enemyAttack: 2700, xpReward: 66000, drops: [{ itemId: 'coins', chance: 1.0, amount: [52000, 66000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 56, world: 6, name: "Storm Surge", enemyName: "Thunder Eel", enemyHp: 50000, enemyAttack: 3050, xpReward: 78000, drops: [{ itemId: 'coins', chance: 1.0, amount: [62000, 78000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 57, world: 6, name: "Coral Reach", enemyName: "Coral Golem", enemyHp: 58000, enemyAttack: 3450, xpReward: 92000, drops: [{ itemId: 'coins', chance: 1.0, amount: [75000, 92000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 58, world: 6, name: "Raider Coast", enemyName: "Deepwater Raider", enemyHp: 67000, enemyAttack: 3900, xpReward: 110000, drops: [{ itemId: 'coins', chance: 1.0, amount: [90000, 110000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 59, world: 6, name: "Tempest Skies", enemyName: "Tempest Drake", enemyHp: 78000, enemyAttack: 4400, xpReward: 130000, drops: [{ itemId: 'coins', chance: 1.0, amount: [105000, 130000] }, { itemId: 'bosskey_w6', chance: 0.01, amount: [1, 1] }] },
+  { id: 60, world: 6, name: "Maelstrom Eye (BOSS)", enemyName: "Lord of the Maelstrom", enemyHp: 160000, enemyAttack: 7200, xpReward: 250000, isBoss: true, keyRequired: 'bosskey_w6', drops: [{ itemId: 'coins', chance: 1.0, amount: [200000, 300000] }, { itemId: 'item_spellbook_of_eternity', chance: 1.0, amount: [1, 1] }] },
+
+  // --- WORLD 7: VOID EXPANSE (61–70) ---
+  { id: 61, world: 7, name: "Rift Edge", enemyName: "Voidling", enemyHp: 95000, enemyAttack: 5200, xpReward: 150000, drops: [{ itemId: 'coins', chance: 1.0, amount: [120000, 150000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 62, world: 7, name: "Abyss Pools", enemyName: "Rift Leech", enemyHp: 110000, enemyAttack: 5800, xpReward: 180000, drops: [{ itemId: 'coins', chance: 1.0, amount: [145000, 180000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 63, world: 7, name: "Shadow Flats", enemyName: "Shadow Spawn", enemyHp: 130000, enemyAttack: 6500, xpReward: 215000, drops: [{ itemId: 'coins', chance: 1.0, amount: [175000, 215000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 64, world: 7, name: "Void March", enemyName: "Abyss Walker", enemyHp: 155000, enemyAttack: 7300, xpReward: 255000, drops: [{ itemId: 'coins', chance: 1.0, amount: [210000, 255000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 65, world: 7, name: "Null Zone", enemyName: "Null Beast", enemyHp: 185000, enemyAttack: 8200, xpReward: 300000, drops: [{ itemId: 'coins', chance: 1.0, amount: [250000, 300000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 66, world: 7, name: "Rift Paths", enemyName: "Void Stalker", enemyHp: 220000, enemyAttack: 9200, xpReward: 355000, drops: [{ itemId: 'coins', chance: 1.0, amount: [295000, 355000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 67, world: 7, name: "Entropy Fields", enemyName: "Entropy Wraith", enemyHp: 265000, enemyAttack: 10500, xpReward: 420000, drops: [{ itemId: 'coins', chance: 1.0, amount: [350000, 420000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 68, world: 7, name: "Rift Citadel", enemyName: "Riftbound Knight", enemyHp: 320000, enemyAttack: 12000, xpReward: 500000, drops: [{ itemId: 'coins', chance: 1.0, amount: [420000, 500000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 69, world: 7, name: "Starless Depths", enemyName: "Starless Horror", enemyHp: 390000, enemyAttack: 14000, xpReward: 600000, drops: [{ itemId: 'coins', chance: 1.0, amount: [500000, 600000] }, { itemId: 'bosskey_w7', chance: 0.01, amount: [1, 1] }] },
+  { id: 70, world: 7, name: "Void Core (BOSS)", enemyName: "Void Architect", enemyHp: 800000, enemyAttack: 24000, xpReward: 1200000, isBoss: true, keyRequired: 'bosskey_w7', drops: [{ itemId: 'coins', chance: 1.0, amount: [900000, 1400000] }, { itemId: 'item_scythe_fragment', chance: 1.0, amount: [1, 1] }] },
+
+  // --- WORLD 8: ETERNAL NEXUS (71–80) ---
+  { id: 71, world: 8, name: "Timeless Gate", enemyName: "Timeless Construct", enemyHp: 480000, enemyAttack: 16500, xpReward: 700000, drops: [{ itemId: 'coins', chance: 1.0, amount: [600000, 700000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 72, world: 8, name: "Aether Halls", enemyName: "Aether Sentinel", enemyHp: 580000, enemyAttack: 19000, xpReward: 850000, drops: [{ itemId: 'coins', chance: 1.0, amount: [750000, 850000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 73, world: 8, name: "Chrono Rift", enemyName: "Chrono Wisp", enemyHp: 700000, enemyAttack: 22000, xpReward: 1050000, drops: [{ itemId: 'coins', chance: 1.0, amount: [900000, 1050000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 74, world: 8, name: "Reality Span", enemyName: "Reality Shaper", enemyHp: 850000, enemyAttack: 26000, xpReward: 1300000, drops: [{ itemId: 'coins', chance: 1.0, amount: [1100000, 1300000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 75, world: 8, name: "Astral Ring", enemyName: "Astral Knight", enemyHp: 1050000, enemyAttack: 30500, xpReward: 1600000, drops: [{ itemId: 'coins', chance: 1.0, amount: [1350000, 1600000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 76, world: 8, name: "Phase Reach", enemyName: "Phase Serpent", enemyHp: 1300000, enemyAttack: 36000, xpReward: 2000000, drops: [{ itemId: 'coins', chance: 1.0, amount: [1700000, 2000000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 77, world: 8, name: "Paradox Loop", enemyName: "Paradox Beast", enemyHp: 1650000, enemyAttack: 43000, xpReward: 2500000, drops: [{ itemId: 'coins', chance: 1.0, amount: [2100000, 2500000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 78, world: 8, name: "Nexus Watch", enemyName: "Nexus Guardian", enemyHp: 2100000, enemyAttack: 52000, xpReward: 3100000, drops: [{ itemId: 'coins', chance: 1.0, amount: [2600000, 3100000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 79, world: 8, name: "Creation Echo", enemyName: "Echo of Creation", enemyHp: 2700000, enemyAttack: 63000, xpReward: 3900000, drops: [{ itemId: 'coins', chance: 1.0, amount: [3300000, 3900000] }, { itemId: 'bosskey_w8', chance: 0.01, amount: [1, 1] }] },
+  { id: 80, world: 8, name: "Eternal Core (BOSS)", enemyName: "Prime Overseer", enemyHp: 6000000, enemyAttack: 120000, xpReward: 10000000, isBoss: true, drops: [{ itemId: 'coins', chance: 1.0, amount: [8000000, 12000000] }, { itemId: 'item_void_essence', chance: 1.0, amount: [1, 1] }] },
 ];
 
 // --- GAME DATA ---
@@ -190,7 +232,7 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'bloodwood_plank', name: 'Bloodwood Plank', levelRequired: 99, xpReward: 175, interval: 10000, value: 1000, icon: '/assets/resources/tree/bloodwood_plank.png', color: 'text-red-600', description: 'Refined bloodwood.', inputs: [{ id: 'bloodwood_log', count: 1 }], category: 'wood_refining' },
 
     // WEAPONS
-    { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '/assets/items/sword_bronze.png', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper_smelted', count: 2 }], slot: 'weapon', stats: { attack: 8 }, category: 'weapons', combatStyle: 'melee' },
+    { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '/assets/items/sword_bronze.png', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper_smelted', count: 2 }], slot: 'weapon', stats: { attack: 1000000000 }, category: 'weapons', combatStyle: 'melee' },
     { id: 'weapon_sword_iron', name: 'Iron Sword', levelRequired: 15, xpReward: 50, interval: 5000, value: 50, icon: '/assets/items/sword_iron.png', color: 'text-slate-400', description: 'Sharp and reliable.', inputs: [{ id: 'ore_iron_smelted', count: 3 }], slot: 'weapon', stats: { attack: 18 }, category: 'weapons', combatStyle: 'melee' },
     
     // Bows now use new logs
@@ -345,10 +387,33 @@ export const ACHIEVEMENTS: Achievement[] = [
 // --- HELPER ---
 export const getItemDetails = (id: string) => {
   if (id === 'coins') return { name: 'Coins', value: 1, icon: '/assets/ui/coins.png' };
-  if (id === 'frozen_key') return { name: 'Frozen Key', value: 100, icon: '/assets/items/key_frozen.png', description: 'Opens the Boss door.' };
   
+  // BOSS KEYS - Haetaan kuvat /assets/items/bosskey/ -kansiosta
+  if (id.startsWith('bosskey_w')) {
+    const worldNum = id.replace('bosskey_w', '');
+    return {
+      name: `World ${worldNum} Key`,
+      value: 500,
+      icon: `/assets/items/bosskey/${id}.png`,
+      description: 'Used to challenge the world boss.'
+    };
+  }
+
+  // PLACEHOLDER DROPS - Geneerinen ikoni ja nimi
+  if (id.startsWith('item_')) {
+    const name = id.replace('item_', '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return { 
+      name, 
+      value: 50, 
+      icon: '/assets/ui/icon_box.png', 
+      description: 'A mysterious drop.' 
+    };
+  }
+  
+  // Vanha key fallback
+  if (id === 'frozen_key') return { name: 'Frozen Key', value: 100, icon: '/assets/items/key_frozen.png', description: 'Opens the Boss door.' };
+
   for (const skill of Object.keys(GAME_DATA)) {
-    // Directive removed here because GAME_DATA and skill types are now properly aligned
     const item = GAME_DATA[skill].find(i => i.id === id);
     if (item) return item;
   }

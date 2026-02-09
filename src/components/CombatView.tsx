@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CombatState, GameState, Resource } from '../types';
 import { COMBAT_DATA, getItemDetails } from '../data';
 
@@ -10,6 +11,18 @@ interface CombatViewProps {
   onStopCombat: () => void;
 }
 
+// World Nimet
+const WORLD_NAMES: Record<number, string> = {
+  1: "Greenvale",
+  2: "Stonefall",
+  3: "Ashridge",
+  4: "Frostreach",
+  5: "Duskwood",
+  6: "Stormcoast",
+  7: "Void Expanse",
+  8: "Eternal Nexus"
+};
+
 export default function CombatView({ 
   combatState, 
   inventory, 
@@ -19,13 +32,16 @@ export default function CombatView({
   onStopCombat 
 }: CombatViewProps) {
 
-  // POISTETTU: const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
-  // Taistelun tila tulee suoraan propsista 'combatState'
+  const initialWorld = combatState.currentMapId 
+    ? COMBAT_DATA.find(m => m.id === combatState.currentMapId)?.world || 1
+    : 1;
 
-  // KORJAUS: Type assertion 'as Resource', jotta pääsemme käsiksi .healing propertyyn
+  const [selectedWorld, setSelectedWorld] = useState<number>(initialWorld);
+
+  const uniqueWorlds = Array.from(new Set(COMBAT_DATA.map(m => m.world)));
+
   const foodItem = equippedFood ? (getItemDetails(equippedFood.itemId) as Resource) : null;
 
-  // Find available food from inventory
   const availableFood = Object.entries(inventory)
     .map(([id, count]) => {
       const item = getItemDetails(id) as Resource;
@@ -41,6 +57,14 @@ export default function CombatView({
   const playerHpPercent = combatState.maxHp ? (combatState.hp / combatState.maxHp) * 100 : 0;
   const enemyHpPercent = currentMap ? (combatState.enemyCurrentHp / currentMap.enemyHp) * 100 : 0;
 
+  const isWorldUnlocked = (world: number) => {
+    if (world === 1) return true;
+    const previousWorldLastMapId = (world - 1) * 10; 
+    return combatState.maxMapCompleted >= previousWorldLastMapId;
+  };
+
+  const filteredMaps = COMBAT_DATA.filter(m => m.world === selectedWorld);
+
   return (
     <div className="p-6 h-full flex flex-col lg:flex-row gap-6 bg-slate-950 overflow-y-auto custom-scrollbar">
       
@@ -50,17 +74,15 @@ export default function CombatView({
         {/* ACTIVE COMBAT AREA */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 relative overflow-hidden min-h-[400px] flex flex-col shadow-2xl">
           
-          {/* Background decoration */}
           <div className="absolute inset-0 bg-[url('/assets/bg/combat_grid.png')] opacity-5 pointer-events-none"></div>
           
           {currentMap ? (
             <div className="flex-1 flex flex-col justify-between relative z-10">
               
-              {/* ENEMY SECTION (TOP) */}
+              {/* ENEMY SECTION */}
               <div className="flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="relative mb-4">
                    <div className="w-32 h-32 bg-slate-950/50 rounded-full border-2 border-red-900/50 flex items-center justify-center shadow-[0_0_50px_rgba(220,38,38,0.2)]">
-                      {/* Enemy Placeholder / Icon */}
                       <span className="text-4xl">👾</span>
                    </div>
                 </div>
@@ -84,9 +106,8 @@ export default function CombatView({
                 VS
               </div>
 
-              {/* PLAYER SECTION (BOTTOM) */}
+              {/* PLAYER SECTION */}
               <div className="flex flex-col items-center">
-                
                 {/* Player HP Bar */}
                 <div className="w-full max-w-xs bg-slate-950 h-8 rounded-full border border-slate-700 relative overflow-hidden mb-3 shadow-lg">
                   <div 
@@ -121,7 +142,6 @@ export default function CombatView({
                         <span className="text-xs text-slate-500 font-bold uppercase">No Food</span>
                       )}
                     </div>
-                    {/* Tooltip for healing amount */}
                     {foodItem && (
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-green-400 text-xs px-2 py-1 rounded border border-slate-700 whitespace-nowrap">
                         Heals {foodItem.healing} HP
@@ -172,15 +192,49 @@ export default function CombatView({
 
       </div>
 
-      {/* --- RIGHT: MAP SELECTION --- */}
+      {/* --- RIGHT: WORLD & MAP SELECTION --- */}
       <div className="w-full lg:w-96 flex-shrink-0 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        
+        {/* WORLD SELECTOR (UPDATED GRID) */}
         <div className="p-4 border-b border-slate-800 bg-slate-950/50">
-          <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Combat Zones</h3>
-          <p className="text-xs text-slate-500 font-mono mt-1">World 1 - The Beginning</p>
+          <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest mb-3">Select World</h3>
+          
+          {/* Changed to 2 columns to fit text better */}
+          <div className="grid grid-cols-2 gap-2">
+            {uniqueWorlds.map(worldNum => {
+              const unlocked = isWorldUnlocked(worldNum);
+              return (
+                <button
+                  key={worldNum}
+                  onClick={() => unlocked && setSelectedWorld(worldNum)}
+                  disabled={!unlocked}
+                  className={`p-3 rounded border transition-all relative text-left flex flex-col justify-center h-16
+                    ${selectedWorld === worldNum 
+                      ? 'bg-slate-800 text-cyan-400 border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.1)]' 
+                      : unlocked 
+                        ? 'bg-slate-950 text-slate-400 border-slate-700 hover:bg-slate-800 hover:text-slate-200'
+                        : 'bg-slate-950 text-slate-700 border-slate-800 cursor-not-allowed opacity-50'
+                    }`}
+                  title={!unlocked ? `Complete previous world to unlock` : `World ${worldNum}: ${WORLD_NAMES[worldNum]}`}
+                >
+                  <span className="text-[9px] uppercase opacity-60 leading-none mb-1">World {worldNum}</span>
+                  <span className="text-xs font-bold uppercase tracking-wider truncate w-full">
+                    {WORLD_NAMES[worldNum]}
+                  </span>
+                  {!unlocked && <span className="absolute top-2 right-2 text-[10px]">🔒</span>}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
+        {/* MAP LIST */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-          {COMBAT_DATA.map((map) => {
+          <h4 className="text-xs font-bold text-cyan-500 uppercase tracking-widest mb-2 px-1 border-b border-slate-800 pb-1">
+            {WORLD_NAMES[selectedWorld]} Zones
+          </h4>
+          
+          {filteredMaps.map((map) => {
             const isUnlocked = map.id === 1 || combatState.maxMapCompleted >= map.id - 1;
             const isCompleted = combatState.maxMapCompleted >= map.id;
             

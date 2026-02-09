@@ -44,7 +44,6 @@ export default function ScavengerView({ scavengerState, maxMapCompleted, onStart
 
         {scavengerState.activeExpeditions.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-xl min-h-[200px] text-slate-600">
-            {/* KORJAUS: Emoji -> Kuva */}
             <img src="/assets/ui/icon_scope.png" className="w-16 h-16 opacity-20 pixelated mb-2" alt="Scope" />
             <p className="font-mono uppercase text-xs tracking-widest">No active expeditions</p>
           </div>
@@ -66,7 +65,6 @@ export default function ScavengerView({ scavengerState, maxMapCompleted, onStart
       <div className="w-full xl:w-[450px] bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col h-fit shadow-xl flex-shrink-0">
         <div className="mb-6 flex items-center gap-4">
            <div className="w-12 h-12 bg-indigo-950/50 rounded-lg flex items-center justify-center border border-indigo-500/30">
-             {/* KORJAUS: Emoji -> Kuva */}
              <img src="/assets/ui/icon_map.png" className="w-8 h-8 pixelated opacity-90" alt="Map" />
            </div>
            <div>
@@ -109,20 +107,30 @@ export default function ScavengerView({ scavengerState, maxMapCompleted, onStart
         <div className="mb-8">
           <div className="flex justify-between items-end mb-4">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Duration</label>
-            <span className="text-2xl font-mono font-bold text-indigo-400">{formatDuration(sliderValue)}</span>
+            <div className="flex items-center gap-2">
+               {/* DEV TEST BUTTON */}
+               <button 
+                 onClick={() => setSliderValue(1)}
+                 className="px-2 py-1 bg-indigo-900/50 hover:bg-indigo-900 text-[10px] text-indigo-300 rounded border border-indigo-700/50 font-mono font-bold transition-colors"
+                 title="Set duration to 1 minute for testing"
+               >
+                 TEST: 1m
+               </button>
+               <span className="text-2xl font-mono font-bold text-indigo-400">{formatDuration(sliderValue)}</span>
+            </div>
           </div>
           
           <input 
             type="range" 
-            min="30" 
+            min="1"     // Changed from 30 to 1
             max="1440" 
-            step="30"
+            step="1"    // Changed from 30 to 1 to allow precise testing
             value={sliderValue}
             onChange={(e) => setSliderValue(parseInt(e.target.value))}
             className="w-full h-3 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-indigo-500 hover:accent-indigo-400"
           />
           <div className="flex justify-between text-[10px] text-slate-600 mt-2 font-mono font-bold">
-            <span>30m</span>
+            <span>1m</span>
             <span>12h</span>
             <span>24h</span>
           </div>
@@ -196,7 +204,6 @@ function ActiveExpeditionCard({ expedition, onCancel, onClaim }: { expedition: E
       <div className="flex justify-between items-center mb-3 relative z-10">
         <div className="flex items-center gap-4">
           <div className={`w-10 h-10 rounded flex items-center justify-center border ${expedition.completed ? 'bg-emerald-900/50 border-emerald-500' : 'bg-slate-950 border-slate-700'}`}>
-            {/* KORJAUS: Emojit (✅ / ⏳ / 📦) -> Kuvat */}
             {expedition.completed ? (
                <img src="/assets/ui/icon_box.png" className="w-6 h-6 pixelated animate-bounce" alt="Loot" />
             ) : (

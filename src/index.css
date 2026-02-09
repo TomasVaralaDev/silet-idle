@@ -7,7 +7,9 @@
     @apply bg-slate-900 text-slate-100 antialiased;
   }
 }
-
+body {
+  font-family: "Saira", sans-serif;
+}
 /* Pieni animaatio edistymispalkille */
 @keyframes progress {
   from { width: 0%; }

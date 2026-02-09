@@ -16,7 +16,7 @@ import Gamble from './components/Gamble';
 import SellModal from './components/SellModal';
 import AchievementsView from './components/AchievementsView';
 import CombatView from './components/CombatView';
-import ScavengerView from './components/ScavengerView'; // UUSI
+import ScavengerView from './components/ScavengerView';
 
 // --- CONSTANTS ---
 const DEFAULT_STATE: GameState = {
@@ -36,7 +36,7 @@ const DEFAULT_STATE: GameState = {
     ranged: { xp: 0, level: 1 },
     magic: { xp: 0, level: 1 },
     combat: { xp: 0, level: 1 },
-    scavenging: { xp: 0, level: 1 }, // UUSI
+    scavenging: { xp: 0, level: 1 },
   },
   equipment: {
     head: null, body: null, legs: null, weapon: null, shield: null,
@@ -46,7 +46,6 @@ const DEFAULT_STATE: GameState = {
   combatSettings: {
     autoEatThreshold: 50
   },
-  // UUSI
   scavenger: {
     activeExpeditions: [],
     unlockedSlots: 1
@@ -123,7 +122,7 @@ export default function App() {
             ...cloudData,
             skills: { ...DEFAULT_STATE.skills, ...(cloudData.skills || {}) },
             equipment: safeEquipment,
-            scavenger: { ...DEFAULT_STATE.scavenger, ...(cloudData.scavenger || {}) }, // Merge scavenger state
+            scavenger: { ...DEFAULT_STATE.scavenger, ...(cloudData.scavenger || {}) },
             equippedFood: cloudData.equippedFood || null,
             combatSettings: { ...DEFAULT_STATE.combatSettings, ...(cloudData.combatSettings || {}) },
             combatStats: { ...DEFAULT_STATE.combatStats, ...(cloudData.combatStats || {}) },
@@ -168,7 +167,6 @@ export default function App() {
   }, [user, isDataLoaded, handleForceSave]);
 
   // --- SCAVENGER LOGIC LOOP ---
-  // Tarkistetaan sekunnin välein, onko jokin retki valmistunut.
   useEffect(() => {
     if (!isDataLoaded) return;
     
@@ -210,13 +208,12 @@ export default function App() {
     return { level: newLevel, xp: newXp };
   };
 
-  // ... (COMBAT LOOP & SKILL LOOP pysyvät samana kuin aiemmin) ...
+  // --- COMBAT & SKILL LOOP ---
   useEffect(() => {
     let intervalId: number | undefined;
 
     // A) COMBAT LOOP
     if (state.activeAction?.skill === 'combat' && state.combatStats.currentMapId && isDataLoaded) {
-      // ... (Tämä koodi on sama kuin aiemmin, ei muutoksia) ...
       intervalId = window.setInterval(() => {
         setState(prev => {
           const map = COMBAT_DATA.find(m => m.id === prev.combatStats.currentMapId);
@@ -224,6 +221,7 @@ export default function App() {
 
           let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer } = prev.combatStats;
           let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
+          let stopCombatFlag = false; 
           
           if (respawnTimer > 0) {
             respawnTimer -= 1;
@@ -245,6 +243,7 @@ export default function App() {
           const newSkills = { ...prev.skills };
           let notify = null;
 
+          // 1. PLAYER ATTACK
           const weaponId = prev.equipment.weapon;
           const weaponItem = weaponId ? getItemDetails(weaponId) as Resource : null;
           const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
@@ -254,38 +253,57 @@ export default function App() {
           const playerDmg = Math.floor(1 + weaponPower + (skillLevel * 0.5));
           enemyCurrentHp -= playerDmg;
 
+          // 2. ENEMY DEATH
           if (enemyCurrentHp <= 0) {
             enemyCurrentHp = 0;
             respawnTimer = 3;
 
-            const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward);
-            newSkills[combatStyle] = styleXpGain;
-
-            const hpXpReward = Math.ceil(map.xpReward * 0.33);
-            const hpXpGain = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, hpXpReward);
-            newSkills.hitpoints = hpXpGain;
-
-            const atkXpReward = Math.ceil(map.xpReward * 0.33);
-            const atkXpGain = calculateXpGain(newSkills.attack.level, newSkills.attack.xp, atkXpReward);
-            newSkills.attack = atkXpGain;
-
-            const defXpReward = Math.ceil(map.xpReward * 0.33);
-            const defXpGain = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, defXpReward);
-            newSkills.defense = defXpGain;
-
-            map.drops.forEach(drop => {
-              if (Math.random() <= drop.chance) {
-                const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
-                newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
-                if (drop.itemId === 'frozen_key') notify = { message: "Found Frozen Key!", icon: "/assets/items/key_frozen.png" };
+            if (map.keyRequired) {
+              const currentKeys = newInventory[map.keyRequired] || 0;
+              if (currentKeys > 0) {
+                newInventory[map.keyRequired] = currentKeys - 1;
+                
+                if (newInventory[map.keyRequired] <= 0) {
+                  delete newInventory[map.keyRequired];
+                  stopCombatFlag = true; 
+                  notify = { message: "Out of keys! Returning...", icon: "/assets/items/bosskey/bosskey_w1.png" };
+                }
+              } else {
+                stopCombatFlag = true;
               }
-            });
+            }
 
-            if (map.id > maxMapCompleted) {
-              maxMapCompleted = map.id;
-              notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
+            if (!stopCombatFlag) {
+              const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward);
+              newSkills[combatStyle] = styleXpGain;
+
+              const hpXpReward = Math.ceil(map.xpReward * 0.33);
+              const hpXpGain = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, hpXpReward);
+              newSkills.hitpoints = hpXpGain;
+
+              const atkXpReward = Math.ceil(map.xpReward * 0.33);
+              const atkXpGain = calculateXpGain(newSkills.attack.level, newSkills.attack.xp, atkXpReward);
+              newSkills.attack = atkXpGain;
+
+              const defXpReward = Math.ceil(map.xpReward * 0.33);
+              const defXpGain = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, defXpReward);
+              newSkills.defense = defXpGain;
+
+              map.drops.forEach(drop => {
+                if (Math.random() <= drop.chance) {
+                  const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
+                  newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
+                  if (drop.itemId.includes('bosskey')) notify = { message: "Boss Key Found!", icon: "/assets/items/bosskey/bosskey_w1.png" };
+                }
+              });
+
+              if (map.id > maxMapCompleted) {
+                maxMapCompleted = map.id;
+                notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
+              }
             }
           } else {
+            // 3. ENEMY ATTACK
             const defenseLvl = prev.skills.defense.level;
             const armorBonus = Object.values(prev.equipment).reduce((sum, itemId) => {
               if (!itemId) return sum;
@@ -324,9 +342,22 @@ export default function App() {
             };
           }
 
+          if (stopCombatFlag) {
+             if (notify) {
+               setNotification(notify); 
+               setTimeout(() => setNotification(null), 1500); // KORJAUS: Lisätty timeout out-of-keys ilmoitukseen
+             }
+             return {
+               ...prev,
+               inventory: newInventory,
+               activeAction: null,
+               combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0 }
+             };
+          }
+
           if (notify) {
              setNotification(notify);
-             setTimeout(() => setNotification(null), 3000);
+             setTimeout(() => setNotification(null), 1500); // Lyhennetty 3000 -> 1500
           }
 
           return {
@@ -409,7 +440,6 @@ export default function App() {
   };
 
   // --- SCAVENGER HANDLERS ---
-
   const handleStartExpedition = (mapId: number, durationMinutes: number) => {
     setState(prev => {
       if (prev.scavenger.activeExpeditions.length >= prev.scavenger.unlockedSlots) return prev;
@@ -452,7 +482,6 @@ export default function App() {
       const map = COMBAT_DATA.find(m => m.id === expedition.mapId);
       if (!map) return prev;
 
-      // Loot Logic: 1 roll per minute
       const minutesSpent = Math.floor(expedition.duration / 60000);
       const lootRolls = minutesSpent; 
       
@@ -462,28 +491,25 @@ export default function App() {
       for (let i = 0; i < lootRolls; i++) {
         map.drops.forEach(drop => {
           if (Math.random() <= drop.chance) {
-            // Scavenging yields slightly less than active combat (approx 50% efficiency)
             const amount = Math.max(1, Math.floor((Math.random() * (drop.amount[1] - drop.amount[0] + 1) + drop.amount[0]) * 0.5));
-            
             newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
             gainedItems[drop.itemId] = (gainedItems[drop.itemId] || 0) + amount;
           }
         });
       }
 
-      // Remove expedition
       const remainingExpeditions = prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId);
-
-      // Notification
       const itemNames = Object.keys(gainedItems).map(id => {
         const item = getItemDetails(id);
         return `${gainedItems[id]}x ${item?.name || id}`;
       }).join(', ');
       
       if (itemNames) {
-        setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}${itemNames.length > 50 ? '...' : ''}`, icon: '/assets/skills/scavenging.png' });
+        setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}`, icon: '/assets/skills/scavenging.png' });
+        setTimeout(() => setNotification(null), 1500); // Lyhennetty
       } else {
         setNotification({ message: `Expedition returned empty handed...`, icon: '/assets/skills/scavenging.png' });
+        setTimeout(() => setNotification(null), 1500); // Lyhennetty
       }
 
       return {
@@ -495,11 +521,23 @@ export default function App() {
   };
 
   // --- ACTIONS ---
-
   const startCombat = (mapId: number) => {
     const map = COMBAT_DATA.find(m => m.id === mapId);
     if (!map) return;
     
+    if (map.keyRequired) {
+      const keyCount = state.inventory[map.keyRequired] || 0;
+      if (keyCount <= 0) {
+        const keyItem = getItemDetails(map.keyRequired);
+        setNotification({ 
+          message: `Missing: ${keyItem?.name || 'Boss Key'}`, 
+          icon: "/assets/items/bosskey/bosskey_w1.png" 
+        });
+        setTimeout(() => setNotification(null), 1500); // Lyhennetty
+        return; 
+      }
+    }
+
     setState(prev => {
       const currentMaxHp = getMaxHp(prev.skills.hitpoints.level);
       return {
@@ -573,22 +611,15 @@ export default function App() {
   const handleEquip = (itemId: string, targetSlot: EquipmentSlot) => {
     if (targetSlot === 'food') return;
     if (!isEquipmentSlot(targetSlot)) return;
-
     const item = getItemDetails(itemId) as Resource;
     if (!item || !item.slot || item.slot !== targetSlot) return;
-    
     setState(prev => {
       const newInventory = { ...prev.inventory };
       const newEquipment = { ...prev.equipment };
-      
       const currentEquipped = newEquipment[targetSlot];
-
       newInventory[itemId] -= 1;
       if (newInventory[itemId] <= 0) delete newInventory[itemId];
-      if (currentEquipped) {
-        newInventory[currentEquipped] = (newInventory[currentEquipped] || 0) + 1;
-      }
-      
+      if (currentEquipped) newInventory[currentEquipped] = (newInventory[currentEquipped] || 0) + 1;
       newEquipment[targetSlot] = itemId;
       return { ...prev, inventory: newInventory, equipment: newEquipment };
     });
@@ -597,21 +628,15 @@ export default function App() {
   const handleEquipFood = (itemId: string, amount: number) => {
     const item = getItemDetails(itemId) as Resource;
     if (!item || !item.healing) return;
-
     setState(prev => {
       const newInventory = { ...prev.inventory };
       let newEquippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
-
-      if (newEquippedFood) {
-        newInventory[newEquippedFood.itemId] = (newInventory[newEquippedFood.itemId] || 0) + newEquippedFood.count;
-      }
-
+      if (newEquippedFood) newInventory[newEquippedFood.itemId] = (newInventory[newEquippedFood.itemId] || 0) + newEquippedFood.count;
       if (newInventory[itemId] >= amount) {
         newInventory[itemId] -= amount;
         if (newInventory[itemId] <= 0) delete newInventory[itemId];
         newEquippedFood = { itemId, count: amount };
       }
-
       return { ...prev, inventory: newInventory, equippedFood: newEquippedFood };
     });
   };
@@ -628,14 +653,11 @@ export default function App() {
   const handleUnequip = (slot: string) => {
     if (slot === 'food') return;
     if (!isEquipmentSlot(slot)) return;
-
     setState(prev => {
       const itemId = prev.equipment[slot];
       if (!itemId) return prev;
-      
       const newEquipment = { ...prev.equipment, [slot]: null };
       const newInventory = { ...prev.inventory, [itemId]: (prev.inventory[itemId] || 0) + 1 };
-      
       return { ...prev, equipment: newEquipment, inventory: newInventory };
     });
   };
@@ -649,7 +671,7 @@ export default function App() {
 
   if (loadingAuth) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading User...</div>;
   if (!user) return <Auth />;
-  if (!isDataLoaded) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading Save Data from Cloud...</div>;
+  if (!isDataLoaded) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading Save Data...</div>;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col md:flex-row overflow-hidden relative">
@@ -666,23 +688,16 @@ export default function App() {
 
       <main className="flex-1 bg-slate-950 relative overflow-y-auto h-screen">
         <div className="fixed top-4 right-6 z-50 flex items-center gap-2 pointer-events-none">
-           {saveStatus === 'saving' && (
-             <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700 text-xs text-slate-300 animate-pulse"><span className="w-2 h-2 bg-yellow-400 rounded-full"></span>Saving...</div>
-           )}
-           {saveStatus === 'saved' && (
-             <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-emerald-900/50 text-xs text-emerald-400"><span className="w-2 h-2 bg-emerald-500 rounded-full"></span>Cloud Saved</div>
-           )}
-           {saveStatus === 'error' && (
-             <div className="flex items-center gap-2 bg-red-900/80 px-3 py-1 rounded-full border border-red-700 text-xs text-red-200">⚠️ Save Failed</div>
-           )}
+           {saveStatus === 'saving' && <div className="bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700 text-xs text-slate-300 animate-pulse">Saving...</div>}
+           {saveStatus === 'saved' && <div className="bg-slate-800/80 px-3 py-1 rounded-full border border-emerald-900/50 text-xs text-emerald-400">Cloud Saved</div>}
         </div>
 
         {notification && (
           <div className="fixed bottom-6 right-6 bg-slate-800 border-l-4 border-yellow-400 p-4 rounded shadow-2xl flex items-center gap-4 animate-bounce z-50">
             <img src={notification.icon} className="w-10 h-10 pixelated" alt="Notify" />
             <div>
-              <p className="font-bold text-yellow-400 text-sm uppercase">Unlocked!</p>
-              <p className="font-bold">{notification.message}</p>
+              <p className="font-bold text-yellow-400 text-sm uppercase">Notice</p>
+              <p className="font-bold text-sm">{notification.message}</p>
             </div>
           </div>
         )}
@@ -739,20 +754,10 @@ export default function App() {
           />
         )}
 
-        {currentView === 'shop' && (
-          <Shop items={SHOP_ITEMS} coins={state.coins} upgrades={state.upgrades} onBuy={buyUpgrade} />
-        )}
-
-        {currentView === 'gamble' && (
-          <Gamble coins={state.coins} onGamble={handleGamble} />
-        )}
-
-        {currentView === 'achievements' && (
-          <AchievementsView achievements={ACHIEVEMENTS} unlockedIds={state.unlockedAchievements} />
-        )}
+        {currentView === 'shop' && <Shop items={SHOP_ITEMS} coins={state.coins} upgrades={state.upgrades} onBuy={buyUpgrade} />}
+        {currentView === 'gamble' && <Gamble coins={state.coins} onGamble={handleGamble} />}
+        {currentView === 'achievements' && <AchievementsView achievements={ACHIEVEMENTS} unlockedIds={state.unlockedAchievements} />}
       </main>
-
-      <style>{`@keyframes flip { 0% { transform: rotateY(0); } 100% { transform: rotateY(720deg); } } .animate-flip { animation: flip 1s ease-out; }`}</style>
     </div>
   );
 }

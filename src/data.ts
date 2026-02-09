@@ -348,7 +348,7 @@ export const getItemDetails = (id: string) => {
   if (id === 'frozen_key') return { name: 'Frozen Key', value: 100, icon: '/assets/items/key_frozen.png', description: 'Opens the Boss door.' };
   
   for (const skill of Object.keys(GAME_DATA)) {
-    // @ts-expect-error: Iteroidaan dynaamisesti
+    // Directive removed here because GAME_DATA and skill types are now properly aligned
     const item = GAME_DATA[skill].find(i => i.id === id);
     if (item) return item;
   }

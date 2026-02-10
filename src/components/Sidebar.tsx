@@ -11,6 +11,7 @@ interface SidebarProps {
   onLogout: () => void;
   onStopAction: () => void;
   onForceSave: () => void;
+  onOpenSettings: () => void; // UUSI PROP
 }
 
 const NavButton = ({ 
@@ -78,7 +79,7 @@ const StatRow = ({ label, level, xp, iconPath, textColor, bgColor }: { label: st
   );
 };
 
-export default function Sidebar({ currentView, setView, coins, skills, username, onReset, onLogout, onStopAction, onForceSave }: SidebarProps) {
+export default function Sidebar({ currentView, setView, coins, skills, username, onReset, onLogout, onStopAction, onForceSave, onOpenSettings }: SidebarProps) {
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [saveCooldown, setSaveCooldown] = useState(0);
@@ -160,7 +161,8 @@ export default function Sidebar({ currentView, setView, coins, skills, username,
                     Access Profile
                   </button>
                   
-                  <button onClick={() => alert("Settings Coming Soon")} className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3 transition-colors group">
+                  {/* --- SYSTEM CONFIG BUTTON --- */}
+                  <button onClick={() => { setIsProfileOpen(false); onOpenSettings(); }} className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3 transition-colors group">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-500 group-hover:text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     System Config
                   </button>

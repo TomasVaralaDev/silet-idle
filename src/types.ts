@@ -111,8 +111,17 @@ export interface CombatSettings {
   autoProgress: boolean;    
 }
 
+// UUSI INTERFACE ASETUKSILLE
+export interface GameSettings {
+  notifications: boolean;
+  sound: boolean;
+  music: boolean;
+  particles: boolean; // Esim. suorituskyvyn parantamiseksi
+}
+
 export interface GameState {
   username: string;
+  settings: GameSettings;
   inventory: Record<string, number>;
   skills: Record<SkillType, { xp: number, level: number }>;
   equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;

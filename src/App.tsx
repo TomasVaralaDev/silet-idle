@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient, Expedition } from './types';
+import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient, Expedition, GameSettings } from './types';
 import { GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, getItemDetails, COMBAT_DATA } from './data';
 
 // FIREBASE
@@ -18,10 +18,17 @@ import AchievementsView from './components/AchievementsView';
 import CombatView from './components/CombatView';
 import ScavengerView from './components/ScavengerView';
 import UsernameModal from './components/UsernameModal';
+import SettingsModal from './components/SettingsModal';
 
 // --- CONSTANTS ---
 const DEFAULT_STATE: GameState = {
-  username: "", // Oletuksena tyhjä, pakottaa modaalin auki
+  username: "", 
+  settings: {
+    notifications: true,
+    sound: true,
+    music: true,
+    particles: true
+  },
   inventory: {},
   skills: {
     woodcutting: { xp: 0, level: 1 },
@@ -81,6 +88,7 @@ export default function App() {
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(null);
   const [notification, setNotification] = useState<{message: string, icon: string} | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [showSettings, setShowSettings] = useState(false); // UUSI
   const [state, setState] = useState<GameState>(DEFAULT_STATE);
 
   const getMaxHp = (hpLevel: number) => hpLevel * 10;
@@ -131,7 +139,8 @@ export default function App() {
             equippedFood: cloudData.equippedFood || null,
             combatSettings: { ...DEFAULT_STATE.combatSettings, ...(cloudData.combatSettings || {}) },
             combatStats: { ...DEFAULT_STATE.combatStats, ...(cloudData.combatStats || {}) },
-            unlockedAchievements: cloudData.unlockedAchievements || []
+            unlockedAchievements: cloudData.unlockedAchievements || [],
+            settings: { ...DEFAULT_STATE.settings, ...(cloudData.settings || {}) } // Merge settings
           });
         } else {
           const userSaveKey = `melvor_clone_save_${user.uid}`;
@@ -230,21 +239,17 @@ export default function App() {
           
           let notify = null;
 
-          // --- 0. RESPAWN TIMER LOGIC (HANDLE MAP SWITCH HERE) ---
+          // --- 0. RESPAWN TIMER LOGIC ---
           if (respawnTimer > 0) {
             respawnTimer -= 1;
             
-            // Kun timer loppuu, spawnaa uusi vihollinen
             if (respawnTimer === 0) {
-              
               // TARKISTA AUTO-PROGRESS
               if (prev.combatSettings.autoProgress) {
                 const nextMap = COMBAT_DATA.find(m => m.id === (currentMapId || 0) + 1);
                 
-                // Jos seuraava mappi löytyy...
                 if (nextMap) {
                   let canSwitch = true;
-                  // Tarkista avain ennen vaihtoa
                   if (nextMap.keyRequired) {
                     const keyCount = prev.inventory[nextMap.keyRequired] || 0;
                     if (keyCount <= 0) {
@@ -254,12 +259,10 @@ export default function App() {
 
                   if (canSwitch) {
                     currentMapId = nextMap.id;
-                    map = nextMap; // Päivitä viittaus uuteen mappiin
+                    map = nextMap; 
                   }
                 }
               }
-
-              // Aseta HP täysiin (uudelle tai vanhalle mapille)
               enemyCurrentHp = map.enemyHp;
             }
 
@@ -293,7 +296,7 @@ export default function App() {
           // 2. ENEMY DEATH
           if (enemyCurrentHp <= 0) {
             enemyCurrentHp = 0;
-            respawnTimer = 2; // Viive ennen seuraavaa (näyttää 0 HP hetken)
+            respawnTimer = 2; 
 
             let validKill = true;
             let stopCombatNow = false;
@@ -306,12 +309,16 @@ export default function App() {
                 
                 if (newInventory[map.keyRequired] <= 0) {
                   delete newInventory[map.keyRequired];
-                  notify = { message: "Last key used!", icon: "/assets/items/key_frozen.png" };
+                  if (prev.settings.notifications) {
+                    notify = { message: "Last key used!", icon: "/assets/items/key_frozen.png" };
+                  }
                 }
               } else {
                 validKill = false;
                 stopCombatNow = true;
-                notify = { message: "Out of keys!", icon: "/assets/items/key_frozen.png" };
+                if (prev.settings.notifications) {
+                  notify = { message: "Out of keys!", icon: "/assets/items/key_frozen.png" };
+                }
               }
             }
 
@@ -336,17 +343,22 @@ export default function App() {
                 if (Math.random() <= drop.chance) {
                   const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
                   newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
-                  if (drop.itemId.includes('bosskey')) notify = { message: "Boss Key Found!", icon: "/assets/items/bosskey/bosskey_w1.png" };
+                  // CHECK SETTINGS FOR NOTIFICATION
+                  if (drop.itemId.includes('bosskey') && prev.settings.notifications) {
+                     notify = { message: "Boss Key Found!", icon: "/assets/items/bosskey/bosskey_w1.png" };
+                  }
                 }
               });
 
               if (map.id > maxMapCompleted) {
                 maxMapCompleted = map.id;
-                notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
+                // CHECK SETTINGS FOR NOTIFICATION
+                if (prev.settings.notifications) {
+                  notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
+                }
               }
             }
 
-            // Jos avaimet loppuivat kesken taistelun, pysäytä
             if (stopCombatNow) {
                if (notify) {
                  setNotification(notify);
@@ -491,7 +503,6 @@ export default function App() {
     });
   };
 
-  // --- TOGGLE AUTO PROGRESS ---
   const toggleAutoProgress = () => {
     setState(prev => ({
       ...prev,
@@ -502,7 +513,6 @@ export default function App() {
     }));
   };
 
-  // --- SET USERNAME HANDLER ---
   const handleSetUsername = async (name: string) => {
     const newState = { ...state, username: name };
     setState(newState);
@@ -516,6 +526,11 @@ export default function App() {
         console.error("Failed to save username", e);
       }
     }
+  };
+
+  // --- SETTINGS UPDATE ---
+  const handleUpdateSettings = (newSettings: GameSettings) => {
+    setState(prev => ({ ...prev, settings: newSettings }));
   };
 
   // --- SCAVENGER HANDLERS ---
@@ -583,11 +598,13 @@ export default function App() {
         return `${gainedItems[id]}x ${item?.name || id}`;
       }).join(', ');
       
-      if (itemNames) {
-        setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}`, icon: '/assets/skills/scavenging.png' });
-        setTimeout(() => setNotification(null), 1500); 
-      } else {
-        setNotification({ message: `Expedition returned empty handed...`, icon: '/assets/skills/scavenging.png' });
+      // CHECK SETTINGS NOTIFICATION
+      if (prev.settings.notifications) {
+        if (itemNames) {
+          setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}`, icon: '/assets/skills/scavenging.png' });
+        } else {
+          setNotification({ message: `Expedition returned empty handed...`, icon: '/assets/skills/scavenging.png' });
+        }
         setTimeout(() => setNotification(null), 1500); 
       }
 
@@ -608,11 +625,14 @@ export default function App() {
       const keyCount = state.inventory[map.keyRequired] || 0;
       if (keyCount <= 0) {
         const keyItem = getItemDetails(map.keyRequired);
-        setNotification({ 
-          message: `Missing: ${keyItem?.name || 'Boss Key'}`, 
-          icon: "/assets/items/key_frozen.png" 
-        });
-        setTimeout(() => setNotification(null), 1500); 
+        // CHECK SETTINGS
+        if (state.settings.notifications) {
+          setNotification({ 
+            message: `Missing: ${keyItem?.name || 'Boss Key'}`, 
+            icon: "/assets/items/key_frozen.png" 
+          });
+          setTimeout(() => setNotification(null), 1500); 
+        }
         return; 
       }
     }
@@ -752,20 +772,14 @@ export default function App() {
   if (!user) return <Auth />;
   if (!isDataLoaded) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading Save Data...</div>;
 
-// --- TURVALLISUUS: ÄLÄ RENDERÖI PELIÄ JOS KÄYTTÄJÄNIMI PUUTTUU ---
+  // --- SECURITY: PREVENT GAME RENDER IF USERNAME MISSING ---
   const needsUsername = !state.username || state.username === 'Player';
 
   if (needsUsername) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/assets/bg/combat_grid.png')] opacity-20 animate-pulse"></div>
-        
-        {/* Välitetään signOut-funktio onLogout-propissa */}
-        <UsernameModal 
-          onConfirm={handleSetUsername} 
-          onLogout={() => signOut(auth)} 
-        />
-        
+        <UsernameModal onConfirm={handleSetUsername} onLogout={() => signOut(auth)} />
       </div>
     );
   }
@@ -782,6 +796,7 @@ export default function App() {
         onLogout={() => signOut(auth)} 
         onStopAction={() => setState(prev => ({ ...prev, activeAction: null }))}
         onForceSave={handleForceSave}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
       <main className="flex-1 bg-slate-950 relative overflow-y-auto h-screen">
@@ -789,6 +804,19 @@ export default function App() {
            {saveStatus === 'saving' && <div className="bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700 text-xs text-slate-300 animate-pulse">Saving...</div>}
            {saveStatus === 'saved' && <div className="bg-slate-800/80 px-3 py-1 rounded-full border border-emerald-900/50 text-xs text-emerald-400">Cloud Saved</div>}
         </div>
+
+        {/* SETTINGS MODAL */}
+        {showSettings && (
+          <SettingsModal 
+            settings={state.settings}
+            username={state.username}
+            onUpdateSettings={handleUpdateSettings}
+            onClose={() => setShowSettings(false)}
+            onForceSave={handleForceSave}
+            onReset={hardReset}
+            onLogout={() => signOut(auth)}
+          />
+        )}
 
         {notification && (
           <div className="fixed bottom-6 right-6 bg-slate-800 border-l-4 border-yellow-400 p-4 rounded shadow-2xl flex items-center gap-4 animate-bounce z-50">

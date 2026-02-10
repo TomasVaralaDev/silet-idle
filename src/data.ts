@@ -1,5 +1,53 @@
-import type { Resource, ShopItem, Achievement, CombatMap } from './types';
-
+import type { Resource, ShopItem, Achievement, CombatMap, WeightedDrop } from './types';
+// --- WORLD LOOT TABLES (Weighted System) ---
+// Avain on world ID. Arvot ovat WeightedDrop[].
+// Esimerkki: Jos kokonaispaino on 2000:
+// - Weight 1000 = 50% mahdollisuus (jos table aktivoituu)
+// - Weight 10 = 0.5% mahdollisuus
+export const WORLD_LOOT: Record<number, WeightedDrop[]> = {
+  1: [ // Greenvale
+    { itemId: 'greenvale_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'bosskey_w1', weight: 10, amount: [1, 1] }
+  ],
+  2: [ // Stonefall
+    { itemId: 'stonefall_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'stonefall_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'bosskey_w2', weight: 10, amount: [1, 1] }
+  ],
+  3: [ // Ashridge
+    { itemId: 'ashridge_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'ashridge_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'bosskey_w3', weight: 10, amount: [1, 1] }
+  ],
+  4: [ // Frostreach
+    { itemId: 'frostreach_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'frostreach_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'bosskey_w4', weight: 10, amount: [1, 1] }
+  ],
+  5: [ // Duskwood
+    { itemId: 'duskwood_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'duskwood_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'bosskey_w5', weight: 10, amount: [1, 1] }
+  ],
+  6: [ // Stormcoast
+    { itemId: 'stormcoast_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'stormcoast_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'stormcoast_exotic', weight: 50, amount: [1, 1] },
+    { itemId: 'bosskey_w6', weight: 10, amount: [1, 1] }
+  ],
+  7: [ // Void Expanse
+    { itemId: 'voidexpanse_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'voidexpanse_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'voidexpanse_exotic', weight: 50, amount: [1, 1] },
+    { itemId: 'bosskey_w7', weight: 10, amount: [1, 1] }
+  ],
+  8: [ // Eternal Nexus
+    { itemId: 'eternallnexus_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'eternallnexus_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'eternallnexus_exotic', weight: 50, amount: [1, 1] },
+    { itemId: 'bosskey_w8', weight: 10, amount: [1, 1] }
+  ]
+};
 // --- COMBAT DATA ---
 export const COMBAT_DATA: CombatMap[] = [
   // --- WORLD 1: GREENVALE (1–10) ---
@@ -239,7 +287,7 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'bloodwood_plank', name: 'Bloodwood Plank', levelRequired: 99, xpReward: 175, interval: 10000, value: 1000, icon: '/assets/resources/tree/bloodwood_plank.png', color: 'text-red-600', description: 'Refined bloodwood.', inputs: [{ id: 'bloodwood_log', count: 1 }], category: 'wood_refining' },
 
     // WEAPONS (Updated with Swords)
-    { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '/assets/items/weapons/weapon_sword_bronze.png', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper_smelted', count: 2 }], slot: 'weapon', stats: { attack: 8 }, category: 'weapons', combatStyle: 'melee' },
+    { id: 'weapon_sword_bronze', name: 'Bronze Sword', levelRequired: 1, xpReward: 20, interval: 3000, value: 15, icon: '/assets/items/weapons/weapon_sword_bronze.png', color: 'text-orange-600', description: 'Basic sword.', inputs: [{ id: 'ore_copper_smelted', count: 2 }], slot: 'weapon', stats: { attack: 100000000000000000 }, category: 'weapons', combatStyle: 'melee' },
     { id: 'weapon_sword_iron', name: 'Iron Sword', levelRequired: 15, xpReward: 50, interval: 5000, value: 50, icon: '/assets/items/weapons/weapon_sword_iron.png', color: 'text-slate-400', description: 'Sharp and reliable.', inputs: [{ id: 'ore_iron_smelted', count: 3 }], slot: 'weapon', stats: { attack: 18 }, category: 'weapons', combatStyle: 'melee' },
     { id: 'weapon_sword_gold', name: 'Gold Sword', levelRequired: 25, xpReward: 70, interval: 6500, value: 120, icon: '/assets/items/weapons/weapon_sword_gold.png', color: 'text-yellow-400', description: 'Shiny and heavy.', inputs: [{ id: 'ore_gold_smelted', count: 3 }], slot: 'weapon', stats: { attack: 30 }, category: 'weapons', combatStyle: 'melee' },
     { id: 'weapon_sword_mithril', name: 'Mithril Sword', levelRequired: 40, xpReward: 100, interval: 8000, value: 250, icon: '/assets/items/weapons/weapon_sword_mithril.png', color: 'text-cyan-400', description: 'Lightweight blade.', inputs: [{ id: 'ore_mithril_smelted', count: 3 }], slot: 'weapon', stats: { attack: 50 }, category: 'weapons', combatStyle: 'melee' },
@@ -405,35 +453,53 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'combat_initiate', name: 'First Blood', icon: '/assets/skills/attack.png', description: 'Complete the first combat map.', condition: (state) => state.combatStats.maxMapCompleted >= 1 }
 ];
 
-// --- HELPER ---
 export const getItemDetails = (id: string) => {
   if (id === 'coins') return { name: 'Coins', value: 1, icon: '/assets/ui/coins.png' };
-  
-  // BOSS KEYS - Haetaan kuvat /assets/items/bosskey/ -kansiosta
+
+  // Tarkistetaan onko kyseessä dynaaminen world loot (basic, rare, exotic)
+  if (id.includes('_basic') || id.includes('_rare') || id.includes('_exotic')) {
+    const parts = id.split('_');
+    const worldNameRaw = parts[0]; // esim. "greenvale"
+    const worldNameDisplay = worldNameRaw.charAt(0).toUpperCase() + worldNameRaw.slice(1);
+    const type = parts[1]; // basic, rare tai exotic
+
+    // Määritetään tiedot tyypin perusteella
+    if (type === 'basic') return { 
+      name: `${worldNameDisplay} Dust`, 
+      value: 10, 
+      color: 'text-slate-400', 
+      icon: `/assets/lootpoolszones/${id}.png`, // Hakee esim. greenvale_basic.png
+      description: 'Common essence from this region.' 
+    };
+    if (type === 'rare') return { 
+      name: `${worldNameDisplay} Gem`, 
+      value: 100, 
+      color: 'text-cyan-400', 
+      icon: `/assets/lootpoolzones/${id}.png`, 
+      description: 'A rare and valuable gem.' 
+    };
+    if (type === 'exotic') return { 
+      name: `${worldNameDisplay} Elite`, 
+      value: 1000, 
+      color: 'text-orange-500', 
+      icon: `/assets/lootpoolzones/${id}.png`, 
+      description: 'A very rare exotic fragment.' 
+    };
+  }
+
+  // Boss-avaimet
   if (id.startsWith('bosskey_w')) {
     const worldNum = id.replace('bosskey_w', '');
     return {
       name: `World ${worldNum} Key`,
       value: 500,
+      color: 'text-yellow-500',
       icon: `/assets/items/bosskey/${id}.png`,
-      description: 'Used to challenge the world boss.'
+      description: 'Allows access to the world boss.'
     };
   }
 
-  // PLACEHOLDER DROPS - Geneerinen ikoni ja nimi
-  if (id.startsWith('item_')) {
-    const name = id.replace('item_', '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    return { 
-      name, 
-      value: 50, 
-      icon: '/assets/ui/icon_box.png', 
-      description: 'A mysterious drop.' 
-    };
-  }
-  
-  // Vanha key fallback
-  if (id === 'frozen_key') return { name: 'Frozen Key', value: 100, icon: '/assets/items/key_frozen.png', description: 'Opens the Boss door.' };
-
+  // Muut skill-kohtaiset itemit
   for (const skill of Object.keys(GAME_DATA)) {
     const item = GAME_DATA[skill].find(i => i.id === id);
     if (item) return item;

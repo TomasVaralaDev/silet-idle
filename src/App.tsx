@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient, Expedition, GameSettings } from './types';
-import { GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, getItemDetails, COMBAT_DATA } from './data';
+import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient, Expedition, GameSettings, WeightedDrop } from './types';
+import { GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, getItemDetails, COMBAT_DATA, WORLD_LOOT } from './data';
 
 // FIREBASE
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
@@ -21,6 +21,8 @@ import UsernameModal from './components/UsernameModal';
 import SettingsModal from './components/SettingsModal';
 
 // --- CONSTANTS ---
+const WORLD_DROP_CHANCE = 0.3; // 30% mahdollisuus saada bonusloottia per tappo
+
 const DEFAULT_STATE: GameState = {
   username: "", 
   settings: {
@@ -80,6 +82,22 @@ function isEquipmentSlot(slot: string): slot is keyof GameState['equipment'] {
   return ['head', 'body', 'legs', 'weapon', 'shield', 'necklace', 'ring', 'rune', 'skill'].includes(slot);
 }
 
+// --- WEIGHTED DROP HELPER ---
+const pickWeightedItem = (drops: WeightedDrop[]): WeightedDrop | null => {
+  if (!drops || drops.length === 0) return null;
+
+  const totalWeight = drops.reduce((sum, item) => sum + item.weight, 0);
+  let randomWeight = Math.random() * totalWeight;
+
+  for (const drop of drops) {
+    if (randomWeight < drop.weight) {
+      return drop;
+    }
+    randomWeight -= drop.weight;
+  }
+  return drops[0]; // Fallback
+};
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -88,7 +106,7 @@ export default function App() {
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(null);
   const [notification, setNotification] = useState<{message: string, icon: string} | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [showSettings, setShowSettings] = useState(false); // UUSI
+  const [showSettings, setShowSettings] = useState(false);
   const [state, setState] = useState<GameState>(DEFAULT_STATE);
 
   const getMaxHp = (hpLevel: number) => hpLevel * 10;
@@ -140,7 +158,7 @@ export default function App() {
             combatSettings: { ...DEFAULT_STATE.combatSettings, ...(cloudData.combatSettings || {}) },
             combatStats: { ...DEFAULT_STATE.combatStats, ...(cloudData.combatStats || {}) },
             unlockedAchievements: cloudData.unlockedAchievements || [],
-            settings: { ...DEFAULT_STATE.settings, ...(cloudData.settings || {}) } // Merge settings
+            settings: { ...DEFAULT_STATE.settings, ...(cloudData.settings || {}) }
           });
         } else {
           const userSaveKey = `melvor_clone_save_${user.uid}`;
@@ -244,7 +262,6 @@ export default function App() {
             respawnTimer -= 1;
             
             if (respawnTimer === 0) {
-              // TARKISTA AUTO-PROGRESS
               if (prev.combatSettings.autoProgress) {
                 const nextMap = COMBAT_DATA.find(m => m.id === (currentMapId || 0) + 1);
                 
@@ -339,20 +356,43 @@ export default function App() {
               const defXpGain = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, defXpReward);
               newSkills.defense = defXpGain;
 
+              // --- 1. NORMAL ENEMY DROPS ---
               map.drops.forEach(drop => {
                 if (Math.random() <= drop.chance) {
                   const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
                   newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
-                  // CHECK SETTINGS FOR NOTIFICATION
+                  
                   if (drop.itemId.includes('bosskey') && prev.settings.notifications) {
                      notify = { message: "Boss Key Found!", icon: "/assets/items/bosskey/bosskey_w1.png" };
                   }
                 }
               });
 
+              // --- 2. WORLD LOOT (WEIGHTED SYSTEM) ---
+              const worldTable = WORLD_LOOT[map.world];
+              
+              if (worldTable && Math.random() <= WORLD_DROP_CHANCE) {
+                const drop = pickWeightedItem(worldTable);
+                
+                if (drop) {
+                  const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
+                  newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
+
+                  if (prev.settings.notifications) {
+                    // Check item detail to see if it's rare
+                    const itemDet = getItemDetails(drop.itemId);
+                    // Less than 1% drop rate from total weight implies rarity, but we simplify notification logic:
+                    // If it's a key or potion, let's notify.
+                    if (drop.itemId.includes('key') || drop.weight <= 50) {
+                       notify = { message: `Rare Drop: ${itemDet?.name}`, icon: itemDet?.icon || "/assets/ui/icon_box.png" };
+                    }
+                  }
+                }
+              }
+              // ------------------------------------
+
               if (map.id > maxMapCompleted) {
                 maxMapCompleted = map.id;
-                // CHECK SETTINGS FOR NOTIFICATION
                 if (prev.settings.notifications) {
                   notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
                 }
@@ -512,6 +552,50 @@ export default function App() {
       }
     }));
   };
+  // --- ACTIONS ---
+  const startCombat = (mapId: number) => {
+    const map = COMBAT_DATA.find(m => m.id === mapId);
+    if (!map) return;
+    
+    if (map.keyRequired) {
+      const keyCount = state.inventory[map.keyRequired] || 0;
+      if (keyCount <= 0) {
+        const keyItem = getItemDetails(map.keyRequired);
+        if (state.settings.notifications) {
+          setNotification({ 
+            message: `Missing: ${keyItem?.name || 'Boss Key'}`, 
+            icon: "/assets/items/key_frozen.png" 
+          });
+          setTimeout(() => setNotification(null), 1500); 
+        }
+        return; 
+      }
+    }
+
+    setState(prev => {
+      const currentMaxHp = getMaxHp(prev.skills.hitpoints.level);
+      return {
+        ...prev,
+        activeAction: { skill: 'combat', resourceId: mapId.toString() },
+        combatStats: { 
+          ...prev.combatStats, 
+          currentMapId: mapId, 
+          enemyCurrentHp: map.enemyHp,
+          hp: prev.combatStats.hp > 0 ? prev.combatStats.hp : currentMaxHp,
+          respawnTimer: 0,
+          foodTimer: 0
+        }
+      };
+    });
+  };
+
+  const stopCombat = () => {
+    setState(prev => ({
+      ...prev,
+      activeAction: null,
+      combatStats: { ...prev.combatStats, currentMapId: null }
+    }));
+  };
 
   const handleSetUsername = async (name: string) => {
     const newState = { ...state, username: name };
@@ -528,12 +612,10 @@ export default function App() {
     }
   };
 
-  // --- SETTINGS UPDATE ---
   const handleUpdateSettings = (newSettings: GameSettings) => {
     setState(prev => ({ ...prev, settings: newSettings }));
   };
 
-  // --- SCAVENGER HANDLERS ---
   const handleStartExpedition = (mapId: number, durationMinutes: number) => {
     setState(prev => {
       if (prev.scavenger.activeExpeditions.length >= prev.scavenger.unlockedSlots) return prev;
@@ -598,7 +680,6 @@ export default function App() {
         return `${gainedItems[id]}x ${item?.name || id}`;
       }).join(', ');
       
-      // CHECK SETTINGS NOTIFICATION
       if (prev.settings.notifications) {
         if (itemNames) {
           setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}`, icon: '/assets/skills/scavenging.png' });
@@ -614,52 +695,6 @@ export default function App() {
         scavenger: { ...prev.scavenger, activeExpeditions: remainingExpeditions }
       };
     });
-  };
-
-  // --- ACTIONS ---
-  const startCombat = (mapId: number) => {
-    const map = COMBAT_DATA.find(m => m.id === mapId);
-    if (!map) return;
-    
-    if (map.keyRequired) {
-      const keyCount = state.inventory[map.keyRequired] || 0;
-      if (keyCount <= 0) {
-        const keyItem = getItemDetails(map.keyRequired);
-        // CHECK SETTINGS
-        if (state.settings.notifications) {
-          setNotification({ 
-            message: `Missing: ${keyItem?.name || 'Boss Key'}`, 
-            icon: "/assets/items/key_frozen.png" 
-          });
-          setTimeout(() => setNotification(null), 1500); 
-        }
-        return; 
-      }
-    }
-
-    setState(prev => {
-      const currentMaxHp = getMaxHp(prev.skills.hitpoints.level);
-      return {
-        ...prev,
-        activeAction: { skill: 'combat', resourceId: mapId.toString() },
-        combatStats: { 
-          ...prev.combatStats, 
-          currentMapId: mapId, 
-          enemyCurrentHp: map.enemyHp,
-          hp: prev.combatStats.hp > 0 ? prev.combatStats.hp : currentMaxHp,
-          respawnTimer: 0,
-          foodTimer: 0
-        }
-      };
-    });
-  };
-
-  const stopCombat = () => {
-    setState(prev => ({
-      ...prev,
-      activeAction: null,
-      combatStats: { ...prev.combatStats, currentMapId: null }
-    }));
   };
 
   const sellItem = (itemId: string, amountToSell: number | 'all') => {
@@ -772,7 +807,6 @@ export default function App() {
   if (!user) return <Auth />;
   if (!isDataLoaded) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading Save Data...</div>;
 
-  // --- SECURITY: PREVENT GAME RENDER IF USERNAME MISSING ---
   const needsUsername = !state.username || state.username === 'Player';
 
   if (needsUsername) {
@@ -805,7 +839,6 @@ export default function App() {
            {saveStatus === 'saved' && <div className="bg-slate-800/80 px-3 py-1 rounded-full border border-emerald-900/50 text-xs text-emerald-400">Cloud Saved</div>}
         </div>
 
-        {/* SETTINGS MODAL */}
         {showSettings && (
           <SettingsModal 
             settings={state.settings}

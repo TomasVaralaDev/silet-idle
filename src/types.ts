@@ -11,6 +11,13 @@ export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'ne
 
 export type CombatStyle = 'melee' | 'ranged' | 'magic';
 
+export interface GameSettings {
+  notifications: boolean;
+  sound: boolean;
+  music: boolean;
+  particles: boolean;
+}
+
 export interface ActiveAction {
   skill: SkillType;
   resourceId: string;
@@ -55,10 +62,18 @@ export interface Resource {
   category?: string;
 }
 
+// Tämä on vihollisten omille dropeille (prosenttiperustainen)
 export interface Drop {
   itemId: string;
   chance: number; // 0.0 - 1.0
-  amount: [number, number]; // Min - Max
+  amount: [number, number]; 
+}
+
+// UUSI: Tämä on World Loottia varten (painoperustainen)
+export interface WeightedDrop {
+  itemId: string;
+  weight: number; // Esim. 1000, 500, 10
+  amount: [number, number]; 
 }
 
 export interface CombatMap {
@@ -69,10 +84,10 @@ export interface CombatMap {
   enemyHp: number;
   enemyAttack: number;
   xpReward: number;
-  drops: Drop[];
+  drops: Drop[]; // Vihollisen omat dropit
   isBoss?: boolean;
   keyRequired?: string; 
-  image?: string; // UUSI: Polku vihollisen kuvaan
+  image?: string; 
 }
 
 export interface ShopItem {
@@ -111,16 +126,14 @@ export interface CombatSettings {
   autoProgress: boolean;    
 }
 
-// UUSI INTERFACE ASETUKSILLE
-export interface GameSettings {
-  notifications: boolean;
-  sound: boolean;
-  music: boolean;
-  particles: boolean; // Esim. suorituskyvyn parantamiseksi
+export interface WeightedDrop {
+  itemId: string;
+  weight: number;
+  amount: [number, number];
 }
 
 export interface GameState {
-  username: string;
+  username: string; 
   settings: GameSettings;
   inventory: Record<string, number>;
   skills: Record<SkillType, { xp: number, level: number }>;

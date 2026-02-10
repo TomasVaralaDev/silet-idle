@@ -17,9 +17,11 @@ import SellModal from './components/SellModal';
 import AchievementsView from './components/AchievementsView';
 import CombatView from './components/CombatView';
 import ScavengerView from './components/ScavengerView';
+import UsernameModal from './components/UsernameModal';
 
 // --- CONSTANTS ---
 const DEFAULT_STATE: GameState = {
+  username: "", // Oletuksena tyhjä, pakottaa modaalin auki
   inventory: {},
   skills: {
     woodcutting: { xp: 0, level: 1 },
@@ -96,6 +98,7 @@ export default function App() {
     return multiplier;
   }, [state.upgrades]);
 
+  // AUTH STATE LISTENER
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -104,6 +107,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // LOAD DATA
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
@@ -116,7 +120,7 @@ export default function App() {
           const safeEquipment = { ...DEFAULT_STATE.equipment, ...(cloudData.equipment || {}) };
           
           if ('ammo' in safeEquipment) delete (safeEquipment as { ammo?: unknown }).ammo;
-          if ('food' in safeEquipment) delete (safeEquipment as { food?: unknown }).food;
+          if ('food' in safeEquipment) delete safeEquipment.food;
 
           setState({
             ...DEFAULT_STATE,
@@ -144,6 +148,7 @@ export default function App() {
     if (!loadingAuth) loadData();
   }, [user, loadingAuth]);
 
+  // AUTO SAVE
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
@@ -497,6 +502,22 @@ export default function App() {
     }));
   };
 
+  // --- SET USERNAME HANDLER ---
+  const handleSetUsername = async (name: string) => {
+    const newState = { ...state, username: name };
+    setState(newState);
+    
+    if (user) {
+      try {
+        await setDoc(doc(db, 'users', user.uid), JSON.parse(JSON.stringify(newState)), { merge: true });
+        setNotification({ message: `Identity Confirmed: ${name}`, icon: "/assets/ui/icon_check.png" });
+        setTimeout(() => setNotification(null), 3000);
+      } catch (e) {
+        console.error("Failed to save username", e);
+      }
+    }
+  };
+
   // --- SCAVENGER HANDLERS ---
   const handleStartExpedition = (mapId: number, durationMinutes: number) => {
     setState(prev => {
@@ -731,6 +752,24 @@ export default function App() {
   if (!user) return <Auth />;
   if (!isDataLoaded) return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Loading Save Data...</div>;
 
+// --- TURVALLISUUS: ÄLÄ RENDERÖI PELIÄ JOS KÄYTTÄJÄNIMI PUUTTUU ---
+  const needsUsername = !state.username || state.username === 'Player';
+
+  if (needsUsername) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/assets/bg/combat_grid.png')] opacity-20 animate-pulse"></div>
+        
+        {/* Välitetään signOut-funktio onLogout-propissa */}
+        <UsernameModal 
+          onConfirm={handleSetUsername} 
+          onLogout={() => signOut(auth)} 
+        />
+        
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col md:flex-row overflow-hidden relative">
       <Sidebar 
@@ -738,6 +777,7 @@ export default function App() {
         setView={setCurrentView} 
         coins={state.coins} 
         skills={state.skills} 
+        username={state.username}
         onReset={hardReset}
         onLogout={() => signOut(auth)} 
         onStopAction={() => setState(prev => ({ ...prev, activeAction: null }))}

@@ -112,6 +112,7 @@ export interface CombatSettings {
 }
 
 export interface GameState {
+  username: string;
   inventory: Record<string, number>;
   skills: Record<SkillType, { xp: number, level: number }>;
   equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;

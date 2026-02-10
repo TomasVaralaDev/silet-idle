@@ -6,6 +6,7 @@ interface SidebarProps {
   setView: (view: ViewType) => void;
   coins: number;
   skills: GameState['skills'];
+  username: string; // Ensure this prop is passed from parent
   onReset: () => void;
   onLogout: () => void;
   onStopAction: () => void;
@@ -77,7 +78,7 @@ const StatRow = ({ label, level, xp, iconPath, textColor, bgColor }: { label: st
   );
 };
 
-export default function Sidebar({ currentView, setView, coins, skills, onReset, onLogout, onStopAction, onForceSave }: SidebarProps) {
+export default function Sidebar({ currentView, setView, coins, skills, username, onReset, onLogout, onStopAction, onForceSave }: SidebarProps) {
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [saveCooldown, setSaveCooldown] = useState(0);
@@ -138,30 +139,39 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
                 <div className="text-[10px] text-cyan-500 font-mono leading-none mt-1">SYNC: {totalLevel}</div>
               </div>
               <div className="w-10 h-10 bg-slate-900 rounded border border-slate-700 flex items-center justify-center relative overflow-hidden">
-                 <img src="/assets/ui/avatar.png" alt="Restorer" className="w-full h-full object-cover pixelated opacity-90 hover:opacity-100" />
+                  <img src="/assets/ui/icon_user_avatar.png" alt="Restorer" className="w-full h-full object-cover pixelated opacity-90 hover:opacity-100" 
+                       onError={(e) => e.currentTarget.src = 'https://ui-avatars.com/api/?name=U&background=0f172a&color=38bdf8'} />
               </div>
             </button>
 
             {isProfileOpen && (
-              <div className="absolute top-full right-0 mt-2 w-56 bg-slate-900 border border-slate-700 shadow-[0_0_30px_rgba(0,0,0,0.8)] p-1 flex flex-col gap-0.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-2 border-b border-slate-800 mb-1">
-                  <p className="text-xs text-slate-400 uppercase">Unit ID: Mitsiio</p>
-                  <p className="text-xs text-cyan-500 font-mono">Status: Active</p>
+              <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="p-4 border-b border-slate-800 bg-slate-950/50">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Unit ID: {username || 'UNKNOWN'}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span className="text-xs font-bold text-emerald-400">Status: Active</span>
+                  </div>
                 </div>
-                
-                <button onClick={() => alert("Profile View Coming Soon")} className="w-full py-3 px-3 hover:bg-slate-800 text-slate-300 text-xs uppercase tracking-wider text-left flex items-center gap-2">
-                  <span className="text-cyan-500">👤</span> Access Profile
-                </button>
-                
-                <button onClick={() => alert("Settings Coming Soon")} className="w-full py-3 px-3 hover:bg-slate-800 text-slate-300 text-xs uppercase tracking-wider text-left flex items-center gap-2">
-                  <span className="text-amber-500">⚙️</span> System Config
-                </button>
 
-                <div className="h-px bg-slate-800 my-0.5"></div>
-                
-                <button onClick={onLogout} className="w-full py-3 px-3 hover:bg-red-950/30 text-red-400 hover:text-red-300 text-xs uppercase tracking-wider text-left flex items-center gap-2">
-                  <span>🚪</span> Terminate Session
-                </button>
+                <div className="p-2 space-y-1">
+                  <button onClick={() => alert("Profile View Coming Soon")} className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-500 group-hover:text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Access Profile
+                  </button>
+                  
+                  <button onClick={() => alert("Settings Coming Soon")} className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-500 group-hover:text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    System Config
+                  </button>
+                </div>
+
+                <div className="p-2 border-t border-slate-800">
+                  <button onClick={onLogout} className="w-full text-left px-3 py-2 rounded hover:bg-red-900/20 text-xs font-bold text-red-400 flex items-center gap-3 transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-500 group-hover:text-red-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Terminate Session
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -263,6 +273,7 @@ export default function Sidebar({ currentView, setView, coins, skills, onReset, 
           </p>
         </div>
       </div>
+
     </nav>
   );
 }

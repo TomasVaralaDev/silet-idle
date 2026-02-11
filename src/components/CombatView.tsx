@@ -30,7 +30,7 @@ const WORLD_NAMES: Record<number, string> = {
 const BACKGROUND_IMAGES: Record<number, string> = {
   1: "/assets/backgrounds/bg_greenvale.png",
   2: "/assets/backgrounds/bg_stonefall.png",
-  3: "/assets/backgrounds/bg_ashbridge.png", // Huom: tiedostonimi kuvassa oli ashbridge (b-kirjaimella)
+  3: "/assets/backgrounds/bg_ashbridge.png", 
   4: "/assets/backgrounds/bg_frostreach.png",
   5: "/assets/backgrounds/bg_duskwood.png",
   6: "/assets/backgrounds/bg_stormcoast.png",
@@ -71,6 +71,7 @@ export default function CombatView({
       return acc + (item?.stats?.attack || 0);
     }, 0);
 
+    // HUOM: Tämä on vain visuaalista esitystä varten, todellinen logiikka on App.tsx:ssä
     const totalAttack = Math.floor(1 + gearAttackBonus + (skillLevel * 0.5));
 
     const defenseLevel = skills.defense.level;
@@ -100,10 +101,6 @@ export default function CombatView({
     : null;
 
   // Jos ollaan taistelussa, käytetään sen mapin worldia taustana. Muuten valittua worldia.
-  // Tai yksinkertaisemmin: Käytetään aina `selectedWorld` taustana, koska se on se mitä pelaaja katselee.
-  // Jos haluat että tausta vaihtuu automaattisesti kun auto-progress etenee seuraavaan worldiin,
-  // voimme päivittää selectedWorldin useEffectillä (mutta pidetään tämä yksinkertaisena ensin).
-  // Käytetään tässä `currentMap.world` jos taistelu on käynnissä, muuten `selectedWorld`.
   const activeBackgroundWorld = currentMap ? currentMap.world : selectedWorld;
   const backgroundImage = BACKGROUND_IMAGES[activeBackgroundWorld];
 
@@ -128,22 +125,21 @@ export default function CombatView({
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-1 relative overflow-hidden shadow-2xl flex flex-col min-h-[420px]">
           
           {/* --- DYNAMIC BACKGROUND IMAGE --- */}
-          {/* Oletustausta (grid) jos kuvaa ei löydy, muuten kuva */}
           <div className="absolute inset-0 z-0">
              {backgroundImage ? (
                <img 
                  src={backgroundImage} 
                  alt="Battle Background" 
                  className="w-full h-full object-cover opacity-40 blur-[2px] scale-105" 
+                 onError={(e) => e.currentTarget.style.display = 'none'}
                />
-             ) : (
-               <div className="w-full h-full bg-[url('/assets/bg/combat_grid.png')] opacity-10"></div>
-             )}
-             {/* Gradient overlay to make UI elements pop */}
+             ) : null}
+             <div className="w-full h-full absolute inset-0 bg-[url('/assets/bg/combat_grid.png')] opacity-10 pointer-events-none"></div>
+             {/* Gradient overlay */}
              <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-900/60 to-slate-950/90"></div>
           </div>
           
-          {/* --- AUTO PROGRESS TOGGLE (VISIBLE IN COMBAT & IDLE) --- */}
+          {/* --- AUTO PROGRESS TOGGLE --- */}
           <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-lg border border-slate-700 backdrop-blur-sm">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1">Auto-Push</span>
             <button 
@@ -161,23 +157,22 @@ export default function CombatView({
                 {/* ENEMY (TOP) */}
                 <div className="flex flex-col items-center animate-in fade-in zoom-in duration-500">
                   <div className="relative group mb-6">
-                     {/* ENEMY IMAGE CONTAINER */}
-                     <div className="w-28 h-28 bg-slate-950/80 backdrop-blur-sm rounded-full border-4 border-red-900/60 flex items-center justify-center shadow-[0_0_40px_rgba(220,38,38,0.15)] group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                      <div className="w-28 h-28 bg-slate-950/80 backdrop-blur-sm rounded-full border-4 border-red-900/60 flex items-center justify-center shadow-[0_0_40px_rgba(220,38,38,0.15)] group-hover:scale-105 transition-transform duration-300 overflow-hidden">
                         {currentMap.image ? (
-                          <img src={currentMap.image} className="w-full h-full object-cover pixelated" alt={currentMap.enemyName} />
+                          <img src={currentMap.image} className="w-full h-full object-cover pixelated" alt={currentMap.enemyName} onError={(e) => e.currentTarget.src = '/assets/enemies/slime_red.png'} />
                         ) : (
                           <span className="text-6xl drop-shadow-lg">👾</span>
                         )}
-                     </div>
-                     <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-red-950 border border-red-800 px-4 py-1 rounded-full text-xs font-bold text-red-200 uppercase tracking-wider whitespace-nowrap shadow-lg">
-                       Lvl.{currentMap.enemyAttack * 2}
-                     </div>
+                      </div>
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-red-950 border border-red-800 px-4 py-1 rounded-full text-xs font-bold text-red-200 uppercase tracking-wider whitespace-nowrap shadow-lg">
+                        Lvl.{currentMap.enemyAttack * 2}
+                      </div>
                   </div>
                   
                   <div className="text-center w-full max-w-md">
                     <h2 className="text-xl font-bold text-red-100 uppercase tracking-widest mb-2 drop-shadow-md text-shadow-sm">{currentMap.enemyName}</h2>
                     <div className="w-full h-6 bg-slate-950/80 rounded-full border border-slate-700 relative overflow-hidden shadow-inner backdrop-blur-sm">
-                      <div className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-300 ease-out" style={{ width: `${enemyHpPercent}%` }}></div>
+                      <div className="h-full bg-gradient-to-r from-red-700 to-red-500 transition-all duration-300 ease-out" style={{ width: `${Math.max(0, enemyHpPercent)}%` }}></div>
                       <span className="absolute inset-0 flex items-center justify-center text-xs font-mono font-bold text-white/90 drop-shadow-sm">
                         {Math.ceil(combatState.enemyCurrentHp)} / {currentMap.enemyHp}
                       </span>
@@ -195,7 +190,7 @@ export default function CombatView({
                       <span>{Math.ceil(combatState.hp)} / {combatState.maxHp} HP</span>
                     </div>
                     <div className="w-full h-8 bg-slate-950/80 rounded-full border border-slate-700 relative overflow-hidden shadow-lg backdrop-blur-sm">
-                      <div className="h-full bg-gradient-to-r from-emerald-700 to-emerald-500 transition-all duration-300 ease-out" style={{ width: `${playerHpPercent}%` }}></div>
+                      <div className="h-full bg-gradient-to-r from-emerald-700 to-emerald-500 transition-all duration-300 ease-out" style={{ width: `${Math.max(0, playerHpPercent)}%` }}></div>
                     </div>
                   </div>
 
@@ -243,45 +238,77 @@ export default function CombatView({
           </div>
         </div>
 
-        {/* 2. STATS DASHBOARD */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg relative overflow-hidden group">
-            <div className="absolute right-0 top-0 h-full w-1 bg-orange-600/50"></div>
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-orange-500/10 rounded-full blur-xl group-hover:bg-orange-500/20 transition-colors"></div>
-            <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Combat Power</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-mono font-bold text-orange-400">{stats.totalAttack}</span>
-                <span className="text-sm text-orange-600 font-bold">(+{stats.gearAttackBonus})</span>
+        {/* 2. STATS & LOGS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-64">
+            
+            {/* STATS */}
+            <div className="flex flex-col gap-4">
+              <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg relative overflow-hidden group flex-1">
+                <div className="absolute right-0 top-0 h-full w-1 bg-orange-600/50"></div>
+                <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-orange-500/10 rounded-full blur-xl group-hover:bg-orange-500/20 transition-colors"></div>
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Combat Power</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-mono font-bold text-orange-400">{stats.totalAttack}</span>
+                    <span className="text-sm text-orange-600 font-bold">(+{stats.gearAttackBonus})</span>
+                  </div>
+                </div>
+                <div className="w-14 h-14 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-center">
+                  {equipment.weapon ? (
+                    <img src={getItemDetails(equipment.weapon)?.icon} className="w-10 h-10 pixelated" alt="Weapon" />
+                  ) : (
+                    <span className="text-3xl opacity-20">🗡️</span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="w-14 h-14 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-center">
-               {equipment.weapon ? (
-                 <img src={getItemDetails(equipment.weapon)?.icon} className="w-10 h-10 pixelated" alt="Weapon" />
-               ) : (
-                 <span className="text-3xl opacity-20">🗡️</span>
-               )}
-            </div>
-          </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg relative overflow-hidden group">
-            <div className="absolute right-0 top-0 h-full w-1 bg-cyan-600/50"></div>
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl group-hover:bg-cyan-500/20 transition-colors"></div>
-            <div>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Defense Rating</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-mono font-bold text-cyan-400">{stats.totalDefense}</span>
-                <span className="text-sm text-cyan-600 font-bold">(+{stats.gearDefenseBonus})</span>
+              <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg relative overflow-hidden group flex-1">
+                <div className="absolute right-0 top-0 h-full w-1 bg-cyan-600/50"></div>
+                <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl group-hover:bg-cyan-500/20 transition-colors"></div>
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Defense Rating</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-mono font-bold text-cyan-400">{stats.totalDefense}</span>
+                    <span className="text-sm text-cyan-600 font-bold">(+{stats.gearDefenseBonus})</span>
+                  </div>
+                </div>
+                <div className="w-14 h-14 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-center">
+                  {equipment.body ? (
+                    <img src={getItemDetails(equipment.body)?.icon} className="w-10 h-10 pixelated" alt="Armor" />
+                  ) : (
+                    <span className="text-3xl opacity-20">🛡️</span>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="w-14 h-14 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-center">
-               {equipment.body ? (
-                 <img src={getItemDetails(equipment.body)?.icon} className="w-10 h-10 pixelated" alt="Armor" />
-               ) : (
-                 <span className="text-3xl opacity-20">🛡️</span>
-               )}
+
+            {/* BATTLE LOG (UUSI KOMPONENTTI) */}
+            <div className="bg-black/40 border border-slate-800 rounded-xl p-3 flex flex-col font-mono text-[10px] sm:text-xs overflow-hidden h-full">
+              <div className="text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1 mb-1 font-bold">System Log</div>
+              <div className="flex-1 overflow-y-auto space-y-0.5 custom-scrollbar flex flex-col-reverse">
+                {!combatState.combatLog || combatState.combatLog.length === 0 ? (
+                  <span className="text-slate-700 italic text-center mt-10">Waiting for combat data...</span>
+                ) : (
+                  combatState.combatLog.map((entry, i) => (
+                    <div key={i} className="border-l-2 border-slate-800 pl-2 py-0.5 leading-tight">
+                      <span className={
+                        entry.includes('Player hit') ? 'text-emerald-400' :
+                        entry.includes('CRIT') ? 'text-orange-400 font-bold' :
+                        entry.includes('Enemy hit') ? 'text-red-400' :
+                        entry.includes('Loot') ? 'text-yellow-300' :
+                        entry.includes('Rare') ? 'text-purple-400 font-bold' :
+                        entry.includes('Spawned') ? 'text-slate-300 font-bold' :
+                        entry.includes('DIED') ? 'text-red-600 font-black' :
+                        'text-slate-400'
+                      }>
+                        {entry}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
+
         </div>
 
         {/* 3. FOOD BELT */}
@@ -335,7 +362,7 @@ export default function CombatView({
       </div>
 
       {/* --- RIGHT COLUMN: MAP SELECTION --- */}
-      <div className="w-full xl:w-[500px] flex-shrink-0 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl h-fit">
+      <div className="w-full xl:w-[450px] flex-shrink-0 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl h-fit">
         
         <div className="p-6 border-b border-slate-800 bg-slate-950/80 backdrop-blur-sm sticky top-0 z-20">
           <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Select Region</h3>

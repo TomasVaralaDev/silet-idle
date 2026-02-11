@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient, Expedition, GameSettings, WeightedDrop } from './types';
+import type { GameState, SkillType, ViewType, ShopItem, EquipmentSlot, CombatStyle, Resource, Ingredient, Expedition, GameSettings, WeightedDrop, CombatStats } from './types';
 import { GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, getItemDetails, COMBAT_DATA, WORLD_LOOT } from './data';
+import { calculateHit, getPlayerStats, getEnemyStats } from './utils/combatMechanics';
 
 // FIREBASE
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
@@ -21,7 +22,7 @@ import UsernameModal from './components/UsernameModal';
 import SettingsModal from './components/SettingsModal';
 
 // --- CONSTANTS ---
-const WORLD_DROP_CHANCE = 0.3; // 30% mahdollisuus saada bonusloottia per tappo
+const WORLD_DROP_CHANCE = 0.3; // 30% chance for bonus world loot
 
 const DEFAULT_STATE: GameState = {
   username: "", 
@@ -72,7 +73,8 @@ const DEFAULT_STATE: GameState = {
     maxMapCompleted: 0,
     enemyCurrentHp: 0,
     respawnTimer: 0,
-    foodTimer: 0
+    foodTimer: 0,
+    combatLog: [] // Alustetaan tyhjä loki
   }
 };
 
@@ -123,6 +125,24 @@ export default function App() {
     }
     return multiplier;
   }, [state.upgrades]);
+
+  const getXpMultiplier = useCallback((skill: SkillType) => {
+    // Check if player owns "xp_tome_[skill]"
+    const hasTome = state.upgrades.includes(`xp_tome_${skill}`);
+    return hasTome ? 5 : 1;
+  }, [state.upgrades]);
+
+  const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
+    let newXp = currentXp + xpReward;
+    let newLevel = currentLevel;
+    let nextLevelReq = newLevel * 150;
+    while (newXp >= nextLevelReq) {
+      newXp -= nextLevelReq;
+      newLevel++;
+      nextLevelReq = newLevel * 150;
+    }
+    return { level: newLevel, xp: newXp };
+  };
 
   // AUTH STATE LISTENER
   useEffect(() => {
@@ -229,18 +249,6 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isDataLoaded]);
 
-  const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
-    let newXp = currentXp + xpReward;
-    let newLevel = currentLevel;
-    let nextLevelReq = newLevel * 150;
-    while (newXp >= nextLevelReq) {
-      newXp -= nextLevelReq;
-      newLevel++;
-      nextLevelReq = newLevel * 150;
-    }
-    return { level: newLevel, xp: newXp };
-  };
-
   // --- COMBAT & SKILL LOOP ---
   useEffect(() => {
     let intervalId: number | undefined;
@@ -253,11 +261,26 @@ export default function App() {
           if (!map) return prev;
 
           let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer, currentMapId } = prev.combatStats;
-          let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
+
+          // --- LOGGING SYSTEM (CAP FIX) ---
+          const MAX_LOG_ENTRIES = 50; // <-- TÄMÄ ESTÄÄ SIVUN KAATUMISEN (vaihda halutessasi esim. 100)
           
+          // Otetaan kopio edellisestä logista
+          let currentLog = prev.combatStats.combatLog ? [...prev.combatStats.combatLog] : [];
+          
+          const addLog = (msg: string) => {
+             currentLog.unshift(msg); // Lisää uusi viesti alkuun
+             // Jos lista on liian pitkä, leikkaa se määrättyyn pituuteen
+             if (currentLog.length > MAX_LOG_ENTRIES) {
+                currentLog = currentLog.slice(0, MAX_LOG_ENTRIES);
+             }
+          };
+          // --------------------------------
+
+          let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
           let notify = null;
 
-          // --- 0. RESPAWN TIMER LOGIC ---
+          // --- 0. RESPAWN TIMER ---
           if (respawnTimer > 0) {
             respawnTimer -= 1;
             
@@ -269,18 +292,19 @@ export default function App() {
                   let canSwitch = true;
                   if (nextMap.keyRequired) {
                     const keyCount = prev.inventory[nextMap.keyRequired] || 0;
-                    if (keyCount <= 0) {
-                      canSwitch = false; 
-                    }
+                    if (keyCount <= 0) canSwitch = false;
                   }
-
                   if (canSwitch) {
                     currentMapId = nextMap.id;
-                    map = nextMap; 
+                    map = nextMap;
+                    addLog(`>> MOVING TO: ${map.name} <<`);
                   }
                 }
               }
-              enemyCurrentHp = map.enemyHp;
+              // Reset HP using mechanics
+              const enemyStats = getEnemyStats({ hp: map.enemyHp, attack: map.enemyAttack }, map.id);
+              enemyCurrentHp = enemyStats.hp;
+              addLog(`Spawned: ${map.enemyName} (HP: ${enemyCurrentHp})`);
             }
 
             return { 
@@ -290,186 +314,191 @@ export default function App() {
                 respawnTimer, 
                 enemyCurrentHp, 
                 currentMapId, 
-                foodTimer: Math.max(0, foodTimer - 1) 
+                foodTimer: Math.max(0, foodTimer - 1),
+                combatLog: currentLog
               } 
             };
           }
 
           if (foodTimer > 0) foodTimer -= 1;
 
+          // --- COMBAT LOGIC ---
           const newInventory = { ...prev.inventory };
           const newSkills = { ...prev.skills };
-          
-          // 1. PLAYER ATTACK
+
+          // Stats Setup
           const weaponId = prev.equipment.weapon;
           const weaponItem = weaponId ? getItemDetails(weaponId) as Resource : null;
           const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
           
-          const skillLevel = prev.skills[combatStyle].level;
-          const weaponPower = weaponItem?.stats?.attack || 0;
-          const playerDmg = Math.floor(1 + weaponPower + (skillLevel * 0.5));
-          enemyCurrentHp -= playerDmg;
+          const gearStats = Object.values(prev.equipment).reduce((acc: Partial<CombatStats>, itemId) => {
+            if (!itemId) return acc;
+            const item = getItemDetails(itemId) as Resource;
+            if (item?.stats) {
+              acc.attackDamage = (acc.attackDamage || 0) + (item.stats.attack || 0);
+              acc.armor = (acc.armor || 0) + (item.stats.defense || 0);
+            }
+            return acc;
+          }, { attackDamage: 0, armor: 0, hp: 0 });
 
-          // 2. ENEMY DEATH
+          // Player base stats
+          const playerStats = getPlayerStats(prev.skills[combatStyle].level, gearStats);
+          playerStats.hp = hp; 
+          
+          // Enemy base stats
+          const enemyStats = getEnemyStats({ hp: map.enemyHp, attack: map.enemyAttack }, map.id);
+          enemyStats.hp = enemyCurrentHp;
+
+          // Player Hits
+          const playerHits = Math.floor(playerStats.attackSpeed);
+          const playerExtraChance = playerStats.attackSpeed - playerHits;
+          let totalPlayerDamage = 0;
+          const actualPlayerHits = playerHits + (Math.random() < playerExtraChance ? 1 : 0);
+
+          for (let i = 0; i < actualPlayerHits; i++) {
+            const hitResult = calculateHit(playerStats, enemyStats);
+            totalPlayerDamage += hitResult.finalDamage;
+            
+            // Log damage
+            let hitMsg = `Player hit: ${hitResult.finalDamage}`;
+            if (hitResult.isCrit) hitMsg += " (CRIT!)";
+            addLog(hitMsg);
+          }
+          enemyCurrentHp -= totalPlayerDamage;
+
+          // Enemy Hits
+          if (enemyCurrentHp > 0) {
+             const enemyHits = Math.floor(enemyStats.attackSpeed);
+             const enemyExtraChance = enemyStats.attackSpeed - enemyHits;
+             let totalEnemyDamage = 0;
+             const actualEnemyHits = enemyHits + (Math.random() < enemyExtraChance ? 1 : 0);
+
+             for (let i = 0; i < actualEnemyHits; i++) {
+               const hitResult = calculateHit(enemyStats, playerStats);
+               totalEnemyDamage += hitResult.finalDamage;
+               
+               let hitMsg = `Enemy hit: ${hitResult.finalDamage}`;
+               if (hitResult.isCrit) hitMsg += " (CRIT!)";
+               addLog(hitMsg);
+             }
+             hp -= totalEnemyDamage;
+
+             // Auto Eat
+             const maxHp = getMaxHp(prev.skills.hitpoints.level);
+             const eatThresholdHp = maxHp * (prev.combatSettings.autoEatThreshold / 100);
+             if (hp <= eatThresholdHp && equippedFood && equippedFood.count > 0 && foodTimer === 0 && hp < maxHp) {
+               const foodItem = getItemDetails(equippedFood.itemId) as Resource;
+               if (foodItem && foodItem.healing) {
+                 equippedFood.count -= 1;
+                 if (equippedFood.count <= 0) equippedFood = null;
+                 hp = Math.min(maxHp, hp + foodItem.healing);
+                 foodTimer = 10;
+                 addLog(`Ate food: +${foodItem.healing} HP`);
+               }
+             }
+          }
+
+          // Death Handling
           if (enemyCurrentHp <= 0) {
             enemyCurrentHp = 0;
-            respawnTimer = 2; 
-
+            respawnTimer = 2;
             let validKill = true;
             let stopCombatNow = false;
 
-            // --- BOSS KEY CONSUMPTION ---
             if (map.keyRequired) {
               const currentKeys = newInventory[map.keyRequired] || 0;
               if (currentKeys > 0) {
                 newInventory[map.keyRequired] = currentKeys - 1;
-                
                 if (newInventory[map.keyRequired] <= 0) {
                   delete newInventory[map.keyRequired];
-                  if (prev.settings.notifications) {
-                    notify = { message: "Last key used!", icon: "/assets/items/key_frozen.png" };
-                  }
+                  if (prev.settings.notifications) notify = { message: "Last key used!", icon: "/assets/items/key_frozen.png" };
                 }
               } else {
                 validKill = false;
                 stopCombatNow = true;
-                if (prev.settings.notifications) {
-                  notify = { message: "Out of keys!", icon: "/assets/items/key_frozen.png" };
-                }
+                if (prev.settings.notifications) notify = { message: "Out of keys!", icon: "/assets/items/key_frozen.png" };
               }
             }
 
-            // REWARDS
             if (validKill) {
-              const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward);
+              addLog(`Enemy Defeated!`);
+
+              // XP with Multipliers
+              const styleXpMult = getXpMultiplier(combatStyle);
+              const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward * styleXpMult);
               newSkills[combatStyle] = styleXpGain;
 
-              const hpXpReward = Math.ceil(map.xpReward * 0.33);
-              const hpXpGain = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, hpXpReward);
+              const hpXpMult = getXpMultiplier('hitpoints');
+              const hpXpGain = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, Math.ceil(map.xpReward * 0.33) * hpXpMult);
               newSkills.hitpoints = hpXpGain;
 
-              const atkXpReward = Math.ceil(map.xpReward * 0.33);
-              const atkXpGain = calculateXpGain(newSkills.attack.level, newSkills.attack.xp, atkXpReward);
-              newSkills.attack = atkXpGain;
-
-              const defXpReward = Math.ceil(map.xpReward * 0.33);
-              const defXpGain = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, defXpReward);
-              newSkills.defense = defXpGain;
-
-              // --- 1. NORMAL ENEMY DROPS ---
+              // Normal Loot
               map.drops.forEach(drop => {
                 if (Math.random() <= drop.chance) {
                   const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
                   newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
-                  
+                  const item = getItemDetails(drop.itemId);
+                  addLog(`Loot: ${amount}x ${item?.name || drop.itemId}`);
+
                   if (drop.itemId.includes('bosskey') && prev.settings.notifications) {
                      notify = { message: "Boss Key Found!", icon: "/assets/items/bosskey/bosskey_w1.png" };
                   }
                 }
               });
 
-              // --- 2. WORLD LOOT (WEIGHTED SYSTEM) ---
+              // World Loot (Weighted)
               const worldTable = WORLD_LOOT[map.world];
-              
               if (worldTable && Math.random() <= WORLD_DROP_CHANCE) {
                 const drop = pickWeightedItem(worldTable);
-                
                 if (drop) {
                   const amount = Math.floor(Math.random() * (drop.amount[1] - drop.amount[0] + 1)) + drop.amount[0];
                   newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
+                  
+                  const itemDet = getItemDetails(drop.itemId);
+                  addLog(`** Rare Loot: ${amount}x ${itemDet?.name} **`);
 
                   if (prev.settings.notifications) {
-                    // Check item detail to see if it's rare
-                    const itemDet = getItemDetails(drop.itemId);
-                    // Less than 1% drop rate from total weight implies rarity, but we simplify notification logic:
-                    // If it's a key or potion, let's notify.
                     if (drop.itemId.includes('key') || drop.weight <= 50) {
-                       notify = { message: `Rare Drop: ${itemDet?.name}`, icon: itemDet?.icon || "/assets/ui/icon_box.png" };
+                       notify = { message: `Rare: ${itemDet?.name}`, icon: itemDet?.icon || "/assets/ui/icon_box.png" };
                     }
                   }
                 }
               }
-              // ------------------------------------
 
               if (map.id > maxMapCompleted) {
                 maxMapCompleted = map.id;
-                if (prev.settings.notifications) {
-                  notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
-                }
+                if (prev.settings.notifications) notify = { message: `Map ${map.id} Cleared!`, icon: "/assets/skills/combat.png" };
               }
             }
 
             if (stopCombatNow) {
-               if (notify) {
-                 setNotification(notify);
-                 setTimeout(() => setNotification(null), 1500);
-               }
-               return {
-                 ...prev,
-                 combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0 },
-                 activeAction: null
+               if (notify) { setNotification(notify); setTimeout(() => setNotification(null), 1500); }
+               return { 
+                 ...prev, 
+                 combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0, combatLog: currentLog }, 
+                 activeAction: null 
                };
-            }
-
-          } else {
-            // 3. ENEMY ATTACK
-            const defenseLvl = prev.skills.defense.level;
-            const armorBonus = Object.values(prev.equipment).reduce((sum, itemId) => {
-              if (!itemId) return sum;
-              const item = getItemDetails(itemId) as Resource;
-              return sum + (item?.stats?.defense || 0);
-            }, 0);
-
-            const totalDefense = defenseLvl + armorBonus;
-            const dmgReduction = Math.min(0.75, totalDefense * 0.01); 
-            const incomingDmg = Math.max(0, Math.ceil(map.enemyAttack * (1 - dmgReduction)));
-            
-            hp -= incomingDmg;
-
-            // Auto-Eat
-            const maxHp = getMaxHp(prev.skills.hitpoints.level);
-            const eatThresholdHp = maxHp * (prev.combatSettings.autoEatThreshold / 100);
-
-            if (hp <= eatThresholdHp && equippedFood && equippedFood.count > 0 && foodTimer === 0 && hp < maxHp) {
-              const foodItem = getItemDetails(equippedFood.itemId) as Resource;
-              if (foodItem && foodItem.healing) {
-                equippedFood.count -= 1;
-                if (equippedFood.count <= 0) equippedFood = null;
-                hp = Math.min(maxHp, hp + foodItem.healing);
-                foodTimer = 10;
-              }
             }
           }
 
-          // 4. PLAYER DEATH
           if (hp <= 0) {
             hp = 0;
-            return {
-              ...prev,
-              activeAction: null,
-              combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0, respawnTimer: 0, foodTimer: 0 }
+            addLog("PLAYER DIED - Returning to base.");
+            return { 
+              ...prev, 
+              activeAction: null, 
+              combatStats: { ...prev.combatStats, hp, currentMapId: null, enemyCurrentHp: 0, respawnTimer: 0, foodTimer: 0, combatLog: currentLog } 
             };
           }
 
-          if (notify) {
-             setNotification(notify);
-             setTimeout(() => setNotification(null), 1500); 
-          }
+          if (notify) { setNotification(notify); setTimeout(() => setNotification(null), 1500); }
 
           return {
             ...prev,
             inventory: newInventory,
             skills: newSkills,
             equippedFood: equippedFood,
-            combatStats: { 
-                ...prev.combatStats, 
-                hp, 
-                enemyCurrentHp, 
-                maxMapCompleted, 
-                respawnTimer, 
-                foodTimer,
-                currentMapId 
-            }
+            combatStats: { ...prev.combatStats, hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer, currentMapId, combatLog: currentLog }
           };
         });
       }, 1000);
@@ -485,6 +514,7 @@ export default function App() {
 
         if (resource) {
           const multiplier = getSpeedMultiplier(skill);
+          const xpMult = getXpMultiplier(skill);
           const actualInterval = resource.interval * multiplier;
 
           intervalId = window.setInterval(() => {
@@ -502,13 +532,13 @@ export default function App() {
                 });
                 newInventory[resourceId] = (newInventory[resourceId] || 0) + 1;
                 const currentSkill = prev.skills[resourceSkill];
-                const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward);
+                const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward * xpMult);
                 const newSkills = { ...prev.skills, [resourceSkill]: { level, xp } };
                 return { ...prev, inventory: newInventory, skills: newSkills };
               }
 
               const currentSkill = prev.skills[resourceSkill];
-              const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward);
+              const { level, xp } = calculateXpGain(currentSkill.level, currentSkill.xp, resource.xpReward * xpMult);
               const newSkills = { ...prev.skills, [resourceSkill]: { level, xp } };
 
               return {
@@ -522,7 +552,7 @@ export default function App() {
       }
     }
     return () => clearInterval(intervalId);
-  }, [state.activeAction, getSpeedMultiplier, isDataLoaded, state.combatStats.currentMapId]);
+  }, [state.activeAction, getSpeedMultiplier, getXpMultiplier, isDataLoaded, state.combatStats.currentMapId]);
 
   const toggleAction = (skill: SkillType, resourceId: string) => {
     setState(prev => {
@@ -552,6 +582,7 @@ export default function App() {
       }
     }));
   };
+
   // --- ACTIONS ---
   const startCombat = (mapId: number) => {
     const map = COMBAT_DATA.find(m => m.id === mapId);
@@ -573,17 +604,21 @@ export default function App() {
     }
 
     setState(prev => {
+      // Calculate scaled enemy HP for the start
+      const enemyStats = getEnemyStats({ hp: map.enemyHp, attack: map.enemyAttack }, map.id);
       const currentMaxHp = getMaxHp(prev.skills.hitpoints.level);
+      
       return {
         ...prev,
         activeAction: { skill: 'combat', resourceId: mapId.toString() },
         combatStats: { 
           ...prev.combatStats, 
           currentMapId: mapId, 
-          enemyCurrentHp: map.enemyHp,
+          enemyCurrentHp: enemyStats.hp,
           hp: prev.combatStats.hp > 0 ? prev.combatStats.hp : currentMaxHp,
           respawnTimer: 0,
-          foodTimer: 0
+          foodTimer: 0,
+          combatLog: [] // Reset log
         }
       };
     });

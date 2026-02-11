@@ -16,11 +16,11 @@ interface SkillViewProps {
 
 export default function SkillView({ skill, level, xp, activeAction, inventory, onToggleAction, speedMultiplier, nextLevelXp, maxMapCompleted }: SkillViewProps) {
   
-  // Tila Foundry-tabeille (Smithing) - PÄIVITETTY: Lisätty 'rings'
-  const [smithingMode, setSmithingMode] = useState<'smelting' | 'forging' | 'rings'>('smelting');
+  // Tila Foundry-tabeille (Smithing)
+  const [smithingMode, setSmithingMode] = useState<'smelting' | 'forging' | 'shields' | 'rings'>('smelting');
   
-  // Tila Assembly-tabeille (Crafting)
-  const [assemblyMode, setAssemblyMode] = useState<'refining' | 'creation' | 'jewelry'>('refining');
+  // Tila Assembly-tabeille (Crafting) - PÄIVITETTY: Lisätty swords, bows, staffs
+  const [assemblyMode, setAssemblyMode] = useState<'refining' | 'swords' | 'bows' | 'staffs' | 'jewelry'>('refining');
   
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -70,33 +70,23 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
     const matchesSearch = resource.name.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
 
-    // 2. Smithing Tabit (Foundry) - PÄIVITETTY LOGIIKKA
+    // 2. Smithing Tabit (Foundry)
     if (skill === 'smithing') {
-      if (smithingMode === 'smelting') {
-        // Näytä vain Harkot (tunnistetaan ID:n päätteestä)
-        return resource.id.includes('_smelted');
-      }
-      if (smithingMode === 'forging') {
-        // Näytä vain Armor (kategoria 'armor')
-        return resource.category === 'armor';
-      }
-      if (smithingMode === 'rings') {
-        // Näytä vain Sormukset (kategoria 'rings')
-        return resource.category === 'rings';
-      }
+      if (smithingMode === 'smelting') return resource.id.includes('_smelted');
+      if (smithingMode === 'forging') return resource.category === 'armor';
+      if (smithingMode === 'shields') return resource.category === 'shields';
+      if (smithingMode === 'rings') return resource.category === 'rings';
     }
 
-    // 3. Crafting Tabit (Assembly)
+    // 3. Crafting Tabit (Assembly) - PÄIVITETTY LOGIIKKA
     if (skill === 'crafting') {
-      if (assemblyMode === 'refining') {
-        return resource.category === 'wood_refining';
-      }
-      if (assemblyMode === 'creation') {
-        return resource.category === 'weapons';
-      }
-      if (assemblyMode === 'jewelry') {
-        return resource.category === 'jewelry';
-      }
+      if (assemblyMode === 'refining') return resource.category === 'wood_refining';
+      // Oletetaan että miekat ovat kategoriassa 'weapons' tai 'swords'. 
+      // Aiemmassa datassa ne olivat 'weapons', joten käytetään sitä tai molempia.
+      if (assemblyMode === 'swords') return resource.category === 'weapons' || resource.category === 'swords';
+      if (assemblyMode === 'bows') return resource.category === 'bows';
+      if (assemblyMode === 'staffs') return resource.category === 'staffs';
+      if (assemblyMode === 'jewelry') return resource.category === 'jewelry';
     }
 
     return true;
@@ -145,12 +135,12 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
       {/* CONTROLS */}
       <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4 border-b border-slate-800 pb-2">
         
-        {/* SMITHING TABS - PÄIVITETTY */}
+        {/* SMITHING TABS */}
         {skill === 'smithing' ? (
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 max-w-full">
             <button
               onClick={() => setSmithingMode('smelting')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
                 ${smithingMode === 'smelting' 
                   ? 'bg-red-900/40 text-red-200 border-t-2 border-x border-red-700/50' 
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
@@ -160,7 +150,7 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
             </button>
             <button
               onClick={() => setSmithingMode('forging')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
                 ${smithingMode === 'forging' 
                   ? 'bg-slate-700/40 text-slate-200 border-t-2 border-x border-slate-500/50' 
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
@@ -169,8 +159,18 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
               <span>⚒️</span> Forging
             </button>
             <button
+              onClick={() => setSmithingMode('shields')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
+                ${smithingMode === 'shields' 
+                  ? 'bg-orange-900/40 text-orange-200 border-t-2 border-x border-orange-700/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>🛡️</span> Shields
+            </button>
+            <button
               onClick={() => setSmithingMode('rings')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
                 ${smithingMode === 'rings' 
                   ? 'bg-indigo-900/40 text-indigo-200 border-t-2 border-x border-indigo-700/50' 
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
@@ -180,12 +180,12 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
             </button>
           </div>
         ) 
-        // CRAFTING (ASSEMBLY) TABS
+        // CRAFTING (ASSEMBLY) TABS - PÄIVITETTY
         : skill === 'crafting' ? (
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 max-w-full">
             <button
               onClick={() => setAssemblyMode('refining')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
                 ${assemblyMode === 'refining' 
                   ? 'bg-amber-900/40 text-amber-200 border-t-2 border-x border-amber-700/50' 
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
@@ -194,18 +194,38 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
               <span>🪚</span> Refining
             </button>
             <button
-              onClick={() => setAssemblyMode('creation')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
-                ${assemblyMode === 'creation' 
+              onClick={() => setAssemblyMode('swords')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
+                ${assemblyMode === 'swords' 
                   ? 'bg-slate-700/40 text-slate-200 border-t-2 border-x border-slate-500/50' 
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
                 }`}
             >
-              <span>⚔️</span> Creation
+              <span>🗡️</span> Swords
+            </button>
+            <button
+              onClick={() => setAssemblyMode('bows')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
+                ${assemblyMode === 'bows' 
+                  ? 'bg-emerald-900/40 text-emerald-200 border-t-2 border-x border-emerald-700/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>🏹</span> Bows
+            </button>
+            <button
+              onClick={() => setAssemblyMode('staffs')}
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
+                ${assemblyMode === 'staffs' 
+                  ? 'bg-blue-900/40 text-blue-200 border-t-2 border-x border-blue-700/50' 
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
+                }`}
+            >
+              <span>🪄</span> Staffs
             </button>
             <button
               onClick={() => setAssemblyMode('jewelry')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2
+              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
                 ${assemblyMode === 'jewelry' 
                   ? 'bg-purple-900/40 text-purple-200 border-t-2 border-x border-purple-700/50' 
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
@@ -372,8 +392,8 @@ export default function SkillView({ skill, level, xp, activeAction, inventory, o
                    <div 
                      className={`h-full ${theme.bg} origin-left`} 
                      style={{ 
-                        width: '100%',
-                        animation: `progress ${currentInterval}ms linear infinite` 
+                       width: '100%',
+                       animation: `progress ${currentInterval}ms linear infinite` 
                      }}
                    ></div>
                 </div>

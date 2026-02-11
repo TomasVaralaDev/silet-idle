@@ -149,18 +149,18 @@ export interface GameState {
   combatStats: CombatState;
 }
 
-// UUSI: Taistelijan statsit (Pelaaja tai Vihollinen)
+// src/types.ts
 export interface CombatStats {
   hp: number;
   maxHp: number;
-  attackDamage: number;
-  attackSpeed: number;      // Iskuja sekunnissa
-  critChance: number;       // 0.0 - 1.0 (esim 0.2 = 20%)
-  critMultiplier: number;   // esim. 1.5 = 150% vahinko
-  armor: number;
-  // Tulevaisuuden varalle laajennettavuus:
-  armorPenetration?: number; 
-  elementalDamage?: { type: string; value: number };
+  attackLevel: number;   // Force
+  strengthLevel: number; // Melee/Ranged/Magic Sys
+  defenseLevel: number;  // Shielding
+  attackDamage: number;  // Gear Bonus
+  armor: number;         // Gear Bonus
+  attackSpeed: number;
+  critChance: number;
+  critMultiplier: number;
 }
 
 // UUSI: Yhden iskun lopputulos

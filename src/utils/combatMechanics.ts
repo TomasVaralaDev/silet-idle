@@ -1,41 +1,51 @@
-// src/utils/combatMechanics.ts
-import type { CombatStats, CombatResult } from '../types';
+import type { CombatStats, CombatResult, GameState } from '../types';
 
 // VAKIOT
-const ARMOR_CONSTANT_K = 200; // Vakio K hyperboliseen kaavaan
+const ARMOR_CONSTANT = 300; 
+const ACCURACY_CONSTANT = 0.5; 
 
-/**
- * Laskee yhden iskun vahingon.
- */
 export const calculateHit = (attacker: CombatStats, defender: CombatStats): CombatResult => {
-  // 1. Kriittinen osuma
-  const isCrit = Math.random() < attacker.critChance;
-  
-  let rawDamage = attacker.attackDamage;
-  if (isCrit) {
-    rawDamage *= attacker.critMultiplier;
+  // 1. OSUMATARKKUUS (FORCE / ATTACK)
+  const hitChance = attacker.attackLevel / (attacker.attackLevel + (defender.defenseLevel * ACCURACY_CONSTANT));
+  const rollsHit = Math.random() < hitChance;
+
+  if (!rollsHit) {
+    return { finalDamage: 0, isCrit: false, mitigationPercent: 0 };
   }
 
-  // 2. Vahingon vähennys (Hyperbolinen panssari)
-  const damageMultiplier = ARMOR_CONSTANT_K / (ARMOR_CONSTANT_K + defender.armor);
-  
-  // Lasketaan vahinko panssarin jälkeen (mutta ei vielä pyöristetä)
-  const mitigatedDamage = rawDamage * damageMultiplier;
+  // 2. MAX HIT LASKENTA
+  // Tämä ottaa nyt huomioon sekä levelit (strengthLevel) että gearin (attackDamage)
+  // Kaava: 1 + (SystemLevel * 0.8) + WeaponBonus
+  const maxHit = 1 + (attacker.strengthLevel * 0.8) + attacker.attackDamage;
 
-  // --- UUSI LISÄYS: SATUNNAISVAIHTELU (+/- 10%) ---
-  // Math.random() antaa luvun 0.0 - 1.0.
-  // Kerrotaan se 0.2:lla (tulos 0.0 - 0.2).
-  // Lisätään 0.9 (tulos 0.9 - 1.1).
+  // 3. KRITTIINEN OSUMA & RAAKAVAHINKO
+  const isCrit = Math.random() < attacker.critChance;
+  let rawDamage = 0;
+
+  if (isCrit) {
+    // --- KORJAUS TÄSSÄ ---
+    // Jos tulee Crit, käytetään AINA Max Hittiä pohjana.
+    // Tällöin levelit (Melee Sys) vaikuttavat täysimääräisesti.
+    rawDamage = maxHit * attacker.critMultiplier;
+  } else {
+    // Jos ei Crit, arvotaan vahinko väliltä 1 - MaxHit
+    rawDamage = Math.floor(Math.random() * maxHit) + 1;
+  }
+
+  // 4. VAHINGON VÄHENNYS (ARMOR)
+  const damageReduction = defender.defenseLevel / (defender.defenseLevel + ARMOR_CONSTANT);
+  const mitigationPercent = damageReduction;
+  
+  // Lasketaan vahinko panssarin jälkeen
+  const mitigatedDamage = rawDamage * (1 - damageReduction);
+
+  // 5. SATUNNAISVAIHTELU (+/- 10%)
+  // Tämä tuo "elävyyttä" numeroihin, ettei crit ole aina tasan sama luku
   const variance = 0.9 + (Math.random() * 0.2);
-  
-  // Kerrotaan vahinko satunnaisuudella
   const damageWithVariance = mitigatedDamage * variance;
-  // ------------------------------------------------
 
-  // 3. Lopullinen vahinko (pyöristys alaspäin, vähintään 1)
+  // 6. LOPULLINEN TULOS
   const finalDamage = Math.max(1, Math.floor(damageWithVariance));
-
-  const mitigationPercent = 1 - damageMultiplier;
 
   return {
     finalDamage,
@@ -45,59 +55,61 @@ export const calculateHit = (attacker: CombatStats, defender: CombatStats): Comb
 };
 
 /**
- * Skaalaa pelaajan statsit tason mukaan.
- * Kaava: Base * Level^1.5
+ * Rakentaa pelaajan statsit
  */
 export const getPlayerStats = (
-  level: number, 
+  skills: GameState['skills'],
+  combatStyle: 'melee' | 'ranged' | 'magic',
   equipmentBonus: Partial<CombatStats>
 ): CombatStats => {
-  const baseHp = 100;
-  const baseDmg = 10;
   
-  // Core Stats Levelin mukaan
-  const scaledHp = Math.floor(baseHp + (level * 10)); // Yksinkertaisempi HP kaava aluksi
-  // Tai promptin mukainen: const scaledDmg = Math.floor(baseDmg * Math.pow(level, 1.5));
-  
-  // Tässä esimerkissä käytän hieman loivempaa skaalausta pelattavuuden vuoksi,
-  // mutta voit vaihtaa Math.pow(level, 1.5) jos haluat jyrkän nousun.
-  const scaledDmg = Math.floor(baseDmg + (level * 2)); 
+  // Haetaan system level (esim. Melee Sys)
+  const strengthLevel = skills[combatStyle]?.level || 1; 
 
   return {
-    hp: scaledHp + (equipmentBonus.hp || 0),
-    maxHp: scaledHp + (equipmentBonus.hp || 0),
-    attackDamage: scaledDmg + (equipmentBonus.attackDamage || 0),
-    armor: (equipmentBonus.armor || 0), // Pelaajan armor tulee yleensä kamoista
-    attackSpeed: 1.0, // Perusnopeus
-    critChance: 0.05, // 5% base crit
+    hp: skills.hitpoints.level * 10,
+    maxHp: skills.hitpoints.level * 10,
+    
+    attackLevel: skills.attack.level,   // Force
+    strengthLevel: strengthLevel,       // Melee/Ranged/Magic Sys (Vaikuttaa Max Hittiin)
+    defenseLevel: skills.defense.level, // Shielding
+
+    attackDamage: equipmentBonus.attackDamage || 0, 
+    armor: equipmentBonus.armor || 0,
+    
+    attackSpeed: 1.0, 
+    critChance: 0.05 + (skills.attack.level * 0.0001), // Pieni bonus crit chanceen Forcesta
     critMultiplier: 1.5,
-    ...equipmentBonus // Ylikirjoita jos kamoissa on speciaaleja
+    ...equipmentBonus
   };
 };
 
 /**
- * Skaalaa vihollisen statsit tason (World ID / Map ID) mukaan.
- * Kaava: Base * 1.12^Level
+ * Rakentaa vihollisen statsit
  */
 export const getEnemyStats = (
   baseStats: { hp: number; attack: number }, 
   level: number
 ): CombatStats => {
-  const growthFactor = 1.12; // 12% kasvu per level
+  const growth = 1.1; 
   
-  const scaledHp = Math.floor(baseStats.hp * Math.pow(growthFactor, level));
-  const scaledDmg = Math.floor(baseStats.attack * Math.pow(growthFactor, level));
-  
-  // Vihollisen armor kasvaa myös hieman levelin myötä
-  const scaledArmor = Math.floor(level * 5); 
+  const scaledHp = Math.floor(baseStats.hp * Math.pow(growth, level * 0.5));
+  const scaledDmg = Math.floor(baseStats.attack * Math.pow(growth, level * 0.5));
+  const scaledDef = Math.floor(level * 2); 
+  const scaledAcc = Math.floor(level * 2);
 
   return {
     hp: scaledHp,
     maxHp: scaledHp,
-    attackDamage: scaledDmg,
-    armor: scaledArmor,
-    attackSpeed: 0.8, // Viholliset lyövät hieman hitaammin oletuksena
-    critChance: 0.05 + (level * 0.005), // Vaarallisemmat viholliset crittaavat useammin
+    attackDamage: scaledDmg, 
+    
+    attackLevel: scaledAcc,
+    strengthLevel: scaledDmg,
+    defenseLevel: scaledDef,
+    armor: 0,
+
+    attackSpeed: 0.8,
+    critChance: 0.05,
     critMultiplier: 1.5
   };
 };

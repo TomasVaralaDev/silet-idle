@@ -342,8 +342,8 @@ export default function App() {
           }, { attackDamage: 0, armor: 0, hp: 0 });
 
           // Player base stats
-          const playerStats = getPlayerStats(prev.skills[combatStyle].level, gearStats);
-          playerStats.hp = hp; 
+          const playerStats = getPlayerStats(prev.skills, combatStyle, gearStats);
+          playerStats.hp = hp;
           
           // Enemy base stats
           const enemyStats = getEnemyStats({ hp: map.enemyHp, attack: map.enemyAttack }, map.id);
@@ -423,14 +423,30 @@ export default function App() {
             if (validKill) {
               addLog(`Enemy Defeated!`);
 
-              // XP with Multipliers
-              const styleXpMult = getXpMultiplier(combatStyle);
-              const styleXpGain = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, map.xpReward * styleXpMult);
-              newSkills[combatStyle] = styleXpGain;
+              // Jaetaan XP neljään osaan (25% kullekin)
+              // Total XP tulee map datasta
+              const totalXp = map.xpReward;
+              const splitXp = Math.ceil(totalXp / 4);
 
+              // 1. INTEGRITY (Hitpoints)
               const hpXpMult = getXpMultiplier('hitpoints');
-              const hpXpGain = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, Math.ceil(map.xpReward * 0.33) * hpXpMult);
-              newSkills.hitpoints = hpXpGain;
+              const { level: hpLvl, xp: hpXp } = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, splitXp * hpXpMult);
+              newSkills.hitpoints = { level: hpLvl, xp: hpXp };
+
+              // 2. FORCE (Attack)
+              const atkXpMult = getXpMultiplier('attack'); // Varmista että tämä löytyy getXpMultiplierista
+              const { level: atkLvl, xp: atkXp } = calculateXpGain(newSkills.attack.level, newSkills.attack.xp, splitXp * atkXpMult);
+              newSkills.attack = { level: atkLvl, xp: atkXp };
+
+              // 3. SHIELDING (Defense)
+              const defXpMult = getXpMultiplier('defense');
+              const { level: defLvl, xp: defXp } = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, splitXp * defXpMult);
+              newSkills.defense = { level: defLvl, xp: defXp };
+
+              // 4. ACTIVE SYS (Melee / Ranged / Magic)
+              const styleXpMult = getXpMultiplier(combatStyle);
+              const { level: styleLvl, xp: styleXp } = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, splitXp * styleXpMult);
+              newSkills[combatStyle] = { level: styleLvl, xp: styleXp };
 
               // Normal Loot
               map.drops.forEach(drop => {

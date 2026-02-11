@@ -42,9 +42,9 @@ export const WORLD_LOOT: Record<number, WeightedDrop[]> = {
     { itemId: 'bosskey_w7', weight: 10, amount: [1, 1] }
   ],
   8: [ // Eternal Nexus
-    { itemId: 'eternallnexus_basic', weight: 1500, amount: [1, 3] },
-    { itemId: 'eternallnexus_rare', weight: 300, amount: [1, 1] },
-    { itemId: 'eternallnexus_exotic', weight: 50, amount: [1, 1] },
+    { itemId: 'eternalnexus_basic', weight: 1500, amount: [1, 3] },
+    { itemId: 'eternalnexus_rare', weight: 300, amount: [1, 1] },
+    { itemId: 'eternalnexus_exotic', weight: 50, amount: [1, 1] },
     { itemId: 'bosskey_w8', weight: 10, amount: [1, 1] }
   ]
 };
@@ -418,30 +418,72 @@ export const GAME_DATA: Record<string, Resource[]> = {
 
 // --- SHOP ITEMS ---
 export const SHOP_ITEMS: ShopItem[] = [
-  // Woodcutting Axes
-  { id: 'axe_steel', name: 'Steel Axe', cost: 100, multiplier: 0.9, skill: 'woodcutting', icon: '/assets/items/axe_steel.png', description: '10% faster chopping.' },
-  { id: 'axe_mithril', name: 'Mithril Axe', cost: 500, multiplier: 0.75, skill: 'woodcutting', icon: '/assets/items/axe_mithril.png', description: '25% faster chopping.' },
-  
-  // Mining Pickaxes
-  { id: 'pickaxe_steel', name: 'Steel Pickaxe', cost: 150, multiplier: 0.9, skill: 'mining', icon: '/assets/items/pickaxe_steel.png', description: '10% faster mining.' },
-  { id: 'pickaxe_mithril', name: 'Mithril Pickaxe', cost: 750, multiplier: 0.75, skill: 'mining', icon: '/assets/items/pickaxe_mithril.png', description: '25% faster mining.' },
+  // ... (Säilytä aiemmat esineet)
 
-  // Fishing Rods
-  { id: 'rod_reinforced', name: 'Reinforced Rod', cost: 250, multiplier: 0.9, skill: 'fishing', icon: '/assets/items/rod_reinforced.png', description: '10% faster fishing.' },
-  { id: 'rod_master', name: 'Master Rod', cost: 1000, multiplier: 0.75, skill: 'fishing', icon: '/assets/items/rod_master.png', description: '25% faster fishing.' },
-
-  // Cooking Utensils
-  { id: 'cooking_pot_iron', name: 'Iron Pot', cost: 300, multiplier: 0.9, skill: 'cooking', icon: '/assets/items/pot_iron.png', description: '10% faster cooking.' },
-  { id: 'cooking_pot_steel', name: 'Steel Pot', cost: 1200, multiplier: 0.75, skill: 'cooking', icon: '/assets/items/pot_steel.png', description: '25% faster cooking.' },
-
-  // Smithing Hammers
-  { id: 'hammer_steel', name: 'Heavy Hammer', cost: 500, multiplier: 0.9, skill: 'smithing', icon: '/assets/items/hammer_steel.png', description: '10% faster smithing.' },
-
-  // Crafting Tools
-  { id: 'chisel_steel', name: 'Precision Tools', cost: 500, multiplier: 0.9, skill: 'crafting', icon: '/assets/items/chisel_steel.png', description: '10% faster crafting.' },
-
-  // Dev Tool
-  { id: 'test_money', name: 'Dev Money', cost: 0, multiplier: 1, skill: 'woodcutting', icon: '/assets/ui/coins.png', description: 'Get 1000 coins (Test).' }
+  // --- GOD TIER UPGRADES (99% Speed Boost) ---
+  { 
+    id: 'god_axe', 
+    name: 'God Axe', 
+    cost: 100000, // Tai 0 jos haluat ne ilmaiseksi testiin
+    multiplier: 0.01, // 0.01 = 1% alkuperäisestä ajasta = 99% nopeutus
+    skill: 'woodcutting', 
+    icon: '/assets/items/axe_mithril.png', // Käytetään mithril-ikonia placeholderina tai vaihda uuteen
+    description: 'Chops trees at godlike speed (99% faster).' 
+  },
+  { 
+    id: 'god_pickaxe', 
+    name: 'God Pickaxe', 
+    cost: 100000, 
+    multiplier: 0.01, 
+    skill: 'mining', 
+    icon: '/assets/items/pickaxe_mithril.png', 
+    description: 'Mines rocks instantly (99% faster).' 
+  },
+  { 
+    id: 'god_rod', 
+    name: 'God Rod', 
+    cost: 100000, 
+    multiplier: 0.01, 
+    skill: 'fishing', 
+    icon: '/assets/items/rod_master.png', 
+    description: 'Catches fish instantly (99% faster).' 
+  },
+  { 
+    id: 'god_rake', 
+    name: 'God Rake', 
+    cost: 100000, 
+    multiplier: 0.01, 
+    skill: 'farming', 
+    icon: '/assets/ui/icon_leaf.png', 
+    description: 'Grows crops instantly (99% faster).' 
+  },
+  { 
+    id: 'god_hammer', 
+    name: 'God Hammer', 
+    cost: 100000, 
+    multiplier: 0.01, 
+    skill: 'smithing', 
+    icon: '/assets/items/hammer_steel.png', 
+    description: 'Smelts and forges instantly (99% faster).' 
+  },
+  { 
+    id: 'god_chisel', 
+    name: 'God Chisel', 
+    cost: 100000, 
+    multiplier: 0.01, 
+    skill: 'crafting', 
+    icon: '/assets/items/chisel_steel.png', 
+    description: 'Crafts items instantly (99% faster).' 
+  },
+  { 
+    id: 'god_pot', 
+    name: 'God Pot', 
+    cost: 100000, 
+    multiplier: 0.01, 
+    skill: 'cooking', 
+    icon: '/assets/items/pot_steel.png', 
+    description: 'Cooks food instantly (99% faster).' 
+  },
 ];
 
 // --- ACHIEVEMENTS ---
@@ -475,14 +517,14 @@ export const getItemDetails = (id: string) => {
       name: `${worldNameDisplay} Gem`, 
       value: 100, 
       color: 'text-cyan-400', 
-      icon: `/assets/lootpoolzones/${id}.png`, 
+      icon: `/assets/lootpoolszones/${id}.png`, 
       description: 'A rare and valuable gem.' 
     };
     if (type === 'exotic') return { 
       name: `${worldNameDisplay} Elite`, 
       value: 1000, 
       color: 'text-orange-500', 
-      icon: `/assets/lootpoolzones/${id}.png`, 
+      icon: `/assets/lootpoolszones/${id}.png`, 
       description: 'A very rare exotic fragment.' 
     };
   }

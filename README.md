@@ -49,18 +49,18 @@
 ### Installation
 
 1. **Clone the repository**
-   ```bash
+  ```bash
    git clone [https://github.com/yourusername/timering-idle.git](https://github.com/yourusername/timering-idle.git)
    cd timering-idle
   ```
 
 2. **Install dependencies**
-    ```bash
-      npm install
+  ```bash
+    npm install
   ```
 
 3. **Configure Firebase Create a file named .env in the root directory and add your Firebase credentials:**
-    ```bash
+  ```bash
     VITE_FIREBASE_API_KEY=your_api_key
     VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
     VITE_FIREBASE_PROJECT_ID=your_project_id
@@ -70,20 +70,20 @@
   ```
 
 4. **Run the development server**
-    ```bash
+  ```bash
     npm run dev
   ```
 
 ### Project Structure
-    ```bash
-    src/
-├── assets/          # Game images (items, enemies, UI icons)
-├── components/      # React components (Sidebar, Inventory, CombatView, etc.)
-├── App.tsx          # Main game loop and state management
-├── data.ts          # Static game data (Loot tables, Enemies, Items)
-├── types.ts         # TypeScript interfaces and types
-├── firebase.ts      # Firebase initialization
-└── index.css        # Tailwind directives and global styles
+  ```bash
+        src/
+    ├── assets/          # Game images (items, enemies, UI icons)
+    ├── components/      # React components (Sidebar, Inventory, CombatView, etc.)
+    ├── App.tsx          # Main game loop and state management
+    ├── data.ts          # Static game data (Loot tables, Enemies, Items)
+    ├── types.ts         # TypeScript interfaces and types
+    ├── firebase.ts      # Firebase initialization
+    └── index.css        # Tailwind directives and global styles
   ```
 
 ### Gameplay Guide

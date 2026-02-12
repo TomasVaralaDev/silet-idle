@@ -74,7 +74,7 @@ const DEFAULT_STATE: GameState = {
     enemyCurrentHp: 0,
     respawnTimer: 0,
     foodTimer: 0,
-    combatLog: [] // Alustetaan tyhjä loki
+    combatLog: [] 
   }
 };
 
@@ -127,7 +127,6 @@ export default function App() {
   }, [state.upgrades]);
 
   const getXpMultiplier = useCallback((skill: SkillType) => {
-    // Check if player owns "xp_tome_[skill]"
     const hasTome = state.upgrades.includes(`xp_tome_${skill}`);
     return hasTome ? 5 : 1;
   }, [state.upgrades]);
@@ -195,7 +194,7 @@ export default function App() {
     if (!loadingAuth) loadData();
   }, [user, loadingAuth]);
 
-// AUTO SAVE
+  // AUTO SAVE (WITH COMBAT LOG CLEANUP)
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
@@ -204,29 +203,24 @@ export default function App() {
     try {
       setSaveStatus('saving');
 
-      // --- LOGIN POISTO ALKAA ---
-      
       // 1. Otetaan nykyinen tila
       const currentState = stateRef.current;
 
       // 2. Erotellaan combatStats muusta tilasta
       const { combatStats, ...otherState } = currentState;
 
-      // 3. Erotellaan combatLog pois combatStatsista (jätetään se tallentamatta)
+      // 3. Erotellaan combatLog pois combatStatsista
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { combatLog, ...statsWithoutLog } = combatStats;
 
-      // 4. Kootaan uusi objekti, jossa on kaikki muu paitsi logi
+      // 4. Kootaan uusi objekti ilman logia
       const dataToSave = {
         ...otherState,
         combatStats: statsWithoutLog
       };
 
-      // 5. Lähetetään siivottu data Firebaseen
       await setDoc(doc(db, 'users', user.uid), JSON.parse(JSON.stringify(dataToSave)));
       
-      // --- LOGIN POISTO PÄÄTTYY ---
-
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (e) {
@@ -234,6 +228,14 @@ export default function App() {
       setSaveStatus('error');
     }
   }, [user, isDataLoaded]);
+
+  useEffect(() => {
+    if (!user || !isDataLoaded) return;
+    const interval = setInterval(() => {
+       handleForceSave();
+    }, 300000);
+    return () => clearInterval(interval);
+  }, [user, isDataLoaded, handleForceSave]);
 
   // --- SCAVENGER LOGIC LOOP ---
   useEffect(() => {
@@ -278,20 +280,15 @@ export default function App() {
 
           let { hp, enemyCurrentHp, maxMapCompleted, respawnTimer, foodTimer, currentMapId } = prev.combatStats;
 
-          // --- LOGGING SYSTEM (CAP FIX) ---
-          const MAX_LOG_ENTRIES = 50; // <-- TÄMÄ ESTÄÄ SIVUN KAATUMISEN (vaihda halutessasi esim. 100)
-          
-          // Otetaan kopio edellisestä logista
+          const MAX_LOG_ENTRIES = 50;
           let currentLog = prev.combatStats.combatLog ? [...prev.combatStats.combatLog] : [];
           
           const addLog = (msg: string) => {
-             currentLog.unshift(msg); // Lisää uusi viesti alkuun
-             // Jos lista on liian pitkä, leikkaa se määrättyyn pituuteen
+             currentLog.unshift(msg);
              if (currentLog.length > MAX_LOG_ENTRIES) {
                 currentLog = currentLog.slice(0, MAX_LOG_ENTRIES);
              }
           };
-          // --------------------------------
 
           let equippedFood = prev.equippedFood ? { ...prev.equippedFood } : null;
           let notify = null;
@@ -375,7 +372,6 @@ export default function App() {
             const hitResult = calculateHit(playerStats, enemyStats);
             totalPlayerDamage += hitResult.finalDamage;
             
-            // Log damage
             let hitMsg = `Player hit: ${hitResult.finalDamage}`;
             if (hitResult.isCrit) hitMsg += " (CRIT!)";
             addLog(hitMsg);
@@ -439,27 +435,22 @@ export default function App() {
             if (validKill) {
               addLog(`Enemy Defeated!`);
 
-              // Jaetaan XP neljään osaan (25% kullekin)
-              // Total XP tulee map datasta
+              // XP Split
               const totalXp = map.xpReward;
               const splitXp = Math.ceil(totalXp / 4);
 
-              // 1. INTEGRITY (Hitpoints)
               const hpXpMult = getXpMultiplier('hitpoints');
               const { level: hpLvl, xp: hpXp } = calculateXpGain(newSkills.hitpoints.level, newSkills.hitpoints.xp, splitXp * hpXpMult);
               newSkills.hitpoints = { level: hpLvl, xp: hpXp };
 
-              // 2. FORCE (Attack)
-              const atkXpMult = getXpMultiplier('attack'); // Varmista että tämä löytyy getXpMultiplierista
+              const atkXpMult = getXpMultiplier('attack');
               const { level: atkLvl, xp: atkXp } = calculateXpGain(newSkills.attack.level, newSkills.attack.xp, splitXp * atkXpMult);
               newSkills.attack = { level: atkLvl, xp: atkXp };
 
-              // 3. SHIELDING (Defense)
               const defXpMult = getXpMultiplier('defense');
               const { level: defLvl, xp: defXp } = calculateXpGain(newSkills.defense.level, newSkills.defense.xp, splitXp * defXpMult);
               newSkills.defense = { level: defLvl, xp: defXp };
 
-              // 4. ACTIVE SYS (Melee / Ranged / Magic)
               const styleXpMult = getXpMultiplier(combatStyle);
               const { level: styleLvl, xp: styleXp } = calculateXpGain(newSkills[combatStyle].level, newSkills[combatStyle].xp, splitXp * styleXpMult);
               newSkills[combatStyle] = { level: styleLvl, xp: styleXp };
@@ -586,6 +577,8 @@ export default function App() {
     return () => clearInterval(intervalId);
   }, [state.activeAction, getSpeedMultiplier, getXpMultiplier, isDataLoaded, state.combatStats.currentMapId]);
 
+  // --- ACTIONS ---
+
   const toggleAction = (skill: SkillType, resourceId: string) => {
     setState(prev => {
       if (prev.activeAction?.resourceId === resourceId) return { ...prev, activeAction: null };
@@ -615,7 +608,6 @@ export default function App() {
     }));
   };
 
-  // --- ACTIONS ---
   const startCombat = (mapId: number) => {
     const map = COMBAT_DATA.find(m => m.id === mapId);
     if (!map) return;
@@ -636,7 +628,6 @@ export default function App() {
     }
 
     setState(prev => {
-      // Calculate scaled enemy HP for the start
       const enemyStats = getEnemyStats({ hp: map.enemyHp, attack: map.enemyAttack }, map.id);
       const currentMaxHp = getMaxHp(prev.skills.hitpoints.level);
       
@@ -650,7 +641,7 @@ export default function App() {
           hp: prev.combatStats.hp > 0 ? prev.combatStats.hp : currentMaxHp,
           respawnTimer: 0,
           foodTimer: 0,
-          combatLog: [] // Reset log
+          combatLog: [] 
         }
       };
     });
@@ -662,6 +653,111 @@ export default function App() {
       activeAction: null,
       combatStats: { ...prev.combatStats, currentMapId: null }
     }));
+  };
+
+  // --- SCAVENGER HANDLERS (WORLD BASED) ---
+  const handleStartExpedition = (worldId: number, durationMinutes: number) => {
+    setState(prev => {
+      if (prev.scavenger.activeExpeditions.length >= prev.scavenger.unlockedSlots) return prev;
+
+      // Tarkistetaan onko maailma auki (onko eka map kyseisestä maailmasta auki)
+      // Oletus: World 1 (id 1) on aina auki. 
+      // Muut: maxMapCompleted >= (worldId - 1) * 10
+      const unlockReq = (worldId - 1) * 10;
+      if (prev.combatStats.maxMapCompleted < unlockReq && worldId !== 1) {
+         return prev;
+      }
+
+      const newExpedition: Expedition = {
+        id: Date.now().toString(),
+        mapId: worldId, // mapId on nyt WorldID
+        startTime: Date.now(),
+        duration: durationMinutes * 60 * 1000,
+        completed: false
+      };
+
+      return {
+        ...prev,
+        scavenger: {
+          ...prev.scavenger,
+          activeExpeditions: [...prev.scavenger.activeExpeditions, newExpedition]
+        }
+      };
+    });
+  };
+
+  const handleClaimExpedition = (expeditionId: string) => {
+    setState(prev => {
+      const expedition = prev.scavenger.activeExpeditions.find(e => e.id === expeditionId);
+      if (!expedition || !expedition.completed) return prev;
+
+      const worldId = expedition.mapId;
+      const maxMap = prev.combatStats.maxMapCompleted;
+
+      // Etsitään kaikki kartat kyseisestä maailmasta, jotka on avattu (tai seuraava avattava)
+      const validMaps = COMBAT_DATA.filter(m => 
+        m.world === worldId && m.id <= maxMap + 1
+      );
+
+      if (validMaps.length === 0) {
+        return {
+          ...prev,
+          scavenger: { ...prev.scavenger, activeExpeditions: prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId) }
+        };
+      }
+
+      const minutesSpent = Math.floor(expedition.duration / 60000);
+      const lootRolls = minutesSpent * 2; 
+      
+      const newInventory = { ...prev.inventory };
+      const gainedItems: Record<string, number> = {};
+
+      for (let i = 0; i < lootRolls; i++) {
+        // Valitaan satunnainen avattu kartta tästä maailmasta
+        const randomMap = validMaps[Math.floor(Math.random() * validMaps.length)];
+
+        randomMap.drops.forEach(drop => {
+          if (Math.random() <= drop.chance) {
+            const amount = Math.max(1, Math.floor((Math.random() * (drop.amount[1] - drop.amount[0] + 1) + drop.amount[0]) * 0.5));
+            newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
+            gainedItems[drop.itemId] = (gainedItems[drop.itemId] || 0) + amount;
+          }
+        });
+      }
+
+      const remainingExpeditions = prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId);
+      const itemNames = Object.keys(gainedItems).map(id => {
+        const item = getItemDetails(id);
+        return `${gainedItems[id]}x ${item?.name || id}`;
+      }).join(', ');
+      
+      if (prev.settings.notifications) {
+        if (itemNames) {
+          setNotification({ message: `Scavenging Result: ${itemNames.substring(0, 50)}...`, icon: '/assets/skills/scavenging.png' });
+        } else {
+          setNotification({ message: `Scavenging returned empty handed...`, icon: '/assets/skills/scavenging.png' });
+        }
+        setTimeout(() => setNotification(null), 2500); 
+      }
+
+      return {
+        ...prev,
+        inventory: newInventory,
+        scavenger: { ...prev.scavenger, activeExpeditions: remainingExpeditions }
+      };
+    });
+  };
+
+  const handleCancelExpedition = (expeditionId: string) => {
+    if (confirm("Cancel expedition? The team will return empty-handed.")) {
+      setState(prev => ({
+        ...prev,
+        scavenger: {
+          ...prev.scavenger,
+          activeExpeditions: prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId)
+        }
+      }));
+    }
   };
 
   const handleSetUsername = async (name: string) => {
@@ -681,87 +777,6 @@ export default function App() {
 
   const handleUpdateSettings = (newSettings: GameSettings) => {
     setState(prev => ({ ...prev, settings: newSettings }));
-  };
-
-  const handleStartExpedition = (mapId: number, durationMinutes: number) => {
-    setState(prev => {
-      if (prev.scavenger.activeExpeditions.length >= prev.scavenger.unlockedSlots) return prev;
-
-      const newExpedition: Expedition = {
-        id: Date.now().toString(),
-        mapId,
-        startTime: Date.now(),
-        duration: durationMinutes * 60 * 1000,
-        completed: false
-      };
-
-      return {
-        ...prev,
-        scavenger: {
-          ...prev.scavenger,
-          activeExpeditions: [...prev.scavenger.activeExpeditions, newExpedition]
-        }
-      };
-    });
-  };
-
-  const handleCancelExpedition = (expeditionId: string) => {
-    if (confirm("Cancel expedition? The team will return empty-handed.")) {
-      setState(prev => ({
-        ...prev,
-        scavenger: {
-          ...prev.scavenger,
-          activeExpeditions: prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId)
-        }
-      }));
-    }
-  };
-
-  const handleClaimExpedition = (expeditionId: string) => {
-    setState(prev => {
-      const expedition = prev.scavenger.activeExpeditions.find(e => e.id === expeditionId);
-      if (!expedition || !expedition.completed) return prev;
-
-      const map = COMBAT_DATA.find(m => m.id === expedition.mapId);
-      if (!map) return prev;
-
-      const minutesSpent = Math.floor(expedition.duration / 60000);
-      const lootRolls = minutesSpent; 
-      
-      const newInventory = { ...prev.inventory };
-      const gainedItems: Record<string, number> = {};
-
-      for (let i = 0; i < lootRolls; i++) {
-        map.drops.forEach(drop => {
-          if (Math.random() <= drop.chance) {
-            const amount = Math.max(1, Math.floor((Math.random() * (drop.amount[1] - drop.amount[0] + 1) + drop.amount[0]) * 0.5));
-            newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
-            gainedItems[drop.itemId] = (gainedItems[drop.itemId] || 0) + amount;
-          }
-        });
-      }
-
-      const remainingExpeditions = prev.scavenger.activeExpeditions.filter(e => e.id !== expeditionId);
-      const itemNames = Object.keys(gainedItems).map(id => {
-        const item = getItemDetails(id);
-        return `${gainedItems[id]}x ${item?.name || id}`;
-      }).join(', ');
-      
-      if (prev.settings.notifications) {
-        if (itemNames) {
-          setNotification({ message: `Expedition returned: ${itemNames.substring(0, 50)}`, icon: '/assets/skills/scavenging.png' });
-        } else {
-          setNotification({ message: `Expedition returned empty handed...`, icon: '/assets/skills/scavenging.png' });
-        }
-        setTimeout(() => setNotification(null), 1500); 
-      }
-
-      return {
-        ...prev,
-        inventory: newInventory,
-        scavenger: { ...prev.scavenger, activeExpeditions: remainingExpeditions }
-      };
-    });
   };
 
   const sellItem = (itemId: string, amountToSell: number | 'all') => {

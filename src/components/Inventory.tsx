@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getItemDetails } from '../data';
+import { getRarityStyle } from '../utils/rarity';
 import type { GameState, EquipmentSlot, Resource } from '../types';
 
 interface InventoryProps {
@@ -29,7 +30,10 @@ export default function Inventory({
 }: InventoryProps) {
   
   const [filter, setFilter] = useState<'all' | 'resources' | 'consumables' | 'equipment'>('all');
-  const [sortOrder, setSortOrder] = useState<'name' | 'value' | 'amount'>('amount');
+  
+  // 1. Päivitetty tila hyväksymään 'rarity'
+  const [sortOrder, setSortOrder] = useState<'name' | 'value' | 'amount' | 'rarity'>('amount');
+  
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [foodToEquip, setFoodToEquip] = useState<{ id: string, name: string, max: number } | null>(null);
 
@@ -51,7 +55,27 @@ export default function Inventory({
     return true;
   });
 
+  // 2. Määritellään painoarvot rarity-lajittelulle
+  const rarityWeights: Record<string, number> = {
+    'legendary': 4,
+    'rare': 3,
+    'uncommon': 2,
+    'common': 1
+  };
+
   const sortedItems = [...filteredItems].sort((a, b) => {
+    // 3. Uusi lajittelulogiikka
+    if (sortOrder === 'rarity') {
+      const weightA = rarityWeights[a.rarity || 'common'] || 0;
+      const weightB = rarityWeights[b.rarity || 'common'] || 0;
+      
+      // Jos rarity on eri, lajitellaan isompi ensin (Legendary > Common)
+      if (weightA !== weightB) return weightB - weightA;
+      
+      // Jos rarity on sama, lajitellaan arvon mukaan (kallein ensin)
+      return b.value - a.value;
+    }
+
     if (sortOrder === 'amount') return b.count - a.count;
     if (sortOrder === 'value') return b.value - a.value;
     return a.name.localeCompare(b.name);
@@ -69,7 +93,7 @@ export default function Inventory({
     return getResource(equippedFood.itemId);
   };
 
-  // --- DETAILS PANEL LOGIC ---
+  // --- LOGIIKKA ---
   const selectedItem = selectedItemId ? getResource(selectedItemId) : null;
   const selectedItemCount = selectedItemId ? (inventory[selectedItemId] || 0) : 0;
   
@@ -87,10 +111,8 @@ export default function Inventory({
     }
   };
 
-  // KORJAUS 2: Määritelty item-tyyppi tarkasti 'any':n sijaan
   const handleRightClick = (e: React.MouseEvent, item: Resource & { count: number; id: string }) => {
     e.preventDefault(); 
-
     if (item.slot) {
       if (item.slot === 'food') {
         setFoodToEquip({ id: item.id, name: item.name, max: item.count });
@@ -100,8 +122,9 @@ export default function Inventory({
     }
   };
 
-  // KORJAUS 1: useEffect poistettu. Tämä ehto hoitaa paneelin piilotuksen renderöinnissä.
   const showDetailsPanel = selectedItem && (selectedItemCount > 0 || isEquipped || isFoodEquipped);
+
+  const detailsStyle = getRarityStyle(selectedItem?.rarity);
 
   return (
     <div className="p-4 sm:p-6 h-full flex flex-col xl:flex-row gap-6 bg-slate-950 overflow-y-auto custom-scrollbar relative">
@@ -120,7 +143,6 @@ export default function Inventory({
 
       {/* --- LEFT COLUMN: EQUIPMENT DOLL --- */}
       <div className="w-full xl:w-[500px] flex-shrink-0 flex flex-col gap-6 mx-auto">
-        
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6 flex flex-col shadow-xl">
           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 text-center border-b border-slate-800 pb-2">Active Loadout</h3>
           
@@ -143,7 +165,6 @@ export default function Inventory({
               </div>
           </div>
 
-          {/* STATS & FOOD */}
           <div className="grid grid-cols-2 gap-4 text-center mb-4">
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800"><span className="block text-[10px] text-slate-500 font-bold uppercase">Attack</span><span className="text-2xl text-orange-400 font-bold">+{Object.values(equipment).reduce((acc, id) => acc + (id ? (getResource(id)?.stats?.attack || 0) : 0), 0)}</span></div>
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800"><span className="block text-[10px] text-slate-500 font-bold uppercase">Defense</span><span className="text-2xl text-cyan-400 font-bold">+{Object.values(equipment).reduce((acc, id) => acc + (id ? (getResource(id)?.stats?.defense || 0) : 0), 0)}</span></div>
@@ -170,8 +191,17 @@ export default function Inventory({
               <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded border transition-all ${filter === f ? 'bg-slate-800 text-cyan-400 border-cyan-500/50' : 'text-slate-500 border-slate-700 hover:text-slate-300'}`}>{f}</button>
             ))}
           </div>
-          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as 'name' | 'value' | 'amount')} className="bg-slate-950 border border-slate-700 text-slate-300 text-xs py-1.5 px-3 rounded outline-none focus:border-cyan-500">
-             <option value="amount">Amount</option><option value="value">Value</option><option value="name">Name</option>
+          
+          {/* 4. Päivitetty Select-valikko */}
+          <select 
+            value={sortOrder} 
+            onChange={(e) => setSortOrder(e.target.value as 'name' | 'value' | 'amount' | 'rarity')} 
+            className="bg-slate-950 border border-slate-700 text-slate-300 text-xs py-1.5 px-3 rounded outline-none focus:border-cyan-500"
+          >
+             <option value="amount">Amount</option>
+             <option value="value">Value</option>
+             <option value="name">Name</option>
+             <option value="rarity">Rarity</option>
           </select>
         </div>
 
@@ -184,6 +214,8 @@ export default function Inventory({
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-6 2xl:grid-cols-7 gap-2 content-start">
               {sortedItems.map((item) => {
                 const isSelected = selectedItemId === item.id;
+                const style = getRarityStyle(item.rarity);
+                
                 return (
                   <button
                     key={item.id}
@@ -191,15 +223,19 @@ export default function Inventory({
                     onContextMenu={(e) => handleRightClick(e, item)} 
                     className={`relative rounded-lg border-2 transition-all flex flex-col items-center p-1.5 group h-20 sm:h-24 justify-between
                       ${isSelected 
-                        ? 'bg-slate-800 border-cyan-500 shadow-lg z-10' 
-                        : 'bg-slate-900 border-slate-800 hover:bg-slate-800 hover:border-slate-600'
+                        ? `bg-slate-800 ${style.border} shadow-lg z-10 scale-105` 
+                        : `bg-slate-900 ${style.border} hover:bg-slate-800 hover:border-slate-600`
                       }`}
                   >
                     <div className="w-full flex justify-end">
                        <span className="bg-slate-950/80 text-slate-400 text-[9px] font-mono font-bold px-1 rounded border border-slate-800">{item.count > 999 ? '999+' : item.count}</span>
                     </div>
                     <img src={item.icon} alt={item.name} className="w-8 h-8 sm:w-10 sm:h-10 pixelated object-contain drop-shadow-md mb-1" />
-                    <div className={`text-[8px] sm:text-[9px] text-center font-bold truncate w-full px-0.5 leading-none ${isSelected ? 'text-cyan-400' : 'text-slate-500 group-hover:text-slate-300'}`}>{item.name}</div>
+                    
+                    <div className={`text-[8px] sm:text-[9px] text-center font-bold truncate w-full px-0.5 leading-none 
+                      ${isSelected ? style.text : `${style.text} opacity-80 group-hover:opacity-100`}`}>
+                      {item.name}
+                    </div>
                   </button>
                 );
               })}
@@ -208,33 +244,41 @@ export default function Inventory({
         </div>
       </div>
 
-      {/* --- RIGHT: ITEM DETAILS PANEL (SLIDE IN) --- */}
+      {/* --- RIGHT: ITEM DETAILS PANEL --- */}
       {showDetailsPanel && selectedItem && (
-        <div className="w-full sm:w-80 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col flex-shrink-0 animate-in slide-in-from-right duration-300 z-20">
+        <div className={`w-full sm:w-80 bg-slate-900 border-l border-y sm:border-y-0 sm:border-l border-slate-800 rounded-xl sm:rounded-none sm:rounded-l-xl shadow-2xl flex flex-col flex-shrink-0 animate-in slide-in-from-right duration-300 z-20
+          ${detailsStyle.border} border-l-2`}
+        >
           
           <div className="p-4 border-b border-slate-800 flex justify-between items-start bg-slate-950/50 rounded-t-xl">
             <div>
-              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">{selectedItem.category || (selectedItem.slot ? 'Equipment' : 'Resource')}</div>
-              <h3 className="text-lg font-bold text-white leading-none">{selectedItem.name}</h3>
+              <div className={`text-[9px] font-bold uppercase tracking-widest mb-1 opacity-70 ${detailsStyle.text}`}>
+                {selectedItem.rarity ? selectedItem.rarity : 'Common'} {selectedItem.category || (selectedItem.slot ? 'Equipment' : 'Resource')}
+              </div>
+              <h3 className={`text-lg font-bold leading-none ${detailsStyle.text} drop-shadow-sm`}>{selectedItem.name}</h3>
             </div>
             <button onClick={() => setSelectedItemId(null)} className="text-slate-500 hover:text-white p-1 hover:bg-slate-800 rounded">✕</button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
-            <div className="flex justify-center mb-6">
-              <div className="w-24 h-24 bg-slate-950 rounded-xl border-2 border-slate-800 flex items-center justify-center shadow-inner relative">
-                <img src={selectedItem.icon} className="w-16 h-16 pixelated scale-125" alt={selectedItem.name} />
-                <span className="absolute -bottom-2.5 bg-slate-800 text-amber-400 text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-700">{selectedItem.value}g</span>
+          <div className="flex-1 overflow-y-auto p-5 custom-scrollbar relative">
+            <div className={`absolute top-0 left-0 w-full h-32 ${detailsStyle.bg} blur-3xl opacity-20 pointer-events-none`}></div>
+
+            <div className="flex justify-center mb-6 relative z-10">
+              <div className={`w-24 h-24 bg-slate-950 rounded-xl border-2 flex items-center justify-center shadow-lg relative ${detailsStyle.border} ${detailsStyle.shadow}`}>
+                <img src={selectedItem.icon} className="w-16 h-16 pixelated scale-125 drop-shadow-xl" alt={selectedItem.name} />
+                <span className="absolute -bottom-2.5 bg-slate-800 text-amber-400 text-[10px] font-mono px-2 py-0.5 rounded-full border border-slate-700 shadow-md">
+                  {selectedItem.value}g
+                </span>
               </div>
             </div>
 
-            <div className="mb-5">
+            <div className="mb-5 relative z-10">
               <h4 className="text-[10px] font-bold text-slate-500 uppercase border-b border-slate-800 pb-1 mb-2">Description</h4>
               <p className="text-xs text-slate-300 italic">"{selectedItem.description}"</p>
             </div>
 
             {(selectedItem.stats || selectedItem.healing) && (
-              <div className="mb-5">
+              <div className="mb-5 relative z-10">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase border-b border-slate-800 pb-1 mb-2">Stats</h4>
                 <div className="grid grid-cols-2 gap-2">
                   {selectedItem.stats?.attack && <div className="bg-slate-950 p-2 rounded border border-slate-800 flex justify-between"><span className="text-[10px] text-orange-500 font-bold">ATK</span><span className="text-xs text-white">+{selectedItem.stats.attack}</span></div>}
@@ -245,13 +289,13 @@ export default function Inventory({
             )}
 
             {selectedItem.levelRequired && (
-              <div className="text-xs text-slate-400">
+              <div className="text-xs text-slate-400 relative z-10">
                 Requires Level <span className="text-white font-bold">{selectedItem.levelRequired}</span>
               </div>
             )}
           </div>
 
-          <div className="p-4 border-t border-slate-800 bg-slate-950 rounded-b-xl space-y-2">
+          <div className="p-4 border-t border-slate-800 bg-slate-950 rounded-b-xl space-y-2 relative z-10">
             {selectedItem.slot && (
               isEquipped 
               ? <button onClick={() => equippedSlot && onUnequip(equippedSlot)} className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded font-bold uppercase text-[10px] tracking-wider">Unequip</button>
@@ -321,6 +365,8 @@ function EquipmentSlotBox({ item, slot, onUnequip }: { item: Resource | null, sl
     }
   };
 
+  const rarityStyle = item ? getRarityStyle(item.rarity) : null;
+
   if (!item) {
     return (
       <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-900/80 border-2 border-slate-800 border-dashed rounded-xl flex flex-col items-center justify-center group cursor-default shadow-inner transition-colors hover:bg-slate-900">
@@ -330,11 +376,17 @@ function EquipmentSlotBox({ item, slot, onUnequip }: { item: Resource | null, sl
   }
 
   return (
-    <div onClick={onUnequip} className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-900 border-2 border-slate-700 rounded-xl flex items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-950/20 transition-all relative group shadow-lg overflow-hidden" title={`Unequip ${item.name}`}>
+    <div 
+      onClick={onUnequip} 
+      className={`w-20 h-20 sm:w-24 sm:h-24 bg-slate-900 border-2 ${rarityStyle?.border || 'border-slate-700'} rounded-xl flex items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-950/20 transition-all relative group shadow-lg overflow-hidden`} 
+      title={`Unequip ${item.name}`}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-slate-800/30 to-slate-950/80"></div>
       <img src={item.icon} alt={slot} className="w-12 h-12 sm:w-16 sm:h-16 pixelated drop-shadow-xl relative z-10 group-hover:scale-110 transition-transform" />
       <div className="absolute inset-0 bg-red-950/90 items-center justify-center rounded-xl hidden group-hover:flex z-20 backdrop-blur-[2px]"><span className="text-[10px] sm:text-xs font-bold text-red-200 uppercase tracking-widest">Unequip</span></div>
-      <div className="absolute bottom-0 w-full bg-slate-950/90 text-[8px] sm:text-[9px] font-bold text-slate-300 py-1 text-center border-t border-slate-700 truncate px-1 z-10">{item.name}</div>
+      
+      {/* Item Name Tag with Rarity Color */}
+      <div className={`absolute bottom-0 w-full bg-slate-950/90 text-[8px] sm:text-[9px] font-bold ${rarityStyle?.text || 'text-slate-300'} py-1 text-center border-t border-slate-700 truncate px-1 z-10`}>{item.name}</div>
     </div>
   );
 }

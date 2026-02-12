@@ -1,3 +1,4 @@
+import type { Rarity } from './utils/rarity';
 export type SkillType = 
   | 'woodcutting' | 'mining' | 'fishing' | 'farming' 
   | 'crafting' | 'smithing' | 'cooking' 
@@ -42,6 +43,7 @@ export interface Ingredient {
 export interface Resource {
   id: string;
   name: string;
+  rarity?: Rarity;
   levelRequired: number;
   xpReward: number;
   interval: number; // ms

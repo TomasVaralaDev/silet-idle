@@ -195,7 +195,7 @@ export default function App() {
     if (!loadingAuth) loadData();
   }, [user, loadingAuth]);
 
-  // AUTO SAVE
+// AUTO SAVE
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
 
@@ -203,21 +203,37 @@ export default function App() {
     if (!user || !isDataLoaded) return;
     try {
       setSaveStatus('saving');
-      await setDoc(doc(db, 'users', user.uid), JSON.parse(JSON.stringify(stateRef.current)));
+
+      // --- LOGIN POISTO ALKAA ---
+      
+      // 1. Otetaan nykyinen tila
+      const currentState = stateRef.current;
+
+      // 2. Erotellaan combatStats muusta tilasta
+      const { combatStats, ...otherState } = currentState;
+
+      // 3. Erotellaan combatLog pois combatStatsista (jätetään se tallentamatta)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { combatLog, ...statsWithoutLog } = combatStats;
+
+      // 4. Kootaan uusi objekti, jossa on kaikki muu paitsi logi
+      const dataToSave = {
+        ...otherState,
+        combatStats: statsWithoutLog
+      };
+
+      // 5. Lähetetään siivottu data Firebaseen
+      await setDoc(doc(db, 'users', user.uid), JSON.parse(JSON.stringify(dataToSave)));
+      
+      // --- LOGIN POISTO PÄÄTTYY ---
+
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch {
+    } catch (e) {
+      console.error("Save error:", e);
       setSaveStatus('error');
     }
   }, [user, isDataLoaded]);
-
-  useEffect(() => {
-    if (!user || !isDataLoaded) return;
-    const interval = setInterval(() => {
-       handleForceSave();
-    }, 300000);
-    return () => clearInterval(interval);
-  }, [user, isDataLoaded, handleForceSave]);
 
   // --- SCAVENGER LOGIC LOOP ---
   useEffect(() => {

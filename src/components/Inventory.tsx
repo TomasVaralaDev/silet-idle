@@ -72,8 +72,10 @@ export default function Inventory({
   // --- DETAILS PANEL LOGIC ---
   const selectedItem = selectedItemId ? getResource(selectedItemId) : null;
   const selectedItemCount = selectedItemId ? (inventory[selectedItemId] || 0) : 0;
+  
   const isEquipped = selectedItemId ? Object.values(equipment).includes(selectedItemId) : false;
   const isFoodEquipped = selectedItemId ? equippedFood?.itemId === selectedItemId : false;
+  
   const equippedSlot = selectedItemId 
     ? (Object.keys(equipment) as Array<keyof typeof equipment>).find(key => equipment[key] === selectedItemId) 
     : null;
@@ -85,6 +87,20 @@ export default function Inventory({
     }
   };
 
+  // KORJAUS 2: Määritelty item-tyyppi tarkasti 'any':n sijaan
+  const handleRightClick = (e: React.MouseEvent, item: Resource & { count: number; id: string }) => {
+    e.preventDefault(); 
+
+    if (item.slot) {
+      if (item.slot === 'food') {
+        setFoodToEquip({ id: item.id, name: item.name, max: item.count });
+      } else {
+        onEquip(item.id, item.slot as EquipmentSlot);
+      }
+    }
+  };
+
+  // KORJAUS 1: useEffect poistettu. Tämä ehto hoitaa paneelin piilotuksen renderöinnissä.
   const showDetailsPanel = selectedItem && (selectedItemCount > 0 || isEquipped || isFoodEquipped);
 
   return (
@@ -103,7 +119,6 @@ export default function Inventory({
       )}
 
       {/* --- LEFT COLUMN: EQUIPMENT DOLL --- */}
-      {/* KORJAUS 1: Poistettu 'hidden' ehdollisuus. Nyt tämä näkyy aina, myös pienellä ruudulla (se menee inventoryn yläpuolelle). */}
       <div className="w-full xl:w-[500px] flex-shrink-0 flex flex-col gap-6 mx-auto">
         
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-6 flex flex-col shadow-xl">
@@ -112,15 +127,14 @@ export default function Inventory({
           <div className="relative w-full max-w-[500px] h-[500px] sm:h-[600px] bg-slate-950/50 rounded-lg border border-slate-800/50 mb-4 flex items-center justify-center overflow-hidden shadow-inner mx-auto">
               <img src="/assets/ui/character_silhouette.png" className="h-[75%] opacity-10 object-contain pixelated pointer-events-none -translate-y-10 sm:-translate-y-20" alt="Silhouette" />
               
-              {/* MAIN ARMOR SLOTS */}
+              {/* ARMOR SLOTS */}
               <div className="absolute top-[5%] left-1/2 -translate-x-1/2 z-10"><EquipmentSlotBox item={getEquippedItem('head')} slot="head" onUnequip={() => onUnequip('head')} /></div>
               <div className="absolute top-[28%] left-1/2 -translate-x-1/2 z-10"><EquipmentSlotBox item={getEquippedItem('body')} slot="body" onUnequip={() => onUnequip('body')} /></div>
               <div className="absolute top-[28%] left-[8%] sm:left-[12%] z-10"><EquipmentSlotBox item={getEquippedItem('weapon')} slot="weapon" onUnequip={() => onUnequip('weapon')} /></div>
               <div className="absolute top-[28%] right-[8%] sm:right-[12%] z-10"><EquipmentSlotBox item={getEquippedItem('shield')} slot="shield" onUnequip={() => onUnequip('shield')} /></div>
               <div className="absolute top-[52%] left-1/2 -translate-x-1/2 z-10"><EquipmentSlotBox item={getEquippedItem('legs')} slot="legs" onUnequip={() => onUnequip('legs')} /></div>
 
-              {/* KORJAUS 2: ACCESSORIES RIVI */}
-              {/* Nyt käytetään flex-containeria eikä yksittäisiä positioita. Tämä pitää laatikot erillään ja keskellä. */}
+              {/* ACCESSORIES */}
               <div className="absolute bottom-[5%] left-0 w-full flex justify-center gap-3 sm:gap-6 px-4 z-10 scale-90 sm:scale-100">
                  <EquipmentSlotBox item={getEquippedItem('skill')} slot="skill" onUnequip={() => onUnequip('skill')} />
                  <EquipmentSlotBox item={getEquippedItem('necklace')} slot="necklace" onUnequip={() => onUnequip('necklace')} />
@@ -150,23 +164,17 @@ export default function Inventory({
       {/* --- MIDDLE: INVENTORY GRID --- */}
       <div className="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl min-h-[500px]">
         
-        {/* TOOLBAR */}
         <div className="p-3 sm:p-4 border-b border-slate-800 flex flex-wrap gap-2 items-center justify-between bg-slate-900 z-10">
           <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {(['all', 'equipment', 'consumables', 'resources'] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded border transition-all ${filter === f ? 'bg-slate-800 text-cyan-400 border-cyan-500/50' : 'text-slate-500 border-slate-700 hover:text-slate-300'}`}>{f}</button>
             ))}
           </div>
-          <select 
-            value={sortOrder} 
-            onChange={(e) => setSortOrder(e.target.value as 'name' | 'value' | 'amount')} 
-            className="bg-slate-950 border border-slate-700 text-slate-300 text-xs py-1.5 px-3 rounded outline-none focus:border-cyan-500"
-          >
+          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as 'name' | 'value' | 'amount')} className="bg-slate-950 border border-slate-700 text-slate-300 text-xs py-1.5 px-3 rounded outline-none focus:border-cyan-500">
              <option value="amount">Amount</option><option value="value">Value</option><option value="name">Name</option>
           </select>
         </div>
 
-        {/* GRID CONTENT */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar bg-slate-950/30">
           {sortedItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-50">
@@ -180,6 +188,7 @@ export default function Inventory({
                   <button
                     key={item.id}
                     onClick={() => setSelectedItemId(item.id)}
+                    onContextMenu={(e) => handleRightClick(e, item)} 
                     className={`relative rounded-lg border-2 transition-all flex flex-col items-center p-1.5 group h-20 sm:h-24 justify-between
                       ${isSelected 
                         ? 'bg-slate-800 border-cyan-500 shadow-lg z-10' 
@@ -251,12 +260,14 @@ export default function Inventory({
                   : <button onClick={() => onEquip(selectedItem.id, selectedItem.slot as EquipmentSlot)} className="w-full py-2.5 bg-cyan-800 hover:bg-cyan-700 border border-cyan-600 text-white rounded font-bold uppercase text-[10px] tracking-wider">Equip</button>
                 )
             )}
+            
             {selectedItem.healing && isFoodEquipped && (
                 <button onClick={onUnequipFood} className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded font-bold uppercase text-[10px] tracking-wider">Unequip Food</button>
             )}
             {selectedItem.healing && !isFoodEquipped && !selectedItem.slot && (
                 <button onClick={() => setFoodToEquip({ id: selectedItem.id, name: selectedItem.name, max: selectedItemCount })} className="w-full py-2.5 bg-green-800 hover:bg-green-700 border border-green-600 text-white rounded font-bold uppercase text-[10px] tracking-wider">Equip Food</button>
             )}
+            
             <button onClick={() => handleSellClick(selectedItem.id)} className="w-full py-2.5 bg-red-950/40 hover:bg-red-900/60 border border-red-900/50 text-red-400 hover:text-red-300 rounded font-bold uppercase text-[10px] tracking-wider flex items-center justify-center gap-2">
               <span>💰</span> Sell Item
             </button>
@@ -322,16 +333,8 @@ function EquipmentSlotBox({ item, slot, onUnequip }: { item: Resource | null, sl
     <div onClick={onUnequip} className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-900 border-2 border-slate-700 rounded-xl flex items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-950/20 transition-all relative group shadow-lg overflow-hidden" title={`Unequip ${item.name}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-slate-800/30 to-slate-950/80"></div>
       <img src={item.icon} alt={slot} className="w-12 h-12 sm:w-16 sm:h-16 pixelated drop-shadow-xl relative z-10 group-hover:scale-110 transition-transform" />
-      
-      {/* Unequip overlay */}
-      <div className="absolute inset-0 bg-red-950/90 items-center justify-center rounded-xl hidden group-hover:flex z-20 backdrop-blur-[2px]">
-        <span className="text-[10px] sm:text-xs font-bold text-red-200 uppercase tracking-widest">Unequip</span>
-      </div>
-      
-      {/* Item Name Tag */}
-      <div className="absolute bottom-0 w-full bg-slate-950/90 text-[8px] sm:text-[9px] font-bold text-slate-300 py-1 text-center border-t border-slate-700 truncate px-1 z-10">
-        {item.name}
-      </div>
+      <div className="absolute inset-0 bg-red-950/90 items-center justify-center rounded-xl hidden group-hover:flex z-20 backdrop-blur-[2px]"><span className="text-[10px] sm:text-xs font-bold text-red-200 uppercase tracking-widest">Unequip</span></div>
+      <div className="absolute bottom-0 w-full bg-slate-950/90 text-[8px] sm:text-[9px] font-bold text-slate-300 py-1 text-center border-t border-slate-700 truncate px-1 z-10">{item.name}</div>
     </div>
   );
 }

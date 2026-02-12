@@ -6,7 +6,7 @@ export type SkillType =
   | 'melee' | 'ranged' | 'magic' | 'combat'
   | 'scavenging';
 
-export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements' | 'scavenger';
+export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements' | 'scavenger' | 'enchanting';
 
 export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'necklace' | 'ring' | 'rune' | 'skill' | 'food';
 

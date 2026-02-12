@@ -34,7 +34,7 @@ const NavButton = ({
   let baseStyle = 'hover:bg-slate-800/80 text-slate-400 border border-transparent';
   
   if (isActive) {
-     if (['inventory', 'shop', 'gamble', 'achievements'].includes(view)) baseStyle = 'bg-slate-800/90 text-cyan-400 border-cyan-500/40 shadow-[0_0_15px_rgba(34,211,238,0.15)] font-bold';
+     if (['inventory', 'shop', 'gamble', 'achievements', 'enchanting'].includes(view)) baseStyle = 'bg-slate-800/90 text-cyan-400 border-cyan-500/40 shadow-[0_0_15px_rgba(34,211,238,0.15)] font-bold';
      else if (view === 'combat') baseStyle = 'bg-red-950/40 text-red-400 border-red-500/40 shadow-[0_0_15px_rgba(248,113,113,0.15)] font-bold';
      else if (view === 'scavenger') baseStyle = 'bg-indigo-900/40 text-indigo-400 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)] font-bold'; // SCV color
      else baseStyle = 'bg-slate-800 text-emerald-400 border-emerald-500/40 shadow-[0_0_15px_rgba(52,211,153,0.15)] font-bold';
@@ -196,6 +196,7 @@ export default function Sidebar({ currentView, setView, coins, skills, username,
           <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Core Systems</p>
           <NavButton view="inventory" label="Fragment Storage" iconPath="/assets/ui/icon_inventory.png" currentView={currentView} onClick={setView} />
           <NavButton view="shop" label="Requisition" iconPath="/assets/ui/icon_shop.png" currentView={currentView} onClick={setView} />
+          <NavButton view="enchanting" label="Enchanting" iconPath="/assets/ui/icon_anvil.png" currentView={currentView} onClick={setView} /> {/* UUSI PAINIKE */}
           <NavButton view="achievements" label="Milestones" iconPath="/assets/ui/icon_achievements.png" currentView={currentView} onClick={setView} />
           <NavButton view="gamble" label="Entropy" iconPath="/assets/ui/icon_casino.png" currentView={currentView} onClick={setView} />
         </div>
@@ -204,7 +205,6 @@ export default function Sidebar({ currentView, setView, coins, skills, username,
         <div>
           <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Restoration Protocols</p>
           
-          {/* UUSI: Expedition Button */}
           <NavButton view="scavenger" label="Expeditions" iconPath="/assets/skills/scavenging.png" currentView={currentView} onClick={setView} />
           
           <NavButton view="woodcutting" label="Excavation" iconPath="/assets/skills/woodcutting.png" level={skills.woodcutting.level} currentView={currentView} onClick={setView} />

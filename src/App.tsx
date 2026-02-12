@@ -18,6 +18,7 @@ import SellModal from './components/SellModal';
 import AchievementsView from './components/AchievementsView';
 import CombatView from './components/CombatView';
 import ScavengerView from './components/ScavengerView';
+import EnchantingView from './components/EnchantingView'; // UUSI IMPORT
 import UsernameModal from './components/UsernameModal';
 import SettingsModal from './components/SettingsModal';
 
@@ -660,9 +661,7 @@ export default function App() {
     setState(prev => {
       if (prev.scavenger.activeExpeditions.length >= prev.scavenger.unlockedSlots) return prev;
 
-      // Tarkistetaan onko maailma auki (onko eka map kyseisestä maailmasta auki)
-      // Oletus: World 1 (id 1) on aina auki. 
-      // Muut: maxMapCompleted >= (worldId - 1) * 10
+      // Unlock requirement: previous world finished (10 maps)
       const unlockReq = (worldId - 1) * 10;
       if (prev.combatStats.maxMapCompleted < unlockReq && worldId !== 1) {
          return prev;
@@ -670,7 +669,7 @@ export default function App() {
 
       const newExpedition: Expedition = {
         id: Date.now().toString(),
-        mapId: worldId, // mapId on nyt WorldID
+        mapId: worldId, // mapId is WorldID
         startTime: Date.now(),
         duration: durationMinutes * 60 * 1000,
         completed: false
@@ -694,7 +693,7 @@ export default function App() {
       const worldId = expedition.mapId;
       const maxMap = prev.combatStats.maxMapCompleted;
 
-      // Etsitään kaikki kartat kyseisestä maailmasta, jotka on avattu (tai seuraava avattava)
+      // Filter maps: only unlocked ones in this world
       const validMaps = COMBAT_DATA.filter(m => 
         m.world === worldId && m.id <= maxMap + 1
       );
@@ -713,7 +712,6 @@ export default function App() {
       const gainedItems: Record<string, number> = {};
 
       for (let i = 0; i < lootRolls; i++) {
-        // Valitaan satunnainen avattu kartta tästä maailmasta
         const randomMap = validMaps[Math.floor(Math.random() * validMaps.length)];
 
         randomMap.drops.forEach(drop => {
@@ -758,6 +756,49 @@ export default function App() {
         }
       }));
     }
+  };
+
+// --- ENCHANTING HANDLER (UPDATED FOR EQUIPPED ITEMS) ---
+  const handleEnchant = (originalId: string, newId: string, cost: number) => {
+    if (state.coins < cost) return;
+
+    setState(prev => {
+      const newInventory = { ...prev.inventory };
+      const newEquipment = { ...prev.equipment };
+      let itemFound = false;
+
+      // 1. TARKISTETAAN ONKO ITEM PUETTUNA (Equipment)
+      // Etsitään missä slotissa item on
+      const equippedSlot = (Object.keys(newEquipment) as Array<keyof typeof newEquipment>)
+        .find(key => newEquipment[key] === originalId);
+
+      if (equippedSlot) {
+        // Päivitetään suoraan equipment-slottiin uusi ID
+        newEquipment[equippedSlot] = newId;
+        itemFound = true;
+      } 
+      // 2. JOS EI OLE PUETTUNA, TARKISTETAAN INVENTORY
+      else if (newInventory[originalId]) {
+        newInventory[originalId] -= 1;
+        if (newInventory[originalId] <= 0) delete newInventory[originalId];
+        newInventory[newId] = (newInventory[newId] || 0) + 1;
+        itemFound = true;
+      }
+
+      if (!itemFound) return prev; // Jos itemiä ei löydy mistään, peruutetaan
+
+      if (prev.settings.notifications) {
+        setNotification({ message: "Enchantment Successful!", icon: "/assets/ui/icon_check.png" });
+        setTimeout(() => setNotification(null), 1500);
+      }
+
+      return {
+        ...prev,
+        coins: prev.coins - cost,
+        inventory: newInventory,
+        equipment: newEquipment // Tallennetaan päivitetty equipment
+      };
+    });
   };
 
   const handleSetUsername = async (name: string) => {
@@ -967,6 +1008,16 @@ export default function App() {
             onStart={handleStartExpedition}
             onCancel={handleCancelExpedition}
             onClaim={handleClaimExpedition}
+          />
+        )}
+
+        {/* --- UUSI VIEW: ENCHANTING --- */}
+        {currentView === 'enchanting' && (
+          <EnchantingView 
+            inventory={state.inventory}
+            equipment={state.equipment} 
+            coins={state.coins} 
+            onEnchant={handleEnchant} 
           />
         )}
 

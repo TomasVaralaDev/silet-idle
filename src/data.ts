@@ -1,4 +1,17 @@
 import type { Resource, ShopItem, Achievement, CombatMap, WeightedDrop } from './types';
+import { getBaseId, getEnchantLevel, applyEnchantStats } from './utils/enchanting';
+
+// --- WORLD METADATA ---
+export const WORLD_INFO: Record<number, { name: string; image: string; description: string }> = {
+  1: { name: "Greenvale", image: "/assets/backgrounds/bg_greenvale.png", description: "A lush forest teeming with basic life." },
+  2: { name: "Stonefall", image: "/assets/backgrounds/bg_stonefall.png", description: "Rocky terrain and deep mines." },
+  3: { name: "Ashridge", image: "/assets/backgrounds/bg_ashbridge.png", description: "Volcanic lands filled with fire." },
+  4: { name: "Frostreach", image: "/assets/backgrounds/bg_frostreach.png", description: "Frozen wastelands and icy peaks." },
+  5: { name: "Duskwood", image: "/assets/backgrounds/bg_duskwood.png", description: "A cursed forest consumed by shadow." },
+  6: { name: "Stormcoast", image: "/assets/backgrounds/bg_stormcoast.png", description: "Treacherous cliffs and raging seas." },
+  7: { name: "Void Expanse", image: "/assets/backgrounds/bg_voidexpanse.png", description: "The fabric of reality is thin here." },
+  8: { name: "Eternal Nexus", image: "/assets/backgrounds/bg_eternalnexus.png", description: "The center of all timelines." }
+};
 
 // --- WORLD LOOT TABLES (Weighted System) ---
 export const WORLD_LOOT: Record<number, WeightedDrop[]> = {
@@ -515,70 +528,55 @@ export const ACHIEVEMENTS: Achievement[] = [
 ];
 
 export const getItemDetails = (id: string) => {
+  if (!id) return null; // Turvatarkistus
+
   if (id === 'coins') return { name: 'Coins', value: 1, icon: '/assets/ui/coins.png', rarity: 'common' };
 
-  // Tarkistetaan onko kyseessä dynaaminen world loot (basic, rare, exotic)
-  if (id.includes('_basic') || id.includes('_rare') || id.includes('_exotic')) {
-    const parts = id.split('_');
-    const worldNameRaw = parts[0]; // esim. "greenvale"
+  // 1. Tarkistetaan onko kyseessä Enchanted item
+  const baseId = getBaseId(id);
+  const enchantLevel = getEnchantLevel(id);
+  
+  // 2. Etsitään perus-item (baseId)
+  let foundItem = null;
+
+  // World loot check (Dusts etc)
+  if (baseId.includes('_basic') || baseId.includes('_rare') || baseId.includes('_exotic')) {
+    const parts = baseId.split('_');
+    const worldNameRaw = parts[0];
     const worldNameDisplay = worldNameRaw.charAt(0).toUpperCase() + worldNameRaw.slice(1);
-    const type = parts[1]; // basic, rare tai exotic
+    const type = parts[1];
 
-    // Määritetään tiedot tyypin perusteella
-    if (type === 'basic') return { 
-      name: `${worldNameDisplay} Dust`, 
-      value: 10, 
-      color: 'text-slate-400', 
-      icon: `/assets/lootpoolszones/${id}.png`, // Hakee esim. greenvale_basic.png
-      description: 'Common essence from this region.',
-      rarity: 'common'
-    };
-    if (type === 'rare') return { 
-      name: `${worldNameDisplay} Gem`, 
-      value: 100, 
-      color: 'text-cyan-400', 
-      icon: `/assets/lootpoolszones/${id}.png`, 
-      description: 'A rare and valuable gem.',
-      rarity: 'rare'
-    };
-    if (type === 'exotic') return { 
-      name: `${worldNameDisplay} Elite`, 
-      value: 1000, 
-      color: 'text-orange-500', 
-      icon: `/assets/lootpoolszones/${id}.png`, 
-      description: 'A very rare exotic fragment.',
-      rarity: 'legendary'
-    };
+    if (type === 'basic') foundItem = { name: `${worldNameDisplay} Dust`, value: 10, color: 'text-slate-400', icon: `/assets/lootpoolszones/${baseId}.png`, description: 'Common essence.', rarity: 'common' };
+    else if (type === 'rare') foundItem = { name: `${worldNameDisplay} Gem`, value: 100, color: 'text-cyan-400', icon: `/assets/lootpoolszones/${baseId}.png`, description: 'Rare gem.', rarity: 'rare' };
+    else if (type === 'exotic') foundItem = { name: `${worldNameDisplay} Elite`, value: 1000, color: 'text-orange-500', icon: `/assets/lootpoolszones/${baseId}.png`, description: 'Exotic fragment.', rarity: 'legendary' };
+  }
+  
+  // Boss key check
+  else if (baseId.startsWith('bosskey_w')) {
+    const worldNum = baseId.replace('bosskey_w', '');
+    foundItem = { name: `World ${worldNum} Key`, value: 500, color: 'text-yellow-500', icon: `/assets/items/bosskey/${baseId}.png`, description: 'Access to world boss.', rarity: 'rare' };
+  }
+  
+  // Normal game data check
+  else {
+    for (const skill of Object.keys(GAME_DATA)) {
+      const item = GAME_DATA[skill].find(i => i.id === baseId);
+      if (item) {
+        foundItem = item;
+        break;
+      }
+    }
   }
 
-  // Boss-avaimet
-  if (id.startsWith('bosskey_w')) {
-    const worldNum = id.replace('bosskey_w', '');
-    return {
-      name: `World ${worldNum} Key`,
-      value: 500,
-      color: 'text-yellow-500',
-      icon: `/assets/items/bosskey/${id}.png`,
-      description: 'Allows access to the world boss.',
-      rarity: 'rare'
-    };
+// 3. Jos item löytyi ja siinä on enchant-taso, lasketaan uudet statit
+  if (foundItem) {
+    // Varmistetaan että palautetaan Resource-tyyppinen olio
+    const itemWithId = { ...foundItem, id: id } as Resource; 
+    if (enchantLevel > 0) {
+      return applyEnchantStats(itemWithId, enchantLevel);
+    }
+    return itemWithId;
   }
 
-  // Muut skill-kohtaiset itemit
-  for (const skill of Object.keys(GAME_DATA)) {
-    const item = GAME_DATA[skill].find(i => i.id === id);
-    if (item) return item;
-  }
-};
-
-// --- WORLD METADATA ---
-export const WORLD_INFO: Record<number, { name: string; image: string; description: string }> = {
-  1: { name: "Greenvale", image: "/assets/backgrounds/bg_greenvale.png", description: "A lush forest teeming with basic life." },
-  2: { name: "Stonefall", image: "/assets/backgrounds/bg_stonefall.png", description: "Rocky terrain and deep mines." },
-  3: { name: "Ashridge", image: "/assets/backgrounds/bg_ashbridge.png", description: "Volcanic lands filled with fire." },
-  4: { name: "Frostreach", image: "/assets/backgrounds/bg_frostreach.png", description: "Frozen wastelands and icy peaks." },
-  5: { name: "Duskwood", image: "/assets/backgrounds/bg_duskwood.png", description: "A cursed forest consumed by shadow." },
-  6: { name: "Stormcoast", image: "/assets/backgrounds/bg_stormcoast.png", description: "Treacherous cliffs and raging seas." },
-  7: { name: "Void Expanse", image: "/assets/backgrounds/bg_voidexpanse.png", description: "The fabric of reality is thin here." },
-  8: { name: "Eternal Nexus", image: "/assets/backgrounds/bg_eternalnexus.png", description: "The center of all timelines." }
+  return null;
 };

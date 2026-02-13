@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { processSkillTick } from '../systems/skillSystem';
 import { getSpeedMultiplier } from '../utils/gameUtils';
-import { GAME_DATA } from '../data'; // Lisätty import
+import { GAME_DATA } from '../data'; 
 import type { GameState, SkillType, Resource } from '../types';
 
 export const useSkillLoop = () => {
@@ -19,22 +19,17 @@ export const useSkillLoop = () => {
     }
 
     const skill = actionSkill as SkillType;
-    
-    // Etsitään resurssin oma intervalli datasta (esim. 3000ms)
     const resourceData = GAME_DATA[skill as keyof typeof GAME_DATA]?.find(
       (r: Resource) => r.id === actionResourceId
     );
     const baseInterval = resourceData?.interval || 3000;
-
-    // Lasketaan lopullinen aika: pohja-aika / kerroin
     const speedMult = getSpeedMultiplier(skill, upgrades);
-    
-    // Turvaraja: ei koskaan alle 200ms, vaikka olisi mikä kerroin
     const intervalTime = Math.max(200, baseInterval / speedMult);
 
     const intervalId = window.setInterval(() => {
       setState((prev: GameState) => {
-        const updates = processSkillTick(prev);
+        // KORJAUS: Lisätty puuttuva argumentti (deltaTime)
+        const updates = processSkillTick(prev, intervalTime);
         return { ...prev, ...updates };
       });
     }, intervalTime);

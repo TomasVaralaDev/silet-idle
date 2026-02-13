@@ -2,12 +2,12 @@ import type { StateCreator } from 'zustand';
 import type { FullStoreState } from '../useGameStore';
 import { DEFAULT_STATE } from '../useGameStore';
 import { GAME_DATA } from '../../data';
-// KORJAUS: Tuodaan SkillData suoraan circular dependency -virheen välttämiseksi
-import type { SkillType, ActiveAction, Resource, Ingredient, SkillData } from '../../types';
+import { getSpeedMultiplier } from '../../utils/gameUtils';
+import type { SkillType, Resource, Ingredient, SkillData, ActiveAction } from '../../types';
 
 export interface SkillSlice {
   skills: Record<SkillType, SkillData>;
-  activeAction: ActiveAction | null;
+  activeAction: ActiveAction | null; // KORJAUS: 'any' vaihdettu tyyppiin
   toggleAction: (skill: SkillType, resourceId: string) => void;
 }
 
@@ -16,25 +16,43 @@ export const createSkillSlice: StateCreator<FullStoreState, [], [], SkillSlice> 
   activeAction: DEFAULT_STATE.activeAction,
 
   toggleAction: (skill, resourceId) => set((state: FullStoreState) => {
-    // Jos klikataan jo aktiivista toimintoa, pysäytetään se
     if (state.activeAction?.resourceId === resourceId) {
       return { activeAction: null };
     }
 
-    // Etsitään resurssin tiedot datasta
-    const resource = GAME_DATA[skill as keyof typeof GAME_DATA]?.find((r: Resource) => r.id === resourceId);
+    const resource = GAME_DATA[skill as keyof typeof GAME_DATA]?.find(
+      (r: Resource) => r.id === resourceId
+    );
     
-    // Tarkistetaan raaka-aineet jos kyseessä on crafting/smithing/cooking
-    if (resource?.inputs) {
-      const canAfford = resource.inputs.every((req: Ingredient) => (state.inventory[req.id] || 0) >= req.count);
+    if (!resource) return {};
+
+    if (resource.inputs) {
+      const canAfford = resource.inputs.every(
+        (req: Ingredient) => (state.inventory[req.id] || 0) >= req.count
+      );
+      
       if (!canAfford) { 
-        alert("Not enough materials!"); 
+        // Käytetään uutta Event-järjestelmää
+        state.emitEvent(
+          'warning', 
+          `Missing materials for ${resource.name}`, 
+          '/assets/ui/icon_warning.png'
+        );
         return {}; 
       }
     }
 
+    const speedMult = getSpeedMultiplier(skill, state.upgrades);
+    const baseInterval = resource.interval || 3000;
+    const finalTargetTime = Math.max(200, baseInterval / speedMult);
+
     return { 
-      activeAction: { skill, resourceId } 
+      activeAction: { 
+        skill, 
+        resourceId,
+        progress: 0,
+        targetTime: finalTargetTime
+      } 
     } as Partial<FullStoreState>;
   }),
 });

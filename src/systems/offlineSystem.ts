@@ -15,7 +15,7 @@ export const calculateOfflineProgress = (state: GameState): { newState: GameStat
   const lastTime = state.lastTimestamp || now;
   const totalSecondsPassed = Math.floor((now - lastTime) / 1000);
   
-  // Asetetaan maksimiraja (esim. 12 tuntia), jotta peli ei mene rikki jos olet pois vuoden
+  // Rajoitetaan simulointi max 12 tuntiin
   const secondsToProcess = Math.min(totalSecondsPassed, 12 * 60 * 60); 
 
   let currentState = { ...state };
@@ -28,40 +28,41 @@ export const calculateOfflineProgress = (state: GameState): { newState: GameStat
 
   // --- LOGIIKKA ---
   if (state.activeAction && state.activeAction.skill !== 'combat') {
-    // 1. SKILLING OFFLINE
     const skill = state.activeAction.skill;
     const resource = GAME_DATA[skill as keyof typeof GAME_DATA]?.find(r => r.id === state.activeAction?.resourceId);
     
     if (resource) {
       const speedMult = getSpeedMultiplier(skill, state.upgrades);
-      const intervalSec = Math.max(0.5, (resource.interval || 3000) / speedMult / 1000);
-      const totalTicks = Math.floor(secondsToProcess / intervalSec);
+      const baseInterval = resource.interval || 3000;
+      const targetTime = Math.max(200, baseInterval / speedMult);
+      const totalTicks = Math.floor((secondsToProcess * 1000) / targetTime);
 
-      // Simuloidaan tikit (max 20 000 tikkia suorituskyvyn takia)
+      // Simuloidaan tikit
       const safeTicks = Math.min(totalTicks, 20000);
       for (let i = 0; i < safeTicks; i++) {
-        const updates = processSkillTick(currentState);
+        // KORJAUS: Syötetään targetTime toisena argumenttina (deltaTime), 
+        // jotta taito valmistuu jokaisella kierroksella.
+        const updates = processSkillTick(currentState, targetTime);
+        
         if (!updates.activeAction && updates.activeAction !== undefined) {
-            // Materiaalit loppuivat
-            break;
+            break; // Materiaalit loppuivat
         }
         currentState = { ...currentState, ...updates };
       }
     }
   } else if (state.activeAction?.skill === 'combat') {
-    // 2. COMBAT OFFLINE (Yksinkertaistettu simulointi 1s välein)
+    // Combat simulaatio (käytetään 1s askellusta offline-ajassa)
     const combatTicks = Math.min(secondsToProcess, 10000); 
     for (let i = 0; i < combatTicks; i++) {
         const updates = processCombatTick(currentState);
         if (!updates.activeAction && updates.activeAction !== undefined) {
-            // Pelaaja kuoli tai map loppui
             break;
         }
         currentState = { ...currentState, ...updates };
     }
   }
 
-  // --- LASKETAAN TULOKSET UI:TA VARTEN ---
+  // --- TULOSTEN LASKENTA ---
   const itemsGained: Record<string, number> = {};
   Object.keys(currentState.inventory).forEach(id => {
     const diff = (currentState.inventory[id] || 0) - (itemsBefore[id] || 0);

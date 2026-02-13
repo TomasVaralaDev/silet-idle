@@ -1,4 +1,3 @@
-// Määritellään Rarity tässä, jotta ei tule riippuvuusongelmia
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export type SkillType = 
@@ -14,6 +13,17 @@ export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'ne
 
 export type CombatStyle = 'melee' | 'ranged' | 'magic';
 
+// --- NEW: EVENT TYPES ---
+export type GameEventType = 'info' | 'success' | 'warning' | 'error' | 'loot' | 'level_up';
+
+export interface GameEvent {
+  id: string;
+  type: GameEventType;
+  message: string;
+  icon?: string;
+  timestamp: number;
+}
+
 export interface GameSettings {
   notifications: boolean;
   sound: boolean;
@@ -24,9 +34,10 @@ export interface GameSettings {
 export interface ActiveAction {
   skill: SkillType;
   resourceId: string;
+  progress: number;
+  targetTime: number;
 }
 
-// Tämä on Storen tila (State)
 export interface CombatState {
   hp: number;
   currentMapId: number | null;
@@ -34,21 +45,20 @@ export interface CombatState {
   enemyCurrentHp: number;
   respawnTimer: number;
   foodTimer: number;
-  combatLog: string[]; // Logi on string-taulukko
+  combatLog: string[];
 }
 
-// Tämä on laskennallinen data (Stats)
 export interface CombatStats {
   attackDamage: number;
   armor: number;
   attackSpeed: number;
-  hp: number;             // Tämä on usein "nykyinen HP" laskennoissa
-  maxHp: number;          // Lisätty Vercel-virheen takia
-  attackLevel: number;    // Lisätty Vercel-virheen takia
-  strengthLevel: number;  // Lisätty Vercel-virheen takia
-  defenseLevel: number;   // Lisätty Vercel-virheen takia
-  critChance: number;     // Lisätty Vercel-virheen takia
-  critMultiplier: number; // Lisätty Vercel-virheen takia
+  hp: number;
+  maxHp: number;
+  attackLevel: number;
+  strengthLevel: number;
+  defenseLevel: number;
+  critChance: number;
+  critMultiplier: number;
 }
 
 export interface Ingredient {
@@ -56,7 +66,6 @@ export interface Ingredient {
   count: number;
 }
 
-// Yhdistetty ja laajennettu Resource-tyyppi kattamaan kaikki tarpeet
 export interface Resource {
   id: string;
   name: string;
@@ -64,38 +73,34 @@ export interface Resource {
   icon: string;
   value: number;
   rarity: Rarity;
-  
-  // Optional / Context specific
   color?: string;
   description?: string;
-  category?: string;       // Esim. "Food", "Weapon"
-  level?: number;          // Level required (SkillView)
-  xpReward?: number;       // XP gain (SkillView)
-  interval?: number;       // Time in ms (SkillView)
-  area?: number;           // Area requirement (SkillView: "requiresMapCompletion")
-  inputs?: Ingredient[];   // Crafting inputs
-  
-  // Equipment / Combat props
-  slot?: EquipmentSlot;    
+  category?: string;
+  level?: number;
+  xpReward?: number;
+  interval?: number;
+  area?: number;
+  inputs?: Ingredient[];
+  slot?: EquipmentSlot;
   stats?: {
     attack?: number;
     defense?: number;
     strength?: number;
   };
   combatStyle?: CombatStyle; 
-  healing?: number;        // Food healing amount
+  healing?: number;
 }
 
 export interface Drop {
   itemId: string;
-  chance: number; // 0.0 - 1.0
+  chance: number;
   amount: [number, number]; 
 }
 
 export interface WeightedDrop {
   itemId: string;
   weight: number; 
-  amount?: [number, number]; // Tehty valinnaiseksi, oletus 1
+  amount?: [number, number];
 }
 
 export interface CombatMap {
@@ -116,10 +121,10 @@ export interface ShopItem {
   id: string;
   name: string;
   description: string;
-  price: number;     // Varmista että tämä on price, ei cost
+  price: number;
   category: string;
   icon: string;
-  requires?: string; // Lisää tämä valinnaisena
+  requires?: string;
 }
 
 export interface Achievement {
@@ -153,7 +158,6 @@ export interface SkillData {
   level: number;
 }
 
-// PÄÄTILA (STORE)
 export interface GameState {
   username: string; 
   settings: GameSettings;
@@ -167,11 +171,11 @@ export interface GameState {
   coins: number;
   upgrades: string[]; 
   unlockedAchievements: string[];
-  combatStats: CombatState; // Viittaa Storen tilaan
+  combatStats: CombatState;
   lastTimestamp: number;
+  events: GameEvent[]; // NEW: Tapahtumajono
 }
 
-// Combat Mechanics apu-interface
 export interface CombatResult {
   finalDamage: number;
   isCrit: boolean;

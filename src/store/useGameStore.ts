@@ -5,7 +5,6 @@ import { createSkillSlice, type SkillSlice } from './slices/skillSlice';
 import { createCombatSlice, type CombatSlice } from './slices/combatSlice';
 import { createScavengerSlice, type ScavengerSlice } from './slices/scavengerSlice';
 
-// Yhdistetään GameState, kaikki viipaleet ja yleiset actionit yhdeksi tyypiksi
 export type FullStoreState = GameState & 
   InventorySlice & 
   SkillSlice & 
@@ -17,7 +16,8 @@ export type FullStoreState = GameState &
 };
 
 export const DEFAULT_STATE: GameState = {
-  username: "", 
+  username: "Player",
+  lastTimestamp: Date.now(),
   settings: { notifications: true, sound: true, music: true, particles: true },
   inventory: {},
   skills: {
@@ -42,23 +42,33 @@ export const DEFAULT_STATE: GameState = {
 };
 
 export const useGameStore = create<FullStoreState>()((set, get, ...args) => ({
-  // 1. Tuodaan viipaleiden (Slices) tila ja funktiot
+  // 1. Slices
   ...createInventorySlice(set, get, ...args),
   ...createSkillSlice(set, get, ...args),
   ...createCombatSlice(set, get, ...args),
   ...createScavengerSlice(set, get, ...args),
 
-  // 2. Lisätään ne GameState-kentät, joita viipaleet eivät suoraan hallitse
-  // (Varmistaa että 'settings' ja 'username' löytyvät Storesta)
+  // 2. GameState Fields (Varmistetaan että kaikki löytyvät)
   username: DEFAULT_STATE.username,
+  lastTimestamp: DEFAULT_STATE.lastTimestamp, // KORJAUS: Lisätty puuttuva kenttä
   settings: DEFAULT_STATE.settings,
   unlockedAchievements: DEFAULT_STATE.unlockedAchievements,
+  activeAction: DEFAULT_STATE.activeAction,
+  coins: DEFAULT_STATE.coins,
+  upgrades: DEFAULT_STATE.upgrades,
+  inventory: DEFAULT_STATE.inventory,
+  skills: DEFAULT_STATE.skills,
+  equipment: DEFAULT_STATE.equipment,
+  equippedFood: DEFAULT_STATE.equippedFood,
+  combatSettings: DEFAULT_STATE.combatSettings,
+  scavenger: DEFAULT_STATE.scavenger,
+  combatStats: DEFAULT_STATE.combatStats,
 
-  // 3. Yleiset UI-actionit ja ilmoitukset
+  // 3. UI State
   notification: null,
   setNotification: (payload) => set({ notification: payload }),
   
-  // 4. Tyypitetty setState globaaleja päivityksiä varten
+  // 4. Global Updater
   setState: (updater) => set((state: FullStoreState) => {
     const nextState = typeof updater === 'function' 
       ? updater(state as unknown as GameState) 

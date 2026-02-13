@@ -42,7 +42,13 @@ export interface CombatStats {
   attackDamage: number;
   armor: number;
   attackSpeed: number;
-  hp: number; // Max HP
+  hp: number;             // Tämä on usein "nykyinen HP" laskennoissa
+  maxHp: number;          // Lisätty Vercel-virheen takia
+  attackLevel: number;    // Lisätty Vercel-virheen takia
+  strengthLevel: number;  // Lisätty Vercel-virheen takia
+  defenseLevel: number;   // Lisätty Vercel-virheen takia
+  critChance: number;     // Lisätty Vercel-virheen takia
+  critMultiplier: number; // Lisätty Vercel-virheen takia
 }
 
 export interface Ingredient {

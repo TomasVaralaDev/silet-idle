@@ -5,7 +5,7 @@ const ARMOR_CONSTANT = 300;
 const ACCURACY_CONSTANT = 0.5; 
 
 export const calculateHit = (attacker: CombatStats, defender: CombatStats): CombatResult => {
-  // 1. OSUMATARKKUUS (FORCE / ATTACK)
+  // 1. OSUMATARKKUUS
   const hitChance = attacker.attackLevel / (attacker.attackLevel + (defender.defenseLevel * ACCURACY_CONSTANT));
   const rollsHit = Math.random() < hitChance;
 
@@ -14,41 +14,29 @@ export const calculateHit = (attacker: CombatStats, defender: CombatStats): Comb
   }
 
   // 2. MAX HIT LASKENTA
-  // Tämä ottaa nyt huomioon sekä levelit (strengthLevel) että gearin (attackDamage)
-  // Kaava: 1 + (SystemLevel * 0.8) + WeaponBonus
   const maxHit = 1 + (attacker.strengthLevel * 0.8) + attacker.attackDamage;
 
-  // 3. KRITTIINEN OSUMA & RAAKAVAHINKO
+  // 3. KRITTIINEN OSUMA
   const isCrit = Math.random() < attacker.critChance;
   let rawDamage = 0;
 
   if (isCrit) {
-    // --- KORJAUS TÄSSÄ ---
-    // Jos tulee Crit, käytetään AINA Max Hittiä pohjana.
-    // Tällöin levelit (Melee Sys) vaikuttavat täysimääräisesti.
     rawDamage = maxHit * attacker.critMultiplier;
   } else {
-    // Jos ei Crit, arvotaan vahinko väliltä 1 - MaxHit
     rawDamage = Math.floor(Math.random() * maxHit) + 1;
   }
 
   // 4. VAHINGON VÄHENNYS (ARMOR)
   const damageReduction = defender.defenseLevel / (defender.defenseLevel + ARMOR_CONSTANT);
   const mitigationPercent = damageReduction;
-  
-  // Lasketaan vahinko panssarin jälkeen
   const mitigatedDamage = rawDamage * (1 - damageReduction);
 
   // 5. SATUNNAISVAIHTELU (+/- 10%)
-  // Tämä tuo "elävyyttä" numeroihin, ettei crit ole aina tasan sama luku
   const variance = 0.9 + (Math.random() * 0.2);
   const damageWithVariance = mitigatedDamage * variance;
 
-  // 6. LOPULLINEN TULOS
-  const finalDamage = Math.max(1, Math.floor(damageWithVariance));
-
   return {
-    finalDamage,
+    finalDamage: Math.max(1, Math.floor(damageWithVariance)),
     isCrit,
     mitigationPercent
   };
@@ -63,25 +51,22 @@ export const getPlayerStats = (
   equipmentBonus: Partial<CombatStats>
 ): CombatStats => {
   
-  // Haetaan system level (esim. Melee Sys)
   const strengthLevel = skills[combatStyle]?.level || 1; 
 
   return {
     hp: skills.hitpoints.level * 10,
     maxHp: skills.hitpoints.level * 10,
-    
-    attackLevel: skills.attack.level,   // Force
-    strengthLevel: strengthLevel,       // Melee/Ranged/Magic Sys (Vaikuttaa Max Hittiin)
-    defenseLevel: skills.defense.level, // Shielding
-
+    attackLevel: skills.attack.level,
+    strengthLevel: strengthLevel,
+    defenseLevel: skills.defense.level,
     attackDamage: equipmentBonus.attackDamage || 0, 
     armor: equipmentBonus.armor || 0,
-    
-    attackSpeed: 1.0, 
-    critChance: 0.05 + (skills.attack.level * 0.0001), // Pieni bonus crit chanceen Forcesta
+    attackSpeed: equipmentBonus.attackSpeed || 1.0, 
+    critChance: 0.05 + (skills.attack.level * 0.0001),
     critMultiplier: 1.5,
+    // Varmistetaan että equipmentBonus ei ylikirjoita kriittisiä tyyppejä väärin
     ...equipmentBonus
-  };
+  } as CombatStats;
 };
 
 /**
@@ -102,12 +87,10 @@ export const getEnemyStats = (
     hp: scaledHp,
     maxHp: scaledHp,
     attackDamage: scaledDmg, 
-    
     attackLevel: scaledAcc,
     strengthLevel: scaledDmg,
     defenseLevel: scaledDef,
     armor: 0,
-
     attackSpeed: 0.8,
     critChance: 0.05,
     critMultiplier: 1.5

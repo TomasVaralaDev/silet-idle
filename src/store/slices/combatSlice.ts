@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand';
 import type { FullStoreState } from '../useGameStore';
 import { COMBAT_DATA } from '../../data/combat';
 import { processCombatTick as calculateCombatSystem } from '../../systems/combatSystem';
-import type { GameState, Enemy } from '../../types';
+import type { GameState, Enemy, CombatSettings } from '../../types'; // Lisätty CombatSettings import
 
 export interface CombatSlice {
   startCombat: (mapId: number) => void;
@@ -10,6 +10,8 @@ export interface CombatSlice {
   processCombatTick: () => void;
   addCombatLog: (message: string) => void;
   toggleAutoProgress: () => void;
+  // KORJAUS: Lisätty puuttuva funktio rajapintaan
+  updateCombatSettings: (settings: Partial<CombatSettings>) => void;
 }
 
 export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice> = (set, get) => ({
@@ -83,6 +85,11 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
   toggleAutoProgress: () => set({ 
     combatSettings: { ...get().combatSettings, autoProgress: !get().combatSettings.autoProgress }
   }),
+
+  // KORJAUS: Lisätty funktion toteutus
+  updateCombatSettings: (newSettings) => set((state) => ({
+    combatSettings: { ...state.combatSettings, ...newSettings }
+  })),
 
   addCombatLog: (message: string) => set({ 
     combatStats: { ...get().combatStats, combatLog: [message, ...get().combatStats.combatLog].slice(0, 20) }

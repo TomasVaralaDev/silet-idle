@@ -1,34 +1,52 @@
-import type { OfflineResults } from '../systems/offlineSystem';
-import { getItemDetails } from '../data';
+import { getItemDetails } from '../data'; 
+import type { OfflineSummary } from '../systems/offlineSystem'; 
 
-interface Props {
-  results: OfflineResults;
+interface OfflineSummaryModalProps {
+  results: OfflineSummary;
   onClose: () => void;
 }
 
-export default function OfflineSummaryModal({ results, onClose }: Props) {
-  const { secondsPassed, itemsGained, xpGained } = results;
-  const minutes = Math.floor(secondsPassed / 60);
-  const hours = Math.floor(minutes / 60);
+// Määritellään apurajapinta itemille tässä komponentissa,
+// jotta vältämme 'any'-tyypin käytön, jos varsinainen Resource-tyyppi on puutteellinen.
+interface ItemVisuals {
+  name?: string;
+  icon?: string;
+  image?: string;
+}
+
+export default function OfflineSummaryModal({ results, onClose }: OfflineSummaryModalProps) {
+  // Aputoiminto ajan muotoiluun
+  const formatTime = (seconds: number): string => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
-        <div className="p-6 border-b border-slate-800 bg-gradient-to-br from-slate-800 to-slate-900">
-          <h2 className="text-xl font-black text-white uppercase tracking-tighter">System Restored</h2>
-          <p className="text-slate-400 text-xs">Offline Time: {hours > 0 ? `${hours}h ` : ''}{minutes % 60}m</p>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         
-        <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-6">
+        <div className="p-6 border-b border-slate-800 text-center">
+          <h2 className="text-2xl font-black text-white uppercase tracking-wider mb-1">Welcome Back</h2>
+          <p className="text-slate-400 text-sm">
+            You were away for <span className="text-emerald-400 font-bold">{formatTime(results.seconds)}</span>
+          </p>
+        </div>
+
+        <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+          
           {/* XP GAINS */}
-          {Object.keys(xpGained).length > 0 && (
+          {Object.keys(results.xpGained).length > 0 && (
             <div>
-              <h3 className="text-[10px] font-bold text-emerald-500 uppercase mb-2 tracking-widest">Experience Sync</h3>
-              <div className="space-y-2">
-                {Object.entries(xpGained).map(([skill, amount]) => (
-                  <div key={skill} className="flex justify-between items-center bg-slate-950 p-2 rounded border border-slate-800/50">
-                    <span className="capitalize text-sm text-slate-300">{skill}</span>
-                    <span className="text-emerald-400 font-mono text-sm">+{amount.toLocaleString()} XP</span>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Experience Gained</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(results.xpGained).map(([skill, amount]) => (
+                  <div key={skill} className="bg-slate-800/50 p-2 rounded flex justify-between items-center border border-slate-700/50">
+                    <span className="capitalize text-slate-300 text-sm">{skill}</span>
+                    <span className="text-emerald-400 font-mono font-bold">+{amount as number} XP</span>
                   </div>
                 ))}
               </div>
@@ -36,35 +54,51 @@ export default function OfflineSummaryModal({ results, onClose }: Props) {
           )}
 
           {/* ITEM GAINS */}
-          <div>
-            <h3 className="text-[10px] font-bold text-cyan-500 uppercase mb-2 tracking-widest">Resource Extraction</h3>
-            {Object.keys(itemsGained).length > 0 ? (
-              <div className="grid grid-cols-1 gap-2">
-                {Object.entries(itemsGained).map(([id, count]) => {
-                  const details = getItemDetails(id);
+          {Object.keys(results.itemsGained).length > 0 && (
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Loot Collected</h3>
+              <div className="space-y-2">
+                {Object.entries(results.itemsGained).map(([itemId, count]) => {
+                  const item = getItemDetails(itemId);
+                  
+                  // KORJAUS: Tyyppimuunnos ilman 'any':a.
+                  // Kerrotaan TypeScriptille, että itemillä voi olla icon tai image.
+                  const visualItem = item as unknown as ItemVisuals;
+                  const itemIcon = visualItem?.icon || visualItem?.image;
+
                   return (
-                    <div key={id} className="flex items-center gap-3 bg-slate-950 p-2 rounded border border-slate-800/50">
-                      <img src={details?.icon} className="w-8 h-8 pixelated" alt="" />
-                      <div className="flex-1">
-                        <div className="text-xs text-slate-300 font-bold">{details?.name}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">Count: {count.toLocaleString()}</div>
+                    <div key={itemId} className="flex items-center gap-3 bg-slate-800/50 p-2 rounded border border-slate-700/50">
+                      <div className="w-8 h-8 bg-slate-900 rounded border border-slate-700 flex items-center justify-center overflow-hidden">
+                        {itemIcon ? (
+                          <img src={itemIcon} alt={item?.name} className="w-full h-full object-cover pixelated" />
+                        ) : (
+                          <span className="text-xs">📦</span>
+                        )}
                       </div>
+                      <div className="flex-1">
+                        <div className="text-sm text-slate-200">{item?.name || itemId}</div>
+                      </div>
+                      <div className="text-emerald-400 font-mono font-bold">+{count as number}</div>
                     </div>
                   );
                 })}
               </div>
-            ) : (
-              <p className="text-xs text-slate-600 italic text-center py-4">No physical resources were gathered.</p>
-            )}
-          </div>
+            </div>
+          )}
+
+          {Object.keys(results.xpGained).length === 0 && Object.keys(results.itemsGained).length === 0 && (
+            <div className="text-center text-slate-500 italic py-4">
+              No progress made. Make sure to start an action before leaving!
+            </div>
+          )}
         </div>
 
-        <div className="p-4 bg-slate-950/50 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 bg-slate-900/50">
           <button 
             onClick={onClose}
-            className="w-full bg-slate-100 hover:bg-white text-slate-950 font-bold py-3 rounded-xl transition-colors uppercase text-xs tracking-widest"
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-colors uppercase tracking-widest text-sm"
           >
-            Acknowledge
+            Collect & Continue
           </button>
         </div>
       </div>

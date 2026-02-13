@@ -1,59 +1,57 @@
 import { useState } from 'react';
 import WorldSelector from './combat/WorldSelector';
 import BattleArena from './combat/BattleArena';
-import CombatLog from './combat/CombatLog';
 import ZoneSelector from './combat/ZoneSelector';
+import CombatLog from './combat/CombatLog';
 import FoodSelector from './combat/FoodSelector';
 
 export default function CombatView() {
-  const [selectedWorldId, setSelectedWorldId] = useState<number>(1);
+  const [selectedWorld, setSelectedWorld] = useState(1);
 
   return (
-    <div className="flex h-full bg-slate-950 overflow-hidden text-slate-200">
+    <div className="h-full w-full flex bg-slate-950 overflow-hidden text-slate-200 font-sans">
       
-      {/* 1. VASEN LAITA: Maailman valinta */}
-      <WorldSelector 
-        selectedWorld={selectedWorldId} 
-        onSelectWorld={setSelectedWorldId} 
-      />
+      {/* VASEN: World Selector */}
+      <WorldSelector selectedWorld={selectedWorld} onSelectWorld={setSelectedWorld} />
 
-      {/* 2. KESKIALUE: Areena, Consumables ja Loki */}
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-900/10">
+      {/* KESKIOSA: Arena & Alapalkit */}
+      <div className="flex-1 flex flex-col min-w-0 h-full relative">
         
-        {/* Taisteluareena ylhäällä */}
-        <div className="h-[520px] p-4 shrink-0">
-          <BattleArena selectedWorldId={selectedWorldId} />
-        </div>
-        
-        {/* Alarivi: Consumables + Combat Log 50/50 split */}
-        <div className="flex border-t border-slate-800/60 bg-slate-950/20 h-72 shrink-0">
-          {/* Vasen 50%: Consumables */}
-          <div className="flex-1 border-r border-slate-800/60 p-4 overflow-y-auto custom-scrollbar">
-            <FoodSelector />
-          </div>
-
-          {/* Oikea 50%: Combat Log */}
-          <div className="flex-1 min-w-0">
-            <CombatLog />
-          </div>
+        {/* YLÄOSA: Visuaalinen Areena */}
+        {/* KORJAUS: Tiputettu korkeus noin puoleen (45% ruudusta), shrink-0 estää sitä pienenemästä liikaa */}
+        <div className="h-[45%] shrink-0 relative bg-slate-900 overflow-hidden border-b border-slate-800">
+          <BattleArena selectedWorldId={selectedWorld} />
         </div>
 
-        {/* Tyhjä tila alhaalla */}
-        <div className="flex-1 bg-slate-950/40" />
+        {/* ALAOSA: Consumables ja Log */}
+        {/* KORJAUS: Käytetään flex-1, jotta tämä täyttää loput tilasta */}
+        <div className="flex-1 min-h-0 bg-slate-950 flex z-20">
+          
+          {/* VASEN ALHAALLA: Consumables */}
+          <div className="w-1/2 border-r border-slate-800 p-4 flex flex-col">
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-3">Consumables</h3>
+            <div className="flex-1 min-h-0">
+              <FoodSelector />
+            </div>
+          </div>
+
+          {/* OIKEA ALHAALLA: Combat Log */}
+          <div className="w-1/2 flex flex-col bg-slate-950">
+             <div className="p-2 px-4 border-b border-slate-800 bg-slate-900/30">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Combat Log</span>
+             </div>
+             <div className="flex-1 overflow-hidden relative">
+                <div className="absolute inset-0">
+                  <CombatLog /> 
+                </div>
+             </div>
+          </div>
+        </div>
       </div>
 
-      {/* 3. OIKEA LAITA: Mapit (Koko korkeus) */}
-      <div className="w-80 flex flex-col border-l border-slate-800 bg-slate-950/60 shrink-0 h-full">
-        <div className="p-4 flex flex-col h-full">
-          <div className="flex items-center gap-2 mb-4 px-2">
-             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Campaign Zones</h3>
-          </div>
-          
-          <div className="flex-1 min-h-0">
-            <ZoneSelector selectedWorldId={selectedWorldId} />
-          </div>
-        </div>
+      {/* OIKEA PALKKI: Zone Selector (Kartat) */}
+      <div className="w-80 flex-shrink-0 border-l border-slate-800 bg-slate-900/80 backdrop-blur-sm z-20 flex flex-col">
+        <ZoneSelector selectedWorldId={selectedWorld} />
       </div>
 
     </div>

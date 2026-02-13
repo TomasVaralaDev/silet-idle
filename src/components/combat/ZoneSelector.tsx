@@ -7,66 +7,120 @@ interface Props {
 }
 
 export default function ZoneSelector({ selectedWorldId }: Props) {
-  const startCombat = useGameStore(state => state.startCombat);
-  const stopCombat = useGameStore(state => state.stopCombat);
-  const combatStats = useGameStore(state => state.combatStats);
-  const combatSettings = useGameStore(state => state.combatSettings);
-  const toggleAutoProgress = useGameStore(state => state.toggleAutoProgress);
+  // Haetaan storesta tarvittavat tilat ja funktiot
+  const { 
+    startCombat, 
+    stopCombat, 
+    combatStats, 
+    combatSettings, 
+    toggleAutoProgress 
+  } = useGameStore();
 
-  const zones = COMBAT_DATA.filter((map: CombatMap) => map.world === selectedWorldId);
+  // Suodatetaan kartat (varmistetaan tyyppi 'any'-kikalla jos types.ts ei tue world-kenttää vielä)
+  const zones = COMBAT_DATA.filter((map) => {
+    const m = map as unknown as CombatMap & { world?: number };
+    return m.world ? m.world === selectedWorldId : true;
+  });
 
   return (
-    <div className="flex flex-col h-full">
-      {/* AUTO PROGRESS */}
-      <div className="bg-slate-900/50 border border-slate-800/50 rounded-xl p-3 mb-4 flex items-center justify-between">
-        <div className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Auto-Progress</div>
-        <button 
-          onClick={toggleAutoProgress}
-          className={`w-10 h-5 rounded-full relative transition-colors ${combatSettings.autoProgress ? 'bg-emerald-600' : 'bg-slate-800'}`}
-        >
-          <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${combatSettings.autoProgress ? 'translate-x-6' : 'translate-x-1'}`} />
-        </button>
+    <div className="flex flex-col h-full bg-slate-900/80 backdrop-blur-sm border-l border-slate-800">
+      
+      {/* --- HEADER & AUTO PROGRESS SWITCH --- */}
+      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shadow-sm z-10">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+            Campaign Zones
+          </span>
+          <span className="text-[9px] text-slate-500 font-mono">
+            World {selectedWorldId}
+          </span>
+        </div>
+
+        {/* AUTO PUSH NAPPI */}
+        <div className="flex items-center gap-2 bg-slate-950/50 px-2 py-1 rounded-lg border border-slate-800">
+             <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Auto</span>
+             <button 
+                onClick={toggleAutoProgress}
+                className={`
+                  w-8 h-4 rounded-full relative transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/50
+                  ${combatSettings.autoProgress ? 'bg-emerald-600' : 'bg-slate-700'}
+                `}
+                title="Toggle Auto-Progress (Move to next zone on victory)"
+             >
+                <div 
+                  className={`
+                    absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 shadow-sm 
+                    ${combatSettings.autoProgress ? 'translate-x-4' : 'translate-x-0.5'}
+                  `} 
+                />
+             </button>
+        </div>
       </div>
 
-      {/* MAP LIST WITH ENEMY ICONS */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
-        {zones.map((map: CombatMap) => {
-          const isRunning = combatStats.currentMapId === map.id;
+      {/* --- KARTTALISTA --- */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {zones.map((map) => {
+          const m = map as unknown as CombatMap;
+          const isLocked = m.id > combatStats.maxMapCompleted + 1;
+          const isActive = combatStats.currentMapId === m.id;
 
           return (
             <button
-              key={map.id}
-              onClick={() => isRunning ? stopCombat() : startCombat(map.id)}
+              key={m.id}
+              onClick={() => !isLocked && (isActive ? stopCombat() : startCombat(m.id))}
+              disabled={isLocked}
               className={`
-                w-full p-3 rounded-xl border text-left transition-all relative overflow-hidden flex items-center justify-between
-                ${isRunning 
-                  ? 'bg-emerald-900/20 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.1)]' 
-                  : 'bg-slate-900/40 border-slate-800/50 hover:border-slate-600 hover:bg-slate-800/40'
+                w-full p-4 border-b border-slate-800/50 text-left transition-all duration-200 group relative
+                ${isActive 
+                  ? 'bg-emerald-900/10 border-l-4 border-l-emerald-500' 
+                  : isLocked 
+                    ? 'opacity-40 cursor-not-allowed bg-slate-950' 
+                    : 'hover:bg-slate-800/40 border-l-4 border-l-transparent hover:border-l-slate-600'
                 }
               `}
             >
-              <div className="flex-1 min-w-0 pr-2">
-                <h4 className={`font-bold text-[13px] truncate ${isRunning ? 'text-emerald-400' : 'text-slate-200'}`}>
-                  {map.name}
-                </h4>
-                <div className="flex flex-col gap-0.5 mt-0.5">
-                  <p className="text-[10px] text-slate-400 truncate">Target: {map.enemyName}</p>
-                  <p className="text-[9px] font-mono text-slate-500">HP: {map.enemyHp} | ATK: {map.enemyAttack}</p>
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className={`text-sm font-bold mb-0.5 ${isActive ? 'text-white' : isLocked ? 'text-slate-600' : 'text-slate-300'}`}>
+                    {m.name}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                    <span className={`px-1 rounded ${isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'}`}>
+                      Lvl {m.id}
+                    </span>
+                    <span className="text-slate-700">|</span>
+                    <span>{m.enemyName}</span>
+                  </div>
+                </div>
+                
+                {/* Status Icon */}
+                <div className={`
+                    w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all
+                    ${isActive 
+                      ? 'bg-slate-900 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]' 
+                      : 'bg-slate-950 border-slate-800 group-hover:border-slate-600'
+                    }
+                `}>
+                   {isLocked ? (
+                      <span className="text-xs">🔒</span>
+                   ) : m.image ? (
+                       <img src={m.image} className={`w-5 h-5 object-contain ${isActive ? 'opacity-100' : 'opacity-60 grayscale group-hover:grayscale-0'}`} />
+                   ) : (
+                       <span className="text-xs opacity-50">⚔️</span>
+                   )}
                 </div>
               </div>
-
-              {/* PALAUTETTU ENEMY ICON */}
-              <div className={`
-                w-10 h-10 rounded-lg bg-slate-950 border flex items-center justify-center shrink-0
-                ${isRunning ? 'border-emerald-500/50' : 'border-slate-800'}
-              `}>
-                <img src={map.image} alt={map.enemyName} className="w-8 h-8 pixelated" />
-              </div>
-
-              {isRunning && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />}
+              
+              {/* Active Indicator Glow */}
+              {isActive && (
+                  <div className="absolute left-0 bottom-0 top-0 w-1 bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)]"></div>
+              )}
             </button>
           );
         })}
+        
+        {/* Tyhjä tila lopussa scrollausta varten */}
+        <div className="h-4 w-full"></div>
       </div>
     </div>
   );

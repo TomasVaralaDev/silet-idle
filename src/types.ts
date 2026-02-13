@@ -13,8 +13,8 @@ export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'ne
 
 export type CombatStyle = 'melee' | 'ranged' | 'magic';
 
-// --- NEW: EVENT TYPES ---
-export type GameEventType = 'info' | 'success' | 'warning' | 'error' | 'loot' | 'level_up';
+// --- EVENT TYPES ---
+export type GameEventType = 'info' | 'success' | 'warning' | 'error' | 'loot' | 'combat' | 'levelUp';
 
 export interface GameEvent {
   id: string;
@@ -58,7 +58,7 @@ export interface CombatLogEntry {
   type?: 'damage' | 'heal' | 'info' | 'loot';
 }
 
-// Tämä hallitsee taistelun UI-tilaa ja logiikkaa
+// Taistelun hetkellinen tila
 export interface CombatState {
   hp: number;
   currentMapId: number | null;
@@ -66,16 +66,10 @@ export interface CombatState {
   enemyCurrentHp: number;
   respawnTimer: number;
   foodTimer: number;
-  combatLog: string[]; // Pidetään loki täällä kuten aiemmin
+  combatLog: string[];
+  attackTimer?: number; // Lisätty timer-tuki
 }
 
-// Tämä on tallennettava data hahmon statseista (EI taistelun hetkellinen tila)
-export interface PlayerCombatStats {
-  hp: number; // Nykyinen HP (tallennetaan)
-  maxMapCompleted: number; // Progression
-}
-
-// Laskennalliset statsit (Equipment + Levelit), ei tallenneta kantaan
 export interface CalculatedStats {
   attackDamage: number;
   armor: number;
@@ -84,6 +78,8 @@ export interface CalculatedStats {
   critChance: number;
   critMultiplier: number;
 }
+
+// --- ITEM & RESOURCE TYPES ---
 
 export interface Ingredient {
   id: string;
@@ -115,32 +111,36 @@ export interface Resource {
   healing?: number;
 }
 
+// Lootit todennäköisyyden (0.0 - 1.0) mukaan
 export interface Drop {
   itemId: string;
   chance: number;
   amount: [number, number]; 
 }
 
+// Lootit painoarvon mukaan (Weighted Pool)
 export interface WeightedDrop {
   itemId: string;
-  weight: number; 
+  weight: number;
   amount?: [number, number];
+  chance?: number; // Taaksepäin yhteensopivuus
 }
 
 export interface CombatMap {
-  id: number; // MUUTOS: String -> Number
-  world: number; // MUUTOS: Nimi 'world' eikä 'worldId' (kuten datassasi)
+  id: number;
+  world: number; 
   name: string;
-  enemyName: string; // UUSI KENTTÄ
-  enemyHp: number;   // UUSI KENTTÄ
-  enemyAttack: number; // UUSI KENTTÄ
-  xpReward: number; // UUSI KENTTÄ
+  enemyName: string;
+  enemyHp: number;
+  enemyAttack: number;
+  xpReward: number;
   image?: string; 
-  drops: Drop[]; // UUSI KENTTÄ
+  drops: WeightedDrop[]; // KORJAUS: Muutettu Drop[] -> WeightedDrop[] jotta WORLD_LOOT toimii
   isBoss?: boolean;
   keyRequired?: string;
-  // levelRequirement poistettu, koska datassa sitä ei ollut (tai voit päätellä sen ID:stä)
 }
+
+// --- SHOP & ACHIEVEMENTS ---
 
 export interface ShopItem {
   id: string;
@@ -160,6 +160,8 @@ export interface Achievement {
   condition: (state: GameState) => boolean;
 }
 
+// --- EXPEDITIONS (Scavenger) ---
+
 export interface Expedition {
   id: string;
   mapId: number;
@@ -173,6 +175,8 @@ export interface ScavengerState {
   unlockedSlots: number;
 }
 
+// --- SETTINGS & CONFIG ---
+
 export interface CombatSettings {
   autoEatThreshold: number; 
   autoProgress: boolean;    
@@ -183,9 +187,8 @@ export interface SkillData {
   level: number;
 }
 
-// --- STATE INTERFACES ---
+// --- ROOT GAME STATE ---
 
-// Tämä on se, mikä tallennetaan localStorageen (Persistence)
 export interface GameState {
   username: string; 
   settings: GameSettings;
@@ -199,8 +202,8 @@ export interface GameState {
   coins: number;
   upgrades: string[]; 
   unlockedAchievements: string[];
-  combatStats: CombatState; // Alkuperäinen polku palautettu
-  enemy: Enemy | null;      // Vihollinen on combatStatsin sisar-objekti
+  combatStats: CombatState; 
+  enemy: Enemy | null;      
   lastTimestamp: number;
   events: GameEvent[];
 }

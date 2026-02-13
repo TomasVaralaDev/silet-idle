@@ -9,7 +9,7 @@ export const useGameEngine = () => {
   const setState = useGameStore((s) => s.setState);
 
   useEffect(() => {
-    const TICK_RATE = 1000; // 100ms syke
+    const TICK_RATE = 100; // 100ms syke
 
     const interval = setInterval(() => {
       // Käytetään FullStoreState-tyyppiä, koska setState antaa sen meille

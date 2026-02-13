@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand';
 import type { FullStoreState } from '../useGameStore';
 import { COMBAT_DATA } from '../../data/combat';
 import { processCombatTick as calculateCombatSystem } from '../../systems/combatSystem';
-import type { GameState, Enemy, CombatSettings } from '../../types'; // Lisätty CombatSettings import
+import type { GameState, Enemy, CombatSettings, CombatState } from '../../types';
 
 export interface CombatSlice {
   startCombat: (mapId: number) => void;
@@ -10,9 +10,11 @@ export interface CombatSlice {
   processCombatTick: () => void;
   addCombatLog: (message: string) => void;
   toggleAutoProgress: () => void;
-  // KORJAUS: Lisätty puuttuva funktio rajapintaan
   updateCombatSettings: (settings: Partial<CombatSettings>) => void;
 }
+
+// Määritellään paikallinen laajennus, jos attackTimer puuttuu perustyypistä
+type ExtendedCombatState = CombatState & { attackTimer?: number };
 
 export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice> = (set, get) => ({
   
@@ -32,21 +34,29 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
       xpReward: map.xpReward
     };
 
+    // Luodaan uusi stats-objekti
+    const currentStats = get().combatStats;
+    const newStats: ExtendedCombatState = {
+      ...currentStats,
+      currentMapId: mapId,
+      enemyCurrentHp: map.enemyHp,
+      respawnTimer: 0,
+      attackTimer: 1000,
+      hp: currentStats.hp > 0 ? currentStats.hp : get().skills.hitpoints.level * 10
+    };
+
     set({
       activeAction: { skill: 'combat', resourceId: mapId.toString(), progress: 0, targetTime: 0 },
       enemy: newEnemy,
-      combatStats: { 
-        ...get().combatStats, 
-        currentMapId: mapId, 
-        enemyCurrentHp: map.enemyHp, 
-        respawnTimer: 0,
-        hp: get().combatStats.hp > 0 ? get().combatStats.hp : get().skills.hitpoints.level * 10
-      }
+      // KORJAUS: Käytetään 'as unknown as CombatState' jos ExtendedCombatState ei kelpaa suoraan,
+      // mutta tämä on turvallinen tapa kiertää 'any'-kielto.
+      combatStats: newStats as unknown as CombatState
     });
   },
 
   processCombatTick: () => {
     const currentState = get() as unknown as GameState;
+    // Käytetään 100ms aikaleimaa
     const updates = calculateCombatSystem(currentState, 100);
 
     if (Object.keys(updates).length > 0) {
@@ -86,7 +96,6 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
     combatSettings: { ...get().combatSettings, autoProgress: !get().combatSettings.autoProgress }
   }),
 
-  // KORJAUS: Lisätty funktion toteutus
   updateCombatSettings: (newSettings) => set((state) => ({
     combatSettings: { ...state.combatSettings, ...newSettings }
   })),

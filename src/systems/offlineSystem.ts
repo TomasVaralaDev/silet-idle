@@ -1,86 +1,109 @@
-import type { GameState } from '../types';
 import { processSkillTick } from './skillSystem';
 import { processCombatTick } from './combatSystem';
-import { getSpeedMultiplier } from '../utils/gameUtils';
-import { GAME_DATA } from '../data';
+import type { GameState, SkillType } from '../types';
 
-export interface OfflineResults {
-  secondsPassed: number;
+/**
+ * Määritellään tyyppi offline-yhteenvedolle ilman any-tyyppejä.
+ */
+export interface OfflineSummary {
+  seconds: number;
+  xpGained: Partial<Record<SkillType, number>>;
   itemsGained: Record<string, number>;
-  xpGained: Record<string, number>;
 }
 
-export const calculateOfflineProgress = (state: GameState): { newState: GameState, results: OfflineResults } => {
-  const now = Date.now();
-  const lastTime = state.lastTimestamp || now;
-  const totalSecondsPassed = Math.floor((now - lastTime) / 1000);
+/**
+ * OfflineSystem: Laskee edistyksen ajalta, jolloin peli on ollut suljettuna.
+ */
+export const calculateOfflineProgress = (
+  initialState: GameState,
+  elapsedSeconds: number
+): { updatedState: GameState; summary: OfflineSummary } => {
+  // Luodaan kopio tilasta, jota muokataan simuloinnin aikana
+  let currentState: GameState = { ...initialState };
   
-  // Rajoitetaan simulointi max 12 tuntiin
-  const secondsToProcess = Math.min(totalSecondsPassed, 12 * 60 * 60); 
+  // Rajoitetaan offline-aika max 12 tuntiin (43200s) suorituskyvyn vuoksi
+  const maxSeconds = 43200;
+  const simulatedSeconds = Math.min(elapsedSeconds, maxSeconds);
 
-  let currentState = { ...state };
-  const itemsBefore = { ...state.inventory };
-  const xpBefore = Object.fromEntries(Object.entries(state.skills).map(([k, v]) => [k, v.xp]));
+  // Simuloidaan sekunti kerrallaan
+  for (let i = 0; i < simulatedSeconds; i++) {
+    if (!currentState.activeAction) break;
 
-  if (secondsToProcess < 10) {
-    return { newState: { ...state, lastTimestamp: now }, results: { secondsPassed: 0, itemsGained: {}, xpGained: {} } };
+    let updates: Partial<GameState> = {};
+
+    if (currentState.activeAction.skill === 'combat') {
+      // Offline-taistelu etenee 1000ms (1s) askelissa
+      updates = processCombatTick(currentState, 1000);
+    } else {
+      // Skill-tikitys etenee myös 1000ms askelissa
+      updates = processSkillTick(currentState, 1000);
+    }
+
+    // Päivitetään simuloitu tila. 
+    // TÄRKEÄÄ: Mergetään combatStats syvältä, jotta respawnTimer säilyy!
+    currentState = {
+      ...currentState,
+      ...updates,
+      combatStats: updates.combatStats 
+        ? { ...currentState.combatStats, ...updates.combatStats } 
+        : currentState.combatStats,
+      inventory: updates.inventory 
+        ? { ...currentState.inventory, ...updates.inventory } 
+        : currentState.inventory,
+      skills: updates.skills 
+        ? { ...currentState.skills, ...updates.skills } 
+        : currentState.skills
+    };
   }
 
-  // --- LOGIIKKA ---
-  if (state.activeAction && state.activeAction.skill !== 'combat') {
-    const skill = state.activeAction.skill;
-    const resource = GAME_DATA[skill as keyof typeof GAME_DATA]?.find(r => r.id === state.activeAction?.resourceId);
-    
-    if (resource) {
-      const speedMult = getSpeedMultiplier(skill, state.upgrades);
-      const baseInterval = resource.interval || 3000;
-      const targetTime = Math.max(200, baseInterval / speedMult);
-      const totalTicks = Math.floor((secondsToProcess * 1000) / targetTime);
-
-      // Simuloidaan tikit
-      const safeTicks = Math.min(totalTicks, 20000);
-      for (let i = 0; i < safeTicks; i++) {
-        // KORJAUS: Syötetään targetTime toisena argumenttina (deltaTime), 
-        // jotta taito valmistuu jokaisella kierroksella.
-        const updates = processSkillTick(currentState, targetTime);
-        
-        if (!updates.activeAction && updates.activeAction !== undefined) {
-            break; // Materiaalit loppuivat
-        }
-        currentState = { ...currentState, ...updates };
-      }
-    }
-  } else if (state.activeAction?.skill === 'combat') {
-    // Combat simulaatio (käytetään 1s askellusta offline-ajassa)
-    const combatTicks = Math.min(secondsToProcess, 10000); 
-    for (let i = 0; i < combatTicks; i++) {
-        const updates = processCombatTick(currentState);
-        if (!updates.activeAction && updates.activeAction !== undefined) {
-            break;
-        }
-        currentState = { ...currentState, ...updates };
-    }
-  }
-
-  // --- TULOSTEN LASKENTA ---
-  const itemsGained: Record<string, number> = {};
-  Object.keys(currentState.inventory).forEach(id => {
-    const diff = (currentState.inventory[id] || 0) - (itemsBefore[id] || 0);
-    if (diff > 0) itemsGained[id] = diff;
-  });
-
-  const xpGained: Record<string, number> = {};
-  Object.keys(currentState.skills).forEach(s => {
-    const diff = currentState.skills[s as keyof typeof state.skills].xp - (xpBefore[s] || 0);
-    if (diff > 0) xpGained[s] = Math.floor(diff);
-  });
-
-  return {
-    newState: { ...currentState, lastTimestamp: now },
-    results: {
-      secondsPassed: totalSecondsPassed,
-      itemsGained,
-      xpGained
-    }
+  // Luodaan yhteenveto erotuksista
+  const summary: OfflineSummary = {
+    seconds: simulatedSeconds,
+    xpGained: calculateXpDifference(initialState.skills, currentState.skills),
+    itemsGained: calculateItemDifference(initialState.inventory, currentState.inventory)
   };
+
+  return { updatedState: currentState, summary };
 };
+
+/**
+ * Laskee XP-eron taitojen välillä
+ */
+function calculateXpDifference(
+  oldSkills: GameState['skills'], 
+  newSkills: GameState['skills']
+): Partial<Record<SkillType, number>> {
+  const diff: Partial<Record<SkillType, number>> = {};
+  
+  (Object.keys(oldSkills) as SkillType[]).forEach((skillId) => {
+    const xpDiff = newSkills[skillId].xp - oldSkills[skillId].xp;
+    if (xpDiff > 0) {
+      diff[skillId] = xpDiff;
+    }
+  });
+  
+  return diff;
+}
+
+/**
+ * Laskee tavaraerot varaston välillä
+ */
+function calculateItemDifference(
+  oldInv: GameState['inventory'], 
+  newInv: GameState['inventory']
+): Record<string, number> {
+  const diff: Record<string, number> = {};
+  
+  // Käydään läpi uuden varaston kaikki avaimet
+  for (const itemId in newInv) {
+    const oldCount = oldInv[itemId] || 0;
+    const newCount = newInv[itemId] || 0;
+    const countDiff = newCount - oldCount;
+    
+    if (countDiff > 0) {
+      diff[itemId] = countDiff;
+    }
+  }
+  
+  return diff;
+}

@@ -1,11 +1,37 @@
-import type { CombatStats, CombatResult, GameState } from '../types';
+import type { GameState } from '../types';
+
+/**
+ * Määritellään tarvittavat rajapinnat tässä, jotta ne ovat synkrossa 
+ * laskentalogiikan kanssa ja poistavat import-virheet.
+ */
+export interface CombatStats {
+  hp: number;
+  maxHp: number;
+  attackLevel: number;
+  strengthLevel: number;
+  defenseLevel: number;
+  attackDamage: number;
+  armor: number;
+  attackSpeed: number;
+  critChance: number;
+  critMultiplier: number;
+}
+
+export interface CombatResult {
+  finalDamage: number;
+  isCrit: boolean;
+  mitigationPercent: number;
+}
 
 // VAKIOT
 const ARMOR_CONSTANT = 300; 
 const ACCURACY_CONSTANT = 0.5; 
 
+/**
+ * Laskee yhden hyökkäyksen lopputuloksen
+ */
 export const calculateHit = (attacker: CombatStats, defender: CombatStats): CombatResult => {
-  // 1. OSUMATARKKUUS
+  // 1. OSUMATARKKUUS (Accuracy vs Defense)
   const hitChance = attacker.attackLevel / (attacker.attackLevel + (defender.defenseLevel * ACCURACY_CONSTANT));
   const rollsHit = Math.random() < hitChance;
 
@@ -14,19 +40,21 @@ export const calculateHit = (attacker: CombatStats, defender: CombatStats): Comb
   }
 
   // 2. MAX HIT LASKENTA
+  // Peruskaava: 1 + voima-kerroin + varusteiden bonus
   const maxHit = 1 + (attacker.strengthLevel * 0.8) + attacker.attackDamage;
 
-  // 3. KRITTIINEN OSUMA
+  // 3. KRIITTINEN OSUMA
   const isCrit = Math.random() < attacker.critChance;
   let rawDamage = 0;
 
   if (isCrit) {
     rawDamage = maxHit * attacker.critMultiplier;
   } else {
+    // Satunnainen luku väliltä 1 - maxHit
     rawDamage = Math.floor(Math.random() * maxHit) + 1;
   }
 
-  // 4. VAHINGON VÄHENNYS (ARMOR)
+  // 4. VAHINGON VÄHENNYS (Armor / Defense Level)
   const damageReduction = defender.defenseLevel / (defender.defenseLevel + ARMOR_CONSTANT);
   const mitigationPercent = damageReduction;
   const mitigatedDamage = rawDamage * (1 - damageReduction);
@@ -43,7 +71,7 @@ export const calculateHit = (attacker: CombatStats, defender: CombatStats): Comb
 };
 
 /**
- * Rakentaa pelaajan statsit
+ * Muuntaa pelaajan taidot ja varusteet taistelustasiksi
  */
 export const getPlayerStats = (
   skills: GameState['skills'],
@@ -51,7 +79,8 @@ export const getPlayerStats = (
   equipmentBonus: Partial<CombatStats>
 ): CombatStats => {
   
-  const strengthLevel = skills[combatStyle]?.level || 1; 
+  // Valitaan voimataso tyylin mukaan (tässä yksinkertaistettu melee-attackiin)
+  const strengthLevel = skills[combatStyle]?.level || skills.attack.level; 
 
   return {
     hp: skills.hitpoints.level * 10,
@@ -64,13 +93,13 @@ export const getPlayerStats = (
     attackSpeed: equipmentBonus.attackSpeed || 1.0, 
     critChance: 0.05 + (skills.attack.level * 0.0001),
     critMultiplier: 1.5,
-    // Varmistetaan että equipmentBonus ei ylikirjoita kriittisiä tyyppejä väärin
+    // Sallitaan varusteiden ylikirjoittaa arvot (esim. attackSpeed)
     ...equipmentBonus
   } as CombatStats;
 };
 
 /**
- * Rakentaa vihollisen statsit
+ * Laskee vihollisen statsit skaalattuna tason mukaan
  */
 export const getEnemyStats = (
   baseStats: { hp: number; attack: number }, 
@@ -78,6 +107,7 @@ export const getEnemyStats = (
 ): CombatStats => {
   const growth = 1.1; 
   
+  // Skaalaus nousee tason mukaan eksponentiaalisesti
   const scaledHp = Math.floor(baseStats.hp * Math.pow(growth, level * 0.5));
   const scaledDmg = Math.floor(baseStats.attack * Math.pow(growth, level * 0.5));
   const scaledDef = Math.floor(level * 2); 

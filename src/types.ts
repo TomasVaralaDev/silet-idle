@@ -38,6 +38,27 @@ export interface ActiveAction {
   targetTime: number;
 }
 
+// --- COMBAT TYPES ---
+
+export interface Enemy {
+  id: string;
+  name: string;
+  icon: string;
+  maxHp: number;
+  currentHp: number;
+  level: number;
+  attack: number;
+  defense: number;
+  xpReward: number;
+}
+
+export interface CombatLogEntry {
+  message: string;
+  timestamp: string;
+  type?: 'damage' | 'heal' | 'info' | 'loot';
+}
+
+// Tämä hallitsee taistelun UI-tilaa ja logiikkaa
 export interface CombatState {
   hp: number;
   currentMapId: number | null;
@@ -45,18 +66,21 @@ export interface CombatState {
   enemyCurrentHp: number;
   respawnTimer: number;
   foodTimer: number;
-  combatLog: string[];
+  combatLog: string[]; // Pidetään loki täällä kuten aiemmin
 }
 
-export interface CombatStats {
+// Tämä on tallennettava data hahmon statseista (EI taistelun hetkellinen tila)
+export interface PlayerCombatStats {
+  hp: number; // Nykyinen HP (tallennetaan)
+  maxMapCompleted: number; // Progression
+}
+
+// Laskennalliset statsit (Equipment + Levelit), ei tallenneta kantaan
+export interface CalculatedStats {
   attackDamage: number;
   armor: number;
   attackSpeed: number;
-  hp: number;
   maxHp: number;
-  attackLevel: number;
-  strengthLevel: number;
-  defenseLevel: number;
   critChance: number;
   critMultiplier: number;
 }
@@ -104,17 +128,18 @@ export interface WeightedDrop {
 }
 
 export interface CombatMap {
-  id: number;
-  world: number;
+  id: number; // MUUTOS: String -> Number
+  world: number; // MUUTOS: Nimi 'world' eikä 'worldId' (kuten datassasi)
   name: string;
-  enemyName: string;
-  enemyHp: number;
-  enemyAttack: number;
-  xpReward: number;
-  drops: Drop[]; 
-  isBoss?: boolean;
-  keyRequired?: string; 
+  enemyName: string; // UUSI KENTTÄ
+  enemyHp: number;   // UUSI KENTTÄ
+  enemyAttack: number; // UUSI KENTTÄ
+  xpReward: number; // UUSI KENTTÄ
   image?: string; 
+  drops: Drop[]; // UUSI KENTTÄ
+  isBoss?: boolean;
+  keyRequired?: string;
+  // levelRequirement poistettu, koska datassa sitä ei ollut (tai voit päätellä sen ID:stä)
 }
 
 export interface ShopItem {
@@ -158,6 +183,9 @@ export interface SkillData {
   level: number;
 }
 
+// --- STATE INTERFACES ---
+
+// Tämä on se, mikä tallennetaan localStorageen (Persistence)
 export interface GameState {
   username: string; 
   settings: GameSettings;
@@ -171,9 +199,10 @@ export interface GameState {
   coins: number;
   upgrades: string[]; 
   unlockedAchievements: string[];
-  combatStats: CombatState;
+  combatStats: CombatState; // Alkuperäinen polku palautettu
+  enemy: Enemy | null;      // Vihollinen on combatStatsin sisar-objekti
   lastTimestamp: number;
-  events: GameEvent[]; // NEW: Tapahtumajono
+  events: GameEvent[];
 }
 
 export interface CombatResult {

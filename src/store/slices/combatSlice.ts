@@ -1,65 +1,90 @@
 import type { StateCreator } from 'zustand';
 import type { FullStoreState } from '../useGameStore';
-import { DEFAULT_STATE } from '../useGameStore';
-import { COMBAT_DATA } from '../../data';
-import { getEnemyStats } from '../../utils/combatMechanics';
-import type { CombatState, CombatSettings } from '../../types';
+import { COMBAT_DATA } from '../../data/combat';
+import { processCombatTick as calculateCombatSystem } from '../../systems/combatSystem';
+import type { GameState, Enemy } from '../../types';
 
 export interface CombatSlice {
-  combatStats: CombatState;
-  combatSettings: CombatSettings;
-  updateCombatSettings: (settings: Partial<CombatSettings>) => void;
-  toggleAutoProgress: () => void;
   startCombat: (mapId: number) => void;
   stopCombat: () => void;
+  processCombatTick: () => void;
+  addCombatLog: (message: string) => void;
+  toggleAutoProgress: () => void;
 }
 
-export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice> = (set) => ({
-  combatStats: DEFAULT_STATE.combatStats,
-  combatSettings: DEFAULT_STATE.combatSettings,
-
-  updateCombatSettings: (settings) => set((state: FullStoreState) => ({
-    combatSettings: { ...state.combatSettings, ...settings }
-  })),
-
-  toggleAutoProgress: () => set((state: FullStoreState) => ({
-    combatSettings: { ...state.combatSettings, autoProgress: !state.combatSettings.autoProgress }
-  })),
-
-  startCombat: (mapId) => set((state: FullStoreState) => {
+export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice> = (set, get) => ({
+  
+  startCombat: (mapId: number) => {
     const map = COMBAT_DATA.find(m => m.id === mapId);
-    if (!map) return {};
-    
-    // KORJAUS: Käytetään emitEventiä notification-olion sijaan
-    if (map.keyRequired && (state.inventory[map.keyRequired] || 0) <= 0) {
-      state.emitEvent('warning', `Access Denied: Requires ${map.keyRequired}`, "/assets/items/bosskey/bosskey_w1.png");
-      return {};
-    }
+    if (!map) return;
 
-    const enemyStats = getEnemyStats({ hp: map.enemyHp, attack: map.enemyAttack }, map.id);
-    
-    // KORJAUS: Lisätty progress ja targetTime ActiveAction-tyyppiin sopivaksi
-    return {
-      activeAction: { 
-        skill: 'combat', 
-        resourceId: mapId.toString(),
-        progress: 0,
-        targetTime: 0 // Combat ei käytä tätä, mutta tyyppi vaatii sen
-      },
+    const newEnemy: Enemy = {
+      id: `enemy_${map.id}_${Date.now()}`,
+      name: map.enemyName,
+      icon: map.image || '',
+      maxHp: map.enemyHp,
+      currentHp: map.enemyHp,
+      level: map.id,
+      attack: map.enemyAttack,
+      defense: Math.floor(map.enemyAttack * 0.1),
+      xpReward: map.xpReward
+    };
+
+    set({
+      activeAction: { skill: 'combat', resourceId: mapId.toString(), progress: 0, targetTime: 0 },
+      enemy: newEnemy,
       combatStats: { 
-        ...state.combatStats, 
+        ...get().combatStats, 
         currentMapId: mapId, 
-        enemyCurrentHp: enemyStats.hp, 
-        hp: state.combatStats.hp > 0 ? state.combatStats.hp : (state.skills.hitpoints.level * 10), 
-        respawnTimer: 0, 
-        foodTimer: 0, 
-        combatLog: [] 
+        enemyCurrentHp: map.enemyHp, 
+        respawnTimer: 0,
+        hp: get().combatStats.hp > 0 ? get().combatStats.hp : get().skills.hitpoints.level * 10
       }
-    } as Partial<FullStoreState>;
+    });
+  },
+
+  processCombatTick: () => {
+    const currentState = get() as unknown as GameState;
+    const updates = calculateCombatSystem(currentState, 100);
+
+    if (Object.keys(updates).length > 0) {
+      const nextState: Partial<FullStoreState> = { ...updates };
+      const nextStats = updates.combatStats || get().combatStats;
+
+      if (nextStats.respawnTimer > 0) {
+        nextState.enemy = null;
+      } else if (nextStats.enemyCurrentHp > 0 && !get().enemy) {
+        const map = COMBAT_DATA.find(m => m.id === nextStats.currentMapId);
+        if (map) {
+          nextState.enemy = {
+            id: `enemy_${map.id}_${Date.now()}`,
+            name: map.enemyName,
+            icon: map.image || '',
+            maxHp: map.enemyHp,
+            currentHp: nextStats.enemyCurrentHp,
+            level: map.id,
+            attack: map.enemyAttack,
+            defense: Math.floor(map.enemyAttack * 0.1),
+            xpReward: map.xpReward
+          };
+        }
+      }
+
+      set(nextState);
+    }
+  },
+
+  stopCombat: () => set({ 
+    activeAction: null, 
+    enemy: null, 
+    combatStats: { ...get().combatStats, currentMapId: null, enemyCurrentHp: 0, respawnTimer: 0 }
   }),
 
-  stopCombat: () => set(() => ({
-    activeAction: null,
-    combatStats: { ...DEFAULT_STATE.combatStats, currentMapId: null }
-  })),
+  toggleAutoProgress: () => set({ 
+    combatSettings: { ...get().combatSettings, autoProgress: !get().combatSettings.autoProgress }
+  }),
+
+  addCombatLog: (message: string) => set({ 
+    combatStats: { ...get().combatStats, combatLog: [message, ...get().combatStats.combatLog].slice(0, 20) }
+  })
 });

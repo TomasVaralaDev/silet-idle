@@ -1,30 +1,33 @@
 import { useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
+import type { FullStoreState } from '../store/useGameStore'; 
 import { processSkillTick } from '../systems/skillSystem';
 import { processCombatTick } from '../systems/combatSystem';
+import type { GameState } from '../types';
 
 export const useGameEngine = () => {
   const setState = useGameStore((s) => s.setState);
 
   useEffect(() => {
-    const TICK_RATE = 100; // 10 kertaa sekunnissa
+    const TICK_RATE = 1000; // 100ms syke
 
     const interval = setInterval(() => {
-      setState((state) => {
+      // Käytetään FullStoreState-tyyppiä, koska setState antaa sen meille
+      setState((state: FullStoreState) => {
         if (!state.activeAction) return {};
 
-        let updates = {};
+        // Systeemit palauttavat Partial<GameState>, joka on Partial<FullStoreState> ali-joukko
+        let updates: Partial<GameState> = {};
 
-        // Jos taistelu
         if (state.activeAction.skill === 'combat') {
-          updates = processCombatTick(state); // Combat-systeemi hoitaa omat sisäiset ajastimensa
-        } 
-        // Jos taito (Woodcutting, jne)
-        else {
-          updates = processSkillTick(state, TICK_RATE);
+          // state as unknown as GameState irrottaa actionit datasta laskennan ajaksi
+          updates = processCombatTick(state as unknown as GameState, TICK_RATE);
+        } else {
+          updates = processSkillTick(state as unknown as GameState, TICK_RATE);
         }
 
-        return updates;
+        // Palautetaan päivitykset (Zustand mergaa nämä automaattisesti)
+        return updates as Partial<FullStoreState>;
       });
     }, TICK_RATE);
 

@@ -28,12 +28,30 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   };
 
   const extendedStats = combatStats as ExtendedCombatState;
+  const newInventory = { ...inventory };
 
-  // --- RESPAWN ---
+  // --- RESPAWN JA AVAIMEN KULUTUS ---
   if (combatStats.respawnTimer > 0) {
     const nextTimer = Math.max(0, combatStats.respawnTimer - tickMs);
+    
     if (nextTimer === 0) {
       const currentMapNow = COMBAT_DATA.find(m => m.id === combatStats.currentMapId) || map;
+
+      // Jos tappelet Bossia uudestaan, tarkista ja vie uusi avain
+      if (currentMapNow.isBoss && currentMapNow.keyRequired) {
+        const keyCount = newInventory[currentMapNow.keyRequired] || 0;
+        if (keyCount < 1) {
+          addLog(`Out of keys! Combat stopped.`);
+          return {
+            activeAction: null,
+            enemy: null,
+            combatStats: { ...combatStats, currentMapId: null, respawnTimer: 0, combatLog: currentLog }
+          };
+        }
+        newInventory[currentMapNow.keyRequired]--;
+        addLog(`Used 1x ${getItemDetails(currentMapNow.keyRequired)?.name || 'Boss Key'}`);
+      }
+
       const enemyStats = getEnemyStats({ hp: currentMapNow.enemyHp, attack: currentMapNow.enemyAttack }, currentMapNow.id);
       
       const newEnemy: Enemy = {
@@ -49,6 +67,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
       };
 
       return {
+        inventory: newInventory,
         enemy: newEnemy,
         combatStats: { ...combatStats, respawnTimer: 0, enemyCurrentHp: enemyStats.hp, attackTimer: 1000, combatLog: currentLog } as ExtendedCombatState
       };
@@ -66,7 +85,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   attackTimer = 1000;
   let currentEnemyHp = combatStats.enemyCurrentHp;
   let currentHp = combatStats.hp;
-  const newInventory = { ...inventory };
   const newSkills = { ...skills };
 
   if (currentEnemyHp <= 0) return { combatStats: { ...combatStats, respawnTimer: 2000, enemyCurrentHp: 0 } as ExtendedCombatState };
@@ -91,7 +109,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
   addLog(`Hit ${map.enemyName}: ${playerHit.finalDamage}${playerHit.isCrit ? " (CRIT!)" : ""}`);
 
-  // --- VICTORY & LOOT ---
+  // --- VICTORY & AUTO-PROGRESS AVAIMELLA ---
   if (currentEnemyHp <= 0) {
     addLog(`Victory!`);
     
@@ -103,27 +121,33 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
       newSkills[s] = { level: res.level, xp: res.xp };
     });
 
-    // --- LOOT ROLL ---
-    // Tarkistetaan lootit suoraan mapista (joka nyt hakee ne WORLD_LOOT:ista)
+    // Loot
     const dropResult = rollWeightedDrop(map.drops);
-    
     if (dropResult) {
       const { itemId, amount } = dropResult;
       newInventory[itemId] = (newInventory[itemId] || 0) + amount;
-      
-      const itemDetails = getItemDetails(itemId);
-      addLog(`Loot: ${amount}x ${itemDetails?.name || itemId}`);
+      addLog(`Loot: ${amount}x ${getItemDetails(itemId)?.name || itemId}`);
     }
 
-    // Progress
     const newMaxMapCompleted = Math.max(combatStats.maxMapCompleted, map.id);
     let nextMapId = combatStats.currentMapId;
     
     if (combatSettings.autoProgress) {
       const nextMap = COMBAT_DATA.find(m => m.id === map.id + 1);
       if (nextMap) {
-        nextMapId = nextMap.id;
-        addLog(`Auto-advancing to ${nextMap.name}...`);
+        // TARKISTETAAN AVAIN AUTO-PROGRESSIA VARTEN
+        const hasKey = !nextMap.keyRequired || (newInventory[nextMap.keyRequired] || 0) > 0;
+        
+        if (nextMap.isBoss && !hasKey) {
+            addLog(`Stopped: ${getItemDetails(nextMap.keyRequired || '')?.name || 'Key'} required!`);
+        } else {
+            // Jos siirrytään bossiin, kulutetaan sen avain heti
+            if (nextMap.isBoss && nextMap.keyRequired) {
+                newInventory[nextMap.keyRequired]--;
+                addLog(`Auto-advancing: Used 1x ${getItemDetails(nextMap.keyRequired)?.name}`);
+            }
+            nextMapId = nextMap.id;
+        }
       }
     }
 

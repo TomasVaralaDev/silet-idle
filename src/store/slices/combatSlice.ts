@@ -13,7 +13,6 @@ export interface CombatSlice {
   updateCombatSettings: (settings: Partial<CombatSettings>) => void;
 }
 
-// Määritellään paikallinen laajennus, jos attackTimer puuttuu perustyypistä
 type ExtendedCombatState = CombatState & { attackTimer?: number };
 
 export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice> = (set, get) => ({
@@ -21,6 +20,22 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
   startCombat: (mapId: number) => {
     const map = COMBAT_DATA.find(m => m.id === mapId);
     if (!map) return;
+
+    // --- BOSS AVAIN TARKISTUS JA KULUTUS ---
+    if (map.isBoss && map.keyRequired) {
+      const currentInventory = get().inventory;
+      const keyCount = currentInventory[map.keyRequired] || 0;
+      
+      if (keyCount < 1) return; // UI pitäisi estää tämä, mutta varmistus
+
+      // Kulutetaan avain heti aloituksessa
+      set((state) => ({
+        inventory: {
+          ...state.inventory,
+          [map.keyRequired!]: keyCount - 1
+        }
+      }));
+    }
 
     const newEnemy: Enemy = {
       id: `enemy_${map.id}_${Date.now()}`,
@@ -34,7 +49,6 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
       xpReward: map.xpReward
     };
 
-    // Luodaan uusi stats-objekti
     const currentStats = get().combatStats;
     const newStats: ExtendedCombatState = {
       ...currentStats,
@@ -48,15 +62,12 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
     set({
       activeAction: { skill: 'combat', resourceId: mapId.toString(), progress: 0, targetTime: 0 },
       enemy: newEnemy,
-      // KORJAUS: Käytetään 'as unknown as CombatState' jos ExtendedCombatState ei kelpaa suoraan,
-      // mutta tämä on turvallinen tapa kiertää 'any'-kielto.
       combatStats: newStats as unknown as CombatState
     });
   },
 
   processCombatTick: () => {
     const currentState = get() as unknown as GameState;
-    // Käytetään 100ms aikaleimaa
     const updates = calculateCombatSystem(currentState, 100);
 
     if (Object.keys(updates).length > 0) {

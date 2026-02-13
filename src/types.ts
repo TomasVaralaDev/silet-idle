@@ -1,4 +1,6 @@
-import type { Rarity } from './utils/rarity';
+// Määritellään Rarity tässä, jotta ei tule riippuvuusongelmia
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
 export type SkillType = 
   | 'woodcutting' | 'mining' | 'fishing' | 'farming' 
   | 'crafting' | 'smithing' | 'cooking' 
@@ -24,6 +26,7 @@ export interface ActiveAction {
   resourceId: string;
 }
 
+// Tämä on Storen tila (State)
 export interface CombatState {
   hp: number;
   currentMapId: number | null;
@@ -31,8 +34,15 @@ export interface CombatState {
   enemyCurrentHp: number;
   respawnTimer: number;
   foodTimer: number;
-  maxHp?: number; 
-  combatLog?: string[]; // <--- LISÄÄ TÄMÄ
+  combatLog: string[]; // Logi on string-taulukko
+}
+
+// Tämä on laskennallinen data (Stats)
+export interface CombatStats {
+  attackDamage: number;
+  armor: number;
+  attackSpeed: number;
+  hp: number; // Max HP
 }
 
 export interface Ingredient {
@@ -40,43 +50,46 @@ export interface Ingredient {
   count: number;
 }
 
+// Yhdistetty ja laajennettu Resource-tyyppi kattamaan kaikki tarpeet
 export interface Resource {
   id: string;
   name: string;
-  rarity?: Rarity;
-  levelRequired: number;
-  xpReward: number;
-  interval: number; // ms
-  value: number;
+  actionImage?: string;
   icon: string;
-  color: string;
+  value: number;
+  rarity: Rarity;
+  
+  // Optional / Context specific
+  color?: string;
   description?: string;
-  actionImage?: string; 
-  inputs?: Ingredient[];
-  slot?: EquipmentSlot;
+  category?: string;       // Esim. "Food", "Weapon"
+  level?: number;          // Level required (SkillView)
+  xpReward?: number;       // XP gain (SkillView)
+  interval?: number;       // Time in ms (SkillView)
+  area?: number;           // Area requirement (SkillView: "requiresMapCompletion")
+  inputs?: Ingredient[];   // Crafting inputs
+  
+  // Equipment / Combat props
+  slot?: EquipmentSlot;    
   stats?: {
     attack?: number;
     defense?: number;
     strength?: number;
   };
-  healing?: number;
   combatStyle?: CombatStyle; 
-  requiresMapCompletion?: number; 
-  category?: string;
+  healing?: number;        // Food healing amount
 }
 
-// Tämä on vihollisten omille dropeille (prosenttiperustainen)
 export interface Drop {
   itemId: string;
   chance: number; // 0.0 - 1.0
   amount: [number, number]; 
 }
 
-// UUSI: Tämä on World Loottia varten (painoperustainen)
 export interface WeightedDrop {
   itemId: string;
-  weight: number; // Esim. 1000, 500, 10
-  amount: [number, number]; 
+  weight: number; 
+  amount?: [number, number]; // Tehty valinnaiseksi, oletus 1
 }
 
 export interface CombatMap {
@@ -87,7 +100,7 @@ export interface CombatMap {
   enemyHp: number;
   enemyAttack: number;
   xpReward: number;
-  drops: Drop[]; // Vihollisen omat dropit
+  drops: Drop[]; 
   isBoss?: boolean;
   keyRequired?: string; 
   image?: string; 
@@ -96,11 +109,11 @@ export interface CombatMap {
 export interface ShopItem {
   id: string;
   name: string;
-  cost: number;
-  multiplier: number; 
-  skill: SkillType;
-  icon: string;
   description: string;
+  price: number;     // Varmista että tämä on price, ei cost
+  category: string;
+  icon: string;
+  requires?: string; // Lisää tämä valinnaisena
 }
 
 export interface Achievement {
@@ -129,17 +142,17 @@ export interface CombatSettings {
   autoProgress: boolean;    
 }
 
-export interface WeightedDrop {
-  itemId: string;
-  weight: number;
-  amount: [number, number];
+export interface SkillData {
+  xp: number;
+  level: number;
 }
 
+// PÄÄTILA (STORE)
 export interface GameState {
   username: string; 
   settings: GameSettings;
   inventory: Record<string, number>;
-  skills: Record<SkillType, { xp: number, level: number }>;
+  skills: Record<SkillType, SkillData>;
   equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
   equippedFood: { itemId: string, count: number } | null;
   combatSettings: CombatSettings;
@@ -148,26 +161,13 @@ export interface GameState {
   coins: number;
   upgrades: string[]; 
   unlockedAchievements: string[];
-  combatStats: CombatState;
+  combatStats: CombatState; // Viittaa Storen tilaan
+  lastTimestamp: number;
 }
 
-// src/types.ts
-export interface CombatStats {
-  hp: number;
-  maxHp: number;
-  attackLevel: number;   // Force
-  strengthLevel: number; // Melee/Ranged/Magic Sys
-  defenseLevel: number;  // Shielding
-  attackDamage: number;  // Gear Bonus
-  armor: number;         // Gear Bonus
-  attackSpeed: number;
-  critChance: number;
-  critMultiplier: number;
-}
-
-// UUSI: Yhden iskun lopputulos
+// Combat Mechanics apu-interface
 export interface CombatResult {
   finalDamage: number;
   isCrit: boolean;
-  mitigationPercent: number; // Paljonko panssari torjui (0.0 - 1.0)
+  mitigationPercent: number; 
 }

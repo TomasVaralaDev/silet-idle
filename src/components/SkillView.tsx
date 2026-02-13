@@ -1,415 +1,147 @@
-import { useState } from 'react';
-import type { SkillType, ActiveAction, GameState, Resource, Ingredient } from '../types';
-import { GAME_DATA, getItemDetails } from '../data';
+import { useGameStore } from '../store/useGameStore';
+import { GAME_DATA } from '../data';
+import { getSpeedMultiplier } from '../utils/gameUtils';
+import type { SkillType, Resource, Ingredient } from '../types';
 
 interface SkillViewProps {
   skill: SkillType;
-  level: number;
-  xp: number;
-  activeAction: ActiveAction | null;
-  inventory: GameState['inventory'];
-  onToggleAction: (skill: SkillType, resourceId: string) => void;
-  speedMultiplier: number;
-  nextLevelXp: number;
-  maxMapCompleted: number;
 }
 
-export default function SkillView({ skill, level, xp, activeAction, inventory, onToggleAction, speedMultiplier, nextLevelXp, maxMapCompleted }: SkillViewProps) {
-  
-  // Tila Foundry-tabeille (Smithing)
-  const [smithingMode, setSmithingMode] = useState<'smelting' | 'forging' | 'shields' | 'rings'>('smelting');
-  
-  // Tila Assembly-tabeille (Crafting) - PÄIVITETTY: Lisätty swords, bows, staffs
-  const [assemblyMode, setAssemblyMode] = useState<'refining' | 'swords' | 'bows' | 'staffs' | 'jewelry'>('refining');
-  
-  const [searchQuery, setSearchQuery] = useState('');
+type ResourceSkillType = Exclude<SkillType, 'hitpoints' | 'attack' | 'defense' | 'melee' | 'ranged' | 'magic' | 'combat' | 'scavenging'>;
 
-  const getSkillName = (s: SkillType) => {
-    switch(s) {
-      case 'woodcutting': return 'Excavation Protocol';
-      case 'mining': return 'Salvage Operations';
-      case 'fishing': return 'Gathering Systems';
-      case 'farming': return 'Bio-Cultivation';
-      case 'crafting': return 'Assembly Protocol';
-      case 'smithing': return 'Foundry Protocol';
-      case 'cooking': return 'Energy Refining';
-      default: return 'Unknown Protocol';
-    }
-  };
+export default function SkillView({ skill }: SkillViewProps) {
+  const skillData = useGameStore(state => state.skills[skill]);
+  const inventory = useGameStore(state => state.inventory);
+  const activeAction = useGameStore(state => state.activeAction);
+  const upgrades = useGameStore(state => state.upgrades);
+  const maxMapCompleted = useGameStore(state => state.combatStats.maxMapCompleted);
+  const toggleAction = useGameStore(state => state.toggleAction);
 
-  const getThemeColors = (s: SkillType) => {
-    switch (s) {
-      case 'woodcutting': return { bg: 'bg-emerald-900', border: 'border-emerald-800', text: 'text-emerald-400' };
-      case 'mining': return { bg: 'bg-amber-900', border: 'border-amber-800', text: 'text-amber-400' };
-      case 'fishing': return { bg: 'bg-cyan-900', border: 'border-cyan-800', text: 'text-cyan-400' };
-      case 'farming': return { bg: 'bg-lime-900', border: 'border-lime-800', text: 'text-lime-400' };
-      case 'crafting': return { bg: 'bg-amber-900/60', border: 'border-amber-700', text: 'text-amber-200' };
-      case 'smithing': return { bg: 'bg-red-950', border: 'border-red-800', text: 'text-red-400' };
-      case 'cooking': return { bg: 'bg-orange-900', border: 'border-orange-800', text: 'text-orange-400' };
-      default: return { bg: 'bg-slate-800', border: 'border-slate-700', text: 'text-slate-400' };
-    }
-  };
+  const currentSpeedMult = getSpeedMultiplier(skill, upgrades);
+  const nextLevelXp = skillData.level * 150;
+  const progress = Math.min(100, Math.max(0, (skillData.xp / nextLevelXp) * 100));
 
-  const isResourceSkill = (s: string): s is keyof typeof GAME_DATA => {
-    return s in GAME_DATA;
-  };
-
-  if (!isResourceSkill(skill)) {
-    return (
-      <div className="p-10 text-center text-slate-500 font-mono text-sm uppercase tracking-widest">
-        // Protocol Mismatch: Combat System Required //
-      </div>
-    );
+  if (['hitpoints', 'attack', 'defense', 'melee', 'ranged', 'magic', 'combat', 'scavenging'].includes(skill)) {
+    return <div className="p-6 text-slate-500 font-mono text-sm">Combat protocols are managed via Stabilization Systems.</div>;
   }
 
-  const theme = getThemeColors(skill);
-  const resources = GAME_DATA[skill];
-
-  const filteredResources = resources.filter((resource: Resource) => {
-    // 1. Hakufiltteri
-    const matchesSearch = resource.name.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
-
-    // 2. Smithing Tabit (Foundry)
-    if (skill === 'smithing') {
-      if (smithingMode === 'smelting') return resource.id.includes('_smelted');
-      if (smithingMode === 'forging') return resource.category === 'armor';
-      if (smithingMode === 'shields') return resource.category === 'shields';
-      if (smithingMode === 'rings') return resource.category === 'rings';
-    }
-
-    // 3. Crafting Tabit (Assembly) - PÄIVITETTY LOGIIKKA
-    if (skill === 'crafting') {
-      if (assemblyMode === 'refining') return resource.category === 'wood_refining';
-      // Oletetaan että miekat ovat kategoriassa 'weapons' tai 'swords'. 
-      // Aiemmassa datassa ne olivat 'weapons', joten käytetään sitä tai molempia.
-      if (assemblyMode === 'swords') return resource.category === 'weapons' || resource.category === 'swords';
-      if (assemblyMode === 'bows') return resource.category === 'bows';
-      if (assemblyMode === 'staffs') return resource.category === 'staffs';
-      if (assemblyMode === 'jewelry') return resource.category === 'jewelry';
-    }
-
-    return true;
-  });
+  const resources = GAME_DATA[skill as ResourceSkillType] || [];
 
   return (
-    <div className="p-6 h-full flex flex-col bg-slate-950 overflow-y-auto custom-scrollbar">
+    <div className="p-4 sm:p-6 h-full bg-slate-950 text-slate-200 overflow-y-auto custom-scrollbar">
       
       {/* HEADER */}
-      <header className="mb-8 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0">
-        <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none grayscale">
-           <img src={`/assets/skills/${skill}.png`} className="w-32 h-32 pixelated" alt="Background Icon" />
-        </div>
-        
-        <div className="flex justify-between items-end mb-5 relative z-10">
-          <div className="flex items-center gap-5">
-            <div className={`w-16 h-16 flex items-center justify-center bg-slate-950 rounded-xl border-2 ${theme.border} shadow-lg`}>
-               <img src={`/assets/skills/${skill}.png`} className="w-10 h-10 pixelated drop-shadow-md" alt={skill} />
-            </div>
-            <div>
-              <h2 className={`text-2xl font-bold uppercase tracking-widest ${theme.text} mb-1`}>
-                {getSkillName(skill)}
-              </h2>
-              <p className="text-xs text-slate-500 font-mono tracking-widest uppercase font-bold">System Stability: Lv.{level}</p>
+      <div className="flex items-center justify-between mb-6 bg-slate-900/50 p-5 rounded-xl border border-slate-800 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-slate-950 rounded-lg flex items-center justify-center border border-slate-800 shadow-inner">
+             <img src={`/assets/skills/${skill}.png`} alt={skill} className="w-9 h-9 pixelated opacity-90" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold capitalize text-white tracking-widest">{skill}</h2>
+            <div className="text-xs text-slate-500 font-mono flex items-center gap-3 mt-1">
+              <span className="text-emerald-500 font-bold">LEVEL {skillData.level}</span>
+              <span className="opacity-50">|</span>
+              <span>{Math.floor(skillData.xp).toLocaleString()} / {nextLevelXp.toLocaleString()} XP</span>
             </div>
           </div>
-          
-          <div className="text-right">
-            <div className="text-[10px] text-slate-500 font-mono font-bold mb-1">PROGRESS TO NEXT TIER</div>
-            <div className={`text-xl font-mono ${theme.text}`}>{Math.floor(xp)} / {nextLevelXp}</div>
-          </div>
         </div>
-
-        <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
-          <div className={`h-full transition-all duration-300 ${theme.bg} opacity-90`} style={{ width: `${(xp / nextLevelXp) * 100}%` }}></div>
-        </div>
-
-        {speedMultiplier < 1 && (
-          <div className="mt-4 flex items-center gap-2 text-xs text-emerald-400 font-mono uppercase bg-emerald-950/30 w-fit px-3 py-1 rounded-lg border border-emerald-900/50">
-            <span className="animate-pulse">●</span> 
-            Overclocking Active: +{Math.round((1 - speedMultiplier) * 100)}% Speed
-          </div>
-        )}
-      </header>
-
-      {/* CONTROLS */}
-      <div className="flex flex-col sm:flex-row justify-between items-end mb-6 gap-4 border-b border-slate-800 pb-2">
         
-        {/* SMITHING TABS */}
-        {skill === 'smithing' ? (
-          <div className="flex gap-2 overflow-x-auto pb-1 max-w-full">
-            <button
-              onClick={() => setSmithingMode('smelting')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${smithingMode === 'smelting' 
-                  ? 'bg-red-900/40 text-red-200 border-t-2 border-x border-red-700/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>🔥</span> Smelting
-            </button>
-            <button
-              onClick={() => setSmithingMode('forging')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${smithingMode === 'forging' 
-                  ? 'bg-slate-700/40 text-slate-200 border-t-2 border-x border-slate-500/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>⚒️</span> Forging
-            </button>
-            <button
-              onClick={() => setSmithingMode('shields')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${smithingMode === 'shields' 
-                  ? 'bg-orange-900/40 text-orange-200 border-t-2 border-x border-orange-700/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>🛡️</span> Shields
-            </button>
-            <button
-              onClick={() => setSmithingMode('rings')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${smithingMode === 'rings' 
-                  ? 'bg-indigo-900/40 text-indigo-200 border-t-2 border-x border-indigo-700/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>💍</span> Rings
-            </button>
+        <div className="hidden sm:block w-48">
+          <div className="flex justify-between text-[10px] uppercase font-black text-slate-500 mb-1.5 tracking-tighter">
+            <span>Sync Progress</span>
+            <span>{progress.toFixed(1)}%</span>
           </div>
-        ) 
-        // CRAFTING (ASSEMBLY) TABS - PÄIVITETTY
-        : skill === 'crafting' ? (
-          <div className="flex gap-2 overflow-x-auto pb-1 max-w-full">
-            <button
-              onClick={() => setAssemblyMode('refining')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${assemblyMode === 'refining' 
-                  ? 'bg-amber-900/40 text-amber-200 border-t-2 border-x border-amber-700/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>🪚</span> Refining
-            </button>
-            <button
-              onClick={() => setAssemblyMode('swords')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${assemblyMode === 'swords' 
-                  ? 'bg-slate-700/40 text-slate-200 border-t-2 border-x border-slate-500/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>🗡️</span> Swords
-            </button>
-            <button
-              onClick={() => setAssemblyMode('bows')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${assemblyMode === 'bows' 
-                  ? 'bg-emerald-900/40 text-emerald-200 border-t-2 border-x border-emerald-700/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>🏹</span> Bows
-            </button>
-            <button
-              onClick={() => setAssemblyMode('staffs')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${assemblyMode === 'staffs' 
-                  ? 'bg-blue-900/40 text-blue-200 border-t-2 border-x border-blue-700/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>🪄</span> Staffs
-            </button>
-            <button
-              onClick={() => setAssemblyMode('jewelry')}
-              className={`px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-t-lg flex items-center gap-2 whitespace-nowrap
-                ${assemblyMode === 'jewelry' 
-                  ? 'bg-purple-900/40 text-purple-200 border-t-2 border-x border-purple-700/50' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
-                }`}
-            >
-              <span>💎</span> Jewelry
-            </button>
+          <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
+            <div className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-500" style={{ width: `${progress}%` }}></div>
           </div>
-        ) : (
-          <div className="text-xs text-slate-500 font-mono uppercase tracking-widest py-2">
-            Available Operations
-          </div>
-        )}
-
-        <div className="relative w-full sm:w-64">
-          <input 
-            type="text" 
-            placeholder="Search protocols..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 text-xs text-slate-200 placeholder-slate-600 rounded-lg px-3 py-2 outline-none focus:border-cyan-500/50 focus:bg-slate-800 transition-all font-mono"
-          />
-          <span className="absolute right-3 top-2 text-slate-600 text-xs">🔍</span>
         </div>
       </div>
 
-      {/* GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5 pb-10">
-        {filteredResources.length === 0 && (
-          <div className="col-span-full py-12 text-center border border-slate-800 rounded-xl bg-slate-900/50 border-dashed">
-            <p className="text-slate-500 text-sm font-mono uppercase tracking-wider">No protocols found in this sector.</p>
-          </div>
-        )}
-
-        {filteredResources.map((resource: Resource) => {
-          const isLevelLocked = level < resource.levelRequired;
-          const isMapLocked = resource.requiresMapCompletion ? maxMapCompleted < resource.requiresMapCompletion : false;
-          const isActive = activeAction?.resourceId === resource.id;
-          const currentInterval = resource.interval * speedMultiplier;
-          const canAfford = resource.inputs ? resource.inputs.every((req: Ingredient) => (inventory[req.id] || 0) >= req.count) : true;
-          const isLocked = isLevelLocked || isMapLocked;
+      {/* RESOURCES GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {resources.map((resource: Resource) => {
+          const isActive = activeAction?.skill === skill && activeAction?.resourceId === resource.id;
+          const hasLevel = skillData.level >= (resource.level || 1);
           
-          const lockedText = isMapLocked 
-             ? `REQ: ZONE ${resource.requiresMapCompletion}` 
-             : `REQ: LVL ${resource.levelRequired}`;
+          // KORJAUS: Lasketaan intervalli jakolaskulla (sama kuin useSkillLoopissa)
+          const baseInterval = resource.interval || 3000;
+          const intervalSeconds = Math.max(0.2, baseInterval / currentSpeedMult) / 1000;
+          
+          let canAfford = true;
+          if (resource.inputs) {
+            canAfford = resource.inputs.every((req: Ingredient) => (inventory[req.id] || 0) >= req.count);
+          }
 
-          // Use actionImage if available (for Trees), otherwise standard icon
-          const displayImage = resource.actionImage || resource.icon;
+          const areaReq = resource.area ? (resource.area - 1) * 10 : 0;
+          const areaUnlocked = maxMapCompleted >= areaReq;
+
+          if (!hasLevel || !areaUnlocked) {
+             return (
+               <div key={resource.id} className="bg-slate-900/20 border border-slate-800/40 rounded-lg p-5 opacity-40 grayscale flex flex-col items-center justify-center min-h-[120px] border-dashed">
+                  <span className="text-slate-600 font-bold text-[10px] uppercase tracking-widest">
+                    {!hasLevel ? `Requires Lvl ${resource.level}` : `Area Locked (Map ${areaReq})`}
+                  </span>
+               </div>
+             );
+          }
 
           return (
-            <div key={resource.id} className={`relative p-4 rounded-xl border-2 transition-all duration-200 group flex flex-col min-h-[220px]
-              ${isLocked 
-                ? 'bg-slate-950 border-slate-800 opacity-50 grayscale cursor-not-allowed' 
-                : isActive 
-                  ? `bg-slate-900 border-cyan-500/50 shadow-[0_0_20px_rgba(6,182,212,0.15)]` 
-                  : 'bg-slate-900 border-slate-800 hover:border-slate-600 hover:bg-slate-800/80'
-              }`}
+            <button
+              key={resource.id}
+              onClick={() => toggleAction(skill, resource.id)}
+              disabled={!canAfford && !isActive}
+              className={`relative p-5 rounded-lg border text-left transition-all duration-200 group overflow-hidden
+                ${isActive 
+                  ? 'bg-slate-800 border-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.1)]' 
+                  : !canAfford 
+                    ? 'bg-red-950/5 border-red-900/20 opacity-60 cursor-not-allowed'
+                    : 'bg-slate-900 border-slate-800 hover:border-slate-600 hover:bg-slate-800/50'
+                }
+              `}
             >
-              <div className="flex gap-5 mb-4 flex-1">
-                
-                {/* --- LEFT: BIG ACTION IMAGE --- */}
-                <div className="flex-shrink-0">
-                  <div className="w-24 h-24 bg-slate-950 rounded-xl border border-slate-700 shadow-inner flex items-center justify-center relative overflow-hidden">
-                    <img src={displayImage} alt={resource.name} className="w-20 h-20 pixelated drop-shadow-xl object-contain transition-transform duration-500 group-hover:scale-110" />
-                  </div>
-                </div>
-
-                {/* --- RIGHT: CONTENT --- */}
-                <div className="flex-1 flex flex-col justify-between">
-                  
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide leading-tight mb-1">{resource.name}</h3>
-                    <p className="text-xs text-slate-500 leading-snug italic mb-3">"{resource.description}"</p>
-                    
-                    {/* Effects / Stats Tags */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                        {resource.stats?.attack && <span className="text-[10px] font-bold text-orange-400 bg-orange-950/40 px-2 py-0.5 rounded border border-orange-900/50">FORCE +{resource.stats.attack}</span>}
-                        {resource.stats?.defense && <span className="text-[10px] font-bold text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/50">SHIELD +{resource.stats.defense}</span>}
-                        {resource.healing && <span className="text-[10px] font-bold text-green-400 bg-green-950/40 px-2 py-0.5 rounded border border-green-900/50">REPAIR +{resource.healing}</span>}
-                    </div>
-
-                    {/* Requirements */}
-                    {resource.inputs && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {resource.inputs.map((input: Ingredient) => {
-                           const inputItem = getItemDetails(input.id);
-                           const hasEnough = (inventory[input.id] || 0) >= input.count;
-                           return (
-                             <div 
-                               key={input.id} 
-                               className={`relative group/item flex items-center gap-2 px-3 py-1.5 rounded-md border-2 cursor-help transition-colors
-                                 ${hasEnough 
-                                   ? 'bg-slate-950/50 border-slate-700 text-slate-300 hover:border-slate-500' 
-                                   : 'bg-red-950/20 border-red-900/50 text-red-400 hover:border-red-800'
-                                 }`}
-                             >
-                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/item:block bg-slate-900 text-slate-200 text-xs px-2 py-1 rounded border border-slate-600 shadow-xl z-50 whitespace-nowrap">
-                                 {inputItem?.name}
-                                 <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-600"></div>
-                               </div>
-
-                               {inputItem && <img src={inputItem.icon} className="w-5 h-5 pixelated drop-shadow-md" alt="mat" />}
-                               <span className="text-xs font-mono font-bold">
-                                 {inventory[input.id] || 0}/{input.count}
-                               </span>
-                             </div>
-                           );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* --- STATS --- */}
-                  <div className="grid grid-cols-3 gap-2 mt-auto">
-                    
-                    <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
-                      <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Time</span>
-                      <span className="text-xs font-mono font-bold text-slate-300">
-                        {isLocked ? '--' : `${(currentInterval / 1000).toFixed(1)}s`}
-                      </span>
-                    </div>
-
-                    <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
-                      <span className="text-[8px] font-bold text-cyan-700 uppercase tracking-wider mb-0.5">Exp</span>
-                      <span className="text-xs font-mono font-bold text-cyan-400">+{resource.xpReward}</span>
-                    </div>
-
-                    <div className="bg-slate-950 border border-slate-800 rounded px-2 py-1.5 flex flex-col items-center justify-center text-center">
-                      <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Out</span>
-                      <div className="flex items-center gap-1">
-                        {/* Always use icon for output */}
-                        <img src={resource.icon} className="w-4 h-4 pixelated" alt="Out" />
-                        <span className="text-xs font-bold text-slate-300">1x</span>
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="mt-auto">
-                <button 
-                  disabled={isLocked || (resource.inputs && !canAfford && !isActive)} 
-                  onClick={() => onToggleAction(skill, resource.id)} 
-                  className={`w-full py-3 text-xs font-bold uppercase tracking-[0.15em] transition-all rounded-lg border-2
-                    ${isActive 
-                      ? 'bg-red-950/30 text-red-400 border-red-500/50 hover:bg-red-900/50' 
-                      : isLocked 
-                        ? 'bg-transparent text-slate-600 border-slate-800' 
-                        : !canAfford && resource.inputs
-                          ? 'bg-transparent text-slate-500 border-slate-700'
-                          : 'bg-slate-900 text-cyan-400 border-cyan-800 hover:bg-cyan-950 hover:border-cyan-500 hover:text-cyan-100 shadow-lg'
-                    }`}
-                >
-                  {isActive ? 'TERMINATE PROCESS' : isLocked ? lockedText : (resource.inputs && !canAfford) ? 'INSUFFICIENT MATTER' : 'INITIATE PROCESS'}
-                </button>
-              </div>
-              
-              {/* Active Animation Bar - FIXED */}
+              {/* PROGRESS BAR ANIMATION */}
               {isActive && (
-                <div className="absolute bottom-0 left-0 w-full h-1.5 bg-slate-900 rounded-b-xl overflow-hidden z-20">
-                   <div 
-                     className={`h-full ${theme.bg} origin-left`} 
-                     style={{ 
-                       width: '100%',
-                       animation: `progress ${currentInterval}ms linear infinite` 
-                     }}
-                   ></div>
+                <div 
+                  className="absolute bottom-0 left-0 h-1 bg-emerald-500/50 z-10 animate-progress" 
+                  style={{ animationDuration: `${intervalSeconds * 1000}ms` }}
+                ></div>
+              )}
+
+              <div className="flex justify-between items-start mb-3 relative z-20">
+                <div className="flex items-center gap-4">
+                  <div className={`p-2 rounded bg-slate-950 border border-slate-800 transition-transform ${isActive ? 'scale-110' : ''}`}>
+                    <img src={resource.icon} alt={resource.name} className="w-10 h-10 pixelated object-contain" />
+                  </div>
+                  <div>
+                    <div className={`font-bold text-sm tracking-wide ${isActive ? 'text-emerald-400' : 'text-slate-200'}`}>{resource.name}</div>
+                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">{intervalSeconds.toFixed(2)}s cycle</div>
+                  </div>
+                </div>
+                <div className="text-[9px] font-black bg-emerald-500/10 px-2 py-1 rounded text-emerald-500 border border-emerald-500/20">
+                  +{resource.xpReward} XP
+                </div>
+              </div>
+
+              {resource.inputs && (
+                <div className="mt-4 pt-3 border-t border-slate-800/50">
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {resource.inputs.map((input: Ingredient) => {
+                      const hasEnough = (inventory[input.id] || 0) >= input.count;
+                      return (
+                        <div key={input.id} className={`text-[10px] font-mono flex items-center gap-1.5 ${hasEnough ? 'text-slate-400' : 'text-red-500'}`}>
+                          <span className="font-bold">{input.count}x</span>
+                          <span className="opacity-80">{input.id}</span> 
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
-
-      {/* --- ANIMATION KEYFRAMES --- */}
-      <style>{`
-        @keyframes progress {
-          from { transform: scaleX(0); }
-          to { transform: scaleX(1); }
-        }
-      `}</style>
     </div>
   );
 }

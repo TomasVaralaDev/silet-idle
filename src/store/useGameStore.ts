@@ -1,11 +1,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { GameState, GameEventType, GameEvent, Enemy } from '../types';
+import type { GameState, GameEventType, GameEvent, Enemy, RewardEntry } from '../types'; // Lisää RewardEntry
 import { createInventorySlice, type InventorySlice } from './slices/inventorySlice';
 import { createSkillSlice, type SkillSlice } from './slices/skillSlice';
 import { createCombatSlice, type CombatSlice } from './slices/combatSlice';
 import { createScavengerSlice, type ScavengerSlice } from './slices/scavengerSlice';
 import type { OfflineSummary } from '../systems/offlineSystem';
+
+// Määritellään RewardModal-tila
+interface RewardModalState {
+  isOpen: boolean;
+  title: string;
+  rewards: RewardEntry[];
+}
 
 /**
  * FullStoreState yhdistää datan, kaikki slicet ja globaalit funktiot.
@@ -17,10 +24,16 @@ export type FullStoreState = GameState &
   ScavengerSlice & {
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
+    rewardModal: RewardModalState; // UUSI: RewardModal-tila
+    
     setState: (updater: Partial<FullStoreState> | ((state: FullStoreState) => Partial<FullStoreState>)) => void;
     emitEvent: (type: GameEventType, message: string, icon?: string) => void;
     clearEvent: (id: string) => void;
     setOfflineSummary: (summary: OfflineSummary | null) => void;
+    
+    // UUDET: RewardModal-funktiot
+    openRewardModal: (title: string, rewards: RewardEntry[]) => void;
+    closeRewardModal: () => void;
 };
 
 /**
@@ -28,6 +41,7 @@ export type FullStoreState = GameState &
  */
 export const DEFAULT_STATE: GameState = {
   username: "Player",
+  avatar: "/assets/avatars/avatar_1.png",
   lastTimestamp: Date.now(),
   events: [],
   settings: { notifications: true, sound: true, music: true, particles: true },
@@ -71,6 +85,7 @@ export const useGameStore = create<FullStoreState>()(
       // 1. Perustila
       ...DEFAULT_STATE,
       offlineSummary: null,
+      rewardModal: { isOpen: false, title: '', rewards: [] }, // UUSI: Alustetaan rewardModal
 
       // 2. Slicet
       ...createInventorySlice(set, get, ...args),
@@ -98,6 +113,15 @@ export const useGameStore = create<FullStoreState>()(
         offlineSummary: summary 
       }),
       
+      // UUDET: RewardModal implementaatio
+      openRewardModal: (title, rewards) => set({ 
+        rewardModal: { isOpen: true, title, rewards } 
+      }),
+      
+      closeRewardModal: () => set({ 
+        rewardModal: { isOpen: false, title: '', rewards: [] } 
+      }),
+      
       setState: (updater) => set((state: FullStoreState) => {
         const nextState = typeof updater === 'function' 
           ? updater(state) 
@@ -108,9 +132,7 @@ export const useGameStore = create<FullStoreState>()(
     { 
       name: 'ggez-idle-storage',
       
-      // KORJAUS 1: merge käyttää nyt 'unknown' tyyppiä 'any':n sijasta
       merge: (persistedState: unknown, currentState: FullStoreState) => {
-        // Tyyppimuunnos turvallisesti
         const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
 
         if (!typedPersisted) return currentState;
@@ -129,13 +151,16 @@ export const useGameStore = create<FullStoreState>()(
           },
           enemy: null,
           activeAction: typedPersisted.activeAction || null,
+          // Varmistetaan että rewardModal on aina alustettu (ei tarvitse persistoida)
+          rewardModal: { isOpen: false, title: '', rewards: [] }
         };
       },
 
-      // KORJAUS 2: Käytetään delete-operaattoria välttääksemme unused variable -virheen
       partialize: (state) => {
         const rest = { ...state };
+        // Poistetaan UI-tilat tallennuksesta
         delete (rest as Partial<FullStoreState>).offlineSummary; 
+        delete (rest as Partial<FullStoreState>).rewardModal; 
         return rest;
       }
     }

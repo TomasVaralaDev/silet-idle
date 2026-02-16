@@ -1,138 +1,117 @@
 import { useState } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
 
-interface UsernameModalProps {
-  onConfirm: (name: string) => void;
-  onLogout: () => void; // <--- UUSI PROP
+// Määritellään saatavilla olevat avatarit (nämä pitää löytyä assets-kansiosta)
+const AVAILABLE_AVATARS = [
+  { id: 1, src: '/assets/profilepics/profile_pic_1.png', name: 'Standard' },
+  { id: 2, src: '/assets/profilepics/profile_pic_2.png', name: 'Cyber' },
+  { id: 3, src: '/assets/profilepics/profile_pic_3.png', name: 'Rogue' },
+  { id: 4, src: '/assets/profilepics/profile_pic_4.png', name: 'Mage' },
+  { id: 5, src: '/assets/profilepics/profile_pic_5.png', name: 'Warrior' },
+  { id: 6, src: '/assets/profilepics/profile_pic_6.png', name: 'Construct' },
+];
+
+interface Props {
+  onConfirm: (name: string, avatar: string) => void;
+  onLogout: () => void;
 }
 
-export default function UsernameModal({ onConfirm, onLogout }: UsernameModalProps) {
-  const [inputName, setInputName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+export default function UsernameModal({ onConfirm, onLogout }: Props) {
+  const [name, setName] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState(AVAILABLE_AVATARS[0].src);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const name = inputName.trim();
-
-    // 1. Perusvalidointi
-    if (name.length < 3) {
-      setError("Username is too short (min 3 chars).");
-      setLoading(false);
+    if (!name.trim()) {
+      setError('Identity required');
       return;
     }
-    if (name.length > 15) {
-      setError("Username is too long (max 15 chars).");
-      setLoading(false);
+    if (name.length > 12) {
+      setError('Identity too long (max 12 chars)');
       return;
     }
-    if (!/^[a-zA-Z0-9_]+$/.test(name)) {
-      setError("Only letters, numbers, and underscores allowed.");
-      setLoading(false);
-      return;
-    }
-    if (name.toLowerCase() === "player" || name.toLowerCase() === "admin") {
-      setError("That name is reserved.");
-      setLoading(false);
-      return;
-    }
-
-    // 2. Tietokantatarkistus
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("username", "==", name));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        setError("Username is already taken.");
-        setLoading(false);
-        return;
-      }
-
-      onConfirm(name);
-      
-    } catch (err) {
-      console.error("Error checking username:", err);
-      // Jos virhe on permission-tyyppinen, annetaan selkeämpi ohje (dev-vaiheessa)
-      // @ts-expect-error: err type unknown
-      if (err.code === 'permission-denied') {
-         setError("Database permission error. Check Firebase Rules.");
-      } else {
-         setError("Network error. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    // Välitetään sekä nimi että valittu kuva
+    onConfirm(name.trim(), selectedAvatar);
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-      <div className="bg-slate-900 border-2 border-slate-700 rounded-xl p-8 w-full max-w-md shadow-2xl relative overflow-hidden">
-        
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600"></div>
+    <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 shadow-2xl w-full max-w-md relative overflow-hidden">
+      {/* Taustaefekti */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
 
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-slate-700 shadow-lg">
-            <span className="text-4xl animate-pulse">👋</span>
-          </div>
-          <h2 className="text-2xl font-bold text-white uppercase tracking-wider">Welcome, Hero</h2>
-          <p className="text-slate-400 text-sm mt-2">Identify yourself to access the system.</p>
+      <h2 className="text-2xl font-black uppercase tracking-widest text-center mb-1 text-slate-100">
+        Initialize Identity
+      </h2>
+      <p className="text-center text-slate-500 text-xs font-mono mb-6 uppercase tracking-wider">
+        Select your neural interface appearance
+      </p>
+
+      {/* AVATAR VALINTA */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        {AVAILABLE_AVATARS.map((avatar) => (
+          <button
+            key={avatar.id}
+            type="button"
+            onClick={() => setSelectedAvatar(avatar.src)}
+            className={`
+              relative group rounded-xl overflow-hidden border-2 transition-all duration-200 p-1
+              ${selectedAvatar === avatar.src 
+                ? 'border-cyan-500 bg-cyan-900/20 shadow-[0_0_15px_rgba(6,182,212,0.3)] scale-105' 
+                : 'border-slate-800 bg-slate-950/50 hover:border-slate-600 hover:bg-slate-900'
+              }
+            `}
+          >
+            <div className="aspect-square rounded-lg overflow-hidden bg-slate-900">
+              <img 
+                src={avatar.src} 
+                alt={avatar.name} 
+                className={`w-full h-full object-cover pixelated transition-opacity duration-300 ${selectedAvatar === avatar.src ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}
+                onError={(e) => { e.currentTarget.src = 'https://ui-avatars.com/api/?name=?&background=0f172a&color=fff'; }}
+              />
+            </div>
+            {selectedAvatar === avatar.src && (
+              <div className="absolute inset-0 border-2 border-cyan-500/50 rounded-xl pointer-events-none animate-pulse"></div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 ml-1">
+            Designation (Username)
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError('');
+            }}
+            placeholder="Enter Name..."
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-all font-mono text-sm"
+            autoFocus
+          />
+          {error && <p className="text-red-500 text-xs mt-2 ml-1 font-bold animate-pulse">{error}</p>}
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block pl-1">Username</label>
-            <div className="relative">
-              <input 
-                type="text" 
-                value={inputName}
-                onChange={(e) => setInputName(e.target.value)}
-                placeholder="Enter unique name..."
-                className="w-full bg-slate-950 border-2 border-slate-800 text-white rounded-lg px-4 py-3 outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all font-mono"
-                disabled={loading}
-              />
-              {inputName.length > 0 && (
-                <span className={`absolute right-3 top-3.5 text-xs font-bold ${inputName.length >= 3 && inputName.length <= 15 ? 'text-green-500' : 'text-red-500'}`}>
-                  {inputName.length}/15
-                </span>
-              )}
-            </div>
-          </div>
-
-          {error && (
-            <div className="bg-red-950/40 border border-red-900/60 text-red-300 text-xs p-3 rounded-lg flex items-center gap-2 animate-in slide-in-from-top-1">
-              <span>⚠️</span> {error}
-            </div>
-          )}
-
-          <div className="flex flex-col gap-3 mt-2">
-            <button 
-              type="submit" 
-              disabled={loading}
-              className={`w-full py-3.5 rounded-lg font-bold text-white uppercase tracking-widest shadow-lg transition-all
-                ${loading 
-                  ? 'bg-slate-700 cursor-wait' 
-                  : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/20 active:scale-[0.98]'}`}
-            >
-              {loading ? 'Checking Availability...' : 'Confirm Identity'}
-            </button>
-
-            {/* --- UUSI LOGOUT-NAPPI --- */}
-            <button 
-              type="button"
-              onClick={onLogout}
-              disabled={loading}
-              className="w-full py-3 rounded-lg font-bold text-slate-400 text-xs uppercase tracking-widest hover:text-white hover:bg-slate-800 transition-all"
-            >
-              Wrong Account? Sign Out
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex-1 px-4 py-3 bg-slate-800 hover:bg-red-900/20 text-slate-400 hover:text-red-400 font-bold rounded-lg border border-slate-700 hover:border-red-900/50 transition-all uppercase text-xs tracking-wider"
+          >
+            Abort
+          </button>
+          <button
+            type="submit"
+            className="flex-[2] px-4 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-lg shadow-cyan-900/20 transition-all uppercase text-xs tracking-wider flex items-center justify-center gap-2 group"
+          >
+            <span>Confirm Identity</span>
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

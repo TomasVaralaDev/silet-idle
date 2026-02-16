@@ -57,6 +57,9 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
           const isProgressionLocked = map.id > combatStats.maxMapCompleted + 1;
           const isLocked = isProgressionLocked || (map.isBoss && !hasKey);
 
+          // Määritellään oikea avaimen kuva (bosskey_w1, bosskey_w2 jne.)
+          const keyImage = `/assets/items/bosskey/bosskey_w${selectedWorldId}.png`;
+
           return (
             <button
               key={map.id}
@@ -78,7 +81,9 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                     <span className="truncate">{map.name}</span>
                     {map.isBoss && (
                       <span className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${keyCount > 0 ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-500'}`}>
-                        🔑 {keyCount}/1
+                        {/* KORJAUS: Avaimen kuva tekstin sijaan */}
+                        <img src={keyImage} className="w-3 h-3 object-contain pixelated" alt="Key" />
+                        {keyCount}/1
                       </span>
                     )}
                   </div>
@@ -103,15 +108,16 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                       : isLocked ? 'bg-slate-950 border-slate-900' : 'bg-slate-950 border-slate-800'
                     }
                 `}>
-                   {isProgressionLocked ? (
-                      <span className="text-xs">🔒</span>
-                   ) : map.isBoss && !hasKey ? (
-                      <span className="text-xs">🔑</span>
-                   ) : map.image ? (
-                       <img src={map.image} className={`w-5 h-5 object-contain ${isActive ? 'opacity-100' : 'opacity-60 grayscale'}`} alt="" />
-                   ) : (
-                       <span className="text-xs opacity-50">⚔️</span>
-                   )}
+                    {/* KORJAUS: Vaihdettu emojit kuviin */}
+                    {isProgressionLocked ? (
+                       <img src="/assets/ui/icon_locked.png" className="w-4 h-4 object-contain pixelated opacity-50" alt="Locked" />
+                    ) : map.isBoss && !hasKey ? (
+                       <img src={keyImage} className="w-5 h-5 object-contain pixelated animate-pulse" alt="Key Needed" />
+                    ) : map.image ? (
+                        <img src={map.image} className={`w-5 h-5 object-contain ${isActive ? 'opacity-100' : 'opacity-60 grayscale'}`} alt="" />
+                    ) : (
+                        <img src="/assets/ui/icon_battle.png" className="w-5 h-5 object-contain pixelated opacity-50" alt="Battle" />
+                    )}
                 </div>
               </div>
               

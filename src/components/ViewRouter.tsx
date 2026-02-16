@@ -1,5 +1,5 @@
 import CombatView from './CombatView';
-import ScavengerView from './ScavengerView';
+import ScavengerView from './scavenging/ScavengingView';
 import EnchantingView from './EnchantingView';
 import SkillView from './SkillView';
 import Inventory from './Inventory';

@@ -166,13 +166,13 @@ export interface Expedition {
   id: string;
   mapId: number;
   startTime: number;
-  duration: number;
-  completed: boolean;
+  duration: number; // sekunteina tai millisekunteina (käytetään ms johdonmukaisuuden vuoksi)
+  rewards?: { itemId: string; amount: number }[]; // Valmiiksi lasketut palkinnot (tai lasketaan lopussa)
 }
 
 export interface ScavengerState {
   activeExpeditions: Expedition[];
-  unlockedSlots: number;
+  unlockedSlots: number; // Montako retkeä voi olla kerralla (esim. 1 alussa, max 3)
 }
 
 // --- SETTINGS & CONFIG ---
@@ -191,6 +191,7 @@ export interface SkillData {
 
 export interface GameState {
   username: string; 
+  avatar: string;
   settings: GameSettings;
   inventory: Record<string, number>;
   skills: Record<SkillType, SkillData>;
@@ -212,4 +213,16 @@ export interface CombatResult {
   finalDamage: number;
   isCrit: boolean;
   mitigationPercent: number; 
+}
+
+// --- REWARDS ---
+export interface RewardEntry {
+  itemId: string;
+  amount: number;
+}
+
+export interface RewardModalState {
+  isOpen: boolean;
+  title: string;
+  rewards: RewardEntry[];
 }

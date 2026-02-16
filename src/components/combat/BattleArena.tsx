@@ -2,10 +2,8 @@ import { useGameStore } from '../../store/useGameStore';
 import { WORLD_INFO } from '../../data/worlds';
 
 export default function BattleArena({ selectedWorldId }: { selectedWorldId: number }) {
-  const { enemy, combatStats, stopCombat, skills } = useGameStore();
+  const { enemy, combatStats, stopCombat, skills, avatar } = useGameStore();
 
-  // KORJAUS: Käytetään taustana VAIN Worldin kuvaa.
-  // Poistettu 'currentMap.image', jotta mobin kuva ei vahingossa tule taustaksi.
   const bgImage = WORLD_INFO[selectedWorldId]?.image || '';
 
   const playerMaxHp = skills.hitpoints.level * 10;
@@ -38,7 +36,14 @@ export default function BattleArena({ selectedWorldId }: { selectedWorldId: numb
           
           {/* Hahmo */}
           <div className="w-24 h-24 relative flex items-center justify-center">
-             <div className="text-6xl filter drop-shadow-[0_0_10px_rgba(16,185,129,0.5)] transform scale-x-[-1]">🧙‍♂️</div>
+             <img 
+               src={avatar || "/assets/ui/icon_user_avatar.png"} 
+               alt="Player" 
+               className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgba(16,185,129,0.4)] transform scale-x-[-1]" 
+               onError={(e) => e.currentTarget.src = 'https://ui-avatars.com/api/?name=P&background=0f172a'} 
+             />
+             
+             {/* Varjo */}
              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/60 blur-md rounded-full"></div>
           </div>
 
@@ -88,7 +93,8 @@ export default function BattleArena({ selectedWorldId }: { selectedWorldId: numb
           ) : (
              !combatStats.respawnTimer && (
                  <div className="opacity-30 text-slate-500 text-xs font-mono mt-20 flex flex-col items-center gap-2">
-                    <span className="text-2xl">⚔️</span>
+                    {/* KORJAUS: Vaihdettu emoji kuvaan */}
+                    <img src="/assets/ui/icon_battle.png" className="w-8 h-8 object-contain pixelated opacity-50" alt="No Target" />
                     <span>NO TARGET</span>
                  </div>
              )

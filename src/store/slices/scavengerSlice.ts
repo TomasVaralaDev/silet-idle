@@ -1,54 +1,99 @@
 import type { StateCreator } from 'zustand';
 import type { FullStoreState } from '../useGameStore';
-import { DEFAULT_STATE } from '../useGameStore';
-// KORJAUS: Tuodaan ScavengerState suoraan tyyppeistä circular dependency -virheen välttämiseksi
-import type { Expedition, ScavengerState } from '../../types';
+import type { Expedition, RewardEntry } from '../../types'; // Varmista RewardEntry
+import { rollWeightedDrop } from '../../utils/loot';
+import { WORLD_LOOT } from '../../data/worlds';
 
 export interface ScavengerSlice {
-  scavenger: ScavengerState;
   startExpedition: (worldId: number, durationMinutes: number) => void;
   claimExpedition: (expeditionId: string) => void;
   cancelExpedition: (expeditionId: string) => void;
+  processScavengerTick: () => void;
 }
 
-export const createScavengerSlice: StateCreator<FullStoreState, [], [], ScavengerSlice> = (set) => ({
-  scavenger: DEFAULT_STATE.scavenger,
+export const createScavengerSlice: StateCreator<FullStoreState, [], [], ScavengerSlice> = (set, get) => ({
+  
+  startExpedition: (worldId, durationMinutes) => {
+    // ... (sama kuin aiemmin) ...
+    const { scavenger } = get();
+    if (scavenger.activeExpeditions.length >= scavenger.unlockedSlots) return;
 
-  startExpedition: (worldId, durationMinutes) => set((state: FullStoreState) => {
-    if (state.scavenger.activeExpeditions.length >= state.scavenger.unlockedSlots) return {};
-    
-    const newExp: Expedition = { 
-      id: Date.now().toString(), 
-      mapId: worldId, 
-      startTime: Date.now(), 
+    const newExpedition: Expedition = {
+      id: `exp_${Date.now()}_${Math.random()}`,
+      mapId: worldId,
+      startTime: Date.now(),
       duration: durationMinutes * 60 * 1000, 
-      completed: false 
     };
 
-    return { 
-      scavenger: { 
-        ...state.scavenger, 
-        activeExpeditions: [...state.scavenger.activeExpeditions, newExp] 
-      } 
-    } as Partial<FullStoreState>;
-  }),
+    set((state) => ({
+      scavenger: {
+        ...state.scavenger,
+        activeExpeditions: [...state.scavenger.activeExpeditions, newExpedition]
+      }
+    }));
+  },
 
-  claimExpedition: (expeditionId) => set((state: FullStoreState) => {
-    const expedition = state.scavenger.activeExpeditions.find((e: Expedition) => e.id === expeditionId);
-    if (!expedition || !expedition.completed) return {};
-    
-    return { 
-      scavenger: { 
-        ...state.scavenger, 
-        activeExpeditions: state.scavenger.activeExpeditions.filter((e: Expedition) => e.id !== expeditionId) 
-      } 
-    } as Partial<FullStoreState>;
-  }),
+  claimExpedition: (expeditionId) => {
+    const { scavenger, inventory, openRewardModal } = get(); // Haetaan openRewardModal storesta
+    const expedition = scavenger.activeExpeditions.find(e => e.id === expeditionId);
+    if (!expedition) return;
 
-  cancelExpedition: (id) => set((state: FullStoreState) => ({
-    scavenger: { 
-      ...state.scavenger, 
-      activeExpeditions: state.scavenger.activeExpeditions.filter((e: Expedition) => e.id !== id) 
+    const elapsed = Date.now() - expedition.startTime;
+    if (elapsed < expedition.duration) return;
+
+    const worldLootTable = WORLD_LOOT[expedition.mapId];
+    const newInventory = { ...inventory };
+    const minutes = Math.floor(expedition.duration / 1000 / 60);
+    const rolls = Math.max(1, minutes); 
+
+    // Kerätään lootit listaan modaalia varten
+    const rewardsMap: Record<string, number> = {};
+
+    if (worldLootTable) {
+      for (let i = 0; i < rolls; i++) {
+        const result = rollWeightedDrop(worldLootTable);
+        if (result) {
+          // Lisätään inventaarioon
+          newInventory[result.itemId] = (newInventory[result.itemId] || 0) + result.amount;
+          
+          // Lisätään palkintolistaan (yhdistetään samat itemit)
+          rewardsMap[result.itemId] = (rewardsMap[result.itemId] || 0) + result.amount;
+        }
+      }
     }
-  }) as Partial<FullStoreState>),
+
+    // Muutetaan Map -> Array modaalia varten
+    const rewardEntries: RewardEntry[] = Object.entries(rewardsMap).map(([itemId, amount]) => ({
+      itemId,
+      amount
+    }));
+
+    // Päivitetään tila
+    set((state) => ({
+      inventory: newInventory,
+      scavenger: {
+        ...state.scavenger,
+        activeExpeditions: state.scavenger.activeExpeditions.filter(e => e.id !== expeditionId)
+      }
+    }));
+
+    // AVATAAN MODAALI
+    if (rewardEntries.length > 0) {
+      openRewardModal(`Expedition W${expedition.mapId} Complete`, rewardEntries);
+    } else {
+      // Jos tyhjä expedition (harvinaista mutta mahdollista)
+      openRewardModal(`Expedition W${expedition.mapId} Failed`, []);
+    }
+  },
+
+  cancelExpedition: (expeditionId) => {
+    set((state) => ({
+      scavenger: {
+        ...state.scavenger,
+        activeExpeditions: state.scavenger.activeExpeditions.filter(e => e.id !== expeditionId)
+      }
+    }));
+  },
+
+  processScavengerTick: () => {}
 });

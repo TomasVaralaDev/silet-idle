@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { GameState, GameEventType, GameEvent, Enemy, RewardEntry } from '../types'; // Lisää RewardEntry
+import type { GameState, GameEventType, GameEvent, Enemy, RewardEntry } from '../types';
 import { createInventorySlice, type InventorySlice } from './slices/inventorySlice';
 import { createSkillSlice, type SkillSlice } from './slices/skillSlice';
 import { createCombatSlice, type CombatSlice } from './slices/combatSlice';
 import { createScavengerSlice, type ScavengerSlice } from './slices/scavengerSlice';
+// LISÄÄ TÄMÄ IMPORT:
+import { createWorldShopSlice, type WorldShopSlice } from './slices/worldShopSlice';
 import type { OfflineSummary } from '../systems/offlineSystem';
 
 // Määritellään RewardModal-tila
@@ -21,17 +23,17 @@ export type FullStoreState = GameState &
   InventorySlice & 
   SkillSlice & 
   CombatSlice & 
-  ScavengerSlice & {
+  ScavengerSlice & 
+  WorldShopSlice & { // LISÄTTY: WorldShopSlice
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
-    rewardModal: RewardModalState; // UUSI: RewardModal-tila
+    rewardModal: RewardModalState;
     
     setState: (updater: Partial<FullStoreState> | ((state: FullStoreState) => Partial<FullStoreState>)) => void;
     emitEvent: (type: GameEventType, message: string, icon?: string) => void;
     clearEvent: (id: string) => void;
     setOfflineSummary: (summary: OfflineSummary | null) => void;
     
-    // UUDET: RewardModal-funktiot
     openRewardModal: (title: string, rewards: RewardEntry[]) => void;
     closeRewardModal: () => void;
 };
@@ -85,13 +87,14 @@ export const useGameStore = create<FullStoreState>()(
       // 1. Perustila
       ...DEFAULT_STATE,
       offlineSummary: null,
-      rewardModal: { isOpen: false, title: '', rewards: [] }, // UUSI: Alustetaan rewardModal
+      rewardModal: { isOpen: false, title: '', rewards: [] },
 
       // 2. Slicet
       ...createInventorySlice(set, get, ...args),
       ...createSkillSlice(set, get, ...args),
       ...createCombatSlice(set, get, ...args), 
       ...createScavengerSlice(set, get, ...args),
+      ...createWorldShopSlice(set, get, ...args), // LISÄTTY: worldShopSlice
 
       // 3. Globaalit funktiot
       emitEvent: (type, message, icon) => set((state) => {
@@ -113,7 +116,6 @@ export const useGameStore = create<FullStoreState>()(
         offlineSummary: summary 
       }),
       
-      // UUDET: RewardModal implementaatio
       openRewardModal: (title, rewards) => set({ 
         rewardModal: { isOpen: true, title, rewards } 
       }),
@@ -151,7 +153,6 @@ export const useGameStore = create<FullStoreState>()(
           },
           enemy: null,
           activeAction: typedPersisted.activeAction || null,
-          // Varmistetaan että rewardModal on aina alustettu (ei tarvitse persistoida)
           rewardModal: { isOpen: false, title: '', rewards: [] }
         };
       },

@@ -7,7 +7,7 @@ export type SkillType =
   | 'melee' | 'ranged' | 'magic' | 'combat'
   | 'scavenging';
 
-export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements' | 'scavenger' | 'enchanting';
+export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements' | 'scavenger' | 'enchanting' | 'worldmarket';
 
 export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'necklace' | 'ring' | 'rune' | 'skill' | 'food';
 
@@ -225,4 +225,22 @@ export interface RewardModalState {
   isOpen: boolean;
   title: string;
   rewards: RewardEntry[];
+}
+
+// --- WORLD ITEM VENDOR ---
+export interface MaterialRequirement {
+  itemId: string;
+  amount: number;
+}
+
+export interface WorldShopItem {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  costCoins: number;
+  costMaterials: MaterialRequirement[];
+  worldId: number; // Missä kaupassa tämä näkyy
+  resultItemId: string; // Mitä pelaaja saa
+  resultAmount: number;
 }

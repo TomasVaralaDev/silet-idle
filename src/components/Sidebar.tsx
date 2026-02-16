@@ -188,6 +188,7 @@ export default function Sidebar({ currentView, setView, onReset, onLogout, onSto
           <NavButton view="enchanting" label="Enchanting" iconPath="/assets/ui/icon_anvil.png" currentView={currentView} onClick={setView} />
           <NavButton view="achievements" label="Milestones" iconPath="/assets/ui/icon_achievements.png" currentView={currentView} onClick={setView} />
           <NavButton view="gamble" label="Entropy" iconPath="/assets/ui/icon_casino.png" currentView={currentView} onClick={setView} />
+          <NavButton view="worldmarket" label="World Market" iconPath="/assets/ui/icon_shop_alt.png" currentView={currentView} onClick={setView} />
         </div>
 
         <div>

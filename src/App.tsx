@@ -22,21 +22,33 @@ import UsernameModal from './components/UsernameModal';
 import SettingsModal from './components/SettingsModal';
 import Auth from './components/Auth';
 import RewardModal from './components/RewardModal';
-import UserConfigModal from './components/UserConfigModal'; // UUSI IMPORT
+import UserConfigModal from './components/UserConfigModal'; 
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('woodcutting');
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showUserConfig, setShowUserConfig] = useState(false); // UUSI TILA
+  const [showUserConfig, setShowUserConfig] = useState(false);
 
   // 1. Hookit
   const { user, loadingAuth } = useAuth();
   const { isDataLoaded, offlineSummary, setOfflineSummary } = useGameInitialization(user);
   const { saveStatus, handleForceSave } = useGameSync(user, isDataLoaded);
   
-  const state = useGameStore();
-  const { setState, gamble, sellItem, enchantItem, emitEvent } = useGameStore();
+  // KORJAUS: Poistettu 'activeAction' tästä listasta, koska sitä ei käytetä tässä komponentissa
+  const { 
+    username, 
+    avatar, 
+    settings, 
+    inventory, 
+    setState, 
+    gamble, 
+    sellItem, 
+    emitEvent 
+  } = useGameStore();
+  
+  // Käytetään koko storea ViewRouterille
+  const fullState = useGameStore();
 
   useGameEngine();
 
@@ -56,12 +68,12 @@ export default function App() {
   );
 
   // Käyttäjänimen valinta (ensikertalaiselle)
-  if (!state.username || state.username === 'Player') {
+  if (!username || username === 'Player') {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center relative">
         <UsernameModal 
-          onConfirm={(name, avatar) => {
-            setState({ username: name, avatar: avatar });
+          onConfirm={(name, avatarUrl) => {
+            setState({ username: name, avatar: avatarUrl });
             emitEvent('success', `Identity Confirmed: ${name}`, "/assets/ui/icon_check.png");
           }} 
           onLogout={() => signOut(auth)} 
@@ -75,13 +87,13 @@ export default function App() {
       <NotificationManager />
       <RewardModal />
 
-      {/* UUSI: User Config Modal */}
+      {/* User Config Modal */}
       {showUserConfig && (
         <UserConfigModal
-          currentUsername={state.username}
-          currentAvatar={state.avatar}
-          onSave={(name, avatar) => {
-            setState({ username: name, avatar: avatar });
+          currentUsername={username}
+          currentAvatar={avatar}
+          onSave={(name, avatarUrl) => {
+            setState({ username: name, avatar: avatarUrl });
             emitEvent('info', `Identity Updated`, "/assets/ui/icon_check.png");
           }}
           onClose={() => setShowUserConfig(false)}
@@ -104,7 +116,7 @@ export default function App() {
         onStopAction={() => setState({ activeAction: null })}
         onForceSave={handleForceSave} 
         onOpenSettings={() => setShowSettings(true)}
-        onOpenUserConfig={() => setShowUserConfig(true)} // UUSI PROP
+        onOpenUserConfig={() => setShowUserConfig(true)}
       />
 
       <main className="flex-1 bg-slate-950 relative overflow-y-auto h-screen custom-scrollbar">
@@ -116,8 +128,8 @@ export default function App() {
 
         {showSettings && (
           <SettingsModal 
-            settings={state.settings} 
-            username={state.username} 
+            settings={settings} 
+            username={username} 
             onUpdateSettings={(s: GameSettings) => setState({ settings: s })}
             onClose={() => setShowSettings(false)} 
             onForceSave={handleForceSave} 
@@ -133,17 +145,16 @@ export default function App() {
 
         <SellModal 
           itemId={selectedItemForSale} 
-          inventory={state.inventory} 
+          inventory={inventory} 
           onClose={() => setSelectedItemForSale(null)} 
           onSell={sellItem} 
         />
 
         <ViewRouter 
           currentView={currentView} 
-          state={state} 
+          state={fullState} 
           onSellClick={setSelectedItemForSale} 
           onGamble={(amt, cb) => cb(gamble(amt))} 
-          onEnchant={enchantItem}
         />
       </main>
     </div>

@@ -25,7 +25,7 @@ export default function Auth() {
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-900/20 z-0"></div>
       
       <div className="bg-slate-800 p-10 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-700 text-center relative z-10">
-        <h1 className="text-4xl font-black italic text-emerald-500 mb-2">MELVOR <span className="text-slate-400 font-light">CLONE</span></h1>
+        <h1 className="text-4xl font-black italic text-emerald-500 mb-2">TIME <span className="text-slate-400 font-light">RING</span></h1>
         <p className="text-slate-400 mb-8">Save your progress to the cloud.</p>
         
         {error && <p className="bg-red-900/50 text-red-200 p-3 rounded mb-6 text-sm border border-red-500/30">{error}</p>}

@@ -7,12 +7,14 @@ import MarketItem from './MarketItem';
 export default function WorldShopView() {
   const [selectedWorld, setSelectedWorld] = useState(1);
   
-  const buyWorldItem = useGameStore(state => state.buyWorldItem);
-  const inventory = useGameStore(state => state.inventory);
-  const coins = useGameStore(state => state.coins);
+  // HAE worldShop STATE
+  const { buyWorldItem, inventory, coins, worldShop, checkDailyReset } = useGameStore();
 
   const currentItems = WORLD_SHOP_DATA.filter(i => i.worldId === selectedWorld);
   const currentWorldInfo = WORLD_INFO[selectedWorld];
+
+  // Tarkistetaan reset joka renderöinnillä (tai voit siirtää useEffectiin)
+  checkDailyReset(); 
 
   return (
     <div className="h-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden">
@@ -92,6 +94,8 @@ export default function WorldShopView() {
                         onBuy={buyWorldItem} 
                         playerInventory={inventory}
                         playerCoins={coins}
+                        // UUSI: Välitä purchase count
+                        purchaseCount={worldShop.purchases[item.id] || 0}
                       />
                     </div>
                   ))

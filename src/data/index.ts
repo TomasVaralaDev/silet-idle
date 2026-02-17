@@ -10,7 +10,6 @@ export { WORLD_INFO, WORLD_LOOT, COMBAT_DATA, GAME_DATA, SHOP_ITEMS, ACHIEVEMENT
 
 /**
  * 1. Määritellään Factory-rajapinta.
- * Jokainen tehdas tietää, mitä se osaa tehdä (canHandle) ja miten se tehdään (create).
  */
 interface ItemSubFactory {
   canHandle: (id: string) => boolean;
@@ -63,7 +62,36 @@ const KeyFactory: ItemSubFactory = {
 };
 
 /**
- * 4. Skill Resource Factory: Kaikki GAME_DATAsta löytyvät esineet
+ * 4. Enchant Scroll Factory (UUSI)
+ * Tunnistaa IDt muotoa: scroll_enchant_w1, scroll_enchant_w2...
+ */
+const EnchantScrollFactory: ItemSubFactory = {
+  canHandle: (id) => id.startsWith('scroll_enchant_'),
+  create: (id) => {
+    // Erotetaan tier numerosta (esim. "w1")
+    const tierPart = id.split('_').pop(); // "w1"
+    const tier = parseInt(tierPart?.replace('w', '') || '1');
+    
+    // Konfiguraatio (nämä vastaavat shopin arvoja)
+    const chances = [0, 5, 8, 12, 15, 20, 25, 30, 40]; 
+    const chance = chances[tier] || 5;
+
+    const rarityMap = ['common', 'common', 'common', 'rare', 'rare', 'epic', 'epic', 'legendary', 'legendary'];
+    const colorMap = ['text-slate-400', 'text-slate-400', 'text-green-400', 'text-blue-400', 'text-blue-300', 'text-purple-400', 'text-purple-300', 'text-orange-400', 'text-yellow-400'];
+
+    return {
+      name: `Enchant Scroll T${tier}`,
+      value: 100 * tier,
+      rarity: (rarityMap[tier] || 'common') as Resource['rarity'],
+      color: colorMap[tier] || 'text-slate-400',
+      icon: `/assets/items/enchantingscroll/enchanting_tier${tier}.png`,
+      description: `Magical scroll. Increases enchanting success chance by +${chance}%.`
+    };
+  }
+};
+
+/**
+ * 5. Skill Resource Factory: Kaikki GAME_DATAsta löytyvät esineet
  */
 const SkillResourceFactory: ItemSubFactory = {
   canHandle: (id) => {
@@ -81,13 +109,12 @@ const SkillResourceFactory: ItemSubFactory = {
 };
 
 /**
- * 5. PÄÄTEHDAS (The Master Factory)
- * Tämä korvaa vanhan if-else viidakon.
+ * 6. PÄÄTEHDAS (The Master Factory)
  */
 export const getItemDetails = (id: string): Resource | null => {
   if (!id) return null;
 
-  // Erikoistapaus: Kolikot (pidetään yksinkertaisena)
+  // Erikoistapaus: Kolikot
   if (id === 'coins') {
     return { id: 'coins', name: 'Coins', value: 1, icon: '/assets/ui/coins.png', rarity: 'common' } as Resource;
   }
@@ -96,7 +123,7 @@ export const getItemDetails = (id: string): Resource | null => {
   const enchantLevel = getEnchantLevel(id);
 
   // Etsitään sopiva alitehdas
-  const factories = [WorldLootFactory, KeyFactory, SkillResourceFactory];
+  const factories = [WorldLootFactory, KeyFactory, EnchantScrollFactory, SkillResourceFactory]; // Lisätty EnchantScrollFactory
   const factory = factories.find(f => f.canHandle(baseId));
 
   if (!factory) return null;

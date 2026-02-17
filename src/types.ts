@@ -243,4 +243,11 @@ export interface WorldShopItem {
   worldId: number; // Missä kaupassa tämä näkyy
   resultItemId: string; // Mitä pelaaja saa
   resultAmount: number;
+  dailyLimit?: number;
+}
+
+// 2. Tallennettava tila (Tämä menee Firebaseen)
+export interface WorldShopState {
+  purchases: Record<string, number>; // itemId -> ostettu määrä
+  lastResetTime: number; // Milloin päivä on viimeksi vaihtunut
 }

@@ -33,7 +33,7 @@ const verifyToken = async (req, res, next) => {
 
 // 3. Testireitti
 app.get('/', (req, res) => {
-  res.send('Melvor Clone Backend Running!');
+  res.send('Timering Backend Running!');
 });
 
 // 4. Esimerkki suojatusta reitistä (esim. tallennuksen synkronointi)

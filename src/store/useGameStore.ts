@@ -5,8 +5,9 @@ import { createInventorySlice, type InventorySlice } from './slices/inventorySli
 import { createSkillSlice, type SkillSlice } from './slices/skillSlice';
 import { createCombatSlice, type CombatSlice } from './slices/combatSlice';
 import { createScavengerSlice, type ScavengerSlice } from './slices/scavengerSlice';
-// LISÄÄ TÄMÄ IMPORT:
 import { createWorldShopSlice, type WorldShopSlice } from './slices/worldShopSlice';
+// LISÄÄ TÄMÄ IMPORT:
+import { createEnchantingSlice, type EnchantingSlice } from './slices/enchantingSlice';
 import type { OfflineSummary } from '../systems/offlineSystem';
 
 // Määritellään RewardModal-tila
@@ -24,7 +25,8 @@ export type FullStoreState = GameState &
   SkillSlice & 
   CombatSlice & 
   ScavengerSlice & 
-  WorldShopSlice & { // LISÄTTY: WorldShopSlice
+  WorldShopSlice & 
+  EnchantingSlice & { // LISÄTTY: EnchantingSlice
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
     rewardModal: RewardModalState;
@@ -94,7 +96,8 @@ export const useGameStore = create<FullStoreState>()(
       ...createSkillSlice(set, get, ...args),
       ...createCombatSlice(set, get, ...args), 
       ...createScavengerSlice(set, get, ...args),
-      ...createWorldShopSlice(set, get, ...args), // LISÄTTY: worldShopSlice
+      ...createWorldShopSlice(set, get, ...args),
+      ...createEnchantingSlice(set, get, ...args), // LISÄTTY: EnchantingSlice
 
       // 3. Globaalit funktiot
       emitEvent: (type, message, icon) => set((state) => {

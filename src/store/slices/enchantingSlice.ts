@@ -77,7 +77,7 @@ export const createEnchantingSlice: StateCreator<FullStoreState, [], [], Enchant
       if (updated) {
         set({ equipment: newEquipment });
         // KORJATTU VIESTI:
-        emitEvent('success', 'Enchantment successful', '/assets/ui/icon_success.png');
+        emitEvent('success', 'Enchantment successful', '/assets/ui/icon_check.png');
       } else {
         emitEvent('error', 'Error finding equipped item to update.');
       }

@@ -6,27 +6,22 @@ import { createSkillSlice, type SkillSlice } from './slices/skillSlice';
 import { createCombatSlice, type CombatSlice } from './slices/combatSlice';
 import { createScavengerSlice, type ScavengerSlice } from './slices/scavengerSlice';
 import { createWorldShopSlice, type WorldShopSlice } from './slices/worldShopSlice';
-// LISÄÄ TÄMÄ IMPORT:
 import { createEnchantingSlice, type EnchantingSlice } from './slices/enchantingSlice';
 import type { OfflineSummary } from '../systems/offlineSystem';
 
-// Määritellään RewardModal-tila
 interface RewardModalState {
   isOpen: boolean;
   title: string;
   rewards: RewardEntry[];
 }
 
-/**
- * FullStoreState yhdistää datan, kaikki slicet ja globaalit funktiot.
- */
 export type FullStoreState = GameState & 
   InventorySlice & 
   SkillSlice & 
   CombatSlice & 
   ScavengerSlice & 
   WorldShopSlice & 
-  EnchantingSlice & { // LISÄTTY: EnchantingSlice
+  EnchantingSlice & {
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
     rewardModal: RewardModalState;
@@ -40,9 +35,6 @@ export type FullStoreState = GameState &
     closeRewardModal: () => void;
 };
 
-/**
- * DEFAULT_STATE sisältää GameState-rajapinnan mukaiset tiedot.
- */
 export const DEFAULT_STATE: GameState = {
   username: "Player",
   avatar: "/assets/avatars/avatar_1.png",
@@ -51,13 +43,21 @@ export const DEFAULT_STATE: GameState = {
   settings: { notifications: true, sound: true, music: true, particles: true },
   inventory: {},
   skills: {
-    woodcutting: { xp: 0, level: 1 }, mining: { xp: 0, level: 1 },
-    fishing: { xp: 0, level: 1 }, farming: { xp: 0, level: 1 },
-    crafting: { xp: 0, level: 1 }, smithing: { xp: 0, level: 1 },
-    cooking: { xp: 0, level: 1 }, hitpoints: { xp: 0, level: 10 },
-    attack: { xp: 0, level: 1 }, defense: { xp: 0, level: 1 },
-    melee: { xp: 0, level: 1 }, ranged: { xp: 0, level: 1 },
-    magic: { xp: 0, level: 1 }, combat: { xp: 0, level: 1 },
+    woodcutting: { xp: 0, level: 1 }, 
+    mining: { xp: 0, level: 1 },
+    fishing: { xp: 0, level: 1 }, 
+    farming: { xp: 0, level: 1 },
+    foraging: { xp: 0, level: 1 }, // UUSI: Foraging alustus
+    crafting: { xp: 0, level: 1 }, 
+    smithing: { xp: 0, level: 1 },
+    cooking: { xp: 0, level: 1 }, 
+    hitpoints: { xp: 0, level: 10 },
+    attack: { xp: 0, level: 1 }, 
+    defense: { xp: 0, level: 1 },
+    melee: { xp: 0, level: 1 }, 
+    ranged: { xp: 0, level: 1 },
+    magic: { xp: 0, level: 1 }, 
+    combat: { xp: 0, level: 1 },
     scavenging: { xp: 0, level: 1 },
   },
   equipment: { 
@@ -86,20 +86,17 @@ export const DEFAULT_STATE: GameState = {
 export const useGameStore = create<FullStoreState>()(
   persist(
     (set, get, ...args) => ({
-      // 1. Perustila
       ...DEFAULT_STATE,
       offlineSummary: null,
       rewardModal: { isOpen: false, title: '', rewards: [] },
 
-      // 2. Slicet
       ...createInventorySlice(set, get, ...args),
       ...createSkillSlice(set, get, ...args),
       ...createCombatSlice(set, get, ...args), 
       ...createScavengerSlice(set, get, ...args),
       ...createWorldShopSlice(set, get, ...args),
-      ...createEnchantingSlice(set, get, ...args), // LISÄTTY: EnchantingSlice
+      ...createEnchantingSlice(set, get, ...args),
 
-      // 3. Globaalit funktiot
       emitEvent: (type, message, icon) => set((state) => {
         const newEvent: GameEvent = {
           id: Math.random().toString(36).substring(2, 9),
@@ -139,7 +136,6 @@ export const useGameStore = create<FullStoreState>()(
       
       merge: (persistedState: unknown, currentState: FullStoreState) => {
         const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
-
         if (!typedPersisted) return currentState;
 
         return {
@@ -162,7 +158,6 @@ export const useGameStore = create<FullStoreState>()(
 
       partialize: (state) => {
         const rest = { ...state };
-        // Poistetaan UI-tilat tallennuksesta
         delete (rest as Partial<FullStoreState>).offlineSummary; 
         delete (rest as Partial<FullStoreState>).rewardModal; 
         return rest;

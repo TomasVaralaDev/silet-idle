@@ -61,6 +61,161 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'ore_eternium', name: 'Eternium Ore', rarity: 'legendary', level: 85, xpReward: 150, interval: 15000, value: 200, icon: '/assets/resources/ore/ore_eternium.png', color: 'text-red-500', description: 'Resonates with time.', area: 10 },
     { id: 'ore_starfallalloy', name: 'Starfall Ore', rarity: 'legendary', level: 99, xpReward: 250, interval: 20000, value: 500, icon: '/assets/resources/ore/ore_starfallalloy.png', color: 'text-indigo-400', description: 'Material from the cosmos.' }
   ],
+foraging: [
+    // KOHTA 1: Red Mushroom & Red Stick (Molemmat 100%)
+    {
+      id: 'red_mushroom', 
+      name: 'Red Mushroom', 
+      level: 1, 
+      xpReward: 10, 
+      interval: 2500, 
+      value: 5, 
+      rarity: 'common',
+      icon: '/assets/resources/foraging/tier1_mushroom.png', 
+      description: 'A common red mushroom found in the wild.',
+      drops: [
+        { itemId: 'red_mushroom', chance: 100, amountMin: 1, amountMax: 1 },
+        { itemId: 'red_stick', chance: 100, amountMin: 1, amountMax: 1 } 
+      ]
+    },
+
+    // KOHTA 2: White Stick
+    {
+      id: 'white_stick', 
+      name: 'White Stick', 
+      level: 10, 
+      xpReward: 20, 
+      interval: 3500, 
+      value: 10, 
+      rarity: 'common',
+      icon: '/assets/resources/foraging/tier2_stick.png', 
+      description: 'A pale, sturdy stick.',
+      drops: [
+        { itemId: 'white_stick', chance: 100, amountMin: 1, amountMax: 1 }
+      ]
+    },
+
+    // KOHTA 3: Flame Flower
+    {
+      id: 'flame_flower', 
+      name: 'Flame Flower', 
+      level: 25, 
+      xpReward: 35, 
+      interval: 4500, 
+      value: 25, 
+      rarity: 'uncommon',
+      icon: '/assets/resources/foraging/tier3_flower.png', 
+      description: 'Warm to the touch.',
+      drops: [
+        { itemId: 'flame_flower', chance: 100, amountMin: 1, amountMax: 1 }
+      ]
+    },
+
+    // KOHTA 4: Dark Leaf
+    {
+      id: 'dark_leaf', 
+      name: 'Dark Leaf', 
+      level: 40, 
+      xpReward: 55, 
+      interval: 6000, 
+      value: 40, 
+      rarity: 'uncommon',
+      icon: '/assets/resources/foraging/tier4_leaf.png', 
+      description: 'A leaf from the shadow groves.',
+      drops: [
+        { itemId: 'dark_leaf', chance: 100, amountMin: 1, amountMax: 1 }
+      ]
+    },
+
+    // KOHTA 5: Golden Flower
+    {
+      id: 'golden_flower', 
+      name: 'Golden Flower', 
+      level: 55, 
+      xpReward: 80, 
+      interval: 7500, 
+      value: 75, 
+      rarity: 'rare',
+      icon: '/assets/resources/foraging/tier5_bigleaf.png', 
+      description: 'Shimmers with golden light.',
+      drops: [
+        { itemId: 'golden_flower', chance: 100, amountMin: 1, amountMax: 1 }
+      ]
+    },
+
+    // KOHTA 6: Green Leaf & Green Mushroom (Molemmat 100%)
+    {
+      id: 'green_leaf', 
+      name: 'Green Leaf', 
+      level: 70, 
+      xpReward: 120, 
+      interval: 9000, 
+      value: 100, 
+      rarity: 'rare',
+      icon: '/assets/resources/foraging/tier6_bigleaf.png', 
+      description: 'A large, vibrant leaf.',
+      drops: [
+        { itemId: 'green_leaf', chance: 100, amountMin: 1, amountMax: 1 },
+        { itemId: 'green_mushroom', chance: 100, amountMin: 1, amountMax: 1 }
+      ]
+    },
+
+    // KOHTA 7: Eternal Flower
+    {
+      id: 'eternal_flower', 
+      name: 'Eternal Flower', 
+      level: 85, 
+      xpReward: 200, 
+      interval: 12000, 
+      value: 250, 
+      rarity: 'epic',
+      icon: '/assets/resources/foraging/tier7_bigflower.png', 
+      description: 'It never seems to wilt.',
+      drops: [
+        { itemId: 'eternal_flower', chance: 100, amountMin: 1, amountMax: 1 }
+      ]
+    },
+
+    // KOHTA 8: Dragon Flower
+    {
+      id: 'dragon_flower', 
+      name: 'Dragon Flower', 
+      level: 99, 
+      xpReward: 350, 
+      interval: 15000, 
+      value: 500, 
+      rarity: 'legendary',
+      icon: '/assets/resources/foraging/tier8_flower.png', 
+      description: 'Forged in dragonfire.',
+      drops: [
+        { itemId: 'dragon_flower', chance: 100, amountMin: 1, amountMax: 1 }
+      ]
+    }
+  ],
+
+  // ---------------------------------------------------------
+  // FORAGING LOOT (Sivutuotteet, jotta kuvat toimivat)
+  // ---------------------------------------------------------
+  foraging_loot: [
+    {
+      id: 'red_stick', // Kohta 1 sivutuote
+      name: 'Red Stick',
+      value: 2,
+      rarity: 'common',
+      icon: '/assets/resources/foraging/tier1_stick.png',
+      description: 'A simple red stick.',
+      level: 1, interval: 0
+    },
+    {
+      id: 'green_mushroom', // Kohta 6 sivutuote
+      name: 'Green Mushroom',
+      value: 50,
+      rarity: 'rare',
+      icon: '/assets/resources/foraging/tier6_mushroom.png',
+      description: 'A rare green mushroom.',
+      level: 1, interval: 0
+    }
+  ],
   smithing: [
     { id: 'ore_copper_smelted', name: 'Copper Ingot', rarity: 'common', level: 1, xpReward: 5, interval: 2000, value: 5, icon: '/assets/resources/ore/ore_copper_smelted.png', color: 'text-orange-500', description: 'Smelted copper ingot.', inputs: [{ id: 'ore_copper', count: 1 }] },
     { id: 'ore_iron_smelted', name: 'Iron Ingot', rarity: 'common', level: 10, xpReward: 10, interval: 3000, value: 15, icon: '/assets/resources/ore/ore_iron_smelted.png', color: 'text-slate-400', description: 'Smelted iron ingot.', inputs: [{ id: 'ore_iron', count: 1 }] },

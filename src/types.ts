@@ -1,7 +1,7 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export type SkillType = 
-  | 'woodcutting' | 'mining' | 'fishing' | 'farming' 
+  | 'woodcutting' | 'mining' | 'fishing' | 'farming' | 'foraging' // LISÄTTY: foraging
   | 'crafting' | 'smithing' | 'cooking' 
   | 'hitpoints' | 'attack' | 'defense' 
   | 'melee' | 'ranged' | 'magic' | 'combat'
@@ -67,7 +67,7 @@ export interface CombatState {
   respawnTimer: number;
   foodTimer: number;
   combatLog: string[];
-  attackTimer?: number; // Lisätty timer-tuki
+  attackTimer?: number; 
 }
 
 export interface CalculatedStats {
@@ -109,6 +109,7 @@ export interface Resource {
   };
   combatStyle?: CombatStyle; 
   healing?: number;
+  drops?: ResourceDrop[];
 }
 
 // Lootit todennäköisyyden (0.0 - 1.0) mukaan
@@ -123,7 +124,7 @@ export interface WeightedDrop {
   itemId: string;
   weight: number;
   amount?: [number, number];
-  chance?: number; // Taaksepäin yhteensopivuus
+  chance?: number; 
 }
 
 export interface CombatMap {
@@ -135,7 +136,7 @@ export interface CombatMap {
   enemyAttack: number;
   xpReward: number;
   image?: string; 
-  drops: WeightedDrop[]; // KORJAUS: Muutettu Drop[] -> WeightedDrop[] jotta WORLD_LOOT toimii
+  drops: WeightedDrop[];
   isBoss?: boolean;
   keyRequired?: string;
 }
@@ -166,13 +167,13 @@ export interface Expedition {
   id: string;
   mapId: number;
   startTime: number;
-  duration: number; // sekunteina tai millisekunteina (käytetään ms johdonmukaisuuden vuoksi)
-  rewards?: { itemId: string; amount: number }[]; // Valmiiksi lasketut palkinnot (tai lasketaan lopussa)
+  duration: number;
+  rewards?: { itemId: string; amount: number }[];
 }
 
 export interface ScavengerState {
   activeExpeditions: Expedition[];
-  unlockedSlots: number; // Montako retkeä voi olla kerralla (esim. 1 alussa, max 3)
+  unlockedSlots: number;
 }
 
 // --- SETTINGS & CONFIG ---
@@ -194,7 +195,7 @@ export interface GameState {
   avatar: string;
   settings: GameSettings;
   inventory: Record<string, number>;
-  skills: Record<SkillType, SkillData>;
+  skills: Record<SkillType, SkillData>; // Tähän sisältyy nyt foraging automaattisesti SkillTypen kautta
   equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
   equippedFood: { itemId: string, count: number } | null;
   combatSettings: CombatSettings;
@@ -240,14 +241,20 @@ export interface WorldShopItem {
   icon: string;
   costCoins: number;
   costMaterials: MaterialRequirement[];
-  worldId: number; // Missä kaupassa tämä näkyy
-  resultItemId: string; // Mitä pelaaja saa
+  worldId: number; 
+  resultItemId: string; 
   resultAmount: number;
   dailyLimit?: number;
 }
 
-// 2. Tallennettava tila (Tämä menee Firebaseen)
 export interface WorldShopState {
-  purchases: Record<string, number>; // itemId -> ostettu määrä
-  lastResetTime: number; // Milloin päivä on viimeksi vaihtunut
+  purchases: Record<string, number>; 
+  lastResetTime: number; 
+}
+
+export interface ResourceDrop {
+  itemId: string;
+  chance: number; // 0-100%
+  amountMin: number;
+  amountMax: number;
 }

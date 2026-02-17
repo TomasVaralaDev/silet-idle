@@ -11,45 +11,48 @@ interface SidebarProps {
   onStopAction: () => void;
   onForceSave: () => void;
   onOpenSettings: () => void;
-  onOpenUserConfig: () => void; // UUSI PROP
+  onOpenUserConfig: () => void;
 }
 
 // --- HELPER COMPONENTS ---
 
 interface NavButtonProps {
   view: ViewType;
+  icon: string;
   label: string;
-  iconPath: string;
+  isActive: boolean;
   level?: number;
-  currentView: ViewType;
   onClick: (view: ViewType) => void;
 }
 
-const NavButton = ({ view, label, iconPath, level, currentView, onClick }: NavButtonProps) => {
-  const isActive = currentView === view;
-  let baseStyle = 'hover:bg-slate-800/80 text-slate-400 border border-transparent';
-  
-  if (isActive) {
-     if (['inventory', 'shop', 'gamble', 'achievements', 'enchanting'].includes(view)) 
-        baseStyle = 'bg-slate-800/90 text-cyan-400 border-cyan-500/40 shadow-[0_0_15px_rgba(34,211,238,0.15)] font-bold';
-     else if (view === 'combat') 
-        baseStyle = 'bg-red-950/40 text-red-400 border-red-500/40 shadow-[0_0_15px_rgba(248,113,113,0.15)] font-bold';
-     else if (view === 'scavenger' || view === 'scavenging') 
-        baseStyle = 'bg-indigo-900/40 text-indigo-400 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)] font-bold'; 
-     else 
-        baseStyle = 'bg-slate-800 text-emerald-400 border-emerald-500/40 shadow-[0_0_15px_rgba(52,211,153,0.15)] font-bold';
-  }
-
+// Palautettu alkuperäinen, selkeämpi tyyli
+function NavButton({ view, icon, label, isActive, level, onClick }: NavButtonProps) {
   return (
-    <button onClick={() => onClick(view)} className={`w-full text-left p-3 rounded flex items-center justify-between transition-all duration-200 mb-1.5 font-mono group ${baseStyle}`}>
+    <button
+      onClick={() => onClick(view)}
+      className={`
+        w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group mb-1
+        ${isActive 
+          ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.2)]' 
+          : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent'}
+      `}
+    >
       <div className="flex items-center gap-3">
-        <img src={iconPath} alt={label} className="w-6 h-6 pixelated opacity-90 group-hover:scale-110 transition-transform" />
-        <span className="text-sm uppercase tracking-wider">{label}</span>
+        <img 
+          src={icon} 
+          className={`w-5 h-5 pixelated transition-transform group-hover:scale-110 ${isActive ? 'brightness-125' : 'opacity-70 group-hover:opacity-100'}`} 
+          alt="" 
+        />
+        <span className="text-xs font-bold uppercase tracking-wide">{label}</span>
       </div>
-      {level !== undefined && <span className="text-xs font-bold bg-slate-950 px-2 py-1 rounded text-slate-500 border border-slate-800">Lv.{level}</span>}
+      {level !== undefined && (
+        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isActive ? 'bg-cyan-950 text-cyan-300' : 'bg-slate-900 text-slate-600'}`}>
+          Lv.{level}
+        </span>
+      )}
     </button>
   );
-};
+}
 
 interface StatRowProps {
   label: string;
@@ -148,20 +151,13 @@ export default function Sidebar({ currentView, setView, onReset, onLogout, onSto
             </button>
             {isProfileOpen && (
               <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 duration-100">
-                
-                {/* UUSI: User Config Button */}
                 <button onClick={() => { setIsProfileOpen(false); onOpenUserConfig(); }} className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3">
                    <span className="text-base">👤</span> User Config
                 </button>
-                
-                {/* System Config Button */}
                 <button onClick={() => { setIsProfileOpen(false); onOpenSettings(); }} className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3">
                    <span className="text-base">⚙️</span> System Config
                 </button>
-                
                 <div className="h-px bg-slate-800 my-1 mx-2"></div>
-
-                {/* Terminate Session Button */}
                 <button onClick={onLogout} className="w-full text-left px-3 py-2 rounded hover:bg-red-900/20 text-xs font-bold text-red-400 flex items-center gap-3">
                    <span className="text-base">🔌</span> Terminate Session
                 </button>
@@ -183,33 +179,49 @@ export default function Sidebar({ currentView, setView, onReset, onLogout, onSto
       <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10">
         <div>
           <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Core Systems</p>
-          <NavButton view="inventory" label="Storage" iconPath="/assets/ui/icon_inventory.png" currentView={currentView} onClick={setView} />
-          <NavButton view="shop" label="Requisition" iconPath="/assets/ui/icon_shop.png" currentView={currentView} onClick={setView} />
-          <NavButton view="enchanting" label="Enchanting" iconPath="/assets/ui/icon_anvil.png" currentView={currentView} onClick={setView} />
-          <NavButton view="achievements" label="Milestones" iconPath="/assets/ui/icon_achievements.png" currentView={currentView} onClick={setView} />
-          <NavButton view="gamble" label="Entropy" iconPath="/assets/ui/icon_casino.png" currentView={currentView} onClick={setView} />
-          <NavButton view="worldmarket" label="World Market" iconPath="/assets/ui/icon_shop_alt.png" currentView={currentView} onClick={setView} />
+          <NavButton view="inventory" label="Storage" icon="/assets/ui/icon_inventory.png" isActive={currentView === 'inventory'} onClick={setView} />
+          <NavButton view="shop" label="Requisition" icon="/assets/ui/icon_shop.png" isActive={currentView === 'shop'} onClick={setView} />
+          <NavButton view="enchanting" label="Enchanting" icon="/assets/ui/icon_anvil.png" isActive={currentView === 'enchanting'} onClick={setView} />
+          <NavButton view="achievements" label="Milestones" icon="/assets/ui/icon_achievements.png" isActive={currentView === 'achievements'} onClick={setView} />
+          <NavButton view="gamble" label="Entropy" icon="/assets/ui/icon_casino.png" isActive={currentView === 'gamble'} onClick={setView} />
+          <NavButton view="worldmarket" label="World Market" icon="/assets/ui/icon_shop_alt.png" isActive={currentView === 'worldmarket'} onClick={setView} />
         </div>
 
         <div>
           <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Protocols</p>
-          <NavButton view="scavenger" label="Expeditions" iconPath="/assets/skills/scavenging.png" currentView={currentView} onClick={setView} />
+          <NavButton view="scavenger" label="Expeditions" icon="/assets/skills/scavenging.png" isActive={currentView === 'scavenger'} onClick={setView} />
           
           {SKILL_DEFINITIONS
             .filter(def => def.category === 'gathering' || def.category === 'production')
             .map(def => (
-              <NavButton key={def.id} view={def.id} label={def.sidebarLabel} iconPath={def.icon} level={skills[def.id].level} currentView={currentView} onClick={setView} />
+              <NavButton 
+                key={def.id} 
+                view={def.id} 
+                label={def.sidebarLabel} 
+                icon={def.icon} 
+                level={skills[def.id]?.level || 1} 
+                isActive={currentView === def.id}
+                onClick={setView} 
+              />
             ))}
         </div>
 
         <div>
           <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Stabilization</p>
-          <NavButton view="combat" label="Stabilize Zone" iconPath="/assets/skills/combat.png" currentView={currentView} onClick={setView} />
+          <NavButton view="combat" label="Stabilize Zone" icon="/assets/skills/combat.png" isActive={currentView === 'combat'} onClick={setView} />
           <div className="bg-slate-900/30 p-3 border border-slate-800/50 mt-4 rounded space-y-1">
             {SKILL_DEFINITIONS
               .filter(def => def.category === 'combat')
               .map(def => (
-                <StatRow key={def.id} label={def.sidebarLabel} level={skills[def.id].level} xp={skills[def.id].xp} iconPath={def.icon} textColor={def.color} bgColor={def.bgColor} />
+                <StatRow 
+                  key={def.id} 
+                  label={def.sidebarLabel} 
+                  level={skills[def.id]?.level || 1} 
+                  xp={skills[def.id]?.xp || 0} 
+                  iconPath={def.icon} 
+                  textColor={def.color} 
+                  bgColor={def.bgColor} 
+                />
               ))}
           </div>
         </div>

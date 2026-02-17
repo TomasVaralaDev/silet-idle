@@ -39,7 +39,17 @@ export default function ViewRouter({ currentView, state, onSellClick, onGamble }
   
   // SKILLS (Gathering & Production)
   // Tarkistetaan onko currentView jokin SkillType
-  const skills: SkillType[] = ['woodcutting', 'mining', 'fishing', 'farming', 'crafting', 'smithing', 'cooking'];
+  const skills: SkillType[] = [
+    'woodcutting', 
+    'mining', 
+    'fishing', 
+    'farming', 
+    'foraging', // LISÄTTY: foraging
+    'crafting', 
+    'smithing', 
+    'cooking'
+  ];
+  
   if (skills.includes(currentView as SkillType)) {
       return <SkillView skill={currentView as SkillType} />;
   }

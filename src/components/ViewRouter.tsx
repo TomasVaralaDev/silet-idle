@@ -44,7 +44,7 @@ export default function ViewRouter({ currentView, state, onSellClick, onGamble }
     'mining', 
     'fishing', 
     'farming', 
-    'foraging', // LISÄTTY: foraging
+    'foraging',
     'crafting', 
     'smithing', 
     'cooking'

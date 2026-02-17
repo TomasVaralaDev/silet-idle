@@ -24,66 +24,72 @@ export const useGameEngine = () => {
         else {
           const { skill, resourceId, progress, targetTime } = state.activeAction;
           
-          let newProgress = progress + TICK_RATE;
+          const skillResources = GAME_DATA[skill];
+          const resource = skillResources?.find(r => r.id === resourceId);
 
-          // Onko toiminto valmis?
-          if (newProgress >= targetTime) {
-            
-            const skillResources = GAME_DATA[skill];
-            const resource = skillResources?.find(r => r.id === resourceId);
+          if (!resource) return { activeAction: null };
 
-            if (resource) {
-              // TURVAVERKKO: Jos skill puuttuu vanhasta savesta (esim. foraging), käytetään oletusarvoja.
-              const currentSkillData = state.skills[skill] || { xp: 0, level: 1 };
-              
-              const newXp = currentSkillData.xp + (resource.xpReward || 0);
-              let newLevel = currentSkillData.level;
-
-              // Level up tarkistus (Yksinkertainen kaava: level * 150)
-              const xpForNext = newLevel * 150; 
-              if (newXp >= xpForNext) newLevel++;
-
-              // --- DROP LOGIIKKA (UUSI) ---
-              const newInventory = { ...state.inventory };
-
-              if (resource.drops && resource.drops.length > 0) {
-                // Jos resurssilla on määritelty drops-lista, käytetään sitä
-                resource.drops.forEach(drop => {
-                  const roll = Math.random() * 100;
-                  if (roll <= drop.chance) {
-                    const amount = Math.floor(Math.random() * (drop.amountMax - drop.amountMin + 1)) + drop.amountMin;
-                    newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
-                  }
-                });
-              } else {
-                // FALLBACK: Vanha tapa (jos drops ei ole määritelty, käytetään resurssin ID:tä)
-                newInventory[resource.id] = (newInventory[resource.id] || 0) + 1;
+          // 1. TARKISTUS: Onko meillä varaa jatkaa?
+          if (resource.inputs) {
+            for (const input of resource.inputs) {
+              const currentAmount = state.inventory[input.id] || 0;
+              if (currentAmount < input.count) {
+                return { activeAction: null };
               }
-
-              // Nollataan progress loopia varten
-              newProgress = 0;
-
-              return {
-                skills: {
-                  ...state.skills,
-                  // Varmistetaan että tallennamme skillin objektina
-                  [skill]: { xp: newXp, level: newLevel }
-                },
-                inventory: newInventory,
-                activeAction: {
-                  ...state.activeAction,
-                  progress: newProgress
-                }
-              } as Partial<FullStoreState>;
-
-            } else {
-              // Jos resurssia ei löydy datasta
-              console.error(`Resource ${resourceId} not found in skill ${skill}`);
-              return { activeAction: null };
             }
           }
 
-          // Jos ei valmis, päivitetään vain progress
+          // KORJAUS 2: let -> const (ESLint fix)
+          const newProgress = progress + TICK_RATE;
+
+          // 2. Onko toiminto valmis?
+          if (newProgress >= targetTime) {
+            
+            const newInventory = { ...state.inventory };
+
+            // A) VÄHENNYS
+            if (resource.inputs) {
+              resource.inputs.forEach(input => {
+                newInventory[input.id] = (newInventory[input.id] || 0) - input.count;
+                if (newInventory[input.id] < 0) newInventory[input.id] = 0;
+              });
+            }
+
+            // B) XP
+            const currentSkillData = state.skills[skill] || { xp: 0, level: 1 };
+            const newXp = currentSkillData.xp + (resource.xpReward || 0);
+            let newLevel = currentSkillData.level;
+
+            const xpForNext = newLevel * 150; 
+            if (newXp >= xpForNext) newLevel++;
+
+            // C) PALKINTO
+            if (resource.drops && resource.drops.length > 0) {
+              resource.drops.forEach(drop => {
+                const roll = Math.random() * 100;
+                if (roll <= drop.chance) {
+                  const amount = Math.floor(Math.random() * (drop.amountMax - drop.amountMin + 1)) + drop.amountMin;
+                  newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + amount;
+                }
+              });
+            } else {
+              newInventory[resource.id] = (newInventory[resource.id] || 0) + 1;
+            }
+
+            // D) Loop
+            return {
+              skills: {
+                ...state.skills,
+                [skill]: { xp: newXp, level: newLevel }
+              },
+              inventory: newInventory,
+              activeAction: {
+                ...state.activeAction,
+                progress: 0
+              }
+            } as Partial<FullStoreState>;
+          }
+
           return {
             activeAction: {
               ...state.activeAction,

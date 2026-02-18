@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import type { EquipmentSlot } from '../types';
+// POISTETTU: import type { EquipmentSlot } from '../types'; <--- TÄMÄ RIVI POIS
 
 // Komponentit
 import EquipmentPanel from './inventory/EquipmentPanel';
@@ -19,19 +19,16 @@ interface Props {
 export default function Inventory({ onSellClick }: Props) {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   
-  // SOLID: Logiikka on erytetty hookiin
   const { items, filter, setFilter, sortBy, sortDesc, toggleSort } = useInventoryFiltering();
 
   const equipItem = useGameStore(state => state.equipItem);
-  const equipFood = useGameStore(state => state.equipFood);
 
   const handleEquip = () => {
     if (!selectedItem) return;
-    if (selectedItem.slot) {
-      equipItem(selectedItem.id, selectedItem.slot as EquipmentSlot);
-    } else if (selectedItem.category === 'Food' || selectedItem.healing) {
-      equipFood(selectedItem.id, selectedItem.count);
-    }
+    
+    // Store päättelee itse itemin tyypistä mihin se menee
+    equipItem(selectedItem.id);
+    
     setSelectedItem(null); 
   };
 
@@ -71,7 +68,6 @@ export default function Inventory({ onSellClick }: Props) {
       {/* OIKEA PUOLI (2/3) - Inventory Container */}
       <div className="w-full md:w-2/3 h-full overflow-hidden flex flex-col bg-slate-900 border border-slate-800 rounded-xl">
         
-        {/* 1. CONTROLS HEADER */}
         <InventoryControls 
           activeFilter={filter}
           onSetFilter={setFilter}
@@ -80,9 +76,8 @@ export default function Inventory({ onSellClick }: Props) {
           onToggleSort={toggleSort}
         />
 
-        {/* 2. GRID CONTENT (Scrollable) */}
         <InventoryGrid 
-          items={items} // Syötetään filtteröity lista
+          items={items}
           onSellClick={onSellClick} 
           onItemClick={handleItemClick}
         />

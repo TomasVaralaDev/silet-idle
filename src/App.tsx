@@ -154,7 +154,7 @@ export default function App() {
           currentView={currentView} 
           state={fullState} 
           onSellClick={setSelectedItemForSale} 
-          onGamble={(amt, cb) => cb(gamble(amt))} 
+          onGamble={gamble} 
         />
       </main>
     </div>

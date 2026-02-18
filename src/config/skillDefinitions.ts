@@ -16,7 +16,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
   { 
     id: 'woodcutting', 
     label: 'Woodcutting', 
-    sidebarLabel: 'Excavation', 
+    sidebarLabel: 'Woodcutting', 
     icon: '/assets/skills/woodcutting.png', 
     category: 'gathering', 
     color: 'text-emerald-400', 
@@ -26,7 +26,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
   { 
     id: 'mining', 
     label: 'Mining', 
-    sidebarLabel: 'Salvaging', 
+    sidebarLabel: 'Mining', 
     icon: '/assets/skills/mining.png', 
     category: 'gathering', 
     color: 'text-slate-300', 
@@ -36,24 +36,13 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
   { 
     id: 'fishing', 
     label: 'Fishing', 
-    sidebarLabel: 'Gathering', 
+    sidebarLabel: 'Fishing', 
     icon: '/assets/skills/fishing.png', 
     category: 'gathering', 
     color: 'text-blue-400', 
     bgColor: 'bg-blue-900',
     description: 'Catch aquatic lifeforms.'
   },
-  { 
-    id: 'farming', 
-    label: 'Farming', 
-    sidebarLabel: 'Cultivation', 
-    icon: '/assets/skills/farming.png', 
-    category: 'gathering', 
-    color: 'text-green-400', 
-    bgColor: 'bg-green-900',
-    description: 'Grow crops and manage harvests.'
-  },
-  // UUSI: FORAGING
   { 
     id: 'foraging', 
     label: 'Foraging', 
@@ -69,7 +58,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
   { 
     id: 'smithing', 
     label: 'Smithing', 
-    sidebarLabel: 'Foundry', 
+    sidebarLabel: 'Smithing', 
     icon: '/assets/skills/smithing.png', 
     category: 'production', 
     color: 'text-orange-400', 
@@ -79,7 +68,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
   { 
     id: 'crafting', 
     label: 'Crafting', 
-    sidebarLabel: 'Assembly', 
+    sidebarLabel: 'Crafting', 
     icon: '/assets/skills/crafting.png', 
     category: 'production', 
     color: 'text-cyan-400', 
@@ -87,14 +76,14 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     description: 'Assemble components into useful items.'
   },
   { 
-    id: 'cooking', 
-    label: 'Cooking', 
-    sidebarLabel: 'Refining', 
-    icon: '/assets/skills/cooking.png', 
+    id: 'alchemy', 
+    label: 'Alchemy', 
+    sidebarLabel: 'Alchemy',
+    icon: '/assets/skills/alchemy.png',
     category: 'production', 
-    color: 'text-amber-400', 
-    bgColor: 'bg-amber-900',
-    description: 'Prepare sustenance for health recovery.'
+    color: 'text-purple-400', 
+    bgColor: 'bg-purple-900',
+    description: 'Transmute matter and brew potions.'
   },
 
   // --- COMBAT ---

@@ -180,11 +180,11 @@ export default function Sidebar({ currentView, setView, onReset, onLogout, onSto
         <div>
           <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">Core Systems</p>
           <NavButton view="inventory" label="Storage" icon="/assets/ui/icon_inventory.png" isActive={currentView === 'inventory'} onClick={setView} />
-          <NavButton view="shop" label="Requisition" icon="/assets/ui/icon_shop.png" isActive={currentView === 'shop'} onClick={setView} />
-          <NavButton view="enchanting" label="Enchanting" icon="/assets/ui/icon_anvil.png" isActive={currentView === 'enchanting'} onClick={setView} />
+          <NavButton view="shop" label="Requisition" icon="/assets/ui/shop.png" isActive={currentView === 'shop'} onClick={setView} />
+          <NavButton view="enchanting" label="Enchanting" icon="/assets/ui/icon_enchanting.png" isActive={currentView === 'enchanting'} onClick={setView} />
           <NavButton view="achievements" label="Milestones" icon="/assets/ui/icon_achievements.png" isActive={currentView === 'achievements'} onClick={setView} />
           <NavButton view="gamble" label="Entropy" icon="/assets/ui/icon_casino.png" isActive={currentView === 'gamble'} onClick={setView} />
-          <NavButton view="worldmarket" label="World Market" icon="/assets/ui/icon_shop_alt.png" isActive={currentView === 'worldmarket'} onClick={setView} />
+          <NavButton view="worldmarket" label="World Market" icon="/assets/ui/icon_market.png" isActive={currentView === 'worldmarket'} onClick={setView} />
         </div>
 
         <div>

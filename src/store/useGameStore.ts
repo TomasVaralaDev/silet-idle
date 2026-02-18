@@ -26,15 +26,18 @@ export type FullStoreState = GameState &
     offlineSummary: OfflineSummary | null;
     rewardModal: RewardModalState;
     
+    // Core actions
     setState: (updater: Partial<FullStoreState> | ((state: FullStoreState) => Partial<FullStoreState>)) => void;
     emitEvent: (type: GameEventType, message: string, icon?: string) => void;
     clearEvent: (id: string) => void;
     setOfflineSummary: (summary: OfflineSummary | null) => void;
     
+    // UI actions
     openRewardModal: (title: string, rewards: RewardEntry[]) => void;
     closeRewardModal: () => void;
 };
 
+// Initial state
 export const DEFAULT_STATE: GameState = {
   username: "Player",
   avatar: "/assets/avatars/avatar_1.png",
@@ -46,11 +49,10 @@ export const DEFAULT_STATE: GameState = {
     woodcutting: { xp: 0, level: 1 }, 
     mining: { xp: 0, level: 1 },
     fishing: { xp: 0, level: 1 }, 
-    farming: { xp: 0, level: 1 },
-    foraging: { xp: 0, level: 1 }, // UUSI: Foraging alustus
+    foraging: { xp: 0, level: 1 },
     crafting: { xp: 0, level: 1 }, 
     smithing: { xp: 0, level: 1 },
-    cooking: { xp: 0, level: 1 }, 
+    alchemy: { xp: 0, level: 1 }, // Added Alchemy
     hitpoints: { xp: 0, level: 10 },
     attack: { xp: 0, level: 1 }, 
     defense: { xp: 0, level: 1 },
@@ -64,7 +66,7 @@ export const DEFAULT_STATE: GameState = {
     head: null, body: null, legs: null, weapon: null, shield: null, 
     necklace: null, ring: null, rune: null, skill: null 
   },
-  equippedFood: null,
+  equippedFood: null, // Food slot init
   combatSettings: { autoEatThreshold: 50, autoProgress: false },
   scavenger: { activeExpeditions: [], unlockedSlots: 1 },
   activeAction: null,
@@ -90,6 +92,7 @@ export const useGameStore = create<FullStoreState>()(
       offlineSummary: null,
       rewardModal: { isOpen: false, title: '', rewards: [] },
 
+      // Combine slices
       ...createInventorySlice(set, get, ...args),
       ...createSkillSlice(set, get, ...args),
       ...createCombatSlice(set, get, ...args), 
@@ -97,6 +100,7 @@ export const useGameStore = create<FullStoreState>()(
       ...createWorldShopSlice(set, get, ...args),
       ...createEnchantingSlice(set, get, ...args),
 
+      // Global actions
       emitEvent: (type, message, icon) => set((state) => {
         const newEvent: GameEvent = {
           id: Math.random().toString(36).substring(2, 9),
@@ -105,6 +109,7 @@ export const useGameStore = create<FullStoreState>()(
           icon,
           timestamp: Date.now()
         };
+        // Keep log size manageable
         return { events: [newEvent, ...state.events].slice(0, 50) };
       }),
 
@@ -134,6 +139,7 @@ export const useGameStore = create<FullStoreState>()(
     { 
       name: 'ggez-idle-storage',
       
+      // Custom merge to handle migrations or deep merges if needed
       merge: (persistedState: unknown, currentState: FullStoreState) => {
         const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
         if (!typedPersisted) return currentState;
@@ -141,6 +147,7 @@ export const useGameStore = create<FullStoreState>()(
         return {
           ...currentState,
           ...typedPersisted,
+          // Deep merge critical nested objects to ensure new keys (like 'alchemy') exist
           combatStats: {
             ...DEFAULT_STATE.combatStats,
             ...(typedPersisted.combatStats || {}),
@@ -150,16 +157,19 @@ export const useGameStore = create<FullStoreState>()(
             ...DEFAULT_STATE.skills,
             ...(typedPersisted.skills || {})
           },
+          // Reset transient state
           enemy: null,
           activeAction: typedPersisted.activeAction || null,
           rewardModal: { isOpen: false, title: '', rewards: [] }
         };
       },
 
+      // Only persist necessary parts
       partialize: (state) => {
         const rest = { ...state };
         delete (rest as Partial<FullStoreState>).offlineSummary; 
         delete (rest as Partial<FullStoreState>).rewardModal; 
+        // We could also delete 'enemy' here if we wanted strictly transient enemies
         return rest;
       }
     }

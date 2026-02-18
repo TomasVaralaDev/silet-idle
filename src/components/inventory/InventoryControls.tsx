@@ -15,7 +15,7 @@ export default function InventoryControls({
   const filters: { id: FilterType; label: string }[] = [
     { id: 'all', label: 'All' },
     { id: 'equipment', label: 'Gear' },
-    { id: 'consumable', label: 'Food' },
+    { id: 'consumable', label: 'Consumables' },
     { id: 'material', label: 'Mats' },
   ];
 

@@ -154,7 +154,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                         const itemDetails = getItemDetails(drop.itemId);
                         const iconPath = itemDetails?.icon || '/assets/ui/icon_missing.png';
                         return (
-                          <div key={index} className="relative group/drop">
+                          <div key={index} className="relative group/drop" title={`${drop.chance}%`}>
                             <img src={iconPath} className="w-5 h-5 pixelated object-contain" alt={drop.itemId} />
                           </div>
                         );

@@ -43,11 +43,10 @@ export default function ViewRouter({ currentView, state, onSellClick, onGamble }
     'woodcutting', 
     'mining', 
     'fishing', 
-    'farming', 
     'foraging',
     'crafting', 
-    'smithing', 
-    'cooking'
+    'smithing',
+    'alchemy'
   ];
   
   if (skills.includes(currentView as SkillType)) {

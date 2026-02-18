@@ -1,127 +1,195 @@
 import type { StateCreator } from 'zustand';
 import type { FullStoreState } from '../useGameStore';
-import { DEFAULT_STATE } from '../useGameStore';
 import { getItemDetails } from '../../data';
-import { isEquipmentSlot } from '../../utils/gameUtils';
-import type { Resource, EquipmentSlot, ShopItem } from '../../types';
+import type { EquipmentSlot, ShopItem } from '../../types';
 
 export interface InventorySlice {
+  // State
   inventory: Record<string, number>;
   coins: number;
   upgrades: string[];
   equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
   equippedFood: { itemId: string, count: number } | null;
   
-  sellItem: (itemId: string, amount: number | 'all') => void;
+  // Actions
+  sellItem: (itemId: string) => void;
   buyUpgrade: (item: ShopItem) => void;
-  gamble: (amount: number) => boolean;
-  equipItem: (itemId: string, targetSlot: EquipmentSlot) => void;
+  gamble: (amount: number, callback: (win: boolean) => void) => void;
+  
+  // Unified Equip/Unequip
+  equipItem: (itemId: string) => void;
   unequipItem: (slot: string) => void;
-  equipFood: (itemId: string, amount: number) => void;
-  unequipFood: () => void;
+  
+  // Legacy / Specific actions
   enchantItem: (originalId: string, newId: string, cost: number) => void;
 }
 
-export const createInventorySlice: StateCreator<FullStoreState, [], [], InventorySlice> = (set) => ({
-  inventory: DEFAULT_STATE.inventory,
-  coins: DEFAULT_STATE.coins,
-  upgrades: DEFAULT_STATE.upgrades,
-  equipment: DEFAULT_STATE.equipment,
-  equippedFood: DEFAULT_STATE.equippedFood,
+export const createInventorySlice: StateCreator<
+  FullStoreState,
+  [],
+  [],
+  InventorySlice
+> = (set) => ({ // Poistettu 'get' tästä
+  inventory: {},
+  coins: 0,
+  upgrades: [],
+  equipment: {
+    head: null, body: null, legs: null, weapon: null, shield: null,
+    necklace: null, ring: null, rune: null, skill: null
+  },
+  equippedFood: null,
 
-  sellItem: (itemId, amountToSell) => set((state: FullStoreState) => {
+  sellItem: (itemId) => set((state) => {
     const item = getItemDetails(itemId);
-    const currentCount = state.inventory[itemId] || 0;
-    if (!item || currentCount <= 0) return {};
-    const count = amountToSell === 'all' ? currentCount : Math.min(amountToSell, currentCount);
+    const count = state.inventory[itemId] || 0;
+    
+    if (!item || count <= 0) return {};
+
     const profit = count * item.value;
     const newInventory = { ...state.inventory };
-    newInventory[itemId] -= count;
-    if (newInventory[itemId] <= 0) delete newInventory[itemId];
-    return { coins: state.coins + profit, inventory: newInventory };
+    delete newInventory[itemId]; // Myydään kaikki kerralla
+
+    return { 
+      coins: state.coins + profit, 
+      inventory: newInventory 
+    };
   }),
 
-    buyUpgrade: (item) => set((state: FullStoreState) => {
-        // KORJAUS: Vaihdettu item.cost -> item.price
-        if (state.coins >= item.price && !state.upgrades.includes(item.id)) {
-        return { 
-            coins: state.coins - item.price, 
-            upgrades: [...state.upgrades, item.id] 
-        };
-        }
-        return {};
-    }),
+  buyUpgrade: (item) => set((state) => {
+    if (state.coins >= item.price && !state.upgrades.includes(item.id)) {
+      return { 
+        coins: state.coins - item.price, 
+        upgrades: [...state.upgrades, item.id] 
+      };
+    }
+    return {};
+  }),
 
-  gamble: (amount) => {
-    const isWin = Math.random() >= 0.5;
-    set((state: FullStoreState) => ({ coins: isWin ? state.coins + amount : state.coins - amount }));
-    return isWin;
+  gamble: (amount, callback) => {
+    set((state) => {
+      if (state.coins < amount) return {};
+      
+      const isWin = Math.random() >= 0.5;
+      callback(isWin); 
+      
+      return { 
+        coins: isWin ? state.coins + amount : state.coins - amount 
+      };
+    });
   },
 
-  equipItem: (itemId, targetSlot) => set((state: FullStoreState) => {
-    if (targetSlot === 'food' || !isEquipmentSlot(targetSlot)) return {};
-    const item = getItemDetails(itemId) as Resource;
-    if (!item || !item.slot || item.slot !== targetSlot) return {};
-    const newInventory = { ...state.inventory };
-    const newEquipment = { ...state.equipment };
-    const currentEquipped = newEquipment[targetSlot];
-    newInventory[itemId] -= 1;
-    if (newInventory[itemId] <= 0) delete newInventory[itemId];
-    if (currentEquipped) newInventory[currentEquipped] = (newInventory[currentEquipped] || 0) + 1;
-    newEquipment[targetSlot] = itemId;
-    return { inventory: newInventory, equipment: newEquipment };
-  }),
+  equipItem: (itemId) => set((state) => {
+    const item = getItemDetails(itemId);
+    if (!item || !item.slot) return {}; 
 
-  unequipItem: (slot) => set((state: FullStoreState) => {
-    if (slot === 'food' || !isEquipmentSlot(slot)) return {};
-    const validSlot = slot as keyof typeof state.equipment;
-    const itemId = state.equipment[validSlot];
-    if (!itemId) return {};
-    const newEquipment = { ...state.equipment, [validSlot]: null };
-    const newInventory = { ...state.inventory, [itemId]: (state.inventory[itemId] || 0) + 1 };
-    return { equipment: newEquipment, inventory: newInventory };
-  }),
-
-  equipFood: (itemId, amount) => set((state: FullStoreState) => {
-    const item = getItemDetails(itemId) as Resource;
-    if (!item || !item.healing) return {};
     const newInventory = { ...state.inventory };
-    let newEquippedFood = state.equippedFood ? { ...state.equippedFood } : null;
-    if (newEquippedFood) newInventory[newEquippedFood.itemId] = (newInventory[newEquippedFood.itemId] || 0) + newEquippedFood.count;
-    if (newInventory[itemId] >= amount) {
-      newInventory[itemId] -= amount;
-      if (newInventory[itemId] <= 0) delete newInventory[itemId];
-      newEquippedFood = { itemId, count: amount };
+    const currentCount = newInventory[itemId] || 0;
+    if (currentCount <= 0) return {};
+
+    // --- CASE 1: FOOD ---
+    if (item.slot === 'food') {
+      if (state.equippedFood) {
+        const oldId = state.equippedFood.itemId;
+        newInventory[oldId] = (newInventory[oldId] || 0) + state.equippedFood.count;
+      }
+
+      delete newInventory[itemId];
+      
+      return {
+        inventory: newInventory,
+        equippedFood: { itemId, count: currentCount }
+      };
     }
-    return { inventory: newInventory, equippedFood: newEquippedFood };
+
+    // --- CASE 2: EQUIPMENT ---
+    else {
+      const slot = item.slot as Exclude<EquipmentSlot, 'food'>;
+      const currentEquipId = state.equipment[slot];
+
+      if (currentEquipId) {
+        newInventory[currentEquipId] = (newInventory[currentEquipId] || 0) + 1;
+      }
+
+      if (currentCount > 1) {
+        newInventory[itemId] = currentCount - 1;
+      } else {
+        delete newInventory[itemId];
+      }
+
+      return {
+        inventory: newInventory,
+        equipment: {
+          ...state.equipment,
+          [slot]: itemId
+        }
+      };
+    }
   }),
 
-  unequipFood: () => set((state: FullStoreState) => {
-    if (!state.equippedFood) return {};
+  unequipItem: (slot) => set((state) => {
     const newInventory = { ...state.inventory };
-    newInventory[state.equippedFood.itemId] = (newInventory[state.equippedFood.itemId] || 0) + state.equippedFood.count;
-    return { inventory: newInventory, equippedFood: null };
+
+    // --- CASE 1: FOOD ---
+    if (slot === 'food') {
+      if (!state.equippedFood) return {};
+      
+      const { itemId, count } = state.equippedFood;
+      newInventory[itemId] = (newInventory[itemId] || 0) + count;
+      
+      return {
+        inventory: newInventory,
+        equippedFood: null
+      };
+    }
+
+    // --- CASE 2: EQUIPMENT ---
+    else {
+      const equipSlot = slot as keyof typeof state.equipment;
+      const itemId = state.equipment[equipSlot];
+      
+      if (!itemId) return {};
+
+      newInventory[itemId] = (newInventory[itemId] || 0) + 1;
+
+      return {
+        inventory: newInventory,
+        equipment: {
+          ...state.equipment,
+          [equipSlot]: null
+        }
+      };
+    }
   }),
 
-  enchantItem: (originalId, newId, cost) => set((state: FullStoreState) => {
+  enchantItem: (originalId, newId, cost) => set((state) => {
     if (state.coins < cost) return {};
+
     const newInventory = { ...state.inventory };
     const newEquipment = { ...state.equipment };
     let itemFound = false;
-    const equippedSlot = (Object.keys(newEquipment) as Array<keyof typeof newEquipment>).find(key => newEquipment[key] === originalId);
-    if (equippedSlot) { newEquipment[equippedSlot] = newId; itemFound = true; } 
+
+    const equippedSlot = (Object.keys(newEquipment) as Array<keyof typeof newEquipment>).find(
+      key => newEquipment[key] === originalId
+    );
+
+    if (equippedSlot) {
+      newEquipment[equippedSlot] = newId;
+      itemFound = true;
+    } 
     else if (newInventory[originalId]) {
       newInventory[originalId] -= 1;
       if (newInventory[originalId] <= 0) delete newInventory[originalId];
+      
       newInventory[newId] = (newInventory[newId] || 0) + 1;
       itemFound = true;
     }
+
     if (!itemFound) return {};
+
     return {
       coins: state.coins - cost,
       inventory: newInventory,
       equipment: newEquipment,
-      notification: { message: "Enchantment Successful!", icon: "/assets/ui/icon_check.png" }
-    } as Partial<FullStoreState>;
+    };
   }),
 });

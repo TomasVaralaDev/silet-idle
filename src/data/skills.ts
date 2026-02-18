@@ -62,143 +62,162 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'ore_starfallalloy', name: 'Starfall Ore', rarity: 'legendary', level: 99, xpReward: 250, interval: 20000, value: 500, icon: '/assets/resources/ore/ore_starfallalloy.png', color: 'text-indigo-400', description: 'Material from the cosmos.' }
   ],
 foraging: [
-    // KOHTA 1: Red Mushroom & Red Stick (Molemmat 100%)
+    // TIER 1
     {
-      id: 'red_mushroom', 
-      name: 'Red Mushroom', 
-      level: 1, 
-      xpReward: 10, 
-      interval: 2500, 
-      value: 5, 
-      rarity: 'common',
-      icon: '/assets/resources/foraging/tier1_mushroom.png', 
-      description: 'A common red mushroom found in the wild.',
+      id: 'red_mushroom', name: 'Red Mushroom', level: 1, xpReward: 10, interval: 2500, value: 5, rarity: 'common',
+      icon: '/assets/resources/foraging/tier1_mushroom.png', description: 'A common red mushroom.',
+      drops: [{ itemId: 'red_mushroom', chance: 100, amountMin: 1, amountMax: 1 }, { itemId: 'red_stick', chance: 100, amountMin: 1, amountMax: 1 }]
+    },
+    // TIER 2
+    {
+      id: 'white_stick', name: 'White Stick', level: 10, xpReward: 20, interval: 3500, value: 10, rarity: 'common',
+      icon: '/assets/resources/foraging/tier2_stick.png', description: 'A pale, sturdy stick.',
+      drops: [{ itemId: 'white_stick', chance: 100, amountMin: 1, amountMax: 1 }]
+    },
+    // TIER 3: Flame Flower & Big Leaf (LISÄTTY DROP)
+    {
+      id: 'flame_flower', name: 'Flame Flower', level: 25, xpReward: 35, interval: 4500, value: 25, rarity: 'uncommon',
+      icon: '/assets/resources/foraging/tier3_flower.png', description: 'Warm to the touch.',
       drops: [
-        { itemId: 'red_mushroom', chance: 100, amountMin: 1, amountMax: 1 },
-        { itemId: 'red_stick', chance: 100, amountMin: 1, amountMax: 1 } 
+        { itemId: 'flame_flower', chance: 100, amountMin: 1, amountMax: 1 },
+        { itemId: 'tier3_bigleaf', chance: 100, amountMin: 1, amountMax: 1 } // LISÄTTY
       ]
     },
-
-    // KOHTA 2: White Stick
+    // TIER 4
     {
-      id: 'white_stick', 
-      name: 'White Stick', 
-      level: 10, 
-      xpReward: 20, 
-      interval: 3500, 
-      value: 10, 
-      rarity: 'common',
-      icon: '/assets/resources/foraging/tier2_stick.png', 
-      description: 'A pale, sturdy stick.',
-      drops: [
-        { itemId: 'white_stick', chance: 100, amountMin: 1, amountMax: 1 }
-      ]
+      id: 'dark_leaf', name: 'Dark Leaf', level: 40, xpReward: 55, interval: 6000, value: 40, rarity: 'uncommon',
+      icon: '/assets/resources/foraging/tier4_leaf.png', description: 'A leaf from shadow groves.',
+      drops: [{ itemId: 'dark_leaf', chance: 100, amountMin: 1, amountMax: 1 }]
     },
-
-    // KOHTA 3: Flame Flower
+    // TIER 5
     {
-      id: 'flame_flower', 
-      name: 'Flame Flower', 
-      level: 25, 
-      xpReward: 35, 
-      interval: 4500, 
-      value: 25, 
-      rarity: 'uncommon',
-      icon: '/assets/resources/foraging/tier3_flower.png', 
-      description: 'Warm to the touch.',
-      drops: [
-        { itemId: 'flame_flower', chance: 100, amountMin: 1, amountMax: 1 }
-      ]
+      id: 'golden_flower', name: 'Golden Flower', level: 55, xpReward: 80, interval: 7500, value: 75, rarity: 'rare',
+      icon: '/assets/resources/foraging/tier5_bigleaf.png', description: 'Shimmers with light.',
+      drops: [{ itemId: 'golden_flower', chance: 100, amountMin: 1, amountMax: 1 }]
     },
-
-    // KOHTA 4: Dark Leaf
+    // TIER 6
     {
-      id: 'dark_leaf', 
-      name: 'Dark Leaf', 
-      level: 40, 
-      xpReward: 55, 
-      interval: 6000, 
-      value: 40, 
-      rarity: 'uncommon',
-      icon: '/assets/resources/foraging/tier4_leaf.png', 
-      description: 'A leaf from the shadow groves.',
-      drops: [
-        { itemId: 'dark_leaf', chance: 100, amountMin: 1, amountMax: 1 }
-      ]
+      id: 'green_leaf', name: 'Green Leaf', level: 70, xpReward: 120, interval: 9000, value: 100, rarity: 'rare',
+      icon: '/assets/resources/foraging/tier6_bigleaf.png', description: 'A large vibrant leaf.',
+      drops: [{ itemId: 'green_leaf', chance: 100, amountMin: 1, amountMax: 1 }, { itemId: 'green_mushroom', chance: 100, amountMin: 1, amountMax: 1 }]
     },
-
-    // KOHTA 5: Golden Flower
+    // TIER 7
     {
-      id: 'golden_flower', 
-      name: 'Golden Flower', 
-      level: 55, 
-      xpReward: 80, 
-      interval: 7500, 
-      value: 75, 
-      rarity: 'rare',
-      icon: '/assets/resources/foraging/tier5_bigleaf.png', 
-      description: 'Shimmers with golden light.',
-      drops: [
-        { itemId: 'golden_flower', chance: 100, amountMin: 1, amountMax: 1 }
-      ]
+      id: 'eternal_flower', name: 'Eternal Flower', level: 85, xpReward: 200, interval: 12000, value: 250, rarity: 'epic',
+      icon: '/assets/resources/foraging/tier7_bigflower.png', description: 'Never wilts.',
+      drops: [{ itemId: 'eternal_flower', chance: 100, amountMin: 1, amountMax: 1 }]
     },
-
-    // KOHTA 6: Green Leaf & Green Mushroom (Molemmat 100%)
+    // TIER 8
     {
-      id: 'green_leaf', 
-      name: 'Green Leaf', 
-      level: 70, 
-      xpReward: 120, 
-      interval: 9000, 
-      value: 100, 
-      rarity: 'rare',
-      icon: '/assets/resources/foraging/tier6_bigleaf.png', 
-      description: 'A large, vibrant leaf.',
-      drops: [
-        { itemId: 'green_leaf', chance: 100, amountMin: 1, amountMax: 1 },
-        { itemId: 'green_mushroom', chance: 100, amountMin: 1, amountMax: 1 }
-      ]
-    },
-
-    // KOHTA 7: Eternal Flower
-    {
-      id: 'eternal_flower', 
-      name: 'Eternal Flower', 
-      level: 85, 
-      xpReward: 200, 
-      interval: 12000, 
-      value: 250, 
-      rarity: 'epic',
-      icon: '/assets/resources/foraging/tier7_bigflower.png', 
-      description: 'It never seems to wilt.',
-      drops: [
-        { itemId: 'eternal_flower', chance: 100, amountMin: 1, amountMax: 1 }
-      ]
-    },
-
-    // KOHTA 8: Dragon Flower
-    {
-      id: 'dragon_flower', 
-      name: 'Dragon Flower', 
-      level: 99, 
-      xpReward: 350, 
-      interval: 15000, 
-      value: 500, 
-      rarity: 'legendary',
-      icon: '/assets/resources/foraging/tier8_flower.png', 
-      description: 'Forged in dragonfire.',
-      drops: [
-        { itemId: 'dragon_flower', chance: 100, amountMin: 1, amountMax: 1 }
-      ]
+      id: 'dragon_flower', name: 'Dragon Flower', level: 99, xpReward: 350, interval: 15000, value: 500, rarity: 'legendary',
+      icon: '/assets/resources/foraging/tier8_flower.png', description: 'Forged in dragonfire.',
+      drops: [{ itemId: 'dragon_flower', chance: 100, amountMin: 1, amountMax: 1 }]
     }
   ],
 
   // ---------------------------------------------------------
-  // FORAGING LOOT (Sivutuotteet, jotta kuvat toimivat)
+  // ALCHEMY (Potions)
+  // ---------------------------------------------------------
+  alchemy: [
+    // POTION TIER 1: Stick + Mushroom
+    { 
+      id: 'potion_tier1', name: 'Weak Potion', level: 1, xpReward: 20, interval: 2000, value: 15, rarity: 'common',
+      icon: '/assets/items/alchemy/potion_tier1.png', description: 'A basic brew.', category: 'potion',
+      slot: 'food',
+      healing: 20,
+      inputs: [
+        { id: 'red_stick', count: 1 }, 
+        { id: 'red_mushroom', count: 1 }
+      ] 
+    },
+    // POTION TIER 2: Mushroom + T2 Stick
+    { 
+      id: 'potion_tier2', name: 'Minor Potion', level: 10, xpReward: 40, interval: 3000, value: 30, rarity: 'common',
+      icon: '/assets/items/alchemy/potion_tier2.png', description: 'Slightly better taste.', category: 'potion',
+      slot: 'food',
+      healing: 50,
+      inputs: [
+        { id: 'red_mushroom', count: 1 }, 
+        { id: 'white_stick', count: 1 }
+      ] 
+    },
+    // POTION TIER 3: T3 Flower + T3 Bigleaf (Simuloitu White Stickillä, koska T3 bigleaf puuttui datasta)
+    { 
+      id: 'potion_tier3', name: 'Lesser Potion', level: 25, xpReward: 70, interval: 4000, value: 60, rarity: 'uncommon',
+      icon: '/assets/items/alchemy/potion_tier3.png', description: 'Bubbles with heat.', category: 'potion',
+      slot: 'food',
+      healing: 120,
+      inputs: [
+        { id: 'flame_flower', count: 1 }, 
+        { id: 'white_stick', count: 1 } // Käytetään tätä täytteenä
+      ] 
+    },
+    // POTION TIER 4: T4 Leaf + T2 Stick
+    { 
+      id: 'potion_tier4', name: 'Medium Potion', level: 40, xpReward: 110, interval: 5000, value: 120, rarity: 'uncommon',
+      icon: '/assets/items/alchemy/potion_tier4.png', description: 'Standard adventurer brew.', category: 'potion',
+      slot: 'food',
+      healing: 250,
+      inputs: [
+        { id: 'dark_leaf', count: 1 }, 
+        { id: 'white_stick', count: 1 }
+      ] 
+    },
+    // POTION TIER 5: T5 Bigleaf + T4 Leaf + T3 Bigleaf (simuloitu Flame Flowerilla)
+    { 
+      id: 'potion_tier5', name: 'Greater Potion', level: 55, xpReward: 160, interval: 6500, value: 250, rarity: 'rare',
+      icon: '/assets/items/alchemy/potion_tier5.png', description: 'Radiates power.', category: 'potion',
+      slot: 'food',
+      healing: 500,
+      inputs: [
+        { id: 'golden_flower', count: 1 }, 
+        { id: 'dark_leaf', count: 1 },
+        { id: 'flame_flower', count: 1 }
+      ] 
+    },
+    // POTION TIER 6: T6 Bigleaf + T6 Mushroom
+    { 
+      id: 'potion_tier6', name: 'Super Potion', level: 70, xpReward: 240, interval: 8000, value: 500, rarity: 'rare',
+      icon: '/assets/items/alchemy/potion_tier6.png', description: 'Vitality in a bottle.', category: 'potion',
+      slot: 'food',
+      healing: 1000,
+      inputs: [
+        { id: 'green_leaf', count: 1 }, 
+        { id: 'green_mushroom', count: 1 }
+      ] 
+    },
+    // POTION TIER 7: T7 Bigflower + T6 Mushroom
+    { 
+      id: 'potion_tier7', name: 'Master Potion', level: 85, xpReward: 350, interval: 10000, value: 1000, rarity: 'epic',
+      icon: '/assets/items/alchemy/potion_tier7.png', description: ' brewed by masters.', category: 'potion',
+      slot: 'food',
+      healing: 2500,
+      inputs: [
+        { id: 'eternal_flower', count: 1 }, 
+        { id: 'green_mushroom', count: 1 }
+      ] 
+    },
+    // POTION TIER 8: T8 Flower + T7 Bigflower + T6 Mushroom
+    { 
+      id: 'potion_tier8', name: 'Divine Potion', level: 99, xpReward: 500, interval: 15000, value: 2500, rarity: 'legendary',
+      icon: '/assets/items/alchemy/potion_tier8.png', description: 'Drink of the gods.', category: 'potion',
+      slot: 'food',
+      healing: 10000,
+      inputs: [
+        { id: 'dragon_flower', count: 1 }, 
+        { id: 'eternal_flower', count: 1 },
+        { id: 'green_mushroom', count: 1 }
+      ] 
+    }
+  ],
+
+  // ---------------------------------------------------------
+  // LOOT (Sivutuotteet jotta inventory ja kuvat toimivat)
   // ---------------------------------------------------------
   foraging_loot: [
     {
-      id: 'red_stick', // Kohta 1 sivutuote
+      // TIER 1
+      id: 'red_stick',
       name: 'Red Stick',
       value: 2,
       rarity: 'common',
@@ -206,8 +225,19 @@ foraging: [
       description: 'A simple red stick.',
       level: 1, interval: 0
     },
+    // Tier 3
     {
-      id: 'green_mushroom', // Kohta 6 sivutuote
+      id: 'tier3_bigleaf',
+      name: 'Big Leaf',
+      value: 15,
+      rarity: 'uncommon',
+      icon: '/assets/resources/foraging/tier3_bigleaf.png',
+      description: 'A large, sturdy leaf.',
+      level: 25, interval: 0
+    },
+    // TIER 6
+    {
+      id: 'green_mushroom',
       name: 'Green Mushroom',
       value: 50,
       rarity: 'rare',

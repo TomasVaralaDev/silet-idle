@@ -1,8 +1,8 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export type SkillType = 
-  | 'woodcutting' | 'mining' | 'fishing' | 'farming' | 'foraging' // LISÄTTY: foraging
-  | 'crafting' | 'smithing' | 'cooking' 
+  | 'woodcutting' | 'mining' | 'fishing' | 'foraging'
+  | 'crafting' | 'smithing' | 'alchemy'
   | 'hitpoints' | 'attack' | 'defense' 
   | 'melee' | 'ranged' | 'magic' | 'combat'
   | 'scavenging';

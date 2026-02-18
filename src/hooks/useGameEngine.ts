@@ -29,7 +29,7 @@ export const useGameEngine = () => {
 
           if (!resource) return { activeAction: null };
 
-          // 1. TARKISTUS: Onko meillä varaa jatkaa?
+          // 1. TARKISTUS: Materiaalit
           if (resource.inputs) {
             for (const input of resource.inputs) {
               const currentAmount = state.inventory[input.id] || 0;
@@ -39,7 +39,6 @@ export const useGameEngine = () => {
             }
           }
 
-          // KORJAUS 2: let -> const (ESLint fix)
           const newProgress = progress + TICK_RATE;
 
           // 2. Onko toiminto valmis?
@@ -47,7 +46,7 @@ export const useGameEngine = () => {
             
             const newInventory = { ...state.inventory };
 
-            // A) VÄHENNYS
+            // A) VÄHENNYS (Materiaalien kulutus)
             if (resource.inputs) {
               resource.inputs.forEach(input => {
                 newInventory[input.id] = (newInventory[input.id] || 0) - input.count;
@@ -55,15 +54,26 @@ export const useGameEngine = () => {
               });
             }
 
-            // B) XP
+            // B) XP JA LEVEL UP LOGIIKKA (KORJATTU)
+            // Haetaan nykyinen data turvallisesti
             const currentSkillData = state.skills[skill] || { xp: 0, level: 1 };
-            const newXp = currentSkillData.xp + (resource.xpReward || 0);
-            let newLevel = currentSkillData.level;
+            
+            // HUOM: Käytämme 'let', koska näitä arvoja muutetaan silmukassa
+            let currentXp = currentSkillData.xp + (resource.xpReward || 0);
+            let currentLevel = currentSkillData.level;
+            
+            // Lasketaan paljonko XP:tä tarvitaan seuraavaan tasoon nykyisellä tasolla
+            let xpRequired = currentLevel * 150; 
 
-            const xpForNext = newLevel * 150; 
-            if (newXp >= xpForNext) newLevel++;
+            // WHILE-silmukka varmistaa, että XP "nollautuu" (vähenee) ja level nousee,
+            // vaikka saisit kerralla enemmän XP:tä kuin yksi level vaatii.
+            while (currentXp >= xpRequired) {
+              currentXp = currentXp - xpRequired; // VÄHENNETÄÄN vaadittu määrä -> XP alkaa alusta
+              currentLevel++;                     // LEVEL UP
+              xpRequired = currentLevel * 150;    // Lasketaan uusi vaatimus seuraavalle tasolle
+            }
 
-            // C) PALKINTO
+            // C) PALKINTO (Drops)
             if (resource.drops && resource.drops.length > 0) {
               resource.drops.forEach(drop => {
                 const roll = Math.random() * 100;
@@ -80,7 +90,8 @@ export const useGameEngine = () => {
             return {
               skills: {
                 ...state.skills,
-                [skill]: { xp: newXp, level: newLevel }
+                // Tallennetaan uudet arvot: currentXp on nyt vähennetty arvo (esim. 10/300)
+                [skill]: { xp: currentXp, level: currentLevel }
               },
               inventory: newInventory,
               activeAction: {
@@ -90,6 +101,7 @@ export const useGameEngine = () => {
             } as Partial<FullStoreState>;
           }
 
+          // Jos ei valmis, päivitetään vain progress
           return {
             activeAction: {
               ...state.activeAction,

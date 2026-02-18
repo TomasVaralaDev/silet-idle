@@ -43,7 +43,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   };
 
   // ------------------------------------------------------------------
-  // 1. AUTO-EAT LOGIIKKA (HEALING)
+  // 1. AUTO-EAT LOGIIKKA (HEALING) & 10s COOLDOWN
   // ------------------------------------------------------------------
   let bonusHp = 0;
   Object.values(equipment).forEach(itemId => {
@@ -57,6 +57,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   });
   const maxHp = 100 + (skills.hitpoints.level * 10) + bonusHp;
 
+  // Vähennetään foodTimeria (tickMs on yleensä 100-1000ms riippuen pelin nopeudesta)
   extendedStats.foodTimer = Math.max(0, (extendedStats.foodTimer || 0) - tickMs);
   let pHP = extendedStats.hp;
 
@@ -68,7 +69,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     pHP > 0 && 
     pHP < maxHp && 
     hpPercent <= threshold && 
-    extendedStats.foodTimer <= 0
+    extendedStats.foodTimer <= 0 // Tarkistetaan että 10s on kulunut
   ) {
     const foodItem = getItemDetails(newEquippedFood.itemId);
     
@@ -78,14 +79,16 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
       const actualHeal = pHP - oldHp;
 
       extendedStats.hp = pHP; 
-      extendedStats.foodTimer = 3000; 
+      
+      // ASETETAAN 10 SEKUNNIN COOLDOWN (10 000 ms)
+      extendedStats.foodTimer = 10000; 
 
       newEquippedFood.count -= 1;
       if (newEquippedFood.count <= 0) {
         newEquippedFood = null;
-        addLog(`Consumed last ${foodItem.name}!`);
+        addLog(`Consumed last ${foodItem.name}! (10s CD)`);
       } else {
-        addLog(`Healed +${actualHeal} HP (${foodItem.name})`);
+        addLog(`Healed +${actualHeal} HP. Potion on cooldown (10s).`);
       }
     }
   }

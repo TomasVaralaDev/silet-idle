@@ -69,3 +69,14 @@ export const pickWeightedItem = (drops: WeightedDrop[]): WeightedDrop | null => 
 export const isEquipmentSlot = (slot: string): slot is 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'necklace' | 'ring' | 'rune' | 'skill' => {
   return ['head', 'body', 'legs', 'weapon', 'shield', 'necklace', 'ring', 'rune', 'skill'].includes(slot);
 };
+
+// inventory siivous
+export const sanitizeInventory = (inventory: Record<string, number>): Record<string, number> => {
+  const cleanInv = { ...inventory };
+  Object.keys(cleanInv).forEach(key => {
+    if (cleanInv[key] <= 0) {
+      delete cleanInv[key];
+    }
+  });
+  return cleanInv;
+};

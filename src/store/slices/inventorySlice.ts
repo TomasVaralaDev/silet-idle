@@ -178,6 +178,9 @@ export const createInventorySlice: StateCreator<
     } 
     else if (newInventory[originalId]) {
       newInventory[originalId] -= 1;
+      if (newInventory[originalId] <= 0) {
+        delete newInventory[originalId];
+      }
       if (newInventory[originalId] <= 0) delete newInventory[originalId];
       
       newInventory[newId] = (newInventory[newId] || 0) + 1;

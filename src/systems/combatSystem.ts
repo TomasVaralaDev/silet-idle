@@ -16,29 +16,40 @@ interface ExtendedCombatState extends CombatState {
 export const processCombatTick = (state: GameState, tickMs: number): Partial<GameState> => {
   const { combatStats, activeAction, inventory, skills, equipment, equippedFood, upgrades, combatSettings } = state;
 
-  // 1. TARKISTUKSET
   if (activeAction?.skill !== 'combat' || !combatStats.currentMapId) return {};
 
   const map = COMBAT_DATA.find(m => m.id === combatStats.currentMapId);
   if (!map) return {};
 
-  // 2. ALUSTUKSET
+  const currentLog = [...(combatStats.combatLog || [])];
+  const addLog = (msg: string) => {
+    currentLog.unshift(msg);
+    if (currentLog.length > 30) currentLog.splice(30);
+  };
+
   const extendedStats = { ...combatStats } as ExtendedCombatState;
   const newInventory = { ...inventory };
   let newEquippedFood = equippedFood ? { ...equippedFood } : null;
-  let currentLog = [...(extendedStats.combatLog || [])];
 
-  const addLog = (msg: string) => {
-    currentLog = [msg, ...currentLog].slice(0, 30);
+  // ------------------------------------------------------------------
+  // APUFUNKTIO: INVENTORYN SIIVOUS
+  // ------------------------------------------------------------------
+  const cleanInventory = (inv: Record<string, number>) => {
+    const cleaned = { ...inv };
+    Object.keys(cleaned).forEach(k => {
+      if (cleaned[k] <= 0) delete cleaned[k];
+    });
+    return cleaned;
   };
 
-  // 3. LASKE MAX HP (Välttämätön parannusta varten)
+  // ------------------------------------------------------------------
+  // 1. AUTO-EAT LOGIIKKA (HEALING)
+  // ------------------------------------------------------------------
   let bonusHp = 0;
   Object.values(equipment).forEach(itemId => {
     if (itemId) {
       const item = getItemDetails(itemId);
       if (item && item.stats) {
-        // Tyyppiturvallinen haku stats-objektista
         const itemStats = item.stats as Record<string, number | undefined>;
         if (itemStats.hp) bonusHp += itemStats.hp;
       }
@@ -46,15 +57,9 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   });
   const maxHp = 100 + (skills.hitpoints.level * 10) + bonusHp;
 
-  // 4. COOLDOWNIT
   extendedStats.foodTimer = Math.max(0, (extendedStats.foodTimer || 0) - tickMs);
-  
-  // Tärkeä muuttuja: Tämänhetkinen HP, jota muokataan tickin aikana
   let pHP = extendedStats.hp;
 
-  // ------------------------------------------------------------------
-  // 5. AUTO-EAT LOGIIKKA (HEALING)
-  // ------------------------------------------------------------------
   const hpPercent = (pHP / maxHp) * 100;
   const threshold = combatSettings.autoEatThreshold || 0;
 
@@ -72,11 +77,9 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
       pHP = Math.min(maxHp, pHP + foodItem.healing);
       const actualHeal = pHP - oldHp;
 
-      // Päivitetään tila heti
       extendedStats.hp = pHP; 
-      extendedStats.foodTimer = 3000; // 3 sekunnin jäähy
+      extendedStats.foodTimer = 3000; 
 
-      // Vähennetään ruoka
       newEquippedFood.count -= 1;
       if (newEquippedFood.count <= 0) {
         newEquippedFood = null;
@@ -88,7 +91,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   }
 
   // ------------------------------------------------------------------
-  // 6. RESPAWN JA TAUKO-LOGIIKKA
+  // 2. RESPAWN JA TAUKO-LOGIIKKA
   // ------------------------------------------------------------------
   if (extendedStats.respawnTimer > 0) {
     const nextTimer = Math.max(0, extendedStats.respawnTimer - tickMs);
@@ -96,7 +99,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     if (nextTimer === 0) {
       const currentMapNow = COMBAT_DATA.find(m => m.id === extendedStats.currentMapId) || map;
 
-      // Avainten tarkistus
       if (currentMapNow.isBoss && currentMapNow.keyRequired) {
         const keyCount = newInventory[currentMapNow.keyRequired] || 0;
         if (keyCount < 1) {
@@ -105,9 +107,11 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
             activeAction: null,
             enemy: null,
             combatStats: { ...extendedStats, hp: pHP, currentMapId: null, respawnTimer: 0, combatLog: currentLog },
-            equippedFood: newEquippedFood
+            equippedFood: newEquippedFood,
+            inventory: cleanInventory(newInventory)
           };
         }
+        
         newInventory[currentMapNow.keyRequired]--;
         addLog(`Used 1x ${getItemDetails(currentMapNow.keyRequired)?.name}`);
       }
@@ -127,7 +131,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
       };
 
       return {
-        inventory: newInventory,
+        inventory: cleanInventory(newInventory),
         enemy: newEnemy,
         equippedFood: newEquippedFood,
         combatStats: { ...extendedStats, hp: pHP, respawnTimer: 0, enemyCurrentHp: enemyStats.hp, attackTimer: 1000, combatLog: currentLog }
@@ -135,20 +139,21 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     }
     return { 
       combatStats: { ...extendedStats, hp: pHP, respawnTimer: nextTimer, combatLog: currentLog },
-      equippedFood: newEquippedFood
+      equippedFood: newEquippedFood,
+      inventory: cleanInventory(newInventory)
     };
   }
 
-  // --- ATTACK TIMER (ODOTUSVAIHE) ---
   if ((extendedStats.attackTimer || 0) > 0) {
     return { 
       combatStats: { ...extendedStats, hp: pHP, attackTimer: Math.max(0, (extendedStats.attackTimer || 0) - tickMs), combatLog: currentLog },
-      equippedFood: newEquippedFood
+      equippedFood: newEquippedFood,
+      inventory: cleanInventory(newInventory)
     };
   }
 
   // ------------------------------------------------------------------
-  // 7. TAISTELU (PELAAJA JA VIHOLLINEN LYÖVÄT)
+  // 3. TAISTELU
   // ------------------------------------------------------------------
   extendedStats.attackTimer = 1000;
   let currentEnemyHp = extendedStats.enemyCurrentHp;
@@ -157,14 +162,11 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   if (currentEnemyHp <= 0) {
     return { 
       combatStats: { ...extendedStats, hp: pHP, respawnTimer: 2000, enemyCurrentHp: 0, combatLog: currentLog },
-      equippedFood: newEquippedFood
+      equippedFood: newEquippedFood,
+      inventory: cleanInventory(newInventory)
     };
   }
 
-  // A) PELAAJA HYÖKKÄÄ
-  const weaponItem = equipment.weapon ? getItemDetails(equipment.weapon) as Resource : null;
-  const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
-  
   const gearStats = (Object.values(equipment) as (string | null)[]).reduce((acc: CombatStatsInternal, itemId) => {
     if (!itemId) return acc;
     const item = getItemDetails(itemId) as Resource;
@@ -175,6 +177,8 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     return acc;
   }, { attackDamage: 0, armor: 0 });
 
+  const weaponItem = equipment.weapon ? getItemDetails(equipment.weapon) as Resource : null;
+  const combatStyle: CombatStyle = weaponItem?.combatStyle || 'melee';
   const playerStats = getPlayerStats(skills, combatStyle, gearStats as unknown as CombatStatsInternal);
   const enemyStats = getEnemyStats({ hp: map.enemyHp, attack: map.enemyAttack }, map.id);
 
@@ -182,11 +186,9 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
   addLog(`Hit ${map.enemyName}: ${playerHit.finalDamage}${playerHit.isCrit ? "!" : ""}`);
 
-  // VICTORY?
   if (currentEnemyHp <= 0) {
     addLog(`Victory over ${map.enemyName}!`);
     
-    // XP laskenta
     const skillList: SkillType[] = ['hitpoints', 'attack', 'defense', combatStyle];
     skillList.forEach(s => {
       const mult = getXpMultiplier(s, upgrades);
@@ -194,7 +196,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
       newSkills[s] = { level: res.level, xp: res.xp };
     });
 
-    // Loot
     const dropResult = rollWeightedDrop(map.drops);
     if (dropResult) {
       const { itemId, amount } = dropResult;
@@ -205,7 +206,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     const newMaxMapCompleted = Math.max(extendedStats.maxMapCompleted, map.id);
     let nextMapId = extendedStats.currentMapId;
     
-    // Auto-progress
     if (combatSettings.autoProgress) {
       const nextMap = COMBAT_DATA.find(m => m.id === map.id + 1);
       if (nextMap) {
@@ -222,7 +222,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     }
 
     return {
-      inventory: newInventory,
+      inventory: cleanInventory(newInventory),
       skills: newSkills,
       enemy: null, 
       equippedFood: newEquippedFood,
@@ -239,7 +239,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     };
   }
 
-  // B) VIHOLLINEN HYÖKKÄÄ
   const enemyHit = calculateHit(enemyStats, playerStats);
   pHP = Math.max(0, pHP - enemyHit.finalDamage);
   
@@ -249,20 +248,19 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     addLog(`${map.enemyName} missed!`);
   }
 
-  // KUOLEMA?
   if (pHP <= 0) {
     addLog("Defeated! Returning to safety.");
     return {
       activeAction: null,
       enemy: null,
       combatStats: { ...extendedStats, hp: 0, currentMapId: null, enemyCurrentHp: 0, combatLog: currentLog },
-      equippedFood: newEquippedFood
+      equippedFood: newEquippedFood,
+      inventory: cleanInventory(newInventory)
     };
   }
 
-  // 8. PALAUTETAAN TILA
   return {
-    inventory: newInventory,
+    inventory: cleanInventory(newInventory),
     equippedFood: newEquippedFood,
     combatStats: { 
       ...extendedStats, 

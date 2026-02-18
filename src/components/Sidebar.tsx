@@ -138,7 +138,7 @@ export default function Sidebar({ currentView, setView, onReset, onLogout, onSto
             <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded border border-slate-800 transition-all">
               <div className="text-right hidden sm:block">
                 <div className="text-xs font-bold text-slate-300 truncate max-w-[100px]">{username || "Restorer"}</div>
-                <div className="text-[10px] text-cyan-500 font-mono">SYNC: {totalLevel}</div>
+                <div className="text-[10px] text-cyan-500 font-mono">Level: {totalLevel}</div>
               </div>
               <div className="w-10 h-10 bg-slate-900 rounded border border-slate-700 flex items-center justify-center relative overflow-hidden">
                   <img 

@@ -1,20 +1,55 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
-export type SkillType = 
-  | 'woodcutting' | 'mining' | 'fishing' | 'foraging'
-  | 'crafting' | 'smithing' | 'alchemy'
-  | 'hitpoints' | 'attack' | 'defense' 
-  | 'melee' | 'ranged' | 'magic' | 'combat'
+export type SkillType =
+  | 'woodcutting'
+  | 'mining'
+  | 'fishing'
+  | 'foraging'
+  | 'crafting'
+  | 'smithing'
+  | 'alchemy'
+  | 'hitpoints'
+  | 'attack'
+  | 'defense'
+  | 'melee'
+  | 'ranged'
+  | 'magic'
+  | 'combat'
   | 'scavenging';
 
-export type ViewType = SkillType | 'inventory' | 'shop' | 'gamble' | 'achievements' | 'scavenger' | 'enchanting' | 'worldmarket';
+export type ViewType =
+  | SkillType
+  | 'inventory'
+  | 'shop'
+  | 'gamble'
+  | 'achievements'
+  | 'scavenger'
+  | 'enchanting'
+  | 'worldmarket';
 
-export type EquipmentSlot = 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'necklace' | 'ring' | 'rune' | 'skill' | 'food';
+export type EquipmentSlot =
+  | 'head'
+  | 'body'
+  | 'legs'
+  | 'weapon'
+  | 'shield'
+  | 'necklace'
+  | 'ring'
+  | 'rune'
+  | 'skill'
+  | 'food';
 
 export type CombatStyle = 'melee' | 'ranged' | 'magic';
 
 // --- EVENT TYPES ---
-export type GameEventType = 'info' | 'success' | 'warning' | 'error' | 'loot' | 'combat' | 'levelUp';
+export type GameEventType =
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'loot'
+  | 'combat'
+  | 'levelUp';
 
 export interface GameEvent {
   id: string;
@@ -67,7 +102,7 @@ export interface CombatState {
   respawnTimer: number;
   foodTimer: number;
   combatLog: string[];
-  attackTimer?: number; 
+  attackTimer?: number;
 }
 
 export interface CalculatedStats {
@@ -107,7 +142,7 @@ export interface Resource {
     defense?: number;
     strength?: number;
   };
-  combatStyle?: CombatStyle; 
+  combatStyle?: CombatStyle;
   healing?: number;
   drops?: ResourceDrop[];
 }
@@ -116,7 +151,7 @@ export interface Resource {
 export interface Drop {
   itemId: string;
   chance: number;
-  amount: [number, number]; 
+  amount: [number, number];
 }
 
 // Lootit painoarvon mukaan (Weighted Pool)
@@ -124,18 +159,18 @@ export interface WeightedDrop {
   itemId: string;
   weight: number;
   amount?: [number, number];
-  chance?: number; 
+  chance?: number;
 }
 
 export interface CombatMap {
   id: number;
-  world: number; 
+  world: number;
   name: string;
   enemyName: string;
   enemyHp: number;
   enemyAttack: number;
   xpReward: number;
-  image?: string; 
+  image?: string;
   drops: WeightedDrop[];
   isBoss?: boolean;
   keyRequired?: string;
@@ -179,8 +214,8 @@ export interface ScavengerState {
 // --- SETTINGS & CONFIG ---
 
 export interface CombatSettings {
-  autoEatThreshold: number; 
-  autoProgress: boolean;    
+  autoEatThreshold: number;
+  autoProgress: boolean;
 }
 
 export interface SkillData {
@@ -191,29 +226,30 @@ export interface SkillData {
 // --- ROOT GAME STATE ---
 
 export interface GameState {
-  username: string; 
+  username: string;
   avatar: string;
   settings: GameSettings;
   inventory: Record<string, number>;
   skills: Record<SkillType, SkillData>; // Tähän sisältyy nyt foraging automaattisesti SkillTypen kautta
   equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
-  equippedFood: { itemId: string, count: number } | null;
+  equippedFood: { itemId: string; count: number } | null;
   combatSettings: CombatSettings;
   scavenger: ScavengerState;
   activeAction: ActiveAction | null;
   coins: number;
-  upgrades: string[]; 
+  upgrades: string[];
   unlockedAchievements: string[];
-  combatStats: CombatState; 
-  enemy: Enemy | null;      
+  combatStats: CombatState;
+  enemy: Enemy | null;
   lastTimestamp: number;
   events: GameEvent[];
+  social: SocialState;
 }
 
 export interface CombatResult {
   finalDamage: number;
   isCrit: boolean;
-  mitigationPercent: number; 
+  mitigationPercent: number;
 }
 
 // --- REWARDS ---
@@ -241,15 +277,15 @@ export interface WorldShopItem {
   icon: string;
   costCoins: number;
   costMaterials: MaterialRequirement[];
-  worldId: number; 
-  resultItemId: string; 
+  worldId: number;
+  resultItemId: string;
   resultAmount: number;
   dailyLimit?: number;
 }
 
 export interface WorldShopState {
-  purchases: Record<string, number>; 
-  lastResetTime: number; 
+  purchases: Record<string, number>;
+  lastResetTime: number;
 }
 
 export interface ResourceDrop {
@@ -257,4 +293,52 @@ export interface ResourceDrop {
   chance: number; // 0-100%
   amountMin: number;
   amountMax: number;
+}
+
+// --- Social features
+export interface Friend {
+  uid: string;
+  username: string; // Haetaan kun kaveri lisätään
+  addedAt: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: number;
+}
+
+export interface SocialState {
+  friends: Friend[];
+  incomingRequests: FriendRequest[]; // Pyynnöt minulle
+  outgoingRequests: FriendRequest[]; // Pyynnöt jotka minä lähetin
+  activeChatFriendId: string | null;
+  unreadMessages: Record<string, number>;
+}
+
+export interface FriendRequest {
+  id: string; // Dokumentin ID Firebasessa
+  fromUid: string;
+  fromUsername: string;
+  toUid: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  timestamp: number;
+}
+
+export interface GlobalChatMessage {
+  id: string;
+  senderUid: string;
+  senderUsername: string; // Tallennetaan nimi viestiin
+  text: string;
+  timestamp: number;
+}
+
+export interface SocialState {
+  friends: Friend[];
+  incomingRequests: FriendRequest[];
+  outgoingRequests: FriendRequest[];
+  globalMessages: GlobalChatMessage[]; // UUSI
+  activeChatFriendId: string | null;
+  unreadMessages: Record<string, number>;
 }

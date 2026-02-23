@@ -1,8 +1,8 @@
 import type { StateCreator } from 'zustand';
 import type { FullStoreState } from '../useGameStore';
-import type { Expedition, RewardEntry } from '../../types'; // Varmista RewardEntry
+import type { Expedition, RewardEntry } from '../../types'; 
 import { rollWeightedDrop } from '../../utils/loot';
-import { WORLD_LOOT } from '../../data/worlds';
+import { WORLD_LOOT, RUNES_DATA } from '../../data'; // Varmista että RUNES_DATA importattu
 
 export interface ScavengerSlice {
   startExpedition: (worldId: number, durationMinutes: number) => void;
@@ -14,7 +14,6 @@ export interface ScavengerSlice {
 export const createScavengerSlice: StateCreator<FullStoreState, [], [], ScavengerSlice> = (set, get) => ({
   
   startExpedition: (worldId, durationMinutes) => {
-    // ... (sama kuin aiemmin) ...
     const { scavenger } = get();
     if (scavenger.activeExpeditions.length >= scavenger.unlockedSlots) return;
 
@@ -34,7 +33,7 @@ export const createScavengerSlice: StateCreator<FullStoreState, [], [], Scavenge
   },
 
   claimExpedition: (expeditionId) => {
-    const { scavenger, inventory, openRewardModal } = get(); // Haetaan openRewardModal storesta
+    const { scavenger, inventory, openRewardModal } = get();
     const expedition = scavenger.activeExpeditions.find(e => e.id === expeditionId);
     if (!expedition) return;
 
@@ -46,29 +45,34 @@ export const createScavengerSlice: StateCreator<FullStoreState, [], [], Scavenge
     const minutes = Math.floor(expedition.duration / 1000 / 60);
     const rolls = Math.max(1, minutes); 
 
-    // Kerätään lootit listaan modaalia varten
     const rewardsMap: Record<string, number> = {};
 
     if (worldLootTable) {
       for (let i = 0; i < rolls; i++) {
+        // 1. Normaali lootti
         const result = rollWeightedDrop(worldLootTable);
         if (result) {
-          // Lisätään inventaarioon
           newInventory[result.itemId] = (newInventory[result.itemId] || 0) + result.amount;
-          
-          // Lisätään palkintolistaan (yhdistetään samat itemit)
           rewardsMap[result.itemId] = (rewardsMap[result.itemId] || 0) + result.amount;
+        }
+
+        // 2. --- DYNAAMINEN RUNE DROP (2% mahdollisuus per roll) ---
+        if (Math.random() < 1 && RUNES_DATA.length > 0) {
+          // Arvotaan mikä tahansa rune listasta
+          const randomRune = RUNES_DATA[Math.floor(Math.random() * RUNES_DATA.length)];
+          const runeId = randomRune.id;
+          
+          newInventory[runeId] = (newInventory[runeId] || 0) + 1;
+          rewardsMap[runeId] = (rewardsMap[runeId] || 0) + 1;
         }
       }
     }
 
-    // Muutetaan Map -> Array modaalia varten
     const rewardEntries: RewardEntry[] = Object.entries(rewardsMap).map(([itemId, amount]) => ({
       itemId,
       amount
     }));
 
-    // Päivitetään tila
     set((state) => ({
       inventory: newInventory,
       scavenger: {
@@ -77,12 +81,10 @@ export const createScavengerSlice: StateCreator<FullStoreState, [], [], Scavenge
       }
     }));
 
-    // AVATAAN MODAALI
     if (rewardEntries.length > 0) {
       openRewardModal(`Expedition W${expedition.mapId} Complete`, rewardEntries);
     } else {
-      // Jos tyhjä expedition (harvinaista mutta mahdollista)
-      openRewardModal(`Expedition W${expedition.mapId} Failed`, []);
+      openRewardModal(`Expedition W${expedition.mapId} Finished`, []);
     }
   },
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'; // Poistettu useEffect import
+import { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { GAME_DATA } from '../data/skills';
 import { getItemDetails } from '../data';
@@ -9,7 +9,6 @@ interface SkillViewProps {
   skill: SkillType;
 }
 
-// Määritellään kategoriat ja filtteröintilogiikka
 const SKILL_CATEGORIES: Record<string, { id: string; label: string; filter: (r: Resource) => boolean }[]> = {
   smithing: [
     { id: 'all', label: 'All', filter: () => true },
@@ -31,15 +30,11 @@ const SKILL_CATEGORIES: Record<string, { id: string; label: string; filter: (r: 
 };
 
 export default function SkillView({ skill }: SkillViewProps) {
-  const { skills, activeAction, inventory, setState } = useGameStore();
+  const { skills, activeAction, inventory, setState, equipment } = useGameStore();
   
-  // State aktiiviselle kategorialle
   const [activeCategory, setActiveCategory] = useState('all');
-  
-  // KORJAUS 1: Seurataan edellistä skilliä tilassa
   const [prevSkill, setPrevSkill] = useState(skill);
 
-  // KORJAUS 1: Jos skill vaihtuu, nollataan kategoria HETI (ennen renderöintiä)
   if (skill !== prevSkill) {
     setPrevSkill(skill);
     setActiveCategory('all');
@@ -62,6 +57,18 @@ export default function SkillView({ skill }: SkillViewProps) {
     const currentFilter = categories.find(c => c.id === activeCategory);
     return currentFilter ? currentFilter.filter(resource) : true;
   });
+
+  // --- DYNAAMINEN RUNE-LASKENTA UI:LLE ---
+  const runeDetails = equipment.rune ? getItemDetails(equipment.rune) : null;
+  let globalSpeedMultiplier = 1;
+  let globalXpMultiplier = 1;
+
+  if (runeDetails?.skillModifiers) {
+    const speedKey = `${skill}Speed` as keyof typeof runeDetails.skillModifiers;
+    const xpKey = `${skill}Xp` as keyof typeof runeDetails.skillModifiers;
+    globalSpeedMultiplier += (runeDetails.skillModifiers[speedKey] || 0);
+    globalXpMultiplier += (runeDetails.skillModifiers[xpKey] || 0);
+  }
 
   const handleStartAction = (resourceId: string, interval: number) => {
     if (activeAction?.resourceId === resourceId) {
@@ -104,11 +111,8 @@ export default function SkillView({ skill }: SkillViewProps) {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`
-                px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap
-                ${activeCategory === cat.id 
-                  ? 'bg-slate-200 text-slate-900' 
-                  : 'bg-slate-900 text-slate-500 hover:bg-slate-800 hover:text-slate-300'}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap
+                ${activeCategory === cat.id ? 'bg-slate-200 text-slate-900' : 'bg-slate-900 text-slate-500 hover:bg-slate-800 hover:text-slate-300'}
               `}
             >
               {cat.label}
@@ -123,6 +127,11 @@ export default function SkillView({ skill }: SkillViewProps) {
           {filteredResources.map((resource) => {
             const isUnlocked = currentLevel >= (resource.level || 1);
             const isActive = activeAction?.resourceId === resource.id;
+            
+            // Dynaamiset arvot UI:lle
+            const effectiveInterval = (resource.interval || 3000) / globalSpeedMultiplier;
+            const effectiveXp = (resource.xpReward || 0) * globalXpMultiplier;
+            
             const progress = isActive && activeAction ? (activeAction.progress / activeAction.targetTime) * 100 : 0;
             
             let canAfford = true;
@@ -138,13 +147,10 @@ export default function SkillView({ skill }: SkillViewProps) {
                 key={resource.id}
                 onClick={() => !isDisabled && handleStartAction(resource.id, resource.interval || 3000)}
                 disabled={isDisabled}
-                className={`
-                  relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col h-full group
+                className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col h-full group
                   ${isActive 
                     ? `bg-slate-900 border-${definition.color.split('-')[1]}-500 shadow-[0_0_20px_rgba(0,0,0,0.4)] scale-[1.02] z-10` 
-                    : isDisabled
-                      ? 'bg-slate-950 border-slate-900 opacity-50 cursor-not-allowed grayscale'
-                      : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-900'}
+                    : isDisabled ? 'bg-slate-950 border-slate-900 opacity-50 cursor-not-allowed grayscale' : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-900'}
                 `}
               >
                 <div className="flex items-start justify-between mb-4 w-full relative">
@@ -152,10 +158,9 @@ export default function SkillView({ skill }: SkillViewProps) {
                     {hasDrops ? (
                       resource.drops!.map((drop, index) => {
                         const itemDetails = getItemDetails(drop.itemId);
-                        const iconPath = itemDetails?.icon || '/assets/ui/icon_missing.png';
                         return (
                           <div key={index} className="relative group/drop" title={`${drop.chance}%`}>
-                            <img src={iconPath} className="w-5 h-5 pixelated object-contain" alt={drop.itemId} />
+                            <img src={itemDetails?.icon || '/assets/ui/icon_missing.png'} className="w-5 h-5 pixelated object-contain" alt={drop.itemId} />
                           </div>
                         );
                       })
@@ -163,9 +168,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                       <img src={isActive && resource.actionImage ? resource.actionImage : resource.icon} className={`w-10 h-10 pixelated transition-transform duration-500 ${isActive ? 'scale-110' : ''}`} alt={resource.name} />
                     )}
                   </div>
-                  
                   {isActive && <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20 animate-pulse ml-2">ACTIVE</span>}
-                  
                   {!isUnlocked ? (
                     <span className="px-2 py-1 rounded bg-red-900/20 text-red-400 text-[10px] font-bold border border-red-900/30 ml-2">LVL {resource.level}</span>
                   ) : !canAfford ? (
@@ -200,8 +203,14 @@ export default function SkillView({ skill }: SkillViewProps) {
                 {isUnlocked && (
                   <div className="mt-auto pt-3 border-t border-slate-800/50 w-full">
                     <div className="flex justify-between items-center text-xs mb-2">
-                      <span className="font-bold text-cyan-400">+{resource.xpReward} XP</span>
-                      <span className="font-bold text-slate-500">{(resource.interval! / 1000).toFixed(1)}s</span>
+                      {/* Korjattu XP väri ja määrä */}
+                      <span className={`font-bold ${globalXpMultiplier > 1 ? 'text-emerald-400' : 'text-cyan-400'}`}>
+                        +{effectiveXp.toFixed(1)} XP
+                      </span>
+                      {/* Korjattu Aika väri ja määrä */}
+                      <span className={`font-bold ${globalSpeedMultiplier > 1 ? 'text-emerald-400' : 'text-slate-500'}`}>
+                        {(effectiveInterval / 1000).toFixed(1)}s
+                      </span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
                       <div className={`h-full ${isActive ? definition.bgColor : 'bg-transparent'} transition-all duration-100 ease-linear`} style={{ width: `${progress}%` }} />

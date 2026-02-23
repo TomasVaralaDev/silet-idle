@@ -146,6 +146,21 @@ export interface Resource {
   combatStyle?: CombatStyle;
   healing?: number;
   drops?: ResourceDrop[];
+  // rune speed modifiers
+skillModifiers?: {
+    miningSpeed?: number;
+    miningXp?: number;
+    woodcuttingSpeed?: number;
+    woodcuttingXp?: number;
+    foragingSpeed?: number;
+    foragingXp?: number;
+    smithingSpeed?: number;
+    smithingXp?: number;
+    craftingSpeed?: number;
+    craftingXp?: number;
+    alchemySpeed?: number;
+    alchemyXp?: number;
+  };
 }
 
 // Lootit todennäköisyyden (0.0 - 1.0) mukaan

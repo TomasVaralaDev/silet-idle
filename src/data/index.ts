@@ -3,10 +3,11 @@ import { COMBAT_DATA } from './combat';
 import { GAME_DATA } from './skills';
 import { SHOP_ITEMS } from './shop';
 import { ACHIEVEMENTS } from './achievements';
+import { RUNES_DATA } from './runes'; // Tuodaan erillinen rune-data
 import { getBaseId, getEnchantLevel, applyEnchantStats } from '../utils/enchanting';
 import type { Resource } from '../types';
 
-export { WORLD_INFO, WORLD_LOOT, COMBAT_DATA, GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS };
+export { WORLD_INFO, WORLD_LOOT, COMBAT_DATA, GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, RUNES_DATA };
 
 /**
  * 1. Määritellään Factory-rajapinta.
@@ -17,12 +18,28 @@ interface ItemSubFactory {
 }
 
 /**
- * 2. World Loot Factory: Dustit, Helmet ja Elite-fragmentit
+ * 2. Rune Factory (DYNAAMINEN)
+ * Etsii tiedot runes.ts tiedostosta. Prioriteetti #1.
+ */
+const RuneFactory: ItemSubFactory = {
+  canHandle: (id) => id.startsWith('rune_'),
+  create: (id) => {
+    const rune = RUNES_DATA.find(r => r.id === id);
+    return rune || {};
+  }
+};
+
+/**
+ * 3. World Loot Factory (KORJATTU)
+ * Estetty rune-id:iden käsittely ja parannettu tyypin tunnistusta.
  */
 const WorldLootFactory: ItemSubFactory = {
-  canHandle: (id) => id.includes('_basic') || id.includes('_rare') || id.includes('_exotic'),
+  canHandle: (id) => !id.startsWith('rune_') && (id.includes('_basic') || id.includes('_rare') || id.includes('_exotic')),
   create: (id) => {
-    const [worldNameRaw, type] = id.split('_');
+    const parts = id.split('_');
+    const worldNameRaw = parts[0];
+    const type = parts[parts.length - 1]; // basic, rare tai exotic
+    
     const worldDisplay = worldNameRaw.charAt(0).toUpperCase() + worldNameRaw.slice(1);
     
     const configs: Record<string, { suffix: string, val: number, rar: Resource['rarity'], col: string }> = {
@@ -32,6 +49,8 @@ const WorldLootFactory: ItemSubFactory = {
     };
 
     const config = configs[type];
+    if (!config) return { name: id, value: 0, rarity: 'common' };
+
     return {
       name: `${worldDisplay} ${config.suffix}`,
       value: config.val,
@@ -44,7 +63,7 @@ const WorldLootFactory: ItemSubFactory = {
 };
 
 /**
- * 3. Key Factory: Pomovastusten avaimet
+ * 4. Key Factory
  */
 const KeyFactory: ItemSubFactory = {
   canHandle: (id) => id.startsWith('bosskey_w'),
@@ -62,20 +81,15 @@ const KeyFactory: ItemSubFactory = {
 };
 
 /**
- * 4. Enchant Scroll Factory (UUSI)
- * Tunnistaa IDt muotoa: scroll_enchant_w1, scroll_enchant_w2...
+ * 5. Enchant Scroll Factory
  */
 const EnchantScrollFactory: ItemSubFactory = {
   canHandle: (id) => id.startsWith('scroll_enchant_'),
   create: (id) => {
-    // Erotetaan tier numerosta (esim. "w1")
-    const tierPart = id.split('_').pop(); // "w1"
+    const tierPart = id.split('_').pop(); 
     const tier = parseInt(tierPart?.replace('w', '') || '1');
-    
-    // Konfiguraatio (nämä vastaavat shopin arvoja)
     const chances = [0, 5, 8, 12, 15, 20, 25, 30, 40]; 
     const chance = chances[tier] || 5;
-
     const rarityMap = ['common', 'common', 'common', 'rare', 'rare', 'epic', 'epic', 'legendary', 'legendary'];
     const colorMap = ['text-slate-400', 'text-slate-400', 'text-green-400', 'text-blue-400', 'text-blue-300', 'text-purple-400', 'text-purple-300', 'text-orange-400', 'text-yellow-400'];
 
@@ -91,7 +105,7 @@ const EnchantScrollFactory: ItemSubFactory = {
 };
 
 /**
- * 5. Skill Resource Factory: Kaikki GAME_DATAsta löytyvät esineet
+ * 6. Skill Resource Factory
  */
 const SkillResourceFactory: ItemSubFactory = {
   canHandle: (id) => {
@@ -109,12 +123,11 @@ const SkillResourceFactory: ItemSubFactory = {
 };
 
 /**
- * 6. PÄÄTEHDAS (The Master Factory)
+ * 7. PÄÄTEHDAS (The Master Factory)
  */
 export const getItemDetails = (id: string): Resource | null => {
   if (!id) return null;
 
-  // Erikoistapaus: Kolikot
   if (id === 'coins') {
     return { id: 'coins', name: 'Coins', value: 1, icon: '/assets/ui/coins.png', rarity: 'common' } as Resource;
   }
@@ -122,18 +135,21 @@ export const getItemDetails = (id: string): Resource | null => {
   const baseId = getBaseId(id);
   const enchantLevel = getEnchantLevel(id);
 
-  // Etsitään sopiva alitehdas
-  const factories = [WorldLootFactory, KeyFactory, EnchantScrollFactory, SkillResourceFactory]; // Lisätty EnchantScrollFactory
+  // PRIORITEETTIJÄRJESTYS: RuneFactory ensin, WorldLootFactory myöhemmin
+  const factories = [
+    RuneFactory,
+    KeyFactory,
+    EnchantScrollFactory,
+    WorldLootFactory, 
+    SkillResourceFactory
+  ];
+  
   const factory = factories.find(f => f.canHandle(baseId));
 
   if (!factory) return null;
 
-  // Luodaan pohja-esine
   const baseItem = factory.create(baseId);
-  
-  // Rakennetaan lopullinen Resource
   const finalItem = { ...baseItem, id: id } as Resource;
 
-  // Decorator-kuvio: Lisätään enchantmentit, jos niitä on
   return enchantLevel > 0 ? applyEnchantStats(finalItem, enchantLevel) : finalItem;
 };

@@ -12,7 +12,6 @@ import { db } from '../firebase';
 import { useGameStore } from '../store/useGameStore';
 import type { MarketListing } from '../types';
 
-// TÄMÄ ON EXPORT JOTA TYPESCRIPT ETSII
 export const getActiveListings = async (limitCount = 50) => {
   const q = query(
     collection(db, 'listings'),
@@ -34,23 +33,21 @@ export const createListing = async (
   pricePerItem: number,
 ) => {
   const userRef = doc(db, 'users', sellerUid);
+  const listingRef = doc(collection(db, 'listings'));
 
   return await runTransaction(db, async (transaction) => {
+    // KAIKKI READIT ALUKSI
     const userSnap = await transaction.get(userRef);
-    if (!userSnap.exists()) throw new Error('User profile not found');
+    if (!userSnap.exists()) throw new Error('User not found');
 
     const inv = userSnap.data().inventory || {};
     const currentAmount = inv[itemId] || 0;
-    if (currentAmount < amount) throw new Error('Not enough items in storage');
+    if (currentAmount < amount) throw new Error('Not enough items');
 
     const newAmount = currentAmount - amount;
 
-    // 1. Päivitä Firebase
-    transaction.update(userRef, {
-      [`inventory.${itemId}`]: newAmount,
-    });
-
-    const listingRef = doc(collection(db, 'listings'));
+    // SITTEN KAIKKI WRITET
+    transaction.update(userRef, { [`inventory.${itemId}`]: newAmount });
     transaction.set(listingRef, {
       sellerUid,
       sellerName,
@@ -62,10 +59,9 @@ export const createListing = async (
       createdAt: Date.now(),
     });
 
-    // 2. Päivitä paikallinen Store HETI (Estää duplikaation)
+    // Päivitä store
     const store = useGameStore.getState();
-    const updatedInventory = { ...store.inventory, [itemId]: newAmount };
-    store.setState({ inventory: updatedInventory });
+    store.setState({ inventory: { ...store.inventory, [itemId]: newAmount } });
   });
 };
 
@@ -74,30 +70,33 @@ export const purchaseListing = async (buyerUid: string, listingId: string) => {
   const buyerRef = doc(db, 'users', buyerUid);
 
   return await runTransaction(db, async (transaction) => {
+    // 1. KAIKKI READIT ALUKSI (Tämä korjaa "reads before writes" bugin)
     const listSnap = await transaction.get(listingRef);
     const buyerSnap = await transaction.get(buyerRef);
 
     if (!listSnap.exists() || listSnap.data().status !== 'active')
-      throw new Error('Listing sold or removed');
-    if (!buyerSnap.exists()) throw new Error('Buyer profile not found');
-
+      throw new Error('Listing gone');
     const listing = listSnap.data() as MarketListing;
+
+    const sellerRef = doc(db, 'users', listing.sellerUid);
+    const sellerSnap = await transaction.get(sellerRef); // Myyjän haku TÄSSÄ, ei myöhemmin!
+
+    if (!buyerSnap.exists()) throw new Error('Buyer not found');
     const buyerData = buyerSnap.data();
 
     if (buyerData.coins < listing.totalPrice)
-      throw new Error('Not enough fragments');
+      throw new Error('Not enough coins');
 
-    const newCoins = buyerData.coins - listing.totalPrice;
-    const newInventoryAmount =
+    // 2. KAIKKI WRITET LOPUKSI
+    const newBuyerCoins = buyerData.coins - listing.totalPrice;
+    const newInvAmount =
       (buyerData.inventory?.[listing.itemId] || 0) + listing.amount;
 
     transaction.update(buyerRef, {
-      coins: newCoins,
-      [`inventory.${listing.itemId}`]: newInventoryAmount,
+      coins: newBuyerCoins,
+      [`inventory.${listing.itemId}`]: newInvAmount,
     });
 
-    const sellerRef = doc(db, 'users', listing.sellerUid);
-    const sellerSnap = await transaction.get(sellerRef);
     if (sellerSnap.exists()) {
       transaction.update(sellerRef, {
         coins: (sellerSnap.data().coins || 0) + listing.totalPrice,
@@ -106,11 +105,11 @@ export const purchaseListing = async (buyerUid: string, listingId: string) => {
 
     transaction.update(listingRef, { status: 'sold' });
 
-    // Päivitä Store
+    // Päivitä store
     const store = useGameStore.getState();
     store.setState({
-      coins: newCoins,
-      inventory: { ...store.inventory, [listing.itemId]: newInventoryAmount },
+      coins: newBuyerCoins,
+      inventory: { ...store.inventory, [listing.itemId]: newInvAmount },
     });
   });
 };
@@ -120,25 +119,25 @@ export const cancelListing = async (listingId: string, sellerUid: string) => {
   const sellerRef = doc(db, 'users', sellerUid);
 
   return await runTransaction(db, async (transaction) => {
+    // READS
     const listSnap = await transaction.get(listingRef);
     const sellerSnap = await transaction.get(sellerRef);
 
-    if (!listSnap.exists()) throw new Error('Listing not found');
+    if (!listSnap.exists()) throw new Error('Not found');
     const listing = listSnap.data() as MarketListing;
+    if (listing.sellerUid !== sellerUid || listing.status !== 'active')
+      throw new Error('Invalid');
 
-    if (listing.sellerUid !== sellerUid) throw new Error('Unauthorized');
-    if (listing.status !== 'active')
-      throw new Error('Listing no longer active');
+    const newAmount =
+      (sellerSnap.data()?.inventory?.[listing.itemId] || 0) + listing.amount;
 
-    const currentInventory = sellerSnap.data()?.inventory || {};
-    const newAmount = (currentInventory[listing.itemId] || 0) + listing.amount;
-
+    // WRITES
     transaction.update(sellerRef, {
       [`inventory.${listing.itemId}`]: newAmount,
     });
     transaction.update(listingRef, { status: 'cancelled' });
 
-    // Päivitä Store (Palauta tavarat)
+    // Store sync
     const store = useGameStore.getState();
     store.setState({
       inventory: { ...store.inventory, [listing.itemId]: newAmount },

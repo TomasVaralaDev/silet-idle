@@ -8,25 +8,22 @@ interface Props {
 
 export default function InventorySelector({ selectedId, onSelect }: Props) {
   const inventory = useGameStore((state) => state.inventory);
-
-  // Suodatetaan vain ne, joita on varastossa
   const availableItems = Object.entries(inventory).filter(
     ([, count]) => count > 0,
   );
 
   return (
     <div className="flex flex-col h-full bg-slate-950/50 rounded-lg border border-slate-800 overflow-hidden">
-      {/* Header-rivi (vastaa Marketplace-selailua) */}
+      {/* Table Header */}
       <div className="flex items-center px-4 py-2 bg-slate-900/50 border-b border-slate-800 text-[9px] font-bold text-slate-600 uppercase tracking-widest">
-        <span className="flex-1">Resource Name</span>
-        <span className="w-20 text-right">Available</span>
+        <span className="flex-1">Local Storage Item</span>
+        <span className="w-20 text-right">Qty</span>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {availableItems.map(([id, count]) => {
           const item = getItemById(id);
           if (!item) return null;
-
           const isSelected = selectedId === id;
 
           return (
@@ -39,33 +36,24 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
                   : 'hover:bg-white/5 border-l-2 border-l-transparent'
               }`}
             >
-              {/* 1. Icon */}
-              <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                <img
-                  src={item.icon}
-                  alt=""
-                  className={`w-full h-full object-contain pixelated transition-transform group-hover:scale-110 ${
-                    isSelected ? 'brightness-125' : 'brightness-90'
-                  }`}
-                />
-              </div>
-
-              {/* 2. Name & Rarity */}
+              <img
+                src={item.icon}
+                className={`w-8 h-8 pixelated ${isSelected ? 'brightness-125' : 'brightness-75 opacity-70'}`}
+                alt=""
+              />
               <div className="flex flex-col items-start flex-1 overflow-hidden">
                 <span
-                  className={`text-sm font-bold truncate ${item.color || 'text-slate-200'}`}
+                  className={`text-xs font-bold truncate ${item.color || 'text-slate-300'}`}
                 >
                   {item.name}
                 </span>
-                <span className="text-[9px] text-slate-500 uppercase font-mono tracking-tighter">
+                <span className="text-[9px] text-slate-600 uppercase font-mono">
                   {item.rarity}
                 </span>
               </div>
-
-              {/* 3. Quantity (Tavern Style) */}
               <div className="w-20 text-right shrink-0">
                 <span
-                  className={`font-mono font-bold ${isSelected ? 'text-cyan-400' : 'text-slate-400'}`}
+                  className={`font-mono text-xs font-bold ${isSelected ? 'text-cyan-400' : 'text-slate-500'}`}
                 >
                   {count.toLocaleString()}
                 </span>
@@ -75,8 +63,8 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
         })}
 
         {availableItems.length === 0 && (
-          <div className="py-20 text-center text-slate-700 text-xs italic font-mono uppercase">
-            No distributable resources in local storage.
+          <div className="py-20 text-center text-slate-700 text-[10px] uppercase font-mono tracking-widest">
+            Relay database empty
           </div>
         )}
       </div>

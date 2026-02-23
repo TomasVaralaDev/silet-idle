@@ -25,7 +25,8 @@ export type ViewType =
   | 'achievements'
   | 'scavenger'
   | 'enchanting'
-  | 'worldmarket';
+  | 'worldmarket'
+  | 'marketplace';
 
 export type EquipmentSlot =
   | 'head'
@@ -341,4 +342,16 @@ export interface SocialState {
   globalMessages: GlobalChatMessage[]; // UUSI
   activeChatFriendId: string | null;
   unreadMessages: Record<string, number>;
+}
+
+export interface MarketListing {
+  id: string; // Firebasen dokumentti-ID
+  sellerUid: string; // Myyjän UID
+  sellerName: string; // Myyjän nimi (helpottaa näyttämistä)
+  itemId: string; // Esineen ID (viittaa Resource-tyyppiin)
+  amount: number; // Määrä joka on myynnissä
+  pricePerItem: number; // Yhden esineen hinta
+  totalPrice: number; // amount * pricePerItem
+  createdAt: number; // Milloin ilmoitus luotiin
+  status: 'active' | 'sold' | 'expired' | 'cancelled';
 }

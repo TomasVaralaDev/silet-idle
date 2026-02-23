@@ -1,17 +1,13 @@
-import type { GameState } from '../types';
+import type { GameState, CombatStyle } from '../types';
 
-/**
- * Määritellään tarvittavat rajapinnat tässä, jotta ne ovat synkrossa 
- * laskentalogiikan kanssa ja poistavat import-virheet.
- */
 export interface CombatStats {
   hp: number;
   maxHp: number;
-  attackLevel: number;
-  strengthLevel: number;
-  defenseLevel: number;
-  attackDamage: number;
-  armor: number;
+  mainStat: number;      // Taso/Skill level
+  weaponBase: number;    // Varusteiden damage
+  bonusDamage: number;   // Esim. potionit (+20%)
+  armor: number;         // Varusteiden armor
+  penetration: number;   // Armor penetration
   attackSpeed: number;
   critChance: number;
   critMultiplier: number;
@@ -20,109 +16,104 @@ export interface CombatStats {
 export interface CombatResult {
   finalDamage: number;
   isCrit: boolean;
-  mitigationPercent: number;
+  mitigationPercent: number; // Tieto siitä, paljonko armor vähensi
 }
 
-// VAKIOT
-const ARMOR_CONSTANT = 300; 
-const ACCURACY_CONSTANT = 0.5; 
+/**
+ * Laskee vihollisen HP:n ja vahingon maailman skaalauksen mukaan.
+ */
+export const getScaledMobStats = (worldId: number, isBoss: boolean = false) => {
+  const mobHp = Math.floor(100 * Math.pow(4, worldId - 1));
+  const mobDamage = Math.floor(10 * Math.pow(3.2, worldId - 1));
+
+  if (isBoss) {
+    return {
+      hp: Math.floor(mobHp * (25 + 5 * worldId)),
+      damage: Math.floor(mobDamage * (2 + 0.4 * worldId)),
+    };
+  }
+  return { hp: mobHp, damage: mobDamage };
+};
 
 /**
- * Laskee yhden hyökkäyksen lopputuloksen
+ * UUSI LASKENTAKAAVA (Diminishing returns + Armor penetration)
  */
 export const calculateHit = (attacker: CombatStats, defender: CombatStats): CombatResult => {
-  // 1. OSUMATARKKUUS (Accuracy vs Defense)
-  const hitChance = attacker.attackLevel / (attacker.attackLevel + (defender.defenseLevel * ACCURACY_CONSTANT));
-  const rollsHit = Math.random() < hitChance;
+  // 1. Perusvahinko: (Weapon + 0.5 * MainStat) * (1 + BonusDamage)
+  const baseHit = (attacker.weaponBase + (0.5 * attacker.mainStat)) * (1 + attacker.bonusDamage);
 
-  if (!rollsHit) {
-    return { finalDamage: 0, isCrit: false, mitigationPercent: 0 };
-  }
+  // 2. Panssarin vaikutus: EffectiveArmor = EnemyArmor - Penetration
+  const effectiveArmor = Math.max(0, defender.armor - attacker.penetration);
+  const mitigationFactor = 1 + (effectiveArmor / 100);
 
-  // 2. MAX HIT LASKENTA
-  // Peruskaava: 1 + voima-kerroin + varusteiden bonus
-  const maxHit = 1 + (attacker.strengthLevel * 0.8) + attacker.attackDamage;
+  // 3. Vahinko panssarin jälkeen
+  let rawDamage = baseHit / mitigationFactor;
 
-  // 3. KRIITTINEN OSUMA
+  // 4. Kriittinen osuma (Expected value tai satunnainen)
   const isCrit = Math.random() < attacker.critChance;
-  let rawDamage = 0;
-
   if (isCrit) {
-    rawDamage = maxHit * attacker.critMultiplier;
+    rawDamage *= attacker.critMultiplier;
   } else {
-    // Satunnainen luku väliltä 1 - maxHit
-    rawDamage = Math.floor(Math.random() * maxHit) + 1;
+    // 50-100% iskuvarianssi (ei aina sama isku)
+    rawDamage *= (0.5 + Math.random() * 0.5);
   }
-
-  // 4. VAHINGON VÄHENNYS (Armor / Defense Level)
-  const damageReduction = defender.defenseLevel / (defender.defenseLevel + ARMOR_CONSTANT);
-  const mitigationPercent = damageReduction;
-  const mitigatedDamage = rawDamage * (1 - damageReduction);
-
-  // 5. SATUNNAISVAIHTELU (+/- 10%)
-  const variance = 0.9 + (Math.random() * 0.2);
-  const damageWithVariance = mitigatedDamage * variance;
 
   return {
-    finalDamage: Math.max(1, Math.floor(damageWithVariance)),
+    finalDamage: Math.max(1, Math.floor(rawDamage)),
     isCrit,
-    mitigationPercent
+    mitigationPercent: Math.floor((1 - (1 / mitigationFactor)) * 100)
   };
 };
 
 /**
- * Muuntaa pelaajan taidot ja varusteet taistelustasiksi
+ * Muuntaa pelaajan tilan taistelustateiksi
  */
 export const getPlayerStats = (
   skills: GameState['skills'],
-  combatStyle: 'melee' | 'ranged' | 'magic',
-  equipmentBonus: Partial<CombatStats>
+  combatStyle: CombatStyle,
+  gear: { damage: number; armor: number }
 ): CombatStats => {
-  
-  // Valitaan voimataso tyylin mukaan (tässä yksinkertaistettu melee-attackiin)
-  const strengthLevel = skills[combatStyle]?.level || skills.attack.level; 
+  const styleLevel = skills[combatStyle]?.level || 1;
+  const baseAttackLevel = skills.attack.level || 1;
+  const totalDamageLevel = baseAttackLevel + styleLevel;
 
   return {
     hp: skills.hitpoints.level * 10,
     maxHp: skills.hitpoints.level * 10,
-    attackLevel: skills.attack.level,
-    strengthLevel: strengthLevel,
-    defenseLevel: skills.defense.level,
-    attackDamage: equipmentBonus.attackDamage || 0, 
-    armor: equipmentBonus.armor || 0,
-    attackSpeed: equipmentBonus.attackSpeed || 1.0, 
-    critChance: 0.05 + (skills.attack.level * 0.0001),
+    mainStat: totalDamageLevel,
+    weaponBase: gear.damage || 1, // Jos ei asetta, lyö 1
+    bonusDamage: 0, // Laajennetaan myöhemmin
+    armor: gear.armor || 0,
+    penetration: 0, // Laajennetaan myöhemmin
+    attackSpeed: 1.0,
+    critChance: 0.05 + (totalDamageLevel * 0.001),
     critMultiplier: 1.5,
-    // Sallitaan varusteiden ylikirjoittaa arvot (esim. attackSpeed)
-    ...equipmentBonus
-  } as CombatStats;
+  };
 };
 
 /**
- * Laskee vihollisen statsit skaalattuna tason mukaan
+ * Skaalaa vihollisen statsit
  */
-export const getEnemyStats = (
-  baseStats: { hp: number; attack: number }, 
-  level: number
-): CombatStats => {
-  const growth = 1.1; 
-  
-  // Skaalaus nousee tason mukaan eksponentiaalisesti
-  const scaledHp = Math.floor(baseStats.hp * Math.pow(growth, level * 0.5));
-  const scaledDmg = Math.floor(baseStats.attack * Math.pow(growth, level * 0.5));
-  const scaledDef = Math.floor(level * 2); 
-  const scaledAcc = Math.floor(level * 2);
+export const getEnemyStats = (enemy: { 
+  level: number; // Mappi/World level
+  attack: number; // Määritelty base attack
+  maxHp?: number; 
+  currentHp?: number;
+  worldId?: number;
+}): CombatStats => {
+  // Oletetaan, että vihollisen armor on n. 10% sen hyökkäyksestä
+  const estimatedArmor = Math.floor(enemy.attack * 0.1);
 
   return {
-    hp: scaledHp,
-    maxHp: scaledHp,
-    attackDamage: scaledDmg, 
-    attackLevel: scaledAcc,
-    strengthLevel: scaledDmg,
-    defenseLevel: scaledDef,
-    armor: 0,
-    attackSpeed: 0.8,
-    critChance: 0.05,
-    critMultiplier: 1.5
+    hp: enemy.currentHp || 10,
+    maxHp: enemy.maxHp || 10,
+    mainStat: 0,
+    weaponBase: enemy.attack,
+    bonusDamage: 0,
+    armor: estimatedArmor,
+    penetration: 0,
+    attackSpeed: 1.2,
+    critChance: 0.02,
+    critMultiplier: 1.2,
   };
 };

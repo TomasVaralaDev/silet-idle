@@ -1,39 +1,37 @@
 import type { SkillType, WeightedDrop } from '../types';
 
 /**
- * Laskee uuden tason ja XP:n
+ * UUSI: XP Laskenta (Hitaampi eteneminen, BaseXP 100, Level^1.6)
  */
 export const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
   let newXp = currentXp + xpReward;
   let newLevel = currentLevel;
-  let nextLevelReq = newLevel * 150;
+  
+  // XP Required = BaseXP * Level^1.6
+  const getRequiredXp = (lvl: number) => Math.floor(100 * Math.pow(lvl, 1.6));
+  
+  let nextLevelReq = getRequiredXp(newLevel);
   
   while (newXp >= nextLevelReq) {
     newXp -= nextLevelReq;
     newLevel++;
-    nextLevelReq = newLevel * 150;
+    nextLevelReq = getRequiredXp(newLevel);
   }
   return { level: newLevel, xp: newXp };
 };
 
 /**
  * Laskee nopeuskertoimen (Speed Multiplier)
- * 1.0 = normaali nopeus
- * 5.0 = 5 kertaa nopeampi (maksimi)
  */
 export const getSpeedMultiplier = (skill: SkillType, upgrades: string[]) => {
   let multiplier = 1.0;
 
-  // Lasketaan kaupan päivitykset (esim. 10% per päivitys)
   upgrades.forEach(upgradeId => {
-    // Tarkistetaan onko kyseessä tähän taitoon liittyvä nopeuspäivitys
     if (upgradeId.includes('speed') && upgradeId.includes(skill)) {
-      multiplier += 0.2; // 20% nopeuslisä per esine
+      multiplier += 0.2; 
     }
   });
 
-  // TÄRKEÄÄ: Asetetaan ehdoton katto 5.0x nopeudelle.
-  // Tämä estää 99% tai muut "rikkinäiset" bonukset sotkemasta peliä.
   return Math.min(multiplier, 5.0); 
 };
 
@@ -42,7 +40,7 @@ export const getSpeedMultiplier = (skill: SkillType, upgrades: string[]) => {
  */
 export const getXpMultiplier = (skill: SkillType, upgrades: string[]) => {
   const hasTome = upgrades.includes(`xp_tome_${skill}`);
-  return hasTome ? 1.5 : 1; // Kohtuullisempi 50% bonus
+  return hasTome ? 1.5 : 1; 
 };
 
 /**
@@ -63,14 +61,10 @@ export const pickWeightedItem = (drops: WeightedDrop[]): WeightedDrop | null => 
   return drops[0];
 };
 
-/**
- * Tarkistaa onko annettu string validi equipment slot
- */
 export const isEquipmentSlot = (slot: string): slot is 'head' | 'body' | 'legs' | 'weapon' | 'shield' | 'necklace' | 'ring' | 'rune' | 'skill' => {
   return ['head', 'body', 'legs', 'weapon', 'shield', 'necklace', 'ring', 'rune', 'skill'].includes(slot);
 };
 
-// inventory siivous
 export const sanitizeInventory = (inventory: Record<string, number>): Record<string, number> => {
   const cleanInv = { ...inventory };
   Object.keys(cleanInv).forEach(key => {

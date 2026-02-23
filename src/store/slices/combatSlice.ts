@@ -26,9 +26,8 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
       const currentInventory = get().inventory;
       const keyCount = currentInventory[map.keyRequired] || 0;
       
-      if (keyCount < 1) return; // UI pitäisi estää tämä, mutta varmistus
+      if (keyCount < 1) return;
 
-      // Kulutetaan avain heti aloituksessa
       set((state) => ({
         inventory: {
           ...state.inventory,

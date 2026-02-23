@@ -1,103 +1,135 @@
 import { WORLD_LOOT } from './worlds';
+import { calculateEnemyStats } from '../utils/enemyScaling';
 import type { CombatMap } from '../types';
+
+interface EnemyAesthetic {
+  world: number;
+  zone: number; // 1-10 (10 on aina bossi)
+  name: string;
+  enemyName: string;
+  image: string;
+}
 
 // Apufunktio, joka kytkee maailman lootit mappiin automaattisesti
 const getDropsForWorld = (worldId: number) => WORLD_LOOT[worldId] || [];
 
-export const COMBAT_DATA: CombatMap[] = [
-  // --- WORLD 1: GREENVALE (1–10) ---
-  { id: 1, world: 1, name: "Greenvale Plains", enemyName: "Harmless Slime", enemyHp: 25, enemyAttack: 3, xpReward: 10, image: '/assets/enemies/world1_greenvale/enemy_slime_harmless.png', drops: getDropsForWorld(1) },
-  { id: 2, world: 1, name: "Tall Grass", enemyName: "Blue Slime", enemyHp: 40, enemyAttack: 5, xpReward: 15, image: '/assets/enemies/world1_greenvale/enemy_slime_blue.png', drops: getDropsForWorld(1) },
-  { id: 3, world: 1, name: "Forest Edge", enemyName: "Cube Slime", enemyHp: 55, enemyAttack: 7, xpReward: 20, image: '/assets/enemies/world1_greenvale/enemy_slime_cube.png', drops: getDropsForWorld(1) },
-  { id: 4, world: 1, name: "Woodland Path", enemyName: "Deadly Flower", enemyHp: 70, enemyAttack: 9, xpReward: 30, image: '/assets/enemies/world1_greenvale/enemy_flower_deadly.png', drops: getDropsForWorld(1) },
-  { id: 5, world: 1, name: "Thorn Grove", enemyName: "Thorn Crawler", enemyHp: 90, enemyAttack: 12, xpReward: 40, image: '/assets/enemies/world1_greenvale/enemy_crawler_thorn.png', drops: getDropsForWorld(1) },
-  { id: 6, world: 1, name: "Mossy Clearing", enemyName: "Moss Beetle", enemyHp: 110, enemyAttack: 14, xpReward: 50, image: '/assets/enemies/world1_greenvale/enemy_beetle_moss.png', drops: getDropsForWorld(1) },
-  { id: 7, world: 1, name: "Serpent Hollow", enemyName: "Grove Serpent", enemyHp: 135, enemyAttack: 17, xpReward: 65, image: '/assets/enemies/world1_greenvale/enemy_serpent_grove.png', drops: getDropsForWorld(1) },
-  { id: 8, world: 1, name: "Bandit Trail", enemyName: "Melee Bandit", enemyHp: 160, enemyAttack: 20, xpReward: 80, image: '/assets/enemies/world1_greenvale/enemy_bandit_melee.png', drops: getDropsForWorld(1) },
-  { id: 9, world: 1, name: "Deep Woods", enemyName: "Woodland Stalker", enemyHp: 190, enemyAttack: 24, xpReward: 100, image: '/assets/enemies/world1_greenvale/enemy_stalker_woodland.png', drops: getDropsForWorld(1) },
-  { id: 10, world: 1, name: "Ancient Grove (BOSS)", enemyName: "Oakroot Guardian", enemyHp: 500, enemyAttack: 40, xpReward: 500, isBoss: true, keyRequired: 'bosskey_w1', image: '/assets/enemies/world1_greenvale/enemy_boss_guardian_oakroot.png', drops: getDropsForWorld(1) },
+// OCP: Määrittelemme vain vihollisten ulkonäön. 
+// Numeeriset arvot lasketaan automaattisesti, joten voimme muuttaa pelin tasapainoa koskematta tähän listaan.
+const ENEMY_AESTHETICS: EnemyAesthetic[] = [
+  // --- WORLD 1: GREENVALE ---
+  { world: 1, zone: 1, name: "Greenvale Plains", enemyName: "Harmless Slime", image: '/assets/enemies/world1_greenvale/enemy_slime_harmless.png' },
+  { world: 1, zone: 2, name: "Tall Grass", enemyName: "Blue Slime", image: '/assets/enemies/world1_greenvale/enemy_slime_blue.png' },
+  { world: 1, zone: 3, name: "Forest Edge", enemyName: "Cube Slime", image: '/assets/enemies/world1_greenvale/enemy_slime_cube.png' },
+  { world: 1, zone: 4, name: "Woodland Path", enemyName: "Deadly Flower", image: '/assets/enemies/world1_greenvale/enemy_flower_deadly.png' },
+  { world: 1, zone: 5, name: "Thorn Grove", enemyName: "Thorn Crawler", image: '/assets/enemies/world1_greenvale/enemy_crawler_thorn.png' },
+  { world: 1, zone: 6, name: "Mossy Clearing", enemyName: "Moss Beetle", image: '/assets/enemies/world1_greenvale/enemy_beetle_moss.png' },
+  { world: 1, zone: 7, name: "Serpent Hollow", enemyName: "Grove Serpent", image: '/assets/enemies/world1_greenvale/enemy_serpent_grove.png' },
+  { world: 1, zone: 8, name: "Bandit Trail", enemyName: "Melee Bandit", image: '/assets/enemies/world1_greenvale/enemy_bandit_melee.png' },
+  { world: 1, zone: 9, name: "Deep Woods", enemyName: "Woodland Stalker", image: '/assets/enemies/world1_greenvale/enemy_stalker_woodland.png' },
+  { world: 1, zone: 10, name: "Ancient Grove (BOSS)", enemyName: "Oakroot Guardian", image: '/assets/enemies/world1_greenvale/enemy_boss_guardian_oakroot.png' },
 
-  // --- WORLD 2: STONEFALL (11–20) ---
-  { id: 11, world: 2, name: "Rocky Pass", enemyName: "Cave Bat", enemyHp: 220, enemyAttack: 26, xpReward: 120, image: '/assets/enemies/world2_stonefall/enemy_bat_cave.png', drops: getDropsForWorld(2) },
-  { id: 12, world: 2, name: "Stone Tunnels", enemyName: "Rock Crab", enemyHp: 260, enemyAttack: 30, xpReward: 140, image: '/assets/enemies/world2_stonefall/enemy_crab_rock.png', drops: getDropsForWorld(2) },
-  { id: 13, world: 2, name: "Collapsed Mine", enemyName: "Tunnel Rat", enemyHp: 300, enemyAttack: 34, xpReward: 170, image: '/assets/enemies/world2_stonefall/enemy_rat_tunnel.png', drops: getDropsForWorld(2) },
-  { id: 14, world: 2, name: "Stoneworks", enemyName: "Stone Golem", enemyHp: 360, enemyAttack: 40, xpReward: 200, image: '/assets/enemies/world2_stonefall/enemy_golem_stone.png', drops: getDropsForWorld(2) },
-  { id: 15, world: 2, name: "Crystal Vein", enemyName: "Ironback Beetle", enemyHp: 420, enemyAttack: 46, xpReward: 240, image: '/assets/enemies/world2_stonefall/enemy_beetle_ironback.png', drops: getDropsForWorld(2) },
-  { id: 16, world: 2, name: "Mine Depths", enemyName: "Mine Crawler", enemyHp: 480, enemyAttack: 52, xpReward: 280, image: '/assets/enemies/world2_stonefall/enemy_crawler_mine.png', drops: getDropsForWorld(2) },
-  { id: 17, world: 2, name: "Gravel Fields", enemyName: "Gravel Hound", enemyHp: 550, enemyAttack: 60, xpReward: 330, image: '/assets/enemies/world2_stonefall/enemy_wolf_gravel.png', drops: getDropsForWorld(2) },
-  { id: 18, world: 2, name: "Crystal Cavern", enemyName: "Crystal Lurker", enemyHp: 620, enemyAttack: 68, xpReward: 380, image: '/assets/enemies/world2_stonefall/enemy_stalker_crystal.png', drops: getDropsForWorld(2) },
-  { id: 19, world: 2, name: "Abandoned Shaft", enemyName: "Rogue Miner", enemyHp: 700, enemyAttack: 75, xpReward: 450, image: '/assets/enemies/world2_stonefall/enemy_bandit_miner.png', drops: getDropsForWorld(2) },
-  { id: 20, world: 2, name: "Stonefall Core (BOSS)", enemyName: "The Stone Colossus", enemyHp: 1500, enemyAttack: 120, xpReward: 1500, isBoss: true, keyRequired: 'bosskey_w2', image: '/assets/enemies/world2_stonefall/enemy_boss_drake_stone.png', drops: getDropsForWorld(2) },
+  // --- WORLD 2: STONEFALL ---
+  { world: 2, zone: 1, name: "Rocky Pass", enemyName: "Cave Bat", image: '/assets/enemies/world2_stonefall/enemy_bat_cave.png' },
+  { world: 2, zone: 2, name: "Stone Tunnels", enemyName: "Rock Crab", image: '/assets/enemies/world2_stonefall/enemy_crab_rock.png' },
+  { world: 2, zone: 3, name: "Collapsed Mine", enemyName: "Tunnel Rat", image: '/assets/enemies/world2_stonefall/enemy_rat_tunnel.png' },
+  { world: 2, zone: 4, name: "Stoneworks", enemyName: "Stone Golem", image: '/assets/enemies/world2_stonefall/enemy_golem_stone.png' },
+  { world: 2, zone: 5, name: "Crystal Vein", enemyName: "Ironback Beetle", image: '/assets/enemies/world2_stonefall/enemy_beetle_ironback.png' },
+  { world: 2, zone: 6, name: "Mine Depths", enemyName: "Mine Crawler", image: '/assets/enemies/world2_stonefall/enemy_crawler_mine.png' },
+  { world: 2, zone: 7, name: "Gravel Fields", enemyName: "Gravel Hound", image: '/assets/enemies/world2_stonefall/enemy_wolf_gravel.png' },
+  { world: 2, zone: 8, name: "Crystal Cavern", enemyName: "Crystal Lurker", image: '/assets/enemies/world2_stonefall/enemy_stalker_crystal.png' },
+  { world: 2, zone: 9, name: "Abandoned Shaft", enemyName: "Rogue Miner", image: '/assets/enemies/world2_stonefall/enemy_bandit_miner.png' },
+  { world: 2, zone: 10, name: "Stonefall Core (BOSS)", enemyName: "The Stone Colossus", image: '/assets/enemies/world2_stonefall/enemy_boss_drake_stone.png' },
 
-  // --- WORLD 3: ASHRIDGE (21–30) ---
-  { id: 21, world: 3, name: "Ash Plains", enemyName: "Ash Imp", enemyHp: 780, enemyAttack: 85, xpReward: 520, image: '/assets/enemies/world3_ashridge/enemy_imp_ash.png', drops: getDropsForWorld(3) },
-  { id: 22, world: 3, name: "Cinder Path", enemyName: "Scorchling Slime", enemyHp: 860, enemyAttack: 95, xpReward: 600, image: '/assets/enemies/world3_ashridge/enemy_slime_scorchling.png', drops: getDropsForWorld(3) },
-  { id: 23, world: 3, name: "Burned Ridge", enemyName: "Ember Wolf", enemyHp: 950, enemyAttack: 105, xpReward: 700, image: '/assets/enemies/world3_ashridge/enemy_wolf_ember.png', drops: getDropsForWorld(3) },
-  { id: 24, world: 3, name: "Lava Fields", enemyName: "Lava Beetle", enemyHp: 1050, enemyAttack: 120, xpReward: 820, image: '/assets/enemies/world3_ashridge/enemy_beetle_lava.png', drops: getDropsForWorld(3) },
-  { id: 25, world: 3, name: "Molten Gorge", enemyName: "Cinder Serpent", enemyHp: 1180, enemyAttack: 135, xpReward: 960, image: '/assets/enemies/world3_ashridge/enemy_serpent_cinder.png', drops: getDropsForWorld(3) },
-  { id: 26, world: 3, name: "Ash Crypt", enemyName: "Firebound Skeleton", enemyHp: 1320, enemyAttack: 150, xpReward: 1120, image: '/assets/enemies/world3_ashridge/enemy_bandit_firebound.png', drops: getDropsForWorld(3) },
-  { id: 27, world: 3, name: "Smolder Pits", enemyName: "Magma Slime", enemyHp: 1500, enemyAttack: 170, xpReward: 1300, image: '/assets/enemies/world3_ashridge/enemy_slime_magma.png', drops: getDropsForWorld(3) },
-  { id: 28, world: 3, name: "Lava Rise", enemyName: "Smoldering Stalker", enemyHp: 1700, enemyAttack: 190, xpReward: 1500, image: '/assets/enemies/world3_ashridge/enemy_stalker_smoldering.png', drops: getDropsForWorld(3) },
-  { id: 29, world: 3, name: "Cult Grounds", enemyName: "Flame Cultist", enemyHp: 1950, enemyAttack: 215, xpReward: 1800, image: '/assets/enemies/world3_ashridge/enemy_bandit_cultist.png', drops: getDropsForWorld(3) },
-  { id: 30, world: 3, name: "Ashridge Core (BOSS)", enemyName: "Inferno Warden", enemyHp: 4000, enemyAttack: 350, xpReward: 4000, isBoss: true, keyRequired: 'bosskey_w3', image: '/assets/enemies/world3_ashridge/enemy_boss_warden_inferno.png', drops: getDropsForWorld(3) },
+  // --- WORLD 3: ASHRIDGE ---
+  { world: 3, zone: 1, name: "Ash Plains", enemyName: "Ash Imp", image: '/assets/enemies/world3_ashridge/enemy_imp_ash.png' },
+  { world: 3, zone: 2, name: "Cinder Path", enemyName: "Scorchling Slime", image: '/assets/enemies/world3_ashridge/enemy_slime_scorchling.png' },
+  { world: 3, zone: 3, name: "Burned Ridge", enemyName: "Ember Wolf", image: '/assets/enemies/world3_ashridge/enemy_wolf_ember.png' },
+  { world: 3, zone: 4, name: "Lava Fields", enemyName: "Lava Beetle", image: '/assets/enemies/world3_ashridge/enemy_beetle_lava.png' },
+  { world: 3, zone: 5, name: "Molten Gorge", enemyName: "Cinder Serpent", image: '/assets/enemies/world3_ashridge/enemy_serpent_cinder.png' },
+  { world: 3, zone: 6, name: "Ash Crypt", enemyName: "Firebound Skeleton", image: '/assets/enemies/world3_ashridge/enemy_bandit_firebound.png' },
+  { world: 3, zone: 7, name: "Smolder Pits", enemyName: "Magma Slime", image: '/assets/enemies/world3_ashridge/enemy_slime_magma.png' },
+  { world: 3, zone: 8, name: "Lava Rise", enemyName: "Smoldering Stalker", image: '/assets/enemies/world3_ashridge/enemy_stalker_smoldering.png' },
+  { world: 3, zone: 9, name: "Cult Grounds", enemyName: "Flame Cultist", image: '/assets/enemies/world3_ashridge/enemy_bandit_cultist.png' },
+  { world: 3, zone: 10, name: "Ashridge Core (BOSS)", enemyName: "Inferno Warden", image: '/assets/enemies/world3_ashridge/enemy_boss_warden_inferno.png' },
 
-  // --- WORLD 4: FROSTREACH (31–40) ---
-  { id: 31, world: 4, name: "Frozen Flats", enemyName: "Frost Rat", enemyHp: 2200, enemyAttack: 240, xpReward: 2100, image: '/assets/enemies/world4_frostreach/enemy_imp_frost.png', drops: getDropsForWorld(4) },
-  { id: 32, world: 4, name: "Ice Caves", enemyName: "Ice Spider", enemyHp: 2450, enemyAttack: 270, xpReward: 2400, image: '/assets/enemies/world4_frostreach/enemy_spider_frost.png', drops: getDropsForWorld(4) },
-  { id: 33, world: 4, name: "Snow Fields", enemyName: "Snow Wolf", enemyHp: 2750, enemyAttack: 300, xpReward: 2800, image: '/assets/enemies/world4_frostreach/enemy_wolf_frost.png', drops: getDropsForWorld(4) },
-  { id: 34, world: 4, name: "Frozen Battlefield", enemyName: "Frozen Soldier", enemyHp: 3100, enemyAttack: 340, xpReward: 3300, image: '/assets/enemies/world4_frostreach/enemy_bandit_frost.png', drops: getDropsForWorld(4) },
-  { id: 35, world: 4, name: "Glacier Pass", enemyName: "Glacier Beetle", enemyHp: 3500, enemyAttack: 380, xpReward: 3900, image: '/assets/enemies/world4_frostreach/enemy_beetle_frost.png', drops: getDropsForWorld(4) },
-  { id: 36, world: 4, name: "Icebound Ruins", enemyName: "Frost Imp", enemyHp: 3950, enemyAttack: 420, xpReward: 4600, image: '/assets/enemies/world4_frostreach/enemy_imp_frost.png', drops: getDropsForWorld(4) },
-  { id: 37, world: 4, name: "Frozen Depths", enemyName: "Icebound Golem", enemyHp: 4500, enemyAttack: 470, xpReward: 5400, image: '/assets/enemies/world4_frostreach/enemy_golem_frost.png', drops: getDropsForWorld(4) },
-  { id: 38, world: 4, name: "Blizzard Ridge", enemyName: "Blizzard Stalker", enemyHp: 5100, enemyAttack: 520, xpReward: 6300, image: '/assets/enemies/world4_frostreach/enemy_stalker_frost.png', drops: getDropsForWorld(4) },
-  { id: 39, world: 4, name: "Tundra Arena", enemyName: "Tundra Brute", enemyHp: 5800, enemyAttack: 580, xpReward: 7400, image: '/assets/enemies/world4_frostreach/enemy_brute_frost.png', drops: getDropsForWorld(4) },
-  { id: 40, world: 4, name: "Frozen Throne (BOSS)", enemyName: "The Icebound Sorcerer", enemyHp: 12000, enemyAttack: 950, xpReward: 12000, isBoss: true, keyRequired: 'bosskey_w4', image: '/assets/enemies/world4_frostreach/enemy_boss_mage_frost.png', drops: getDropsForWorld(4) },
+  // --- WORLD 4: FROSTREACH ---
+  { world: 4, zone: 1, name: "Frozen Flats", enemyName: "Frost Rat", image: '/assets/enemies/world4_frostreach/enemy_imp_frost.png' },
+  { world: 4, zone: 2, name: "Ice Caves", enemyName: "Ice Spider", image: '/assets/enemies/world4_frostreach/enemy_spider_frost.png' },
+  { world: 4, zone: 3, name: "Snow Fields", enemyName: "Snow Wolf", image: '/assets/enemies/world4_frostreach/enemy_wolf_frost.png' },
+  { world: 4, zone: 4, name: "Frozen Battlefield", enemyName: "Frozen Soldier", image: '/assets/enemies/world4_frostreach/enemy_bandit_frost.png' },
+  { world: 4, zone: 5, name: "Glacier Pass", enemyName: "Glacier Beetle", image: '/assets/enemies/world4_frostreach/enemy_beetle_frost.png' },
+  { world: 4, zone: 6, name: "Icebound Ruins", enemyName: "Frost Imp", image: '/assets/enemies/world4_frostreach/enemy_imp_frost.png' },
+  { world: 4, zone: 7, name: "Frozen Depths", enemyName: "Icebound Golem", image: '/assets/enemies/world4_frostreach/enemy_golem_frost.png' },
+  { world: 4, zone: 8, name: "Blizzard Ridge", enemyName: "Blizzard Stalker", image: '/assets/enemies/world4_frostreach/enemy_stalker_frost.png' },
+  { world: 4, zone: 9, name: "Tundra Arena", enemyName: "Tundra Brute", image: '/assets/enemies/world4_frostreach/enemy_brute_frost.png' },
+  { world: 4, zone: 10, name: "Frozen Throne (BOSS)", enemyName: "The Icebound Sorcerer", image: '/assets/enemies/world4_frostreach/enemy_boss_mage_frost.png' },
 
-  // --- WORLD 5: DUSKWOOD (41–50) ---
-  { id: 41, world: 5, name: "Twilight Edge", enemyName: "Shadow Rat", enemyHp: 6500, enemyAttack: 640, xpReward: 8500, image: '/assets/enemies/world5_duskwood/enemy_rat_shadow.png', drops: getDropsForWorld(5) },
-  { id: 42, world: 5, name: "Rot Grove", enemyName: "Night Stalker", enemyHp: 7400, enemyAttack: 710, xpReward: 9800, image: '/assets/enemies/world5_duskwood/enemy_stalker_shadow.png', drops: getDropsForWorld(5) },
-  { id: 43, world: 5, name: "Blight Nest", enemyName: "Blight Shroom", enemyHp: 8500, enemyAttack: 790, xpReward: 11500, image: '/assets/enemies/world5_duskwood/enemy_flower_shroom.png', drops: getDropsForWorld(5) },
-  { id: 44, world: 5, name: "Cursed Clearing", enemyName: "Cursed Tree", enemyHp: 9800, enemyAttack: 880, xpReward: 13500, image: '/assets/enemies/world5_duskwood/enemy_flower_tree.png', drops: getDropsForWorld(5) },
-  { id: 45, world: 5, name: "Night Paths", enemyName: "Withered Treant", enemyHp: 11300, enemyAttack: 980, xpReward: 16000, image: '/assets/enemies/world5_duskwood/enemy_beetle_shadow.png', drops: getDropsForWorld(5) },
-  { id: 46, world: 5, name: "Gravewood", enemyName: "Grave Hound", enemyHp: 13000, enemyAttack: 1080, xpReward: 19000, image: '/assets/enemies/world5_duskwood/enemy_wolf_shadow.png', drops: getDropsForWorld(5) },
-  { id: 47, world: 5, name: "Withered Hollow", enemyName: "Rotting Wolf", enemyHp: 15000, enemyAttack: 1200, xpReward: 22500, image: '/assets/enemies/world5_duskwood/enemy_wolf_rotting.png', drops: getDropsForWorld(5) },
-  { id: 48, world: 5, name: "Dark Shrine", enemyName: "Dark Ritualist", enemyHp: 17300, enemyAttack: 1350, xpReward: 26500, image: '/assets/enemies/world5_duskwood/enemy_bandit_ritualist_shadow.png', drops: getDropsForWorld(5) },
-  { id: 49, world: 5, name: "Shadow Vale", enemyName: "Shade Horror", enemyHp: 20000, enemyAttack: 1550, xpReward: 31000, image: '/assets/enemies/world5_duskwood/enemy_brute_shadow.png', drops: getDropsForWorld(5) },
-  { id: 50, world: 5, name: "Dreadwood Heart (BOSS)", enemyName: "The Dreadwood King", enemyHp: 42000, enemyAttack: 2600, xpReward: 60000, isBoss: true, keyRequired: 'bosskey_w5', image: '/assets/enemies/world5_duskwood/enemy_boss_king_shadow.png', drops: getDropsForWorld(5) },
+  // --- WORLD 5: DUSKWOOD ---
+  { world: 5, zone: 1, name: "Twilight Edge", enemyName: "Shadow Rat", image: '/assets/enemies/world5_duskwood/enemy_rat_shadow.png' },
+  { world: 5, zone: 2, name: "Rot Grove", enemyName: "Night Stalker", image: '/assets/enemies/world5_duskwood/enemy_stalker_shadow.png' },
+  { world: 5, zone: 3, name: "Blight Nest", enemyName: "Blight Shroom", image: '/assets/enemies/world5_duskwood/enemy_flower_shroom.png' },
+  { world: 5, zone: 4, name: "Cursed Clearing", enemyName: "Cursed Tree", image: '/assets/enemies/world5_duskwood/enemy_flower_tree.png' },
+  { world: 5, zone: 5, name: "Night Paths", enemyName: "Withered Treant", image: '/assets/enemies/world5_duskwood/enemy_beetle_shadow.png' },
+  { world: 5, zone: 6, name: "Gravewood", enemyName: "Grave Hound", image: '/assets/enemies/world5_duskwood/enemy_wolf_shadow.png' },
+  { world: 5, zone: 7, name: "Withered Hollow", enemyName: "Rotting Wolf", image: '/assets/enemies/world5_duskwood/enemy_wolf_rotting.png' },
+  { world: 5, zone: 8, name: "Dark Shrine", enemyName: "Dark Ritualist", image: '/assets/enemies/world5_duskwood/enemy_bandit_ritualist_shadow.png' },
+  { world: 5, zone: 9, name: "Shadow Vale", enemyName: "Shade Horror", image: '/assets/enemies/world5_duskwood/enemy_brute_shadow.png' },
+  { world: 5, zone: 10, name: "Dreadwood Heart (BOSS)", enemyName: "The Dreadwood King", image: '/assets/enemies/world5_duskwood/enemy_boss_king_shadow.png' },
 
-  // --- WORLD 6: STORMCOAST (51–60) ---
-  { id: 51, world: 6, name: "Shoreline", enemyName: "Tide Crawler", enemyHp: 24000, enemyAttack: 1750, xpReward: 35000, image: '/assets/enemies/world6_stormcoast/enemy_crab_lightning.png', drops: getDropsForWorld(6) },
-  { id: 52, world: 6, name: "Reef Break", enemyName: "Reef Shark", enemyHp: 28000, enemyAttack: 1950, xpReward: 41000, image: '/assets/enemies/world6_stormcoast/enemy_shark_reef.png', drops: getDropsForWorld(6) },
-  { id: 53, world: 6, name: "Cliff Winds", enemyName: "Storm Gull", enemyHp: 32000, enemyAttack: 2150, xpReward: 48000, image: '/assets/enemies/world6_stormcoast/enemy_imp_lightning.png', drops: getDropsForWorld(6) },
-  { id: 54, world: 6, name: "Deep Waters", enemyName: "Sea Serpent", enemyHp: 37000, enemyAttack: 2400, xpReward: 56000, image: '/assets/enemies/world6_stormcoast/enemy_serpent_sea.png', drops: getDropsForWorld(6) },
-  { id: 55, world: 6, name: "Brine Flats", enemyName: "Brine Brute", enemyHp: 43000, enemyAttack: 2700, xpReward: 66000, image: '/assets/enemies/world6_stormcoast/enemy_brute_lightning.png', drops: getDropsForWorld(6) },
-  { id: 56, world: 6, name: "Storm Surge", enemyName: "Thunder Eel", enemyHp: 50000, enemyAttack: 3050, xpReward: 78000, image: '/assets/enemies/world6_stormcoast/enemy_slime_lightning.png', drops: getDropsForWorld(6) },
-  { id: 57, world: 6, name: "Coral Reach", enemyName: "Coral Golem", enemyHp: 58000, enemyAttack: 3450, xpReward: 92000, image: '/assets/enemies/world6_stormcoast/enemy_golem_sea.png', drops: getDropsForWorld(6) },
-  { id: 58, world: 6, name: "Raider Coast", enemyName: "Deepwater Sorcerer", enemyHp: 67000, enemyAttack: 3900, xpReward: 110000, image: '/assets/enemies/world6_stormcoast/enemy_mage_water.png', drops: getDropsForWorld(6) },
-  { id: 59, world: 6, name: "Tempest Skies", enemyName: "Tempest Drake", enemyHp: 78000, enemyAttack: 4400, xpReward: 130000, image: '/assets/enemies/world6_stormcoast/enemy_drage_lightning_poison.png', drops: getDropsForWorld(6) },
-  { id: 60, world: 6, name: "Maelstrom Eye (BOSS)", enemyName: "Ruler of the Sea", enemyHp: 160000, enemyAttack: 7200, xpReward: 250000, isBoss: true, keyRequired: 'bosskey_w6', image: '/assets/enemies/world6_stormcoast/enemy_boss_serpent.png', drops: getDropsForWorld(6) },
+  // --- WORLD 6: STORMCOAST ---
+  { world: 6, zone: 1, name: "Shoreline", enemyName: "Tide Crawler", image: '/assets/enemies/world6_stormcoast/enemy_crab_lightning.png' },
+  { world: 6, zone: 2, name: "Reef Break", enemyName: "Reef Shark", image: '/assets/enemies/world6_stormcoast/enemy_shark_reef.png' },
+  { world: 6, zone: 3, name: "Cliff Winds", enemyName: "Storm Gull", image: '/assets/enemies/world6_stormcoast/enemy_imp_lightning.png' },
+  { world: 6, zone: 4, name: "Deep Waters", enemyName: "Sea Serpent", image: '/assets/enemies/world6_stormcoast/enemy_serpent_sea.png' },
+  { world: 6, zone: 5, name: "Brine Flats", enemyName: "Brine Brute", image: '/assets/enemies/world6_stormcoast/enemy_brute_lightning.png' },
+  { world: 6, zone: 6, name: "Storm Surge", enemyName: "Thunder Eel", image: '/assets/enemies/world6_stormcoast/enemy_slime_lightning.png' },
+  { world: 6, zone: 7, name: "Coral Reach", enemyName: "Coral Golem", image: '/assets/enemies/world6_stormcoast/enemy_golem_sea.png' },
+  { world: 6, zone: 8, name: "Raider Coast", enemyName: "Deepwater Sorcerer", image: '/assets/enemies/world6_stormcoast/enemy_mage_water.png' },
+  { world: 6, zone: 9, name: "Tempest Skies", enemyName: "Tempest Drake", image: '/assets/enemies/world6_stormcoast/enemy_drage_lightning_poison.png' },
+  { world: 6, zone: 10, name: "Maelstrom Eye (BOSS)", enemyName: "Ruler of the Sea", image: '/assets/enemies/world6_stormcoast/enemy_boss_serpent.png' },
 
-  // --- WORLD 7: VOID EXPANSE (61–70) ---
-  { id: 61, world: 7, name: "Rift Edge", enemyName: "Voidling", enemyHp: 95000, enemyAttack: 5200, xpReward: 150000, image: '/assets/enemies/world7_voidexpanse/enemy_slime_void.png', drops: getDropsForWorld(7) },
-  { id: 62, world: 7, name: "Abyss Pools", enemyName: "Void Imp", enemyHp: 110000, enemyAttack: 5800, xpReward: 180000, image: '/assets/enemies/world7_voidexpanse/enemy_imp_void_fire.png', drops: getDropsForWorld(7) },
-  { id: 63, world: 7, name: "Shadow Flats", enemyName: "Void Eel", enemyHp: 130000, enemyAttack: 6500, xpReward: 215000, image: '/assets/enemies/world7_voidexpanse/enemy_serpent_void.png', drops: getDropsForWorld(7) },
-  { id: 64, world: 7, name: "Void March", enemyName: "Abyss Walker", enemyHp: 155000, enemyAttack: 7300, xpReward: 255000, image: '/assets/enemies/world7_voidexpanse/enemy_brute_void.png', drops: getDropsForWorld(7) },
-  { id: 65, world: 7, name: "Null Zone", enemyName: "Null Beast", enemyHp: 185000, enemyAttack: 8200, xpReward: 300000, image: '/assets/enemies/world7_voidexpanse/enemy_golem_void_poison.png', drops: getDropsForWorld(7) },
-  { id: 66, world: 7, name: "Rift Paths", enemyName: "Void Stalker", enemyHp: 220000, enemyAttack: 9200, xpReward: 355000, image: '/assets/enemies/world7_voidexpanse/enemy_stalker_void.png', drops: getDropsForWorld(7) },
-  { id: 67, world: 7, name: "Entropy Fields", enemyName: "Entropy Wraith", enemyHp: 265000, enemyAttack: 10500, xpReward: 420000, image: '/assets/enemies/world7_voidexpanse/enemy_mage_void.png', drops: getDropsForWorld(7) },
-  { id: 68, world: 7, name: "Rift Citadel", enemyName: "Riftbound Knight", enemyHp: 320000, enemyAttack: 12000, xpReward: 500000, image: '/assets/enemies/world7_voidexpanse/enemy_knight_void.png', drops: getDropsForWorld(7) },
-  { id: 69, world: 7, name: "Starless Depths", enemyName: "Starless Succubus", enemyHp: 390000, enemyAttack: 14000, xpReward: 600000, image: '/assets/enemies/world7_voidexpanse/enemy_bandit_succubus.png', drops: getDropsForWorld(7) },
-  { id: 70, world: 7, name: "Void Core (BOSS)", enemyName: "The Void Architect", enemyHp: 800000, enemyAttack: 24000, xpReward: 1200000, isBoss: true, keyRequired: 'bosskey_w7', image: '/assets/enemies/world7_voidexpanse/enemy_boss_void.png', drops: getDropsForWorld(7) },
+  // --- WORLD 7: VOID EXPANSE ---
+  { world: 7, zone: 1, name: "Rift Edge", enemyName: "Voidling", image: '/assets/enemies/world7_voidexpanse/enemy_slime_void.png' },
+  { world: 7, zone: 2, name: "Abyss Pools", enemyName: "Void Imp", image: '/assets/enemies/world7_voidexpanse/enemy_imp_void_fire.png' },
+  { world: 7, zone: 3, name: "Shadow Flats", enemyName: "Void Eel", image: '/assets/enemies/world7_voidexpanse/enemy_serpent_void.png' },
+  { world: 7, zone: 4, name: "Void March", enemyName: "Abyss Walker", image: '/assets/enemies/world7_voidexpanse/enemy_brute_void.png' },
+  { world: 7, zone: 5, name: "Null Zone", enemyName: "Null Beast", image: '/assets/enemies/world7_voidexpanse/enemy_golem_void_poison.png' },
+  { world: 7, zone: 6, name: "Rift Paths", enemyName: "Void Stalker", image: '/assets/enemies/world7_voidexpanse/enemy_stalker_void.png' },
+  { world: 7, zone: 7, name: "Entropy Fields", enemyName: "Entropy Wraith", image: '/assets/enemies/world7_voidexpanse/enemy_mage_void.png' },
+  { world: 7, zone: 8, name: "Rift Citadel", enemyName: "Riftbound Knight", image: '/assets/enemies/world7_voidexpanse/enemy_knight_void.png' },
+  { world: 7, zone: 9, name: "Starless Depths", enemyName: "Starless Succubus", image: '/assets/enemies/world7_voidexpanse/enemy_bandit_succubus.png' },
+  { world: 7, zone: 10, name: "Void Core (BOSS)", enemyName: "The Void Architect", image: '/assets/enemies/world7_voidexpanse/enemy_boss_void.png' },
 
-  // --- WORLD 8: ETERNAL NEXUS (71–80) ---
-  { id: 71, world: 8, name: "Timeless Gate", enemyName: "Timeless Construct", enemyHp: 480000, enemyAttack: 16500, xpReward: 700000, image: '/assets/enemies/world8_eternalnexus/enemy_imp_fire.png', drops: getDropsForWorld(8) },
-  { id: 72, world: 8, name: "Aether Halls", enemyName: "Aether Sentinel", enemyHp: 580000, enemyAttack: 19000, xpReward: 850000, image: '/assets/enemies/world8_eternalnexus/enemy_slime_fire.png', drops: getDropsForWorld(8) },
-  { id: 73, world: 8, name: "Chrono Rift", enemyName: "Chrono Wisp", enemyHp: 700000, enemyAttack: 22000, xpReward: 1050000, image: '/assets/enemies/world8_eternalnexus/enemy_wolf_fire.png', drops: getDropsForWorld(8) },
-  { id: 74, world: 8, name: "Reality Span", enemyName: "Reality Shaper", enemyHp: 850000, enemyAttack: 26000, xpReward: 1300000, image: '/assets/enemies/world8_eternalnexus/enemy_bandit_fire.png', drops: getDropsForWorld(8) },
-  { id: 75, world: 8, name: "Astral Ring", enemyName: "Astral Knight", enemyHp: 1050000, enemyAttack: 30500, xpReward: 1600000, image: '/assets/enemies/world8_eternalnexus/enemy_knight_fire.png', drops: getDropsForWorld(8) },
-  { id: 76, world: 8, name: "Phase Reach", enemyName: "Phase Serpent", enemyHp: 1300000, enemyAttack: 36000, xpReward: 2000000, image: '/assets/enemies/world8_eternalnexus/enemy_serpent_fire.png', drops: getDropsForWorld(8) },
-  { id: 77, world: 8, name: "Paradox Loop", enemyName: "Paradox Beast", enemyHp: 1650000, enemyAttack: 43000, xpReward: 2500000, image: '/assets/enemies/world8_eternalnexus/enemy_brute_fire.png', drops: getDropsForWorld(8) },
-  { id: 78, world: 8, name: "Nexus Watch", enemyName: "Nexus Guardian", enemyHp: 2100000, enemyAttack: 52000, xpReward: 3100000, image: '/assets/enemies/world8_eternalnexus/enemy_golem_fire.png', drops: getDropsForWorld(8) },
-  { id: 79, world: 8, name: "Creation Echo", enemyName: "Echo of Creation", enemyHp: 2700000, enemyAttack: 63000, xpReward: 3900000, image: '/assets/enemies/world8_eternalnexus/enemy_mage_fire.png', drops: getDropsForWorld(8) },
-  { id: 80, world: 8, name: "Eternal Core (BOSS)", enemyName: "Nexus Lord", enemyHp: 6000000, enemyAttack: 120000, xpReward: 10000000, isBoss: true, keyRequired: 'bosskey_w8', image: '/assets/enemies/world8_eternalnexus/enemy_boss_final_nexus_lord.png', drops: getDropsForWorld(8) }
+  // --- WORLD 8: ETERNAL NEXUS ---
+  { world: 8, zone: 1, name: "Timeless Gate", enemyName: "Timeless Construct", image: '/assets/enemies/world8_eternalnexus/enemy_imp_fire.png' },
+  { world: 8, zone: 2, name: "Aether Halls", enemyName: "Aether Sentinel", image: '/assets/enemies/world8_eternalnexus/enemy_slime_fire.png' },
+  { world: 8, zone: 3, name: "Chrono Rift", enemyName: "Chrono Wisp", image: '/assets/enemies/world8_eternalnexus/enemy_wolf_fire.png' },
+  { world: 8, zone: 4, name: "Reality Span", enemyName: "Reality Shaper", image: '/assets/enemies/world8_eternalnexus/enemy_bandit_fire.png' },
+  { world: 8, zone: 5, name: "Astral Ring", enemyName: "Astral Knight", image: '/assets/enemies/world8_eternalnexus/enemy_knight_fire.png' },
+  { world: 8, zone: 6, name: "Phase Reach", enemyName: "Phase Serpent", image: '/assets/enemies/world8_eternalnexus/enemy_serpent_fire.png' },
+  { world: 8, zone: 7, name: "Paradox Loop", enemyName: "Paradox Beast", image: '/assets/enemies/world8_eternalnexus/enemy_brute_fire.png' },
+  { world: 8, zone: 8, name: "Nexus Watch", enemyName: "Nexus Guardian", image: '/assets/enemies/world8_eternalnexus/enemy_golem_fire.png' },
+  { world: 8, zone: 9, name: "Creation Echo", enemyName: "Echo of Creation", image: '/assets/enemies/world8_eternalnexus/enemy_mage_fire.png' },
+  { world: 8, zone: 10, name: "Eternal Core (BOSS)", enemyName: "Nexus Lord", image: '/assets/enemies/world8_eternalnexus/enemy_boss_final_nexus_lord.png' }
 ];
+
+// Yhdistetään staattinen data ja matemaattinen skaalaus. 
+// Tästä syntyy lopullinen COMBAT_DATA-taulukko, jota peli käyttää.
+export const COMBAT_DATA: CombatMap[] = ENEMY_AESTHETICS.map((mob, index) => {
+  const isBoss = mob.zone === 10;
+  const generatedStats = calculateEnemyStats(mob.world, mob.zone);
+
+  return {
+    id: index + 1, // 1-80
+    world: mob.world,
+    name: mob.name,
+    enemyName: mob.enemyName,
+    image: mob.image,
+    isBoss: isBoss,
+    keyRequired: isBoss ? `bosskey_w${mob.world}` : undefined,
+    drops: getDropsForWorld(mob.world),
+    
+    // Tuodaan lasketut statsit (enemyHp, enemyAttack, xpReward)
+    ...generatedStats
+  };
+});

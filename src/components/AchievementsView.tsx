@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { ACHIEVEMENTS } from '../data/achievements';
 import AchievementCard from './achievements/AchievementCard';
-import type { AchievementCategory } from '../types'; // 'Achievement' poistettu tästä
+import type { AchievementCategory } from '../types';
 
 interface AchievementsViewProps {
   unlockedIds: string[];
 }
 
-export default function AchievementsView({ unlockedIds }: AchievementsViewProps) {
+export default function AchievementsView({ unlockedIds = [] }: AchievementsViewProps) {
   const [activeCategory, setActiveCategory] = useState<AchievementCategory | 'all'>('all');
 
   const filteredAchievements = ACHIEVEMENTS.filter(ach => 
@@ -22,8 +22,10 @@ export default function AchievementsView({ unlockedIds }: AchievementsViewProps)
     { id: 'wealth', label: 'Wealth' },
   ];
 
+  const unlockCount = unlockedIds?.length || 0;
+
   return (
-    <div className="p-6 h-full overflow-y-auto custom-scrollbar bg-slate-950">
+    <div className="p-6 h-full overflow-y-auto custom-scrollbar bg-slate-950 text-left">
       <header className="mb-8 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <img src="/assets/ui/icon_achievements.png" className="w-32 h-32 pixelated" alt="" />
@@ -33,15 +35,15 @@ export default function AchievementsView({ unlockedIds }: AchievementsViewProps)
           <h2 className="text-2xl font-black mb-2 text-slate-100 flex items-center gap-4 uppercase tracking-[0.2em]">
             Milestones
           </h2>
-          <div className="flex items-center gap-4 text-sm text-left">
+          <div className="flex items-center gap-4 text-sm">
             <div className="flex-1 h-2 bg-slate-950 rounded-full border border-slate-800 overflow-hidden">
               <div 
                 className="h-full bg-yellow-500 transition-all duration-1000" 
-                style={{ width: `${(unlockedIds.length / ACHIEVEMENTS.length) * 100}%` }}
+                style={{ width: `${(unlockCount / ACHIEVEMENTS.length) * 100}%` }}
               />
             </div>
             <span className="text-slate-400 font-mono text-xs">
-              {unlockedIds.length} / {ACHIEVEMENTS.length}
+              {unlockCount} / {ACHIEVEMENTS.length}
             </span>
           </div>
         </div>

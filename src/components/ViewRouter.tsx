@@ -1,68 +1,47 @@
 import CombatView from './CombatView';
-import ScavengerView from './scavenging/ScavengingView';
+import ScavengingView from './scavenging/ScavengingView';
 import EnchantingView from './EnchantingView';
 import SkillView from './SkillView';
 import InventoryView from './Inventory';
 import ShopView from './Shop';
-import GambleView from './Gamble';
 import AchievementsView from './AchievementsView';
-import WorldMarketView from './worldShop/WorldShopView';
+import WorldShopView from './worldShop/WorldShopView';
 import MarketplaceView from './marketplace/MarketplaceView';
-import { ACHIEVEMENTS } from '../data';
-import type { ViewType, SkillType, GameState } from '../types';
+import type { FullStoreState } from '../store/useGameStore';
+import type { ViewType, SkillType } from '../types';
 
 interface Props {
   currentView: ViewType;
-  state: GameState;
+  state: FullStoreState;
   onSellClick: (id: string) => void;
-  onGamble: (amount: number, callback: (win: boolean) => void) => void;
 }
 
 export default function ViewRouter({
   currentView,
   state,
   onSellClick,
-  onGamble,
 }: Props) {
   // CORE SYSTEMS
   if (currentView === 'combat') return <CombatView />;
-  if (currentView === 'scavenger') return <ScavengerView />;
-
-  // Inventory tarvitsee yhä onSellClick
-  if (currentView === 'inventory')
-    return <InventoryView onSellClick={onSellClick} />;
-
+  if (currentView === 'scavenger') return <ScavengingView />;
+  if (currentView === 'inventory') return <InventoryView onSellClick={onSellClick} />;
   if (currentView === 'shop') return <ShopView />;
-  if (currentView === 'gamble')
-    return <GambleView coins={state.coins} onGamble={onGamble} />;
-  if (currentView === 'achievements')
-    return (
-      <AchievementsView
-        achievements={ACHIEVEMENTS}
-        unlockedIds={state.unlockedAchievements}
-      />
-    );
-
-  // Enchanting hoitaa nyt logiikan itse storesta -> ei propseja
   if (currentView === 'enchanting') return <EnchantingView />;
-
-  // World Market (Core System)
-  if (currentView === 'worldmarket') return <WorldMarketView />;
+  if (currentView === 'worldmarket') return <WorldShopView />;
   if (currentView === 'marketplace') return <MarketplaceView />;
 
+  // MILESTONES (KORJATTU: Ei enää achievements-propsia, vain unlockedIds)
+  if (currentView === 'achievements') {
+    return <AchievementsView unlockedIds={state.unlockedAchievements || []} />;
+  }
+
   // SKILLS (Gathering & Production)
-  // Tarkistetaan onko currentView jokin SkillType
-  const skills: SkillType[] = [
-    'woodcutting',
-    'mining',
-    'fishing',
-    'foraging',
-    'crafting',
-    'smithing',
-    'alchemy',
+  const skillList: SkillType[] = [
+    'woodcutting', 'mining', 'fishing', 'foraging', 
+    'crafting', 'smithing', 'alchemy'
   ];
 
-  if (skills.includes(currentView as SkillType)) {
+  if (skillList.includes(currentView as SkillType)) {
     return <SkillView skill={currentView as SkillType} />;
   }
 

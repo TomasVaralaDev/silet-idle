@@ -24,16 +24,16 @@ import SettingsModal from './components/SettingsModal';
 import Auth from './components/Auth';
 import RewardModal from './components/RewardModal';
 import UserConfigModal from './components/UserConfigModal';
-import QuestModal from './components/quests/QuestModal'; // <--- UUSI IMPORT
+import QuestModal from './components/quests/QuestModal';
+import QuestTracker from './components/quests/QuestTracker';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('woodcutting');
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(null);
   
-  // Tila-muuttujat modaaleille
   const [showSettings, setShowSettings] = useState(false);
   const [showUserConfig, setShowUserConfig] = useState(false);
-  const [showQuests, setShowQuests] = useState(false); // <--- UUSI TILA
+  const [showQuests, setShowQuests] = useState(false);
 
   // 1. Hookit
   const { user, loadingAuth } = useAuth();
@@ -46,7 +46,6 @@ export default function App() {
     settings,
     inventory,
     setState,
-    gamble,
     sellItem,
     emitEvent,
   } = useGameStore();
@@ -55,7 +54,7 @@ export default function App() {
 
   useGameEngine();
 
-  // 2. Erityistilanteet
+  // 2. Erityistilanteet (Loading/Auth)
   if (loadingAuth)
     return (
       <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center font-mono uppercase tracking-widest">
@@ -90,11 +89,9 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col md:flex-row overflow-hidden relative">
       <NotificationManager />
       <RewardModal />
-
-      {/* Quest Modal */}
       <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
+      <QuestTracker />
 
-      {/* User Config Modal */}
       {showUserConfig && (
         <UserConfigModal
           currentUsername={username}
@@ -107,7 +104,6 @@ export default function App() {
         />
       )}
 
-      {/* Offline Progressin yhteenveto */}
       {offlineSummary && (
         <OfflineSummaryModal
           results={offlineSummary}
@@ -124,7 +120,7 @@ export default function App() {
         onForceSave={handleForceSave}
         onOpenSettings={() => setShowSettings(true)}
         onOpenUserConfig={() => setShowUserConfig(true)}
-        onOpenQuests={() => setShowQuests(true)} // <--- UUSI PROPS YHDISTETTY
+        onOpenQuests={() => setShowQuests(true)}
       />
 
       <main className="flex-1 bg-slate-950 relative overflow-y-auto h-screen custom-scrollbar">
@@ -162,7 +158,6 @@ export default function App() {
           currentView={currentView}
           state={fullState}
           onSellClick={setSelectedItemForSale}
-          onGamble={gamble}
         />
       </main>
       <SocialOverlay />

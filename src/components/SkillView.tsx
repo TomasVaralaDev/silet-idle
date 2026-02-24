@@ -3,7 +3,7 @@ import { useGameStore } from '../store/useGameStore';
 import { GAME_DATA } from '../data/skills';
 import { getItemDetails } from '../data';
 import { SKILL_DEFINITIONS } from '../config/skillDefinitions';
-import { getRequiredXpForLevel } from '../utils/gameUtils'; // SRP: Haetaan kaava utilseista
+import { getRequiredXpForLevel } from '../utils/gameUtils';
 import type { SkillType, Resource } from '../types';
 
 interface SkillViewProps {
@@ -66,7 +66,6 @@ export default function SkillView({ skill }: SkillViewProps) {
   const skillState = skills[skill] || { level: 1, xp: 0 };
   const currentLevel = skillState.level;
 
-  // UUSI KAAVA: Haetaan vaadittu määrä seuraavalle tasolle utils-funktiolta
   const nextLevelXp = getRequiredXpForLevel(currentLevel);
   const progressPercent = Math.min(
     100,
@@ -81,7 +80,6 @@ export default function SkillView({ skill }: SkillViewProps) {
     return currentFilter ? currentFilter.filter(resource) : true;
   });
 
-  // --- DYNAAMINEN RUNE-LASKENTA UI:LLE ---
   const runeDetails = equipment.rune ? getItemDetails(equipment.rune) : null;
   let globalSpeedMultiplier = 1;
   let globalXpMultiplier = 1;
@@ -116,7 +114,7 @@ export default function SkillView({ skill }: SkillViewProps) {
             alt={definition.sidebarLabel}
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 text-left">
           <h1
             className={`text-3xl font-bold uppercase tracking-widest ${definition.color} mb-1`}
           >
@@ -168,7 +166,6 @@ export default function SkillView({ skill }: SkillViewProps) {
             const isUnlocked = currentLevel >= (resource.level || 1);
             const isActive = activeAction?.resourceId === resource.id;
 
-            // Dynaamiset arvot UI:lle
             const effectiveInterval =
               (resource.interval || 3000) / globalSpeedMultiplier;
             const effectiveXp = (resource.xpReward || 0) * globalXpMultiplier;
@@ -188,6 +185,8 @@ export default function SkillView({ skill }: SkillViewProps) {
             const hasDrops = resource.drops && resource.drops.length > 0;
             const isDisabled = !isUnlocked || !canAfford;
 
+            const accentColor = definition.color.split('-')[1];
+
             return (
               <button
                 key={resource.id}
@@ -199,7 +198,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                 className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col h-full group
                   ${
                     isActive
-                      ? `bg-slate-900 border-${definition.color.split('-')[1]}-500 shadow-[0_0_20px_rgba(0,0,0,0.4)] scale-[1.02] z-10`
+                      ? `bg-slate-900 border-${accentColor}-500 shadow-[0_0_20px_rgba(0,0,0,0.4)] scale-[1.02] z-10`
                       : isDisabled
                         ? 'bg-slate-950 border-slate-900 opacity-50 cursor-not-allowed grayscale'
                         : 'bg-slate-900/40 border-slate-800 hover:border-slate-600 hover:bg-slate-900'
@@ -220,10 +219,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                             title={`${drop.chance}%`}
                           >
                             <img
-                              src={
-                                itemDetails?.icon ||
-                                '/assets/ui/icon_missing.png'
-                              }
+                              src={itemDetails?.icon || '/assets/ui/icon_missing.png'}
                               className="w-5 h-5 pixelated object-contain"
                               alt={drop.itemId}
                             />
@@ -232,18 +228,14 @@ export default function SkillView({ skill }: SkillViewProps) {
                       })
                     ) : (
                       <img
-                        src={
-                          isActive && resource.actionImage
-                            ? resource.actionImage
-                            : resource.icon
-                        }
-                        className={`w-10 h-10 pixelated transition-transform duration-500 ${isActive ? 'scale-110' : ''}`}
+                        src={resource.icon}
+                        className={`w-10 h-10 pixelated transition-transform duration-500 ${isActive ? 'scale-110 rotate-3' : ''}`}
                         alt={resource.name}
                       />
                     )}
                   </div>
                   {isActive && (
-                    <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20 animate-pulse ml-2">
+                    <span className={`px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20 animate-pulse ml-2`}>
                       ACTIVE
                     </span>
                   )}
@@ -287,6 +279,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                             <img
                               src={item?.icon}
                               className="w-3 h-3 pixelated"
+                              alt=""
                             />
                             <span>
                               {have}/{input.count}

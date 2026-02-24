@@ -197,10 +197,21 @@ export const useGameStore = create<FullStoreState>()(
       name: 'ggez-idle-storage',
 
       merge: (persistedState: unknown, currentState: FullStoreState) => {
-        const typedPersisted = persistedState as
-          | Partial<FullStoreState>
-          | undefined;
+        const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
         if (!typedPersisted) return currentState;
+
+        // TÄRKEÄ KORJAUS: Varmistetaan syvä yhdistäminen (Deep Merge) skilleille!
+        // Muuten vanha tila voi ylikirjoittautua ja lukita tasot tai jättää uudet skillit pois.
+        const mergedSkills = { ...DEFAULT_STATE.skills };
+        if (typedPersisted.skills) {
+          Object.keys(DEFAULT_STATE.skills).forEach(key => {
+            const skillKey = key as keyof typeof DEFAULT_STATE.skills;
+            mergedSkills[skillKey] = {
+              ...DEFAULT_STATE.skills[skillKey],
+              ...(typedPersisted.skills![skillKey] || {})
+            };
+          });
+        }
 
         return {
           ...currentState,
@@ -211,10 +222,8 @@ export const useGameStore = create<FullStoreState>()(
             ...(typedPersisted.combatStats || {}),
             combatLog: typedPersisted.combatStats?.combatLog || [],
           },
-          skills: {
-            ...DEFAULT_STATE.skills,
-            ...(typedPersisted.skills || {}),
-          },
+          // Asetetaan täysin turvallinen kopio skilleistä
+          skills: mergedSkills,
           social: {
             ...DEFAULT_STATE.social,
             ...(typedPersisted.social || {}),

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { WORLD_INFO } from '../../data/worlds';
+import { formatRemainingTime } from '../../utils/formatUtils';
 
 export default function ActiveExpeditions() {
   const { scavenger, claimExpedition, cancelExpedition } = useGameStore();
@@ -15,7 +16,6 @@ export default function ActiveExpeditions() {
   if (scavenger.activeExpeditions.length === 0) {
     return (
       <div className="p-8 text-center border-2 border-dashed border-slate-800 rounded-xl text-slate-600 flex flex-col items-center justify-center">
-        {/* KORJAUS: Vaihdettu emoji kuvaan */}
         <img 
             src="/assets/ui/icon_map.png" 
             alt="No Expeditions" 
@@ -35,13 +35,6 @@ export default function ActiveExpeditions() {
         const timeLeft = Math.max(0, exp.duration - elapsed);
         const isFinished = timeLeft <= 0;
 
-        const formatTime = (ms: number) => {
-          const s = Math.ceil(ms / 1000);
-          if (s < 60) return `${s}s`;
-          const m = Math.floor(s / 60);
-          return `${m}m ${s % 60}s`;
-        };
-
         return (
           <div key={exp.id} className="bg-slate-900 border border-slate-700 p-4 rounded-lg relative overflow-hidden group">
             <div 
@@ -56,12 +49,12 @@ export default function ActiveExpeditions() {
                  </div>
                  <div>
                     <div className="font-bold text-slate-200">{worldInfo?.name || `World ${exp.mapId}`}</div>
-                    <div className="text-xs text-slate-500">Expedition</div>
+                    <div className="text-[10px] text-slate-500 uppercase font-black tracking-tighter">Active Expedition</div>
                  </div>
               </div>
               <div className="text-right">
-                <div className={`font-mono font-bold ${isFinished ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  {isFinished ? 'COMPLETED' : formatTime(timeLeft)}
+                <div className={`font-mono text-sm font-bold ${isFinished ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {isFinished ? 'STABILIZED' : formatRemainingTime(timeLeft)}
                 </div>
               </div>
             </div>
@@ -70,16 +63,16 @@ export default function ActiveExpeditions() {
               {!isFinished ? (
                 <button 
                   onClick={() => cancelExpedition(exp.id)}
-                  className="px-3 py-1 bg-red-900/20 hover:bg-red-900/40 text-red-400 text-xs rounded border border-red-900/30 transition-colors"
+                  className="px-3 py-1 bg-red-900/20 hover:bg-red-900/40 text-red-400 text-[10px] font-bold uppercase rounded border border-red-900/30 transition-colors"
                 >
-                  Cancel
+                  Abort
                 </button>
               ) : (
                 <button 
                   onClick={() => claimExpedition(exp.id)}
-                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded shadow-lg shadow-emerald-900/20 animate-pulse"
+                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded shadow-lg shadow-emerald-900/20 animate-pulse uppercase"
                 >
-                  Claim Rewards
+                  Collect Data
                 </button>
               )}
             </div>

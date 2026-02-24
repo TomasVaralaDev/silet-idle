@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function SkillTabs({ tabs, activeTab, onTabChange }: Props) {
-  // Jos ei ole tabeja tai vain "All", ei renderöidä mitään
+  // Jos ei ole tabeja tai vain "All", ei renderöidä mitään turhaa
   if (!tabs || tabs.length <= 1) return null;
 
   return (

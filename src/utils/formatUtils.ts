@@ -1,8 +1,7 @@
 // src/utils/formatUtils.ts
 
 /**
- * Muotoilee suuret luvut luettavaan muotoon (k, M, B, T...) 
- * tai tieteelliseen muotoon eXX jos luku on massiivinen.
+ * Muotoilee suuret luvut luettavaan muotoon (k, M, B, T...)
  */
 export const formatNumber = (num: number): string => {
   if (num < 1000) return Math.floor(num).toString();
@@ -14,7 +13,6 @@ export const formatNumber = (num: number): string => {
     { value: 1e3, symbol: "k" },
   ];
 
-  // Jos luku on yli 1000 biljoonaa (Quadrillion), käytetään tieteellistä muotoa
   if (num >= 1e15) {
     return num.toExponential(2).replace("+", "");
   }
@@ -23,11 +21,32 @@ export const formatNumber = (num: number): string => {
   
   if (suffix) {
     const formatted = (num / suffix.value).toFixed(1);
-    // Poistetaan turha .0 lopusta (esim 10.0k -> 10k)
     return formatted.endsWith(".0") 
       ? formatted.slice(0, -2) + suffix.symbol 
       : formatted + suffix.symbol;
   }
 
   return Math.floor(num).toString();
+};
+
+/**
+ * Muotoilee jäljellä olevan ajan:
+ * - Yli 1h: "Xh Ym"
+ * - Alle 1h: "Xm Ys"
+ */
+export const formatRemainingTime = (ms: number): string => {
+  if (ms <= 0) return "Ready!";
+
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    // Näytetään tunnit ja minuutit
+    return `${hours}h ${minutes}m`;
+  }
+
+  // Näytetään minuutit ja sekunnit
+  return `${minutes}m ${seconds}s`;
 };

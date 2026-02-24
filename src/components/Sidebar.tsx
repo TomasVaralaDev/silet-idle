@@ -3,6 +3,7 @@ import { useGameStore } from '../store/useGameStore';
 import { SKILL_DEFINITIONS } from '../config/skillDefinitions';
 import type { ViewType } from '../types';
 import { formatNumber } from '../utils/formatUtils';
+import { getRequiredXpForLevel } from '../utils/gameUtils'; // <-- UUSI IMPORT
 
 interface SidebarProps {
   currentView: ViewType;
@@ -85,7 +86,8 @@ const StatRow = ({
   textColor,
   bgColor,
 }: StatRowProps) => {
-  const nextLevelXp = level * 150;
+  // KORJAUS: Haetaan oikea vaatimus utils-funktiosta!
+  const nextLevelXp = getRequiredXpForLevel(level);
   const progress = Math.min(100, Math.max(0, (xp / nextLevelXp) * 100));
 
   return (
@@ -257,7 +259,7 @@ export default function Sidebar({
                 alt="Memory"
               />
               <span className="text-xs font-bold text-slate-400 uppercase">
-                Fragments
+                Coins
               </span>
             </div>
             <span
@@ -268,20 +270,16 @@ export default function Sidebar({
             </span>
           </div>
 
-          {/* DAILY QUESTS NAPPI */}
           <button 
             onClick={onOpenQuests}
             className="bg-slate-900/50 p-3 border border-slate-800/50 rounded hover:bg-slate-800 transition-colors relative flex items-center justify-center shrink-0 w-12"
             title="Daily Quests"
           >
-            {/* VAIHDETTU: Emojin tilalle kuvake */}
             <img 
               src="/assets/ui/icon_quest.png" 
               className="w-6 h-6 pixelated" 
               alt="Quests" 
             />
-            
-            {/* Notifikaatiopiste pysyy ennallaan */}
             {hasCompletableQuests && (
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping border border-slate-950"></span>
             )}

@@ -146,8 +146,7 @@ export interface Resource {
   combatStyle?: CombatStyle;
   healing?: number;
   drops?: ResourceDrop[];
-  // rune speed modifiers
-skillModifiers?: {
+  skillModifiers?: {
     miningSpeed?: number;
     miningXp?: number;
     woodcuttingSpeed?: number;
@@ -163,14 +162,12 @@ skillModifiers?: {
   };
 }
 
-// Lootit todennäköisyyden (0.0 - 1.0) mukaan
 export interface Drop {
   itemId: string;
   chance: number;
   amount: [number, number];
 }
 
-// Lootit painoarvon mukaan (Weighted Pool)
 export interface WeightedDrop {
   itemId: string;
   weight: number;
@@ -239,33 +236,36 @@ export interface SkillData {
   level: number;
 }
 
-// --- ROOT GAME STATE ---
+// --- QUEST TYPES ---
+export type QuestType = 'GATHER' | 'KILL' | 'CRAFT';
 
-export interface GameState {
-  username: string;
-  avatar: string;
-  settings: GameSettings;
-  inventory: Record<string, number>;
-  skills: Record<SkillType, SkillData>; // Tähän sisältyy nyt foraging automaattisesti SkillTypen kautta
-  equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
-  equippedFood: { itemId: string; count: number } | null;
-  combatSettings: CombatSettings;
-  scavenger: ScavengerState;
-  activeAction: ActiveAction | null;
-  coins: number;
-  upgrades: string[];
-  unlockedAchievements: string[];
-  combatStats: CombatState;
-  enemy: Enemy | null;
-  lastTimestamp: number;
-  events: GameEvent[];
-  social: SocialState;
+export interface QuestReward {
+  coins?: number;
+  xpMap?: Partial<Record<SkillType, number>>; // Korjattu: Ei enää vaadi kaikkia skillejä
+  items?: { itemId: string; amount: number }[];
 }
 
-export interface CombatResult {
-  finalDamage: number;
-  isCrit: boolean;
-  mitigationPercent: number;
+export interface QuestTemplate {
+  id: string;
+  title: string;
+  description: string;
+  type: QuestType;
+  targetId: string;
+  targetAmount: number;
+  requiredLevel: number;
+  requiredSkill: SkillType;
+  reward: QuestReward;
+}
+
+export interface ActiveQuest extends QuestTemplate {
+  progress: number;
+  isCompleted: boolean;
+  isClaimed: boolean;
+}
+
+export interface QuestState {
+  dailyQuests: ActiveQuest[];
+  lastResetTime: number;
 }
 
 // --- REWARDS ---
@@ -314,7 +314,7 @@ export interface ResourceDrop {
 // --- Social features
 export interface Friend {
   uid: string;
-  username: string; // Haetaan kun kaveri lisätään
+  username: string; 
   addedAt: number;
 }
 
@@ -325,16 +325,8 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-export interface SocialState {
-  friends: Friend[];
-  incomingRequests: FriendRequest[]; // Pyynnöt minulle
-  outgoingRequests: FriendRequest[]; // Pyynnöt jotka minä lähetin
-  activeChatFriendId: string | null;
-  unreadMessages: Record<string, number>;
-}
-
 export interface FriendRequest {
-  id: string; // Dokumentin ID Firebasessa
+  id: string; 
   fromUid: string;
   fromUsername: string;
   toUid: string;
@@ -345,7 +337,7 @@ export interface FriendRequest {
 export interface GlobalChatMessage {
   id: string;
   senderUid: string;
-  senderUsername: string; // Tallennetaan nimi viestiin
+  senderUsername: string; 
   text: string;
   timestamp: number;
 }
@@ -354,19 +346,43 @@ export interface SocialState {
   friends: Friend[];
   incomingRequests: FriendRequest[];
   outgoingRequests: FriendRequest[];
-  globalMessages: GlobalChatMessage[]; // UUSI
+  globalMessages: GlobalChatMessage[]; 
   activeChatFriendId: string | null;
   unreadMessages: Record<string, number>;
 }
 
 export interface MarketListing {
-  id: string; // Firebasen dokumentti-ID
-  sellerUid: string; // Myyjän UID
-  sellerName: string; // Myyjän nimi (helpottaa näyttämistä)
-  itemId: string; // Esineen ID (viittaa Resource-tyyppiin)
-  amount: number; // Määrä joka on myynnissä
-  pricePerItem: number; // Yhden esineen hinta
-  totalPrice: number; // amount * pricePerItem
-  createdAt: number; // Milloin ilmoitus luotiin
+  id: string; 
+  sellerUid: string; 
+  sellerName: string; 
+  itemId: string; 
+  amount: number; 
+  pricePerItem: number; 
+  totalPrice: number; 
+  createdAt: number; 
   status: 'active' | 'sold' | 'expired' | 'cancelled';
+}
+
+// --- ROOT GAME STATE ---
+
+export interface GameState {
+  username: string;
+  avatar: string;
+  settings: GameSettings;
+  inventory: Record<string, number>;
+  skills: Record<SkillType, SkillData>; 
+  equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
+  equippedFood: { itemId: string; count: number } | null;
+  combatSettings: CombatSettings;
+  scavenger: ScavengerState;
+  activeAction: ActiveAction | null;
+  coins: number;
+  upgrades: string[];
+  unlockedAchievements: string[];
+  combatStats: CombatState;
+  enemy: Enemy | null;
+  lastTimestamp: number;
+  events: GameEvent[];
+  social: SocialState;
+  quests: QuestState; // Korjattu: Lisätty tänne
 }

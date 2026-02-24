@@ -3,6 +3,7 @@ import { getEnemyStats, getPlayerStats, calculateHit } from '../utils/combatMech
 import { calculateXpGain, getXpMultiplier } from '../utils/gameUtils';
 import { rollWeightedDrop } from '../utils/loot'; 
 import type { GameState, Resource, CombatStyle, CombatState, SkillType, Enemy } from '../types';
+import { useGameStore } from '../store/useGameStore'; // <--- UUSI: Import storen tilaa varten
 
 interface ExtendedCombatState extends CombatState {
   attackTimer?: number;
@@ -110,7 +111,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
         level: currentMapNow.id, 
         maxHp: currentMapNow.enemyHp, 
         currentHp: currentMapNow.enemyHp,
-        worldId: currentMapNow.world
       });
       
       const newEnemy: Enemy = {
@@ -121,7 +121,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
         currentHp: enemyStats.hp,
         level: currentMapNow.id,
         attack: currentMapNow.enemyAttack,
-        defense: enemyStats.armor, // Uusi ominaisuus
+        defense: Math.floor(currentMapNow.enemyAttack * 0.1),
         xpReward: currentMapNow.xpReward
       };
 
@@ -179,7 +179,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
     currentHp: currentEnemyHp, 
     maxHp: map.enemyHp, 
     attack: map.enemyAttack,
-    worldId: map.world
   });
 
   // Pelaajan lyönti (Uudella laskentakaavalla)
@@ -209,6 +208,10 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
       newInventory[itemId] = (newInventory[itemId] || 0) + amount;
       addLog(`Loot: ${amount}x ${getItemDetails(itemId)?.name || itemId}`);
     }
+
+    // <--- UUSI: Kutsutaan questin päivitystä suoraan storesta
+    const store = useGameStore.getState();
+    store.updateQuestProgress('KILL', map.id.toString(), 1);
 
     const newMaxMapCompleted = Math.max(extendedStats.maxMapCompleted, map.id);
     let nextMapId = extendedStats.currentMapId;

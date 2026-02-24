@@ -24,22 +24,22 @@ import SettingsModal from './components/SettingsModal';
 import Auth from './components/Auth';
 import RewardModal from './components/RewardModal';
 import UserConfigModal from './components/UserConfigModal';
+import QuestModal from './components/quests/QuestModal'; // <--- UUSI IMPORT
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('woodcutting');
-  const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(
-    null,
-  );
+  const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(null);
+  
+  // Tila-muuttujat modaaleille
   const [showSettings, setShowSettings] = useState(false);
   const [showUserConfig, setShowUserConfig] = useState(false);
+  const [showQuests, setShowQuests] = useState(false); // <--- UUSI TILA
 
   // 1. Hookit
   const { user, loadingAuth } = useAuth();
-  const { isDataLoaded, offlineSummary, setOfflineSummary } =
-    useGameInitialization(user);
+  const { isDataLoaded, offlineSummary, setOfflineSummary } = useGameInitialization(user);
   const { saveStatus, handleForceSave } = useGameSync(user, isDataLoaded);
 
-  // KORJAUS: Poistettu 'activeAction' tästä listasta, koska sitä ei käytetä tässä komponentissa
   const {
     username,
     avatar,
@@ -51,7 +51,6 @@ export default function App() {
     emitEvent,
   } = useGameStore();
 
-  // Käytetään koko storea ViewRouterille
   const fullState = useGameStore();
 
   useGameEngine();
@@ -73,18 +72,13 @@ export default function App() {
       </div>
     );
 
-  // Käyttäjänimen valinta (ensikertalaiselle)
   if (!username || username === 'Player') {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center relative">
         <UsernameModal
           onConfirm={(name, avatarUrl) => {
             setState({ username: name, avatar: avatarUrl });
-            emitEvent(
-              'success',
-              `Identity Confirmed: ${name}`,
-              '/assets/ui/icon_check.png',
-            );
+            emitEvent('success', `Identity Confirmed: ${name}`, '/assets/ui/icon_check.png');
           }}
           onLogout={() => signOut(auth)}
         />
@@ -96,6 +90,9 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col md:flex-row overflow-hidden relative">
       <NotificationManager />
       <RewardModal />
+
+      {/* Quest Modal */}
+      <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
 
       {/* User Config Modal */}
       {showUserConfig && (
@@ -121,27 +118,20 @@ export default function App() {
       <Sidebar
         currentView={currentView}
         setView={setCurrentView}
-        onReset={() =>
-          confirm('Reset all progress?') && setState(DEFAULT_STATE)
-        }
+        onReset={() => confirm('Reset all progress?') && setState(DEFAULT_STATE)}
         onLogout={() => signOut(auth)}
         onStopAction={() => setState({ activeAction: null })}
         onForceSave={handleForceSave}
         onOpenSettings={() => setShowSettings(true)}
         onOpenUserConfig={() => setShowUserConfig(true)}
+        onOpenQuests={() => setShowQuests(true)} // <--- UUSI PROPS YHDISTETTY
       />
 
       <main className="flex-1 bg-slate-950 relative overflow-y-auto h-screen custom-scrollbar">
         <div className="fixed top-4 right-6 z-50 pointer-events-none uppercase font-black text-[10px] tracking-tighter">
-          {saveStatus === 'saving' && (
-            <span className="text-slate-500 animate-pulse">Syncing...</span>
-          )}
-          {saveStatus === 'saved' && (
-            <span className="text-emerald-500">Cloud Ready</span>
-          )}
-          {saveStatus === 'error' && (
-            <span className="text-red-500">Sync Error</span>
-          )}
+          {saveStatus === 'saving' && <span className="text-slate-500 animate-pulse">Syncing...</span>}
+          {saveStatus === 'saved' && <span className="text-emerald-500">Cloud Ready</span>}
+          {saveStatus === 'error' && <span className="text-red-500">Sync Error</span>}
         </div>
 
         {showSettings && (

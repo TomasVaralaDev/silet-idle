@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { SKILL_DEFINITIONS } from '../config/skillDefinitions';
 import type { ViewType } from '../types';
+import { formatNumber } from '../utils/formatUtils';
 
 interface SidebarProps {
   currentView: ViewType;
@@ -12,6 +13,7 @@ interface SidebarProps {
   onForceSave: () => void;
   onOpenSettings: () => void;
   onOpenUserConfig: () => void;
+  onOpenQuests: () => void;
 }
 
 // --- HELPER COMPONENTS ---
@@ -25,7 +27,6 @@ interface NavButtonProps {
   onClick: (view: ViewType) => void;
 }
 
-// Palautettu alkuperäinen, selkeämpi tyyli
 function NavButton({
   view,
   icon,
@@ -131,11 +132,13 @@ export default function Sidebar({
   onForceSave,
   onOpenSettings,
   onOpenUserConfig,
+  onOpenQuests
 }: SidebarProps) {
   const coins = useGameStore((state) => state.coins);
   const skills = useGameStore((state) => state.skills);
   const username = useGameStore((state) => state.username);
   const avatar = useGameStore((state) => state.avatar);
+  const quests = useGameStore((state) => state.quests);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [saveCooldown, setSaveCooldown] = useState(0);
@@ -168,6 +171,8 @@ export default function Sidebar({
     (acc, s) => acc + s.level,
     0,
   );
+
+  const hasCompletableQuests = quests.dailyQuests.some(q => q.isCompleted && !q.isClaimed);
 
   return (
     <nav className="w-full md:w-72 bg-slate-950 border-r border-slate-800/50 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative font-sans">
@@ -240,20 +245,37 @@ export default function Sidebar({
           </div>
         </div>
 
-        <div className="bg-slate-900/50 p-3 border border-slate-800/50 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/assets/ui/coins.png"
-              className="w-5 h-5 pixelated"
-              alt="Memory"
-            />
-            <span className="text-xs font-bold text-slate-400 uppercase">
-              Fragments
+        {/* FRAGMENTS & QUESTS ROW */}
+        <div className="flex gap-2">
+          <div className="bg-slate-900/50 p-3 border border-slate-800/50 flex items-center justify-between flex-1 rounded overflow-hidden">
+            <div className="flex items-center gap-3 shrink-0">
+              <img
+                src="/assets/ui/coins.png"
+                className="w-5 h-5 pixelated"
+                alt="Memory"
+              />
+              <span className="text-xs font-bold text-slate-400 uppercase">
+                Fragments
+              </span>
+            </div>
+            <span 
+              className="font-mono text-base font-bold text-amber-500 truncate ml-2" 
+              title={coins.toLocaleString()}
+            >
+              {formatNumber(coins)}
             </span>
           </div>
-          <span className="font-mono text-base font-bold text-amber-500">
-            {coins.toLocaleString()}
-          </span>
+
+          <button 
+            onClick={onOpenQuests}
+            className="bg-slate-900/50 p-3 border border-slate-800/50 rounded hover:bg-slate-800 transition-colors relative flex items-center justify-center shrink-0 w-12"
+            title="Daily Quests"
+          >
+            <span className="text-xl">📜</span>
+            {hasCompletableQuests && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping border border-slate-950"></span>
+            )}
+          </button>
         </div>
       </div>
 

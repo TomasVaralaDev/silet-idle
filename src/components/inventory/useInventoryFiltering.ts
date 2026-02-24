@@ -19,7 +19,8 @@ export function useInventoryFiltering() {
   
   const [filter, setFilter] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('rarity');
-  const [sortDesc, setSortDesc] = useState(true); // Descending (Suurin ensin) oletuksena
+  const [sortDesc, setSortDesc] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(''); // UUSI: Hakusanan tila
 
   // 1. Muunnetaan inventory-objekti listaksi
   const rawItems = useMemo(() => {
@@ -36,7 +37,16 @@ export function useInventoryFiltering() {
   const processedItems = useMemo(() => {
     let result = [...rawItems];
 
-    // --- FILTERING ---
+    // --- SEARCH FILTERING --- (UUSI)
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(i => 
+        i.name.toLowerCase().includes(query) || 
+        i.description?.toLowerCase().includes(query)
+      );
+    }
+
+    // --- CATEGORY FILTERING ---
     if (filter === 'equipment') {
       result = result.filter(i => i.slot !== undefined);
     } else if (filter === 'consumable') {
@@ -69,7 +79,6 @@ export function useInventoryFiltering() {
           break;
       }
 
-      // Toissijainen lajittelu aina nimen mukaan, jotta järjestys ei hypi
       if (valA === valB) {
         return a.name.localeCompare(b.name);
       }
@@ -78,7 +87,7 @@ export function useInventoryFiltering() {
     });
 
     return result;
-  }, [rawItems, filter, sortBy, sortDesc]);
+  }, [rawItems, filter, sortBy, sortDesc, searchQuery]);
 
   const toggleSort = (type: SortType) => {
     if (sortBy === type) {
@@ -95,6 +104,8 @@ export function useInventoryFiltering() {
     setFilter,
     sortBy,
     sortDesc,
-    toggleSort
+    toggleSort,
+    searchQuery,    // UUSI
+    setSearchQuery  // UUSI
   };
 }

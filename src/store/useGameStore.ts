@@ -27,7 +27,8 @@ import {
   createEnchantingSlice,
   type EnchantingSlice,
 } from './slices/enchantingSlice';
-import { createSocialSlice, type SocialSlice } from './slices/socialSlice'; // <--- 1. IMPORT
+import { createSocialSlice, type SocialSlice } from './slices/socialSlice';
+import { createQuestSlice, type QuestSlice } from './slices/questSlice';
 
 import type { OfflineSummary } from '../systems/offlineSystem';
 
@@ -37,7 +38,6 @@ interface RewardModalState {
   rewards: RewardEntry[];
 }
 
-// 2. LISÄÄ SOCIAL SLICE TYYPPIIN
 export type FullStoreState = GameState &
   InventorySlice &
   SkillSlice &
@@ -45,8 +45,8 @@ export type FullStoreState = GameState &
   ScavengerSlice &
   WorldShopSlice &
   EnchantingSlice &
-  SocialSlice & {
-    // <--- TÄMÄ KORJAA "Property does not exist" -VIRHEET
+  SocialSlice &
+  QuestSlice & { 
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
     rewardModal: RewardModalState;
@@ -74,7 +74,6 @@ export const DEFAULT_STATE: GameState = {
   events: [],
   settings: { notifications: true, sound: true, music: true, particles: true },
 
-  // 3. ALUSTA SOCIAL STATE
   social: {
     friends: [],
     incomingRequests: [],
@@ -82,6 +81,11 @@ export const DEFAULT_STATE: GameState = {
     globalMessages: [],
     activeChatFriendId: null,
     unreadMessages: {},
+  },
+
+  quests: {
+    dailyQuests: [],
+    lastResetTime: 0, 
   },
 
   inventory: {},
@@ -146,7 +150,8 @@ export const useGameStore = create<FullStoreState>()(
       ...createScavengerSlice(set, get, ...args),
       ...createWorldShopSlice(set, get, ...args),
       ...createEnchantingSlice(set, get, ...args),
-      ...createSocialSlice(set, get, ...args), // <--- 4. YHDISTÄ SOCIAL SLICE STOREEN
+      ...createSocialSlice(set, get, ...args),
+      ...createQuestSlice(set, get, ...args),
 
       // Global actions
       emitEvent: (type, message, icon) =>
@@ -191,7 +196,6 @@ export const useGameStore = create<FullStoreState>()(
     {
       name: 'ggez-idle-storage',
 
-      // Custom merge to handle migrations or deep merges
       merge: (persistedState: unknown, currentState: FullStoreState) => {
         const typedPersisted = persistedState as
           | Partial<FullStoreState>
@@ -202,7 +206,6 @@ export const useGameStore = create<FullStoreState>()(
           ...currentState,
           ...typedPersisted,
 
-          // Deep merge critical nested objects
           combatStats: {
             ...DEFAULT_STATE.combatStats,
             ...(typedPersisted.combatStats || {}),
@@ -212,25 +215,25 @@ export const useGameStore = create<FullStoreState>()(
             ...DEFAULT_STATE.skills,
             ...(typedPersisted.skills || {}),
           },
-          // 5. SOCIAL STATE MERGE (Turvallisuus)
           social: {
             ...DEFAULT_STATE.social,
             ...(typedPersisted.social || {}),
-            // Varmistetaan että activeChat nollataan latauksessa
             activeChatFriendId: null,
-            // Varmistetaan että arrayt löytyy, vaikka vanhassa tallennuksessa ei olisi
             incomingRequests: typedPersisted.social?.incomingRequests || [],
             outgoingRequests: typedPersisted.social?.outgoingRequests || [],
           },
+          quests: {
+            ...DEFAULT_STATE.quests,
+            ...(typedPersisted.quests || {}),
+            dailyQuests: typedPersisted.quests?.dailyQuests || [],
+          },
 
-          // Reset transient state
           enemy: null,
           activeAction: typedPersisted.activeAction || null,
           rewardModal: { isOpen: false, title: '', rewards: [] },
         };
       },
 
-      // Only persist necessary parts
       partialize: (state) => {
         const rest = { ...state };
         delete (rest as Partial<FullStoreState>).offlineSummary;

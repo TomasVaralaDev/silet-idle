@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
-// POISTETTU: import type { EquipmentSlot } from '../types'; <--- TÄMÄ RIVI POIS
 
 // Komponentit
 import EquipmentPanel from './inventory/EquipmentPanel';
@@ -19,16 +18,17 @@ interface Props {
 export default function Inventory({ onSellClick }: Props) {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   
-  const { items, filter, setFilter, sortBy, sortDesc, toggleSort } = useInventoryFiltering();
+  // Tuodaan searchQuery ja setSearchQuery hookista
+  const { 
+    items, filter, setFilter, sortBy, sortDesc, toggleSort,
+    searchQuery, setSearchQuery 
+  } = useInventoryFiltering();
 
   const equipItem = useGameStore(state => state.equipItem);
 
   const handleEquip = () => {
     if (!selectedItem) return;
-    
-    // Store päättelee itse itemin tyypistä mihin se menee
     equipItem(selectedItem.id);
-    
     setSelectedItem(null); 
   };
 
@@ -74,6 +74,8 @@ export default function Inventory({ onSellClick }: Props) {
           activeSort={sortBy}
           sortDesc={sortDesc}
           onToggleSort={toggleSort}
+          searchQuery={searchQuery}       // UUSI
+          onSearchChange={setSearchQuery} // UUSI
         />
 
         <InventoryGrid 

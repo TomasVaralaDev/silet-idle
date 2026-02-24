@@ -7,12 +7,20 @@ import { calculateXpGain } from '../utils/gameUtils';
 import type { GameState } from '../types';
 
 export const useGameEngine = () => {
-  const setState = useGameStore((s) => s.setState);
+  const { setState, checkDailyReset } = useGameStore(); // <--- Haettu checkDailyReset
 
   useEffect(() => {
     const TICK_RATE = 100;
+    let ticks = 0; // Käytetään tätä laskemaan sekunteja
 
     const interval = setInterval(() => {
+      ticks++;
+
+      // Tarkistetaan vain kerran sekunnissa, onko questit resetoitunut
+      if (ticks % 10 === 0) {
+        checkDailyReset();
+      }
+
       setState((state: FullStoreState) => {
         if (!state.activeAction) return {};
 
@@ -63,7 +71,7 @@ export const useGameEngine = () => {
               });
             }
 
-            // B) XP JA LEVEL UP (SRP: Delegoidaan laskenta calculateXpGainille)
+            // B) XP JA LEVEL UP
             const currentSkillData = state.skills[skill] || { xp: 0, level: 1 };
             const totalXpGain = (resource.xpReward || 0) * (1 + runeXpBonus);
             
@@ -85,6 +93,10 @@ export const useGameEngine = () => {
               newInventory[resource.id] = (newInventory[resource.id] || 0) + 1;
             }
 
+            // TRIGGERÖIDÄÄN GATHER/CRAFT QUEST PROGRESS
+            const isCrafting = skill === 'crafting' || skill === 'smithing' || skill === 'alchemy';
+            state.updateQuestProgress(isCrafting ? 'CRAFT' : 'GATHER', resource.id, 1);
+
             return {
               skills: { ...state.skills, [skill]: { xp: newXp, level: newLevel } },
               inventory: newInventory,
@@ -100,5 +112,5 @@ export const useGameEngine = () => {
     }, TICK_RATE);
 
     return () => clearInterval(interval);
-  }, [setState]);
+  }, [setState, checkDailyReset]);
 };

@@ -1,62 +1,75 @@
-import type { Achievement } from '../types';
+import { useState } from 'react';
+import { ACHIEVEMENTS } from '../data/achievements';
+import AchievementCard from './achievements/AchievementCard';
+import type { AchievementCategory } from '../types'; // 'Achievement' poistettu tästä
 
 interface AchievementsViewProps {
-  achievements: Achievement[];
   unlockedIds: string[];
 }
 
-export default function AchievementsView({ achievements, unlockedIds }: AchievementsViewProps) {
+export default function AchievementsView({ unlockedIds }: AchievementsViewProps) {
+  const [activeCategory, setActiveCategory] = useState<AchievementCategory | 'all'>('all');
+
+  const filteredAchievements = ACHIEVEMENTS.filter(ach => 
+    activeCategory === 'all' || ach.category === activeCategory
+  );
+
+  const categories: { id: AchievementCategory | 'all'; label: string }[] = [
+    { id: 'all', label: 'All Systems' },
+    { id: 'general', label: 'General' },
+    { id: 'skills', label: 'Skills' },
+    { id: 'combat', label: 'Combat' },
+    { id: 'wealth', label: 'Wealth' },
+  ];
+
   return (
     <div className="p-6 h-full overflow-y-auto custom-scrollbar bg-slate-950">
-      <header className="mb-8 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-        <h2 className="text-2xl font-bold mb-2 text-yellow-500 flex items-center gap-4 uppercase tracking-widest">
-          <div className="p-2 bg-slate-950 rounded-lg border border-slate-800">
-             <img src="/assets/ui/icon_achievements.png" className="w-10 h-10 pixelated" alt="Trophy" />
+      <header className="mb-8 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+          <img src="/assets/ui/icon_achievements.png" className="w-32 h-32 pixelated" alt="" />
+        </div>
+
+        <div className="relative z-10">
+          <h2 className="text-2xl font-black mb-2 text-slate-100 flex items-center gap-4 uppercase tracking-[0.2em]">
+            Milestones
+          </h2>
+          <div className="flex items-center gap-4 text-sm text-left">
+            <div className="flex-1 h-2 bg-slate-950 rounded-full border border-slate-800 overflow-hidden">
+              <div 
+                className="h-full bg-yellow-500 transition-all duration-1000" 
+                style={{ width: `${(unlockedIds.length / ACHIEVEMENTS.length) * 100}%` }}
+              />
+            </div>
+            <span className="text-slate-400 font-mono text-xs">
+              {unlockedIds.length} / {ACHIEVEMENTS.length}
+            </span>
           </div>
-          Milestones
-        </h2>
-        <p className="text-slate-400 text-sm">
-          System Completion: <span className="text-white font-bold">{unlockedIds.length} / {achievements.length}</span>
-        </p>
+        </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-10">
-        {achievements.map((ach) => {
-          const isUnlocked = unlockedIds.includes(ach.id);
-          return (
-            <div 
-              key={ach.id} 
-              className={`p-5 rounded-xl border flex items-center gap-5 transition-all duration-200
-                ${isUnlocked 
-                  ? 'bg-slate-900 border-yellow-600/40 shadow-[0_0_20px_rgba(234,179,8,0.1)]' 
-                  : 'bg-slate-900/50 border-slate-800 opacity-60 grayscale'
-                }`}
-            >
-              <div className={`p-4 rounded-xl border shadow-inner
-                ${isUnlocked ? 'bg-slate-950 border-yellow-900/50' : 'bg-slate-950 border-slate-700'}`}>
-                <img src={ach.icon} alt={ach.name} className="w-14 h-14 pixelated drop-shadow-md" />
-              </div>
-              
-              <div className="flex-1">
-                <h3 className={`font-bold text-base uppercase tracking-wide mb-1 ${isUnlocked ? 'text-slate-200' : 'text-slate-500'}`}>
-                  {ach.name}
-                </h3>
-                <p className="text-xs text-slate-400 mb-2 leading-snug">
-                  {ach.description}
-                </p>
-                {isUnlocked ? (
-                  <span className="inline-block text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/50 px-2.5 py-1 rounded border border-emerald-900/50 tracking-wider">
-                    Complete
-                  </span>
-                ) : (
-                  <span className="inline-block text-[10px] uppercase font-bold text-slate-600 bg-slate-950 px-2.5 py-1 rounded border border-slate-800 tracking-wider">
-                    Locked
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div className="flex flex-wrap gap-2 mb-8">
+        {categories.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all
+              ${activeCategory === cat.id 
+                ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.2)]' 
+                : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700'}`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-10">
+        {filteredAchievements.map((ach) => (
+          <AchievementCard 
+            key={ach.id} 
+            achievement={ach} 
+            isUnlocked={unlockedIds.includes(ach.id)} 
+          />
+        ))}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+export type AchievementCategory = 'general' | 'combat' | 'skills' | 'wealth' | 'collection';
 
 export type SkillType =
   | 'woodcutting'
@@ -204,6 +205,7 @@ export interface ShopItem {
 export interface Achievement {
   id: string;
   name: string;
+  category: AchievementCategory;
   icon: string;
   description: string;
   condition: (state: GameState) => boolean;

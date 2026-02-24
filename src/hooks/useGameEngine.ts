@@ -22,7 +22,7 @@ export const useGameEngine = () => {
         let nextUnlockedAchievements = [...state.unlockedAchievements];
         let hasNewAchievements = false;
 
-        // --- 1. SAAVUTUSTEN JA QUESTIEN TARKISTUS (Kerran sekunnissa) ---
+        // --- 1. SAAVUTUSTEN JA QUESTIEN TARKISTUS ---
         if (ticks % 10 === 0) {
           const newUnlockIds = checkNewAchievements(state as unknown as GameState);
           
@@ -36,21 +36,16 @@ export const useGameEngine = () => {
             nextUnlockedAchievements = [...nextUnlockedAchievements, ...newUnlockIds];
             hasNewAchievements = true;
           }
-          
-          // Tarkistetaan questien resetointi
           checkDailyReset();
         }
 
         // --- 2. AKTIIVISEN TOIMINNON PROSESSOINTI ---
-        
-        // Jos ei ole aktiivista toimintoa, päivitetään vain mahdolliset saavutukset
         if (!state.activeAction) {
           return hasNewAchievements 
             ? { unlockedAchievements: nextUnlockedAchievements } 
             : {};
         }
 
-        // A) TAISTELU (COMBAT)
         if (state.activeAction.skill === 'combat') {
           const combatUpdates = processCombatTick(state as unknown as GameState, TICK_RATE);
           return {
@@ -59,7 +54,6 @@ export const useGameEngine = () => {
           } as Partial<FullStoreState>;
         } 
         
-        // B) ELÄMÄNTAIDOT (SKILLS)
         else {
           const { skill, resourceId, progress, targetTime } = state.activeAction;
           const skillResources = GAME_DATA[skill];
@@ -67,7 +61,6 @@ export const useGameEngine = () => {
           
           if (!resource) return { activeAction: null, unlockedAchievements: nextUnlockedAchievements };
 
-          // Materiaalitarkistus
           if (resource.inputs) {
             for (const input of resource.inputs) {
               const currentAmount = state.inventory[input.id] || 0;
@@ -77,7 +70,6 @@ export const useGameEngine = () => {
             }
           }
 
-          // Nopeus- ja XP-bonukset
           let speedMultiplier = 1;
           let runeXpBonus = 0;
           if (state.equipment.rune) {
@@ -92,19 +84,23 @@ export const useGameEngine = () => {
 
           const newProgress = progress + (TICK_RATE * speedMultiplier);
 
-          // Kun toiminto valmistuu
           if (newProgress >= targetTime) {
             const newInventory = { ...state.inventory };
             
-            // Kulutetaan materiaalit
+            // Kulutetaan materiaalit ja siivotaan nollat
             if (resource.inputs) {
               resource.inputs.forEach(input => {
-                newInventory[input.id] = Math.max(0, (newInventory[input.id] || 0) - input.count);
-                if (newInventory[input.id] === 0) delete newInventory[input.id];
+                const current = newInventory[input.id] || 0;
+                const result = current - input.count;
+                
+                if (result <= 0) {
+                  delete newInventory[input.id]; // Siivotaan avain pois
+                } else {
+                  newInventory[input.id] = result;
+                }
               });
             }
 
-            // XP ja Level up
             const currentSkillData = state.skills[skill] || { xp: 0, level: 1 };
             const totalXpGain = (resource.xpReward || 0) * (1 + runeXpBonus);
             
@@ -114,7 +110,6 @@ export const useGameEngine = () => {
               totalXpGain
             );
 
-            // Palkinto
             if (resource.drops && resource.drops.length > 0) {
               resource.drops.forEach(drop => {
                 if (Math.random() * 100 <= drop.chance) {
@@ -126,7 +121,6 @@ export const useGameEngine = () => {
               newInventory[resource.id] = (newInventory[resource.id] || 0) + 1;
             }
 
-            // Quest progress
             const isCrafting = ['crafting', 'smithing', 'alchemy'].includes(skill);
             state.updateQuestProgress(isCrafting ? 'CRAFT' : 'GATHER', resource.id, 1);
 

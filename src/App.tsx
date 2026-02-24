@@ -25,7 +25,6 @@ import Auth from './components/Auth';
 import RewardModal from './components/RewardModal';
 import UserConfigModal from './components/UserConfigModal';
 import QuestModal from './components/quests/QuestModal';
-import QuestTracker from './components/quests/QuestTracker';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>('woodcutting');
@@ -54,7 +53,6 @@ export default function App() {
 
   useGameEngine();
 
-  // 2. Erityistilanteet (Loading/Auth)
   if (loadingAuth)
     return (
       <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center font-mono uppercase tracking-widest">
@@ -90,7 +88,7 @@ export default function App() {
       <NotificationManager />
       <RewardModal />
       <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
-      <QuestTracker />
+      {/* QuestTracker poistettu tästä */}
 
       {showUserConfig && (
         <UserConfigModal

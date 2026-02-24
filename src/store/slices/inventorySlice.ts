@@ -36,15 +36,25 @@ export const createInventorySlice: StateCreator<
     const item = getItemDetails(itemId);
     const count = state.inventory[itemId] || 0;
     if (!item || count <= 0) return {};
+
     const profit = count * item.value;
     const newInventory = { ...state.inventory };
+    
+    // Poistetaan esine kokonaan inventory-objektista
     delete newInventory[itemId];
-    return { coins: state.coins + profit, inventory: newInventory };
+
+    return { 
+      coins: state.coins + profit, 
+      inventory: newInventory 
+    };
   }),
 
   buyUpgrade: (item) => set((state) => {
     if (state.coins >= item.price && !state.upgrades.includes(item.id)) {
-      return { coins: state.coins - item.price, upgrades: [...state.upgrades, item.id] };
+      return { 
+        coins: state.coins - item.price, 
+        upgrades: [...state.upgrades, item.id] 
+      };
     }
     return {};
   }),
@@ -54,7 +64,9 @@ export const createInventorySlice: StateCreator<
       if (state.coins < amount) return {};
       const isWin = Math.random() >= 0.5;
       callback(isWin); 
-      return { coins: isWin ? state.coins + amount : state.coins - amount };
+      return { 
+        coins: isWin ? state.coins + amount : state.coins - amount 
+      };
     });
   },
 
@@ -71,19 +83,28 @@ export const createInventorySlice: StateCreator<
         const oldId = state.equippedFood.itemId;
         newInventory[oldId] = (newInventory[oldId] || 0) + state.equippedFood.count;
       }
+      // Ruoka poistuu aina kokonaan inventory-pinosta kun se varustetaan
       delete newInventory[itemId];
-      return { inventory: newInventory, equippedFood: { itemId, count: currentCount } };
+      
+      return { 
+        inventory: newInventory, 
+        equippedFood: { itemId, count: currentCount } 
+      };
     } else {
       const slot = item.slot as Exclude<EquipmentSlot, 'food'>;
       const currentEquipId = state.equipment[slot];
+
       if (currentEquipId) {
         newInventory[currentEquipId] = (newInventory[currentEquipId] || 0) + 1;
       }
+
       if (currentCount > 1) {
         newInventory[itemId] = currentCount - 1;
       } else {
+        // Jos oli viimeinen kappale, poistetaan avain kokonaan
         delete newInventory[itemId];
       }
+
       return {
         inventory: newInventory,
         equipment: { ...state.equipment, [slot]: itemId }
@@ -115,19 +136,29 @@ export const createInventorySlice: StateCreator<
     const newInventory = { ...state.inventory };
     const newEquipment = { ...state.equipment };
     let itemFound = false;
+
     const equippedSlot = (Object.keys(newEquipment) as Array<keyof typeof newEquipment>).find(
       key => newEquipment[key] === originalId
     );
+
     if (equippedSlot) {
       newEquipment[equippedSlot] = newId;
       itemFound = true;
     } else if (newInventory[originalId]) {
       newInventory[originalId] -= 1;
-      if (newInventory[originalId] <= 0) delete newInventory[originalId];
+      // Varmistetaan poisto jos määrä menee nollaan
+      if (newInventory[originalId] <= 0) {
+        delete newInventory[originalId];
+      }
       newInventory[newId] = (newInventory[newId] || 0) + 1;
       itemFound = true;
     }
+
     if (!itemFound) return {};
-    return { coins: state.coins - cost, inventory: newInventory, equipment: newEquipment };
+    return { 
+      coins: state.coins - cost, 
+      inventory: newInventory, 
+      equipment: newEquipment 
+    };
   }),
 });

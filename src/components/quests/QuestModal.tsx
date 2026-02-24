@@ -26,8 +26,13 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
         {/* HEADER */}
         <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 rounded-t-xl shrink-0">
           <div>
-            <h2 className="text-2xl font-black text-slate-100 flex items-center gap-2">
-              <span className="text-amber-400">📜</span> Daily Quests
+            <h2 className="text-2xl font-black text-slate-100 flex items-center gap-3">
+              <img 
+                src="/assets/ui/icon_quest.png" 
+                className="w-8 h-8 pixelated" 
+                alt="Quests" 
+              />
+              Daily Quests
             </h2>
             <p className="text-slate-400 text-sm mt-1">
               Complete tasks to earn rewards. Resets daily.

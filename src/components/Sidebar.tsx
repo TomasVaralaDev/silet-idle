@@ -268,12 +268,20 @@ export default function Sidebar({
             </span>
           </div>
 
-          <button
+          {/* DAILY QUESTS NAPPI */}
+          <button 
             onClick={onOpenQuests}
             className="bg-slate-900/50 p-3 border border-slate-800/50 rounded hover:bg-slate-800 transition-colors relative flex items-center justify-center shrink-0 w-12"
             title="Daily Quests"
           >
-            <span className="text-xl">📜</span>
+            {/* VAIHDETTU: Emojin tilalle kuvake */}
+            <img 
+              src="/assets/ui/icon_quest.png" 
+              className="w-6 h-6 pixelated" 
+              alt="Quests" 
+            />
+            
+            {/* Notifikaatiopiste pysyy ennallaan */}
             {hasCompletableQuests && (
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping border border-slate-950"></span>
             )}

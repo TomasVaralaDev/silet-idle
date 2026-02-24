@@ -12,9 +12,13 @@ export default function QuestTracker() {
   return (
     <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-2 pointer-events-none">
       <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-lg p-3 w-64 shadow-2xl pointer-events-auto">
-        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
+        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 flex justify-between items-center">
           Active Objectives
-          <span className="text-amber-500">📜</span>
+          <img 
+            src="/assets/ui/icon_quest.png" 
+            className="w-3.5 h-3.5 pixelated" 
+            alt="" 
+          />
         </h4>
         
         <div className="space-y-3">

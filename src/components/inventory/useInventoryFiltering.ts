@@ -20,7 +20,7 @@ export function useInventoryFiltering() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortType>('rarity');
   const [sortDesc, setSortDesc] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(''); // UUSI: Hakusanan tila
+  const [searchQuery, setSearchQuery] = useState('');
 
   // 1. Muunnetaan inventory-objekti listaksi
   const rawItems = useMemo(() => {
@@ -30,7 +30,12 @@ export function useInventoryFiltering() {
         if (!details) return null;
         return { ...details, count } as InventoryItem;
       })
-      .filter((item): item is InventoryItem => item !== null && item.name !== undefined);
+      // KORJAUS: Lisätty item.count > 0 tarkistus
+      .filter((item): item is InventoryItem => 
+        item !== null && 
+        item.name !== undefined && 
+        item.count > 0
+      );
   }, [inventory]);
 
   // 2. Suodatetaan ja lajitellaan (Memoized performance)

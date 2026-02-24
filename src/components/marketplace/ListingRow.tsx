@@ -1,5 +1,6 @@
 import { getItemById } from '../../utils/itemUtils';
 import { purchaseListing, cancelListing } from '../../services/marketService';
+import { useGameStore } from '../../store/useGameStore';
 import type { MarketListing } from '../../types';
 
 interface Props {
@@ -12,22 +13,30 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
   const item = getItemById(listing.itemId);
   const isOwn = listing.sellerUid === myUid;
 
-  // --- OSTO-OPERAATIO ---
+  // Käytetään storessa määriteltyä emitEvent-funktiota
+  const { emitEvent } = useGameStore();
+
   const handleBuy = async () => {
     if (isOwn) return;
     try {
       await purchaseListing(myUid, listing.id);
-      onPurchase(); // Päivittää listan oston jälkeen
+
+      // ILMOITUS ONNISTUNEESTA OSTOSTA
+      emitEvent(
+        'success',
+        `Acquired ${listing.amount}x ${item?.name}!`,
+        item?.icon,
+      );
+
+      onPurchase();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert(String(err));
-      }
+      const errorMsg = err instanceof Error ? err.message : String(err);
+
+      // ILMOITUS VIRHEESTÄ
+      emitEvent('error', errorMsg);
     }
   };
 
-  // --- PERUUTUS-OPERAATIO (Tavarat takaisin myyjälle) ---
   const handleCancel = async () => {
     if (!isOwn) return;
 
@@ -39,13 +48,13 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
 
     try {
       await cancelListing(listing.id, myUid);
-      onPurchase(); // Päivittää listan peruutuksen jälkeen
+
+      // ILMOITUS PERUUTUKSESTA
+      emitEvent('warning', `Listing for ${item?.name} cancelled.`, item?.icon);
+
+      onPurchase();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert(String(err));
-      }
+      emitEvent('error', err instanceof Error ? err.message : String(err));
     }
   };
 
@@ -53,7 +62,6 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
 
   return (
     <div className="flex items-center gap-4 py-3 px-4 border-b border-white/5 hover:bg-white/5 transition-colors group">
-      {/* 1. Item Icon & Info */}
       <div className="flex items-center gap-3 w-48 shrink-0">
         <div className="relative">
           <img src={item.icon} className="w-8 h-8 pixelated" alt="" />
@@ -78,9 +86,8 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
         </div>
       </div>
 
-      {/* 2. Seller Info */}
-      <div className="hidden md:flex flex-col flex-1">
-        <span className="text-[9px] text-slate-600 uppercase font-bold tracking-tighter">
+      <div className="hidden md:flex flex-col flex-1 text-left">
+        <span className="text-[9px] text-slate-600 uppercase font-black tracking-widest">
           Merchant
         </span>
         <span className="text-xs text-slate-400 italic">
@@ -88,32 +95,30 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
         </span>
       </div>
 
-      {/* 3. Price (Tavern style) */}
       <div className="flex flex-col items-end w-32 shrink-0">
-        <span className="text-[9px] text-slate-600 uppercase font-bold">
-          Total fragments
+        <span className="text-[9px] text-slate-600 uppercase font-black tracking-widest">
+          Total Cost
         </span>
         <div className="flex items-center gap-2">
           <img src="/assets/ui/coins.png" className="w-4 h-4" alt="" />
-          <span className="font-mono text-amber-500 font-bold">
+          <span className="font-mono text-amber-500 font-black tracking-tighter">
             {listing.totalPrice.toLocaleString()}
           </span>
         </div>
       </div>
 
-      {/* 4. Action Button (Dynaaminen) */}
       <div className="w-24 flex justify-end">
         {isOwn ? (
           <button
             onClick={handleCancel}
-            className="px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-all border border-red-900/30 text-red-500 hover:bg-red-900/10 active:scale-95"
+            className="px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest border border-red-900/30 text-red-500 hover:bg-red-900/10 active:scale-95"
           >
             Cancel
           </button>
         ) : (
           <button
             onClick={handleBuy}
-            className="px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-all bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm active:scale-95"
+            className="px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_10px_rgba(8,145,178,0.2)] active:scale-95"
           >
             Acquire
           </button>

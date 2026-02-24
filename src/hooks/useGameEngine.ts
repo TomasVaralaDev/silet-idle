@@ -3,6 +3,7 @@ import { useGameStore } from '../store/useGameStore';
 import type { FullStoreState } from '../store/useGameStore'; 
 import { processCombatTick } from '../systems/combatSystem';
 import { GAME_DATA, getItemDetails } from '../data'; 
+import { calculateXpGain } from '../utils/gameUtils';
 import type { GameState } from '../types';
 
 export const useGameEngine = () => {
@@ -41,7 +42,6 @@ export const useGameEngine = () => {
           if (state.equipment.rune) {
             const runeDetails = getItemDetails(state.equipment.rune);
             if (runeDetails?.skillModifiers) {
-              // Hakee esim. "alchemySpeed" tai "miningSpeed"
               const speedKey = `${skill}Speed` as keyof typeof runeDetails.skillModifiers;
               const xpKey = `${skill}Xp` as keyof typeof runeDetails.skillModifiers;
               
@@ -63,20 +63,15 @@ export const useGameEngine = () => {
               });
             }
 
-            // B) XP JA LEVEL UP (Rune XP huomioitu)
+            // B) XP JA LEVEL UP (SRP: Delegoidaan laskenta calculateXpGainille)
             const currentSkillData = state.skills[skill] || { xp: 0, level: 1 };
-            
-            // Perus XP + Rune Bonus (esim. 1.1x)
             const totalXpGain = (resource.xpReward || 0) * (1 + runeXpBonus);
-            let currentXp = currentSkillData.xp + totalXpGain;
-            let currentLevel = currentSkillData.level;
-            let xpRequired = currentLevel * 150; 
-
-            while (currentXp >= xpRequired) {
-              currentXp -= xpRequired;
-              currentLevel++;
-              xpRequired = currentLevel * 150;
-            }
+            
+            const { level: newLevel, xp: newXp } = calculateXpGain(
+              currentSkillData.level, 
+              currentSkillData.xp, 
+              totalXpGain
+            );
 
             // C) Palkinto
             if (resource.drops && resource.drops.length > 0) {
@@ -91,7 +86,7 @@ export const useGameEngine = () => {
             }
 
             return {
-              skills: { ...state.skills, [skill]: { xp: currentXp, level: currentLevel } },
+              skills: { ...state.skills, [skill]: { xp: newXp, level: newLevel } },
               inventory: newInventory,
               activeAction: { ...state.activeAction, progress: 0 }
             } as Partial<FullStoreState>;

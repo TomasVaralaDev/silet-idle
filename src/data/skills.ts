@@ -1,6 +1,7 @@
+import { autoScaleResource } from '../utils/skillScaling';
 import type { Resource } from '../types';
 
-export const GAME_DATA: Record<string, Resource[]> = {
+const RAW_GAME_DATA: Record<string, Resource[]> = {
   woodcutting: [
     { 
       id: 'pine_log', name: 'Pine Tree', rarity: 'common', level: 1, xpReward: 10, interval: 3000, value: 1, 
@@ -61,7 +62,7 @@ export const GAME_DATA: Record<string, Resource[]> = {
     { id: 'ore_eternium', name: 'Eternium Ore', rarity: 'legendary', level: 85, xpReward: 150, interval: 15000, value: 200, icon: '/assets/resources/ore/ore_eternium.png', color: 'text-red-500', description: 'Resonates with time.', area: 10 },
     { id: 'ore_starfallalloy', name: 'Starfall Ore', rarity: 'legendary', level: 99, xpReward: 250, interval: 20000, value: 500, icon: '/assets/resources/ore/ore_starfallalloy.png', color: 'text-indigo-400', description: 'Material from the cosmos.' }
   ],
-foraging: [
+  foraging: [
     // TIER 1
     {
       id: 'red_mushroom', name: 'Red Mushroom', level: 1, xpReward: 10, interval: 2500, value: 5, rarity: 'common',
@@ -431,3 +432,10 @@ foraging: [
     },
   ],
 };
+
+// Viemme datan skaalaus-funktion läpi. Jos kentässä on valmiiksi määritelty
+// esim. xpReward, skaalaaja säilyttää sen alkuperäisenä.
+export const GAME_DATA: Record<string, Resource[]> = Object.keys(RAW_GAME_DATA).reduce((acc, category) => {
+  acc[category] = RAW_GAME_DATA[category].map(autoScaleResource);
+  return acc;
+}, {} as Record<string, Resource[]>);

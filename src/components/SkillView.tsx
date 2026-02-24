@@ -3,6 +3,7 @@ import { useGameStore } from '../store/useGameStore';
 import { GAME_DATA } from '../data/skills';
 import { getItemDetails } from '../data';
 import { SKILL_DEFINITIONS } from '../config/skillDefinitions';
+import { getRequiredXpForLevel } from '../utils/gameUtils'; // SRP: Haetaan kaava utilseista
 import type { SkillType, Resource } from '../types';
 
 interface SkillViewProps {
@@ -47,7 +48,9 @@ export default function SkillView({ skill }: SkillViewProps) {
 
   const skillState = skills[skill] || { level: 1, xp: 0 };
   const currentLevel = skillState.level;
-  const nextLevelXp = currentLevel * 150;
+  
+  // UUSI KAAVA: Haetaan vaadittu määrä seuraavalle tasolle utils-funktiolta
+  const nextLevelXp = getRequiredXpForLevel(currentLevel);
   const progressPercent = Math.min(100, Math.max(0, (skillState.xp / nextLevelXp) * 100));
 
   const categories = SKILL_CATEGORIES[skill];
@@ -203,11 +206,9 @@ export default function SkillView({ skill }: SkillViewProps) {
                 {isUnlocked && (
                   <div className="mt-auto pt-3 border-t border-slate-800/50 w-full">
                     <div className="flex justify-between items-center text-xs mb-2">
-                      {/* Korjattu XP väri ja määrä */}
                       <span className={`font-bold ${globalXpMultiplier > 1 ? 'text-emerald-400' : 'text-cyan-400'}`}>
                         +{effectiveXp.toFixed(1)} XP
                       </span>
-                      {/* Korjattu Aika väri ja määrä */}
                       <span className={`font-bold ${globalSpeedMultiplier > 1 ? 'text-emerald-400' : 'text-slate-500'}`}>
                         {(effectiveInterval / 1000).toFixed(1)}s
                       </span>

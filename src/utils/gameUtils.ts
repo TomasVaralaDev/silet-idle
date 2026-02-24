@@ -1,22 +1,31 @@
 import type { SkillType, WeightedDrop } from '../types';
 
 /**
- * UUSI: XP Laskenta (Hitaampi eteneminen, BaseXP 100, Level^1.6)
+ * Laskee vaaditun XP-määrän tietylle tasolle.
+ * UUSI KAAVA: 40 * Level^2
+ * Esim: Lvl 10 -> 4000 XP, Lvl 100 -> 400 000 XP
+ */
+export const getRequiredXpForLevel = (level: number): number => {
+  return Math.floor(40 * Math.pow(level, 2));
+};
+
+/**
+ * Laskee uuden tason ja XP:n annetun palkinnon perusteella.
+ * Tukee useita tasonnousuja kerralla (esim. jos pelaaja saa paljon XP:tä).
  */
 export const calculateXpGain = (currentLevel: number, currentXp: number, xpReward: number) => {
   let newXp = currentXp + xpReward;
   let newLevel = currentLevel;
   
-  // XP Required = BaseXP * Level^1.6
-  const getRequiredXp = (lvl: number) => Math.floor(100 * Math.pow(lvl, 1.6));
+  let nextLevelReq = getRequiredXpForLevel(newLevel);
   
-  let nextLevelReq = getRequiredXp(newLevel);
-  
+  // Nousee niin monta tasoa kuin XP riittää
   while (newXp >= nextLevelReq) {
     newXp -= nextLevelReq;
     newLevel++;
-    nextLevelReq = getRequiredXp(newLevel);
+    nextLevelReq = getRequiredXpForLevel(newLevel);
   }
+  
   return { level: newLevel, xp: newXp };
 };
 

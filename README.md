@@ -9,23 +9,26 @@
 ## Features
 
 ### Skilling & Resources
+
 - **7 Unique Skills:** Woodcutting, Mining, Fishing, Farming, Smithing, Crafting, and Cooking.
 - **Progression:** Level up skills to unlock better resources (e.g., Pine → Bloodwood, Copper → Starfall Ore).
 - **Automation:** Idle mechanics allow gathering while managing other tasks.
 
 ### Combat System
-- **8 Distinct Worlds:** From the grassy *Greenvale* to the cosmic *Eternal Nexus*.
+
+- **8 Distinct Worlds:** From the grassy _Greenvale_ to the cosmic _Eternal Nexus_.
 - **80+ Enemies:** Unique stats, sprites, and drop tables for every enemy.
 - **Auto-Battler:** Automated combat loop with configurable **Auto-Eat** threshold and **Auto-Progress**.
 - **Boss Fights:** Collect rare keys to challenge powerful World Bosses.
 
 ### Loot & Economy
+
 - **Weighted Loot System:** Advanced drop tables with tiered rarities (Common Dust, Rare Gems, Exotic Elite Fragments).
 - **Inventory Management:** Slot-based equipment system, consumable food, and resource storage.
 - **Requisition Shop:** Buy upgrades, speed multipliers (including God Mode tools), and XP Tomes (5x XP).
-- **Gamble System:** "Entropy" mechanic for sinking coins.
 
 ### Technical Features
+
 - **Cloud Save (Firebase):** Seamless cross-device progression with Google Authentication.
 - **Local Fallback:** Auto-saves to local storage if offline.
 - **Username System:** Unique "Unit ID" registration for every player.
@@ -43,50 +46,57 @@
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
-  ```bash
-   git clone [https://github.com/yourusername/timering-idle.git](https://github.com/yourusername/timering-idle.git)
-   cd timering-idle
-  ```
+
+```bash
+ git clone [https://github.com/yourusername/timering-idle.git](https://github.com/yourusername/timering-idle.git)
+ cd timering-idle
+```
 
 2. **Install dependencies**
-  ```bash
-    npm install
-  ```
+
+```bash
+  npm install
+```
 
 3. **Configure Firebase Create a file named .env in the root directory and add your Firebase credentials:**
-  ```bash
-    VITE_FIREBASE_API_KEY=your_api_key
-    VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-    VITE_FIREBASE_PROJECT_ID=your_project_id
-    VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-    VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-    VITE_FIREBASE_APP_ID=your_app_id
-  ```
+
+```bash
+  VITE_FIREBASE_API_KEY=your_api_key
+  VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+  VITE_FIREBASE_PROJECT_ID=your_project_id
+  VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+  VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+  VITE_FIREBASE_APP_ID=your_app_id
+```
 
 4. **Run the development server**
-  ```bash
-    npm run dev
-  ```
+
+```bash
+  npm run dev
+```
 
 ### Project Structure
-  ```bash
-        src/
-    ├── assets/          # Game images (items, enemies, UI icons)
-    ├── components/      # React components (Sidebar, Inventory, CombatView, etc.)
-    ├── App.tsx          # Main game loop and state management
-    ├── data.ts          # Static game data (Loot tables, Enemies, Items)
-    ├── types.ts         # TypeScript interfaces and types
-    ├── firebase.ts      # Firebase initialization
-    └── index.css        # Tailwind directives and global styles
-  ```
+
+```bash
+      src/
+  ├── assets/          # Game images (items, enemies, UI icons)
+  ├── components/      # React components (Sidebar, Inventory, CombatView, etc.)
+  ├── App.tsx          # Main game loop and state management
+  ├── data.ts          # Static game data (Loot tables, Enemies, Items)
+  ├── types.ts         # TypeScript interfaces and types
+  ├── firebase.ts      # Firebase initialization
+  └── index.css        # Tailwind directives and global styles
+```
 
 ### Gameplay Guide
+
 1. Start: Choose a unique Unit ID.
 
 2. Gather: Use Woodcutting or Mining to get base materials.

@@ -6,25 +6,32 @@ import ListingRow from './ListingRow';
 import SellForm from './SellForm';
 import type { MarketListing } from '../../types';
 
+type MarketTab = 'buy' | 'sell';
+
+const CATEGORIES = [
+  { id: 'all', label: 'All Resources' },
+  { id: 'woodcutting', label: 'Wood' },
+  { id: 'mining', label: 'Ores & Bars' },
+  { id: 'smithing', label: 'Equipment' },
+  { id: 'alchemy', label: 'Potions' },
+  { id: 'foraging', label: 'Materials' },
+];
+
 export default function MarketplaceView() {
-  const [tab, setTab] = useState<'buy' | 'sell'>('buy');
+  const [tab, setTab] = useState<MarketTab>('buy');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Viittaus viimeisimpään hakuajankohtaan optimaalisuutta varten
   const lastFetchTime = useRef<number>(0);
-  const FETCH_COOLDOWN = 30000; // 30 sekunnin suoja-aika automaattihauille
-
+  const FETCH_COOLDOWN = 30000;
   const { user } = useAuth();
 
   const fetchListings = useCallback(async (force = false) => {
     const now = Date.now();
-
-    // Estetään haku, jos cooldown on käynnissä (eikä kyseessä ole pakotettu haku)
-    if (!force && now - lastFetchTime.current < FETCH_COOLDOWN) {
-      return;
-    }
+    if (!force && now - lastFetchTime.current < FETCH_COOLDOWN) return;
 
     setLoading(true);
     try {
@@ -32,126 +39,280 @@ export default function MarketplaceView() {
       setListings(data);
       lastFetchTime.current = now;
     } catch (err) {
-      console.error('Fetch failed:', err);
+      console.error('Relay error:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Haetaan vain, kun tullaan Buy-näkymään ensi kertaa tai cooldown on ohi
   useEffect(() => {
-    if (tab === 'buy') {
-      fetchListings();
-    }
+    if (tab === 'buy') fetchListings();
   }, [tab, fetchListings]);
 
-  const filteredListings = useMemo(() => {
-    if (!searchQuery.trim()) return listings;
-    return listings.filter((l) => {
-      const item = getItemById(l.itemId);
-      return item?.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const catalog = useMemo(() => {
+    const uniqueItemIds = Array.from(new Set(listings.map((l) => l.itemId)));
+
+    return uniqueItemIds
+      .map((id) => {
+        const item = getItemById(id);
+        if (!item) return null;
+
+        const itemListings = listings.filter((l) => l.itemId === id);
+        const lowestPrice = Math.min(
+          ...itemListings.map((l) => l.pricePerItem),
+        );
+        const totalAvailable = itemListings.reduce(
+          (acc, l) => acc + l.amount,
+          0,
+        );
+
+        return {
+          ...item,
+          lowestPrice,
+          listingCount: itemListings.length,
+          totalAvailable,
+        };
+      })
+      .filter(Boolean);
+  }, [listings]);
+
+  const filteredCatalog = useMemo(() => {
+    return catalog.filter((item) => {
+      if (!item) return false;
+
+      const matchesSearch = item.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      let matchesCategory = false;
+
+      if (activeCategory === 'all') {
+        matchesCategory = true;
+      } else {
+        const cat = item.category; // Esim. 'plank', 'potion', 'foraging_material'
+
+        switch (activeCategory) {
+          case 'woodcutting':
+            // Nyt Wood-nappi näyttää sekä tukit että lankut
+            matchesCategory = cat === 'log' || cat === 'plank';
+            break;
+          case 'mining':
+            matchesCategory = cat === 'ore' || cat === 'ingot';
+            break;
+          case 'smithing':
+            matchesCategory = [
+              'sword',
+              'bow',
+              'staff',
+              'helmet',
+              'chestplate',
+              'legs',
+              'shield',
+              'ring',
+              'necklace',
+            ].includes(cat as string);
+            break;
+          case 'alchemy':
+            matchesCategory = cat === 'potion';
+            break;
+          case 'foraging':
+            // Päivitetty täsmäämään: 'foraging_material'
+            matchesCategory = cat === 'foraging_material';
+            break;
+          default:
+            matchesCategory = cat === activeCategory;
+        }
+      }
+
+      return matchesSearch && matchesCategory;
     });
-  }, [listings, searchQuery]);
+  }, [catalog, searchQuery, activeCategory]);
+
+  const selectedItemSellers = useMemo(() => {
+    return listings
+      .filter((l) => l.itemId === selectedItemId)
+      .sort((a, b) => a.pricePerItem - b.pricePerItem);
+  }, [listings, selectedItemId]);
 
   if (!user)
     return (
-      <div className="p-10 text-slate-500 font-mono italic">
-        Disconnected...
+      <div className="p-10 text-slate-500 font-mono italic text-center">
+        Connection to Relay lost...
       </div>
     );
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 font-sans overflow-hidden">
-      <div className="p-4 md:p-6 border-b border-white/5 flex flex-col gap-4 shrink-0 bg-slate-900/20">
-        <div className="flex justify-between items-center">
+    <div className="flex flex-col h-full bg-slate-950/80 font-sans overflow-hidden">
+      <div className="p-5 border-b border-white/5 bg-slate-900/40 shrink-0">
+        <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-xl font-bold text-slate-100 tracking-tight uppercase">
-              World Relay Market
-            </h2>
-            <div className="flex items-center gap-2">
-              <p className="text-[10px] text-slate-500 font-mono uppercase">
-                Status: Connected
-              </p>
-              {/* REFRESH NAPPI */}
-              {tab === 'buy' && (
-                <button
-                  onClick={() => fetchListings(true)}
-                  disabled={loading}
-                  className="text-[9px] bg-slate-800 hover:bg-slate-700 text-cyan-400 px-2 py-0.5 rounded border border-slate-700 transition-colors"
-                >
-                  {loading ? 'SYNCING...' : '⟳ REFRESH RELAY'}
-                </button>
-              )}
+            <h1 className="text-2xl font-black uppercase tracking-widest text-cyan-500 leading-none">
+              Marketplace
+            </h1>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest">
+                Global Sync Active
+              </span>
             </div>
           </div>
 
-          <div className="flex gap-1 bg-slate-900 p-1 rounded border border-slate-800">
-            {(['buy', 'sell'] as const).map((t) => (
+          <div className="flex bg-slate-900 p-1 rounded-sm border border-slate-800">
+            {(['buy', 'sell'] as MarketTab[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setTab(t)}
-                className={`px-4 py-1.5 rounded text-[10px] font-bold uppercase transition-all ${
-                  tab === t
-                    ? 'bg-cyan-600 text-white'
-                    : 'text-slate-500 hover:text-slate-300'
-                }`}
+                onClick={() => {
+                  setTab(t);
+                  setSelectedItemId(null);
+                }}
+                className={`px-6 py-1.5 text-[10px] font-bold uppercase transition-all ${tab === t ? 'bg-cyan-600 text-white shadow-[0_0_15px_rgba(8,145,178,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
               >
-                {t === 'buy' ? 'Browse' : 'Distribute'}
+                {t === 'buy' ? 'Acquire' : 'Distribute'}
               </button>
             ))}
           </div>
         </div>
 
-        {tab === 'buy' && (
-          <div className="relative flex items-center">
-            <span className="absolute left-3 text-slate-600 text-xs">🔍</span>
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search resource by name..."
-              className="w-full bg-slate-900/50 border border-slate-800 rounded px-9 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-600"
-            />
+        {tab === 'buy' && !selectedItemId && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-1.5 rounded-sm text-[9px] font-bold uppercase border transition-all shrink-0 ${
+                    activeCategory === cat.id
+                      ? 'border-cyan-500 text-cyan-400 bg-cyan-950/30'
+                      : 'border-slate-800 text-slate-500 hover:border-slate-600'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-xs">
+                  🔍
+                </span>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filter catalog by name..."
+                  className="w-full bg-slate-900/50 border border-slate-800 rounded-sm px-9 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-600 transition-colors"
+                />
+              </div>
+              <button
+                onClick={() => fetchListings(true)}
+                disabled={loading}
+                className="px-4 bg-slate-900 border border-slate-800 text-cyan-500 text-[10px] font-bold uppercase hover:bg-slate-800 transition-colors disabled:opacity-50"
+              >
+                {loading ? '...' : '⟳'}
+              </button>
+            </div>
           </div>
+        )}
+
+        {selectedItemId && (
+          <button
+            onClick={() => setSelectedItemId(null)}
+            className="flex items-center gap-2 text-cyan-500 text-[10px] font-bold uppercase hover:text-cyan-400 transition-colors"
+          >
+            <span>←</span> Back to Global Catalog
+          </button>
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        {tab === 'buy' ? (
-          <div className="h-full overflow-y-auto custom-scrollbar flex flex-col">
-            <div className="flex items-center gap-4 px-4 py-2 bg-slate-900/50 border-b border-white/5 text-[9px] font-bold text-slate-600 uppercase tracking-widest">
-              <span className="w-48">Item Resource</span>
-              <span className="hidden md:flex flex-1">Merchant Profile</span>
-              <span className="w-32 text-right pr-4">Cost Value</span>
-              <span className="w-24"></span>
-            </div>
-
-            {loading && listings.length === 0 ? (
-              <div className="py-20 text-center text-slate-700 animate-pulse font-mono text-xs uppercase">
-                Parsing relay frequencies...
+      <div className="flex-1 overflow-hidden relative">
+        {tab === 'sell' ? (
+          <SellForm
+            myUid={user.uid}
+            onComplete={() => {
+              setTab('buy');
+              fetchListings(true);
+            }}
+          />
+        ) : (
+          <div className="h-full overflow-y-auto custom-scrollbar p-4">
+            {!selectedItemId && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {filteredCatalog.map((item) => (
+                  <button
+                    key={item!.id}
+                    onClick={() => setSelectedItemId(item!.id)}
+                    className="group relative bg-slate-900/40 border border-slate-800 p-4 rounded-sm hover:border-cyan-500/50 hover:bg-slate-900/60 transition-all flex flex-col items-center text-center gap-3"
+                  >
+                    <img
+                      src={item!.icon}
+                      className="w-12 h-12 pixelated group-hover:scale-110 transition-transform duration-300"
+                      alt=""
+                    />
+                    <div>
+                      <div
+                        className={`text-xs font-bold leading-tight ${item!.color || 'text-slate-200'}`}
+                      >
+                        {item!.name}
+                      </div>
+                      <div className="text-[9px] text-slate-500 font-mono mt-1 uppercase tracking-tighter">
+                        {item!.listingCount} Sellers • {item!.totalAvailable}{' '}
+                        Qty
+                      </div>
+                    </div>
+                    <div className="mt-auto pt-2 w-full border-t border-white/5">
+                      <div className="text-[10px] text-amber-500 font-bold font-mono">
+                        From {item!.lowestPrice.toLocaleString()} ⛃
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-            ) : (
-              <>
-                {filteredListings.map((l) => (
+            )}
+
+            {selectedItemId && (
+              <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex items-center gap-4 mb-4 p-4 bg-cyan-950/10 border border-cyan-900/20 rounded-sm">
+                  <img
+                    src={getItemById(selectedItemId)?.icon}
+                    className="w-12 h-12 pixelated shadow-lg"
+                    alt=""
+                  />
+                  <div>
+                    <h3 className="text-xl font-bold text-white tracking-tight">
+                      {getItemById(selectedItemId)?.name}
+                    </h3>
+                    <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">
+                      Displaying all active relay transmissions
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center px-4 py-2 text-[9px] font-bold text-slate-600 uppercase tracking-widest border-b border-white/5">
+                  <span className="flex-1">Merchant</span>
+                  <span className="w-24 text-right">Amount</span>
+                  <span className="w-32 text-right pr-4">Unit Price</span>
+                  <span className="w-24 text-right">Action</span>
+                </div>
+
+                {selectedItemSellers.map((l) => (
                   <ListingRow
                     key={l.id}
                     listing={l}
                     myUid={user.uid}
-                    // MUUTOS: onPurchase ei enää pakota hakua, vaan odottaa refreshia tai cooldownia
-                    onPurchase={() => fetchListings(false)}
+                    onPurchase={() => fetchListings(true)}
                   />
                 ))}
-                {filteredListings.length === 0 && (
-                  <div className="py-20 text-center text-slate-600 italic text-sm">
-                    {searchQuery
-                      ? `No records found for "${searchQuery}"`
-                      : 'Relay is silent.'}
-                  </div>
-                )}
-              </>
+              </div>
+            )}
+
+            {!loading && filteredCatalog.length === 0 && !selectedItemId && (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-700">
+                <span className="text-4xl mb-4">📡</span>
+                <p className="text-xs font-mono uppercase tracking-widest">
+                  No signals found in this frequency.
+                </p>
+              </div>
             )}
           </div>
-        ) : (
-          <SellForm myUid={user.uid} onComplete={() => setTab('buy')} />
         )}
       </div>
     </div>

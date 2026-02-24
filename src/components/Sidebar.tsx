@@ -132,7 +132,7 @@ export default function Sidebar({
   onForceSave,
   onOpenSettings,
   onOpenUserConfig,
-  onOpenQuests
+  onOpenQuests,
 }: SidebarProps) {
   const coins = useGameStore((state) => state.coins);
   const skills = useGameStore((state) => state.skills);
@@ -172,7 +172,9 @@ export default function Sidebar({
     0,
   );
 
-  const hasCompletableQuests = quests.dailyQuests.some(q => q.isCompleted && !q.isClaimed);
+  const hasCompletableQuests = quests.dailyQuests.some(
+    (q) => q.isCompleted && !q.isClaimed,
+  );
 
   return (
     <nav className="w-full md:w-72 bg-slate-950 border-r border-slate-800/50 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative font-sans">
@@ -258,15 +260,15 @@ export default function Sidebar({
                 Fragments
               </span>
             </div>
-            <span 
-              className="font-mono text-base font-bold text-amber-500 truncate ml-2" 
+            <span
+              className="font-mono text-base font-bold text-amber-500 truncate ml-2"
               title={coins.toLocaleString()}
             >
               {formatNumber(coins)}
             </span>
           </div>
 
-          <button 
+          <button
             onClick={onOpenQuests}
             className="bg-slate-900/50 p-3 border border-slate-800/50 rounded hover:bg-slate-800 transition-colors relative flex items-center justify-center shrink-0 w-12"
             title="Daily Quests"
@@ -311,13 +313,6 @@ export default function Sidebar({
             label="Milestones"
             icon="/assets/ui/icon_achievements.png"
             isActive={currentView === 'achievements'}
-            onClick={setView}
-          />
-          <NavButton
-            view="gamble"
-            label="Entropy"
-            icon="/assets/ui/icon_casino.png"
-            isActive={currentView === 'gamble'}
             onClick={setView}
           />
           <NavButton

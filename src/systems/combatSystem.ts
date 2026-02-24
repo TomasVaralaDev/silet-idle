@@ -124,7 +124,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   extendedStats.attackTimer = 2400; 
   let currentEnemyHp = extendedStats.enemyCurrentHp;
 
-  // Syvä kopio skilleistä (Zustand vaatii tämän toimiakseen oikein!)
   const newSkills = JSON.parse(JSON.stringify(skills)) as GameState['skills'];
 
   if (currentEnemyHp <= 0) {
@@ -158,7 +157,6 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   if (currentEnemyHp <= 0) {
     addLog(`Victory over ${map.enemyName}!`);
     
-    // Fallback: Varmistetaan että palkkio on vähintään jotain (edes 1), jotta levutus varmasti laukeaa
     const safeXpReward = map.xpReward || 1; 
 
     const skillList: SkillType[] = ['hitpoints', 'attack', 'defense', combatStyle];
@@ -195,7 +193,7 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
 
     return {
       inventory: cleanInventory(newInventory),
-      skills: newSkills, // UUSI KORJATTU OBJEKTI
+      skills: newSkills,
       enemy: null, 
       equippedFood: newEquippedFood,
       combatStats: { 
@@ -214,9 +212,23 @@ export const processCombatTick = (state: GameState, tickMs: number): Partial<Gam
   const enemyHit = calculateHit(enemyStats, playerStats);
   pHP = Math.max(0, pHP - enemyHit.finalDamage);
   
+  // KUOLEMA: Pysäytetään taistelu ja asetetaan 1min cooldown
   if (pHP <= 0) {
-    addLog("Defeated! Returning to safety.");
-    return { activeAction: null, enemy: null, combatStats: { ...extendedStats, hp: 0, currentMapId: null, enemyCurrentHp: 0, combatLog: currentLog }, equippedFood: newEquippedFood, inventory: cleanInventory(newInventory) };
+    addLog("Defeated! Returning to safety. 1min System Recovery...");
+    return { 
+      activeAction: null, 
+      enemy: null, 
+      combatStats: { 
+        ...extendedStats, 
+        hp: 0, 
+        currentMapId: null, 
+        enemyCurrentHp: 0, 
+        combatLog: currentLog,
+        cooldownUntil: Date.now() + 60000 // 60 sekunnin rangaistus kuolemasta
+      }, 
+      equippedFood: newEquippedFood, 
+      inventory: cleanInventory(newInventory) 
+    };
   }
 
   return { inventory: cleanInventory(newInventory), equippedFood: newEquippedFood, combatStats: { ...extendedStats, hp: pHP, enemyCurrentHp: currentEnemyHp, combatLog: currentLog } };

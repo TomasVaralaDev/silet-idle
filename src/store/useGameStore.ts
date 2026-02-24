@@ -132,6 +132,7 @@ export const DEFAULT_STATE: GameState = {
     respawnTimer: 0,
     foodTimer: 0,
     combatLog: [],
+    cooldownUntil: 0,
   },
   enemy: null,
 };

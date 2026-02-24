@@ -110,6 +110,7 @@ export interface CombatState {
   foodTimer: number;
   combatLog: string[];
   attackTimer?: number;
+  cooldownUntil: number;
 }
 
 export interface CalculatedStats {

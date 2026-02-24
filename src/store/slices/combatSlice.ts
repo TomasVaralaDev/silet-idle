@@ -18,12 +18,26 @@ type ExtendedCombatState = CombatState & { attackTimer?: number };
 export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice> = (set, get) => ({
   
   startCombat: (mapId: number) => {
+    // --- COOLDOWN TARKISTUS ---
+    const state = get();
+    const cooldownLeft = (state.combatStats.cooldownUntil || 0) - Date.now();
+    
+    if (cooldownLeft > 0) {
+      const seconds = Math.ceil(cooldownLeft / 1000);
+      state.emitEvent(
+        'warning', 
+        `System recovering... Wait ${seconds}s`, 
+        '/assets/ui/icon_warning.png'
+      );
+      return;
+    }
+
     const map = COMBAT_DATA.find(m => m.id === mapId);
     if (!map) return;
 
     // --- BOSS AVAIN TARKISTUS JA KULUTUS ---
     if (map.isBoss && map.keyRequired) {
-      const currentInventory = get().inventory;
+      const currentInventory = state.inventory;
       const keyCount = currentInventory[map.keyRequired] || 0;
       
       if (keyCount < 1) return;
@@ -48,7 +62,7 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
       xpReward: map.xpReward
     };
 
-    const currentStats = get().combatStats;
+    const currentStats = state.combatStats;
     const newStats: ExtendedCombatState = {
       ...currentStats,
       currentMapId: mapId,
@@ -96,10 +110,17 @@ export const createCombatSlice: StateCreator<FullStoreState, [], [], CombatSlice
     }
   },
 
+  // RETREAT: Pysäytetään taistelu ja asetetaan 1min cooldown
   stopCombat: () => set({ 
     activeAction: null, 
     enemy: null, 
-    combatStats: { ...get().combatStats, currentMapId: null, enemyCurrentHp: 0, respawnTimer: 0 }
+    combatStats: { 
+      ...get().combatStats, 
+      currentMapId: null, 
+      enemyCurrentHp: 0, 
+      respawnTimer: 0,
+      cooldownUntil: Date.now() + 60000 // 60 sekunnin rangaistus
+    }
   }),
 
   toggleAutoProgress: () => set({ 

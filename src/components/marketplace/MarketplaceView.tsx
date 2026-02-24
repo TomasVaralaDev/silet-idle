@@ -140,7 +140,7 @@ export default function MarketplaceView() {
 
   return (
     <div className="flex flex-col h-full bg-slate-950/80 font-sans overflow-hidden">
-      {/* HEADER - Tyyli kopioitu esimerkkisi mukaan */}
+      {/* HEADER */}
       <div className="p-6 border-b border-slate-800/50 bg-slate-900/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div
           className={`w-16 h-16 rounded-xl flex items-center justify-center bg-cyan-500/20 border border-cyan-500/30 shadow-lg shrink-0`}
@@ -158,11 +158,11 @@ export default function MarketplaceView() {
             Marketplace
           </h1>
           <p className="text-slate-500 text-sm font-medium">
-            Global Relay Terminal / Connection Active
+            Global Marketplace for adventurers.
           </p>
         </div>
 
-        {/* TABS - Siirretty oikeaan reunaan osaksi headeria */}
+        {/* TABS */}
         <div className="flex bg-slate-900 p-1 rounded-sm border border-slate-800 h-fit">
           {(['buy', 'sell'] as MarketTab[]).map((t) => (
             <button
@@ -204,17 +204,12 @@ export default function MarketplaceView() {
             </div>
 
             <div className="flex gap-2">
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-xs">
-                  🔍
-                </span>
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Filter catalog by name..."
-                  className="w-full bg-slate-900/50 border border-slate-800 rounded-sm px-9 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-600 transition-colors"
-                />
-              </div>
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search marketplace..."
+                className="w-full bg-slate-900/50 border border-slate-800 rounded-sm px-9 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-600 transition-colors"
+              />
               <button
                 onClick={() => fetchListings(true)}
                 disabled={loading}
@@ -262,7 +257,9 @@ export default function MarketplaceView() {
                     />
                     <div>
                       <div
-                        className={`text-xs font-bold leading-tight ${item!.color || 'text-slate-200'}`}
+                        className={`text-xs font-bold leading-tight ${
+                          item!.color || 'text-slate-200'
+                        }`}
                       >
                         {item!.name}
                       </div>
@@ -272,8 +269,14 @@ export default function MarketplaceView() {
                       </div>
                     </div>
                     <div className="mt-auto pt-2 w-full border-t border-white/5">
-                      <div className="text-[10px] text-amber-500 font-bold font-mono">
-                        From {item!.lowestPrice.toLocaleString()} ⛃
+                      <div className="text-[10px] text-amber-500 font-bold font-mono flex items-center justify-center gap-1">
+                        <span>From {item!.lowestPrice.toLocaleString()}</span>
+                        {/* TÄSSÄ VAIHDETTU IKONI */}
+                        <img
+                          src="/assets/ui/coins.png"
+                          className="w-3 h-3 pixelated inline-block"
+                          alt="coins"
+                        />
                       </div>
                     </div>
                   </button>
@@ -294,7 +297,7 @@ export default function MarketplaceView() {
                       {getItemById(selectedItemId)?.name}
                     </h3>
                     <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">
-                      Displaying all active relay transmissions
+                      For sale
                     </p>
                   </div>
                 </div>

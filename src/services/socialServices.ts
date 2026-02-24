@@ -30,7 +30,7 @@ export const sendFriendRequest = async (
   myUsername: string,
   targetUid: string,
 ) => {
-  if (myUid === targetUid) throw new Error('Et voi lisätä itseäsi.');
+  if (myUid === targetUid) throw new Error(`You can't add yourself.`);
 
   // Tarkista onko käyttäjä olemassa
   const targetRef = doc(db, 'users', targetUid);

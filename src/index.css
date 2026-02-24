@@ -11,7 +11,7 @@
 
   /* CHROME, EDGE, SAFARI TUKI */
   ::-webkit-scrollbar {
-    width: 8px;  /* Pystypalkin leveys */
+    width: 8px; /* Pystypalkin leveys */
     height: 8px; /* Vaakapalkin korkeus */
   }
 

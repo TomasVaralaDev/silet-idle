@@ -16,7 +16,7 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
     <div className="flex flex-col h-full bg-slate-950/50 rounded-lg border border-slate-800 overflow-hidden">
       {/* Table Header */}
       <div className="flex items-center px-4 py-2 bg-slate-900/50 border-b border-slate-800 text-[9px] font-bold text-slate-600 uppercase tracking-widest">
-        <span className="flex-1">Local Storage Item</span>
+        <span className="flex-1">Inventory</span>
         <span className="w-20 text-right">Qty</span>
       </div>
 

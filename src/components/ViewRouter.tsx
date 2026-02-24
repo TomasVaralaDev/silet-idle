@@ -3,7 +3,6 @@ import ScavengingView from './scavenging/ScavengingView';
 import EnchantingView from './EnchantingView';
 import SkillView from './SkillView';
 import InventoryView from './Inventory';
-import ShopView from './Shop';
 import AchievementsView from './AchievementsView';
 import WorldShopView from './worldShop/WorldShopView';
 import MarketplaceView from './marketplace/MarketplaceView';
@@ -16,16 +15,12 @@ interface Props {
   onSellClick: (id: string) => void;
 }
 
-export default function ViewRouter({
-  currentView,
-  state,
-  onSellClick,
-}: Props) {
+export default function ViewRouter({ currentView, state, onSellClick }: Props) {
   // CORE SYSTEMS
   if (currentView === 'combat') return <CombatView />;
   if (currentView === 'scavenger') return <ScavengingView />;
-  if (currentView === 'inventory') return <InventoryView onSellClick={onSellClick} />;
-  if (currentView === 'shop') return <ShopView />;
+  if (currentView === 'inventory')
+    return <InventoryView onSellClick={onSellClick} />;
   if (currentView === 'enchanting') return <EnchantingView />;
   if (currentView === 'worldmarket') return <WorldShopView />;
   if (currentView === 'marketplace') return <MarketplaceView />;
@@ -37,8 +32,13 @@ export default function ViewRouter({
 
   // SKILLS (Gathering & Production)
   const skillList: SkillType[] = [
-    'woodcutting', 'mining', 'fishing', 'foraging', 
-    'crafting', 'smithing', 'alchemy'
+    'woodcutting',
+    'mining',
+    'fishing',
+    'foraging',
+    'crafting',
+    'smithing',
+    'alchemy',
   ];
 
   if (skillList.includes(currentView as SkillType)) {

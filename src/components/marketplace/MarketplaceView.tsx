@@ -88,11 +88,10 @@ export default function MarketplaceView() {
       if (activeCategory === 'all') {
         matchesCategory = true;
       } else {
-        const cat = item.category; // Esim. 'plank', 'potion', 'foraging_material'
+        const cat = item.category;
 
         switch (activeCategory) {
           case 'woodcutting':
-            // Nyt Wood-nappi näyttää sekä tukit että lankut
             matchesCategory = cat === 'log' || cat === 'plank';
             break;
           case 'mining':
@@ -115,7 +114,6 @@ export default function MarketplaceView() {
             matchesCategory = cat === 'potion';
             break;
           case 'foraging':
-            // Päivitetty täsmäämään: 'foraging_material'
             matchesCategory = cat === 'foraging_material';
             break;
           default:
@@ -142,36 +140,51 @@ export default function MarketplaceView() {
 
   return (
     <div className="flex flex-col h-full bg-slate-950/80 font-sans overflow-hidden">
-      <div className="p-5 border-b border-white/5 bg-slate-900/40 shrink-0">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-2xl font-black uppercase tracking-widest text-cyan-500 leading-none">
-              Marketplace
-            </h1>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest">
-                Global Sync Active
-              </span>
-            </div>
-          </div>
-
-          <div className="flex bg-slate-900 p-1 rounded-sm border border-slate-800">
-            {(['buy', 'sell'] as MarketTab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => {
-                  setTab(t);
-                  setSelectedItemId(null);
-                }}
-                className={`px-6 py-1.5 text-[10px] font-bold uppercase transition-all ${tab === t ? 'bg-cyan-600 text-white shadow-[0_0_15px_rgba(8,145,178,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                {t === 'buy' ? 'Acquire' : 'Distribute'}
-              </button>
-            ))}
-          </div>
+      {/* HEADER - Tyyli kopioitu esimerkkisi mukaan */}
+      <div className="p-6 border-b border-slate-800/50 bg-slate-900/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+        <div
+          className={`w-16 h-16 rounded-xl flex items-center justify-center bg-cyan-500/20 border border-cyan-500/30 shadow-lg shrink-0`}
+        >
+          <img
+            src="/assets/ui/icon_market.png"
+            className="w-10 h-10 pixelated object-contain"
+            alt="Marketplace"
+          />
+        </div>
+        <div className="flex-1">
+          <h1
+            className={`text-3xl font-black uppercase tracking-widest text-cyan-500 mb-1`}
+          >
+            Marketplace
+          </h1>
+          <p className="text-slate-500 text-sm font-medium">
+            Global Relay Terminal / Connection Active
+          </p>
         </div>
 
+        {/* TABS - Siirretty oikeaan reunaan osaksi headeria */}
+        <div className="flex bg-slate-900 p-1 rounded-sm border border-slate-800 h-fit">
+          {(['buy', 'sell'] as MarketTab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => {
+                setTab(t);
+                setSelectedItemId(null);
+              }}
+              className={`px-6 py-1.5 text-[10px] font-bold uppercase transition-all ${
+                tab === t
+                  ? 'bg-cyan-600 text-white shadow-[0_0_15px_rgba(8,145,178,0.3)]'
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              {t === 'buy' ? 'Buy' : 'Sell'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* FILTER & SEARCH BAR */}
+      <div className="p-5 border-b border-white/5 bg-slate-900/20 shrink-0">
         {tab === 'buy' && !selectedItemId && (
           <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">

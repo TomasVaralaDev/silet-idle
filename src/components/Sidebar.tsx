@@ -295,13 +295,6 @@ export default function Sidebar({
             onClick={setView}
           />
           <NavButton
-            view="shop"
-            label="Requisition"
-            icon="/assets/ui/shop.png"
-            isActive={currentView === 'shop'}
-            onClick={setView}
-          />
-          <NavButton
             view="enchanting"
             label="Enchanting"
             icon="/assets/ui/icon_enchanting.png"

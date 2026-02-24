@@ -1,5 +1,10 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-export type AchievementCategory = 'general' | 'combat' | 'skills' | 'wealth' | 'collection';
+export type AchievementCategory =
+  | 'general'
+  | 'combat'
+  | 'skills'
+  | 'wealth'
+  | 'collection';
 
 export type SkillType =
   | 'woodcutting'
@@ -316,7 +321,7 @@ export interface ResourceDrop {
 // --- Social features
 export interface Friend {
   uid: string;
-  username: string; 
+  username: string;
   addedAt: number;
 }
 
@@ -328,7 +333,7 @@ export interface ChatMessage {
 }
 
 export interface FriendRequest {
-  id: string; 
+  id: string;
   fromUid: string;
   fromUsername: string;
   toUid: string;
@@ -339,7 +344,7 @@ export interface FriendRequest {
 export interface GlobalChatMessage {
   id: string;
   senderUid: string;
-  senderUsername: string; 
+  senderUsername: string;
   text: string;
   timestamp: number;
 }
@@ -348,20 +353,20 @@ export interface SocialState {
   friends: Friend[];
   incomingRequests: FriendRequest[];
   outgoingRequests: FriendRequest[];
-  globalMessages: GlobalChatMessage[]; 
+  globalMessages: GlobalChatMessage[];
   activeChatFriendId: string | null;
   unreadMessages: Record<string, number>;
 }
 
 export interface MarketListing {
-  id: string; 
-  sellerUid: string; 
-  sellerName: string; 
-  itemId: string; 
-  amount: number; 
-  pricePerItem: number; 
-  totalPrice: number; 
-  createdAt: number; 
+  id: string;
+  sellerUid: string;
+  sellerName: string;
+  itemId: string;
+  amount: number;
+  pricePerItem: number;
+  totalPrice: number;
+  createdAt: number;
   status: 'active' | 'sold' | 'expired' | 'cancelled';
 }
 
@@ -372,7 +377,7 @@ export interface GameState {
   avatar: string;
   settings: GameSettings;
   inventory: Record<string, number>;
-  skills: Record<SkillType, SkillData>; 
+  skills: Record<SkillType, SkillData>;
   equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
   equippedFood: { itemId: string; count: number } | null;
   combatSettings: CombatSettings;

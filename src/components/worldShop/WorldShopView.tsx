@@ -20,8 +20,8 @@ export default function WorldShopView() {
   checkDailyReset();
 
   return (
-    <div className="h-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden font-sans">
-      {/* HEADER - Rakenne kopioitu esimerkkisi mukaan */}
+    <div className="h-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden font-sans text-left">
+      {/* HEADER */}
       <div className="p-6 border-b border-slate-800/50 bg-slate-900/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div
           className={`w-16 h-16 rounded-xl flex items-center justify-center bg-cyan-500/20 border border-cyan-500/30 shadow-lg shrink-0`}
@@ -39,17 +39,10 @@ export default function WorldShopView() {
             World Market
           </h1>
           <p className="text-slate-500 text-sm font-medium">
-            Terminal connection established / Region: {currentWorldInfo?.name}
+            Buy items with world currencies.
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-black text-slate-200 uppercase tracking-tighter">
-            Sector 0{selectedWorld}
-          </div>
-          <div className="text-xs font-mono text-slate-500 mt-1 uppercase">
-            Connection Secure
-          </div>
-        </div>
+        {/* Oikea kulma tyhjennetty */}
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -77,7 +70,7 @@ export default function WorldShopView() {
                   <div
                     className={`text-[10px] font-black tracking-widest ${isSelected ? 'text-cyan-400' : 'text-slate-600'}`}
                   >
-                    REGION 0{id}
+                    WORLD {id}
                   </div>
                   <div
                     className={`font-black uppercase tracking-tighter text-lg ${isSelected ? 'text-white' : 'text-slate-400'}`}
@@ -127,7 +120,7 @@ export default function WorldShopView() {
                   <div className="col-span-full p-20 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-900/50 backdrop-blur-md">
                     <div className="text-4xl mb-4 opacity-20">📡</div>
                     <p className="text-slate-500 font-mono uppercase tracking-widest text-sm">
-                      No requisition orders available for this sector.
+                      No items available for this world.
                     </p>
                   </div>
                 )}

@@ -9,10 +9,9 @@ export default function ScavengingView() {
   const [selectedWorldId, setSelectedWorldId] = useState<number | null>(null);
   const [duration, setDuration] = useState<number>(10);
 
-  const { startExpedition, scavenger, combatStats, skills } = useGameStore();
+  const { startExpedition, scavenger, combatStats } = useGameStore();
 
   const selectedWorld = selectedWorldId ? WORLD_INFO[selectedWorldId] : null;
-  const currentLevel = skills.scavenging.level;
 
   const isWorldUnlocked = (worldId: number) => {
     const requiredMapCompleted = (worldId - 1) * 10;
@@ -30,7 +29,7 @@ export default function ScavengingView() {
 
   return (
     <div className="h-full w-full flex flex-col bg-slate-950 text-slate-200 font-sans overflow-hidden text-left">
-      {/* HEADER - Sama tyyli kuin muissa vieweissä */}
+      {/* HEADER */}
       <div className="p-6 border-b border-slate-800/50 bg-slate-900/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div
           className={`w-16 h-16 rounded-xl flex items-center justify-center bg-emerald-500/20 border border-emerald-500/30 shadow-lg shrink-0`}
@@ -45,39 +44,32 @@ export default function ScavengingView() {
           <h1
             className={`text-3xl font-black uppercase tracking-widest text-emerald-500 mb-1`}
           >
-            Scavenging
+            Expeditions
           </h1>
           <p className="text-slate-500 text-sm font-medium">
-            Send automated units to gather rare fragments from stabilized
-            regions.
+            Dispatch brave scouts to recover lost relics and treasures from
+            surrounding worlds.
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-black text-slate-200">
-            Level {currentLevel}
-          </div>
-          <div className="text-xs font-mono text-slate-500 mt-1 uppercase tracking-tighter">
-            Deployment Units Online
-          </div>
-        </div>
+        {/* Oikean puolen tekstit poistettu tästä */}
       </div>
 
       {/* JAKOVIIVA / PROGRESS BAR STYLE */}
       <div className="h-1 bg-slate-900 w-full shrink-0">
         <div
           className={`h-full bg-emerald-500 transition-all duration-300 shadow-[0_0_10px_rgba(16,185,129,0.5)]`}
-          style={{ width: `100%` }} // Tai voit laittaa tähän esim. XP-prosessin
+          style={{ width: `100%` }}
         ></div>
       </div>
 
-      {/* PÄÄSISÄLTÖ (Horisontaalinen jako) */}
+      {/* PÄÄSISÄLTÖ */}
       <div className="flex flex-1 overflow-hidden">
         {/* VASEN: Konfiguraatio ja Aktiiviset */}
         <div className="flex-1 flex flex-col p-6 min-w-0 overflow-y-auto custom-scrollbar">
           {/* ACTIVE EXPEDITIONS */}
           <div className="mb-8">
             <h2 className="text-[10px] font-black uppercase text-slate-500 mb-3 tracking-[0.2em]">
-              Deployment Slots ({scavenger.activeExpeditions.length}/
+              Active Scouting Parties ({scavenger.activeExpeditions.length}/
               {scavenger.unlockedSlots})
             </h2>
             <ActiveExpeditions />
@@ -86,25 +78,27 @@ export default function ScavengingView() {
           {/* CONFIGURE NEW */}
           <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-5">
             <h2 className="text-sm font-black text-white mb-4 flex items-center gap-2 uppercase tracking-tight">
-              New Expedition Setup
+              Prepare New Expedition
             </h2>
 
             <div className="space-y-6">
               <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 flex items-center justify-between">
                 <div>
                   <div className="text-[10px] uppercase text-slate-500 font-black tracking-widest">
-                    Target Sector
+                    Target World
                   </div>
                   <div
                     className={`text-lg font-bold ${selectedWorld ? 'text-cyan-400' : 'text-slate-600'}`}
                   >
-                    {selectedWorld ? selectedWorld.name : 'Select a World →'}
+                    {selectedWorld
+                      ? selectedWorld.name
+                      : 'Choose Destination →'}
                   </div>
                 </div>
                 {selectedWorld && (
                   <div className="text-right">
                     <div className="text-[10px] font-mono text-slate-500 uppercase">
-                      Sector 0{selectedWorldId}
+                      WORLD {selectedWorldId}
                     </div>
                   </div>
                 )}
@@ -129,12 +123,12 @@ export default function ScavengingView() {
                 `}
               >
                 {isSlotsFull
-                  ? 'No Free Slots'
+                  ? 'Parties Full'
                   : !selectedWorldId
-                    ? 'Identify Target'
+                    ? 'Pick a World'
                     : isSelectedWorldLocked
-                      ? 'Sector Unstable'
-                      : 'Initiate Scavenging'}
+                      ? 'World Locked'
+                      : 'Begin Expedition'}
               </button>
             </div>
           </div>

@@ -321,10 +321,14 @@ export default function MarketplaceView() {
             )}
 
             {!loading && filteredCatalog.length === 0 && !selectedItemId && (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-700">
-                <span className="text-4xl mb-4">📡</span>
-                <p className="text-xs font-mono uppercase tracking-widest">
-                  No signals found in this frequency.
+              <div className="flex flex-col items-center justify-center py-20">
+                <img
+                  src="/assets/ui/icon_market.png"
+                  className="w-20 h-20 pixelated opacity-10 mb-6 grayscale"
+                  alt="No signals"
+                />
+                <p className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-slate-700">
+                  No items for sale.
                 </p>
               </div>
             )}

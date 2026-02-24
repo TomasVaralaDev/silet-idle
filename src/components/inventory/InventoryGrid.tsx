@@ -1,20 +1,19 @@
 import React from 'react';
 import type { Resource } from '../../types';
 
-// Exportataan tyyppi jotta muut voivat käyttää sitä
 export interface InventoryItem extends Resource {
   count: number;
 }
 
 interface Props {
-  items: InventoryItem[]; // MUUTOS: Otetaan itemit propsina
+  items: InventoryItem[];
   onSellClick: (itemId: string) => void;
   onItemClick: (item: InventoryItem) => void;
+  onRightClick: (itemId: string) => void; // UUSI
 }
 
-export default function InventoryGrid({ items, onSellClick, onItemClick }: Props) {
+export default function InventoryGrid({ items, onSellClick, onItemClick, onRightClick }: Props) {
   
-  // Shift-klikkaus handler
   const handleInteraction = (item: InventoryItem, e: React.MouseEvent) => {
     if (e.shiftKey) {
       onSellClick(item.id);
@@ -23,11 +22,20 @@ export default function InventoryGrid({ items, onSellClick, onItemClick }: Props
     onItemClick(item);
   };
 
+  const handleContextMenu = (e: React.MouseEvent, itemId: string) => {
+    e.preventDefault(); // Estetään selaimen valikko
+    onRightClick(itemId);
+  };
+
+  // Estetään tekstin valinta shift-klikkauksen aikana
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.shiftKey || e.button === 2) { // 2 on oikea klikkaus
+      e.preventDefault();
+    }
+  };
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-full overflow-hidden relative">
-      
-      {/* (Controls renderöidään nyt tämän komponentin ulkopuolella tai yläpuolella Inventory.tsx:ssä) */}
-      
+    <div className="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-full overflow-hidden relative select-none">
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {items.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-600">
@@ -39,6 +47,8 @@ export default function InventoryGrid({ items, onSellClick, onItemClick }: Props
               <div 
                 key={item.id}
                 onClick={(e) => handleInteraction(item, e)}
+                onContextMenu={(e) => handleContextMenu(e, item.id)}
+                onMouseDown={handleMouseDown}
                 className="flex items-center gap-3 p-2 rounded bg-slate-950 border border-slate-800 hover:border-slate-500 hover:bg-slate-900 cursor-pointer group transition-all animate-in zoom-in-95 duration-200"
               >
                 <div className="relative shrink-0">
@@ -63,7 +73,7 @@ export default function InventoryGrid({ items, onSellClick, onItemClick }: Props
                       item.rarity === 'rare' ? 'text-cyan-500' :
                       item.rarity === 'uncommon' ? 'text-emerald-500' : 'text-slate-500'
                     }>{item.rarity}</span>
-                    {item.level && <span>• Lvl {item.level}</span>}
+                    {item.level && <span>• L. {item.level}</span>}
                   </div>
                 </div>
               </div>
@@ -72,10 +82,12 @@ export default function InventoryGrid({ items, onSellClick, onItemClick }: Props
         )}
       </div>
       
-      {/* Footer Info */}
       <div className="px-4 py-2 border-t border-slate-800 bg-slate-950 text-[10px] text-slate-500 flex justify-between">
-        <span>Showing {items.length} items</span>
-        <span>Shift+Click to Sell</span>
+        <div className="flex gap-3">
+          <span>Shift+Click: <span className="text-slate-300">Quick Sell</span></span>
+          <span>Right Click: <span className="text-slate-300">Equip</span></span>
+        </div>
+        <span>{items.length} items</span>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ export default function DevManager() {
   // Dev-tilat
   const [coinAmount, setCoinAmount] = useState<number>(10000);
   const [targetLevel, setTargetLevel] = useState<number>(99);
-  const [itemAmount, setItemAmount] = useState<number>(1);
+  const [itemAmount] = useState<number>(1);
 
   const setState = useGameStore((state) => state.setState);
   const emitEvent = useGameStore((state) => state.emitEvent);

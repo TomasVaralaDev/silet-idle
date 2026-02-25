@@ -1,18 +1,17 @@
-import { useState, useEffect } from 'react'; // KORJAUS: Lisätty useEffect
-import { useGameStore } from '../store/useGameStore';
-import { COMBAT_DATA } from '../data'; 
-import WorldSelector from './combat/WorldSelector';
-import BattleArena from './combat/BattleArena';
-import ZoneSelector from './combat/ZoneSelector';
-import CombatLog from './combat/CombatLog';
-import FoodSelector from './combat/FoodSelector';
-import { formatRemainingTime } from '../utils/formatUtils'; // KORJAUS: Importattu työkalu
+import { useState, useEffect } from "react";
+import { useGameStore } from "../store/useGameStore";
+import { COMBAT_DATA } from "../data";
+import WorldSelector from "./combat/WorldSelector";
+import BattleArena from "./combat/BattleArena";
+import ZoneSelector from "./combat/ZoneSelector";
+import CombatLog from "./combat/CombatLog";
+import FoodSelector from "./combat/FoodSelector";
+import { formatRemainingTime } from "../utils/formatUtils";
 
 export default function CombatView() {
   const combatStats = useGameStore((s) => s.combatStats);
   const [now, setNow] = useState(() => Date.now());
 
-  // Päivitetään paikallista kelloa sekunnin välein, jos cooldown on päällä
   useEffect(() => {
     if (combatStats.cooldownUntil > now) {
       const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -20,11 +19,15 @@ export default function CombatView() {
     }
   }, [combatStats.cooldownUntil, now]);
 
-  const currentMap = combatStats.currentMapId 
-    ? COMBAT_DATA.find(m => m.id === combatStats.currentMapId) 
+  const currentMap = combatStats.currentMapId
+    ? COMBAT_DATA.find((m) => m.id === combatStats.currentMapId)
     : null;
-  
-  const activeWorldId = currentMap?.world || (combatStats.currentMapId ? Math.ceil(combatStats.currentMapId / 10) : null);
+
+  const activeWorldId =
+    currentMap?.world ||
+    (combatStats.currentMapId
+      ? Math.ceil(combatStats.currentMapId / 10)
+      : null);
 
   const [prevActiveWorldId, setPrevActiveWorldId] = useState(activeWorldId);
   const [selectedWorld, setSelectedWorld] = useState(() => {
@@ -42,55 +45,66 @@ export default function CombatView() {
   const isRecovering = cooldownLeft > 0;
 
   return (
-    <div className="h-full w-full flex bg-slate-950 overflow-hidden text-slate-200 font-sans">
-      
-      <WorldSelector selectedWorld={selectedWorld} onSelectWorld={setSelectedWorld} />
+    <div className="h-full w-full flex bg-app-base overflow-hidden text-tx-main font-sans selection:bg-accent/30 selection:text-accent">
+      {/* LEFT: WORLD NAVIGATION */}
+      <WorldSelector
+        selectedWorld={selectedWorld}
+        onSelectWorld={setSelectedWorld}
+      />
 
+      {/* CENTER: BATTLE ZONE */}
       <div className="flex-1 flex flex-col min-w-0 h-full relative">
-        
-        {/* JÄÄHTYMISAIKA-OVERLAY */}
+        {/* RECOVERY OVERLAY */}
         {isRecovering && !combatStats.currentMapId && (
-          <div className="absolute inset-0 z-[40] bg-slate-950/60 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-16 h-16 mb-4 rounded-full border-4 border-red-500/20 border-t-red-500 animate-spin" />
-            <h2 className="text-xl font-black text-red-500 uppercase tracking-widest">System Recovery</h2>
-            <p className="text-slate-400 text-sm mt-2 max-w-xs">
+          <div className="absolute inset-0 z-[40] bg-app-base/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+            <div className="w-20 h-20 mb-6 rounded-full border-4 border-danger/20 border-t-danger animate-spin shadow-[0_0_20px_rgb(var(--color-danger)/0.2)]" />
+
+            <h2 className="text-2xl font-black text-danger uppercase tracking-[0.3em] mb-2">
+              System Recovery
+            </h2>
+            <p className="text-tx-muted text-sm max-w-xs font-medium italic">
               Severe trauma detected. Auto-repair protocols active.
             </p>
-            <div className="mt-4 font-mono text-2xl font-bold text-white bg-red-900/30 px-4 py-2 rounded border border-red-500/30">
+
+            <div className="mt-6 font-mono text-3xl font-black text-tx-main bg-danger/10 px-6 py-3 rounded-lg border border-danger/30 shadow-2xl">
               {formatRemainingTime(cooldownLeft)}
             </div>
           </div>
         )}
 
-        <div className="h-[45%] shrink-0 relative bg-slate-900 overflow-hidden border-b border-slate-800">
+        {/* TOP PANEL: ARENA */}
+        <div className="h-[45%] shrink-0 relative bg-panel overflow-hidden border-b border-border shadow-inner">
           <BattleArena selectedWorldId={selectedWorld} />
         </div>
 
-        <div className="flex-1 min-h-0 bg-slate-950 flex z-20">
-          <div className="w-1/2 border-r border-slate-800 p-4 flex flex-col">
-            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-3">Consumables</h3>
+        {/* BOTTOM PANEL: LOGS & CONSUMABLES */}
+        <div className="flex-1 min-h-0 bg-app-base flex z-20">
+          {/* CONSUMABLES SECTION */}
+          <div className="w-1/2 border-r border-border p-5 flex flex-col bg-panel/30">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-4 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+              Consumables
+            </h3>
             <div className="flex-1 min-h-0">
               <FoodSelector />
             </div>
           </div>
 
-          <div className="w-1/2 flex flex-col bg-slate-950">
-             <div className="p-2 px-4 border-b border-slate-800 bg-slate-900/30">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Combat Log</span>
-             </div>
-             <div className="flex-1 overflow-hidden relative">
-                <div className="absolute inset-0">
-                  <CombatLog /> 
-                </div>
-             </div>
+          {/* LOG SECTION - Siivottu ylimääräinen header pois */}
+          <div className="w-1/2 flex flex-col bg-app-base">
+            <div className="flex-1 overflow-hidden relative">
+              <div className="absolute inset-0">
+                <CombatLog />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="w-80 flex-shrink-0 border-l border-slate-800 bg-slate-900/80 backdrop-blur-sm z-20 flex flex-col">
+      {/* RIGHT: ZONE SELECTOR */}
+      <div className="w-80 flex-shrink-0 border-l border-border bg-panel/80 backdrop-blur-sm z-20 flex flex-col">
         <ZoneSelector selectedWorldId={selectedWorld} />
       </div>
-
     </div>
   );
 }

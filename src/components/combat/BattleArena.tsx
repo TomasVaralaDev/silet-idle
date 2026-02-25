@@ -1,55 +1,68 @@
-import { useGameStore } from '../../store/useGameStore';
-import { WORLD_INFO } from '../../data/worlds';
+import { useGameStore } from "../../store/useGameStore";
+import { WORLD_INFO } from "../../data/worlds";
 
-export default function BattleArena({ selectedWorldId }: { selectedWorldId: number }) {
+export default function BattleArena({
+  selectedWorldId,
+}: {
+  selectedWorldId: number;
+}) {
   const { enemy, combatStats, stopCombat, skills, avatar } = useGameStore();
 
-  const bgImage = WORLD_INFO[selectedWorldId]?.image || '';
+  const bgImage = WORLD_INFO[selectedWorldId]?.image || "";
 
   const playerMaxHp = skills.hitpoints.level * 10;
   const playerHpPercent = Math.max(0, (combatStats.hp / playerMaxHp) * 100);
   const enemyMaxHp = enemy?.maxHp || 100;
-  const enemyHpPercent = Math.max(0, (combatStats.enemyCurrentHp / enemyMaxHp) * 100);
+  const enemyHpPercent = Math.max(
+    0,
+    (combatStats.enemyCurrentHp / enemyMaxHp) * 100
+  );
 
   return (
-    <div className="h-full w-full relative bg-slate-950 select-none">
-      {/* 1. TAUSTAKUVA */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-all duration-700 opacity-40"
+    <div className="h-full w-full relative bg-app-base select-none overflow-hidden">
+      {/* 1. TAUSTAKUVA & GRADIENTIT */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-all duration-1000 opacity-30 scale-105"
         style={{ backgroundImage: `url(${bgImage})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/20"></div>
+        {/* Gradientti pohjalla sulauttaa areenan muuhun UI:hin */}
+        <div className="absolute inset-0 bg-gradient-to-t from-app-base via-transparent to-app-base/40"></div>
       </div>
 
       {/* 2. PELIKENTTÄ */}
       <div className="relative h-full w-full flex justify-between items-end pb-12 px-16 max-w-6xl mx-auto">
-        
         {/* --- PELAAJA (Vasen) --- */}
         <div className="flex flex-col items-center gap-3 relative group">
-          {/* HP Palkki */}
-          <div className="w-32 h-2.5 bg-slate-950/80 rounded border border-slate-700 overflow-hidden mb-1 relative shadow-lg">
-             <div className="h-full bg-emerald-600 transition-all duration-300" style={{ width: `${playerHpPercent}%` }}></div>
+          {/* HP Palkki - Success väri */}
+          <div className="w-32 h-2.5 bg-panel/80 rounded border border-border shadow-lg overflow-hidden mb-1 relative">
+            <div
+              className="h-full bg-success transition-all duration-300 shadow-[0_0_10px_rgb(var(--color-success)/0.5)]"
+              style={{ width: `${playerHpPercent}%` }}
+            />
           </div>
-          <div className="text-[10px] font-bold text-slate-400 mb-2">
+          <div className="text-[10px] font-black text-tx-muted mb-2 font-mono">
             {Math.ceil(combatStats.hp)} / {playerMaxHp}
           </div>
-          
-          {/* Hahmo */}
+
+          {/* Hahmo & Glow */}
           <div className="w-24 h-24 relative flex items-center justify-center">
-             <img 
-               src={avatar || "/assets/ui/icon_user_avatar.png"} 
-               alt="Player" 
-               className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgba(16,185,129,0.4)] transform scale-x-[-1]" 
-               onError={(e) => e.currentTarget.src = 'https://ui-avatars.com/api/?name=P&background=0f172a'} 
-             />
-             
-             {/* Varjo */}
-             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/60 blur-md rounded-full"></div>
+            <img
+              src={avatar || "/assets/ui/icon_user_avatar.png"}
+              alt="Player"
+              className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-success)/0.4)] transform scale-x-[-1] transition-transform"
+              onError={(e) =>
+                (e.currentTarget.src =
+                  "https://ui-avatars.com/api/?name=P&background=0f172a")
+              }
+            />
+
+            {/* Varjo areenan lattialla */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/40 blur-md rounded-full"></div>
           </div>
 
-          <button 
-            onClick={stopCombat} 
-            className="mt-2 text-[10px] uppercase font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-1 rounded border border-red-500/20 transition-colors"
+          <button
+            onClick={stopCombat}
+            className="mt-2 text-[10px] uppercase font-black tracking-widest text-danger hover:text-white bg-danger/10 hover:bg-danger px-4 py-1.5 rounded border border-danger/20 transition-all active:scale-95"
           >
             Retreat
           </button>
@@ -57,50 +70,72 @@ export default function BattleArena({ selectedWorldId }: { selectedWorldId: numb
 
         {/* --- VS / INFO --- */}
         <div className="mb-20 flex flex-col items-center gap-2">
-            {combatStats.respawnTimer > 0 && (
-                <div className="px-4 py-1 bg-black/80 rounded border border-yellow-500/30 text-yellow-400 text-xs font-mono font-bold animate-pulse shadow-lg">
-                    RESPAWN {(combatStats.respawnTimer / 1000).toFixed(1)}s
-                </div>
-            )}
+          {combatStats.respawnTimer > 0 && (
+            <div className="px-5 py-2 bg-panel/90 rounded border border-warning/30 text-warning text-xs font-mono font-black animate-pulse shadow-2xl backdrop-blur-sm">
+              RESPAWN {(combatStats.respawnTimer / 1000).toFixed(1)}s
+            </div>
+          )}
         </div>
 
         {/* --- VIHOLLINEN (Oikea) --- */}
         <div className="flex flex-col items-center gap-3 relative min-w-[128px]">
           {enemy ? (
-             <div className="flex flex-col items-center animate-in fade-in duration-500 slide-in-from-right-4">
-                {/* Enemy HP Bar */}
-                <div className="w-32 h-2.5 bg-slate-950/80 rounded border border-slate-700 overflow-hidden mb-1 relative shadow-lg">
-                   <div className="h-full bg-red-600 transition-all duration-100" style={{ width: `${enemyHpPercent}%` }}></div>
-                </div>
-                <div className="text-[10px] font-bold text-slate-400 mb-2">
-                   {Math.ceil(combatStats.enemyCurrentHp)} / {enemyMaxHp}
-                </div>
+            <div className="flex flex-col items-center animate-in fade-in duration-500 slide-in-from-right-4">
+              {/* Enemy HP Bar - Danger väri */}
+              <div className="w-32 h-2.5 bg-panel/80 rounded border border-border shadow-lg overflow-hidden mb-1 relative">
+                <div
+                  className="h-full bg-danger transition-all duration-150 shadow-[0_0_10px_rgb(var(--color-danger)/0.5)]"
+                  style={{ width: `${enemyHpPercent}%` }}
+                />
+              </div>
+              <div className="text-[10px] font-black text-tx-muted mb-2 font-mono">
+                {Math.ceil(combatStats.enemyCurrentHp)} / {enemyMaxHp}
+              </div>
 
-                {/* Enemy Sprite */}
-                <div className={`w-24 h-24 relative flex items-center justify-center transition-all duration-200 ${combatStats.enemyCurrentHp <= 0 ? 'opacity-0 scale-90 grayscale' : 'opacity-100 scale-100'}`}>
-                    {enemy.icon ? (
-                        <img src={enemy.icon} className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_10px_rgba(220,38,38,0.4)]" alt={enemy.name} />
-                    ) : (
-                        <span className="text-6xl filter drop-shadow-lg">👾</span>
-                    )}
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/60 blur-md rounded-full"></div>
-                </div>
+              {/* Enemy Sprite & Glow */}
+              <div
+                className={`w-24 h-24 relative flex items-center justify-center transition-all duration-300 ${
+                  combatStats.enemyCurrentHp <= 0
+                    ? "opacity-0 scale-75 grayscale"
+                    : "opacity-100 scale-100"
+                }`}
+              >
+                {enemy.icon ? (
+                  <img
+                    src={enemy.icon}
+                    className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-danger)/0.4)]"
+                    alt={enemy.name}
+                  />
+                ) : (
+                  <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                    👾
+                  </span>
+                )}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/40 blur-md rounded-full"></div>
+              </div>
 
-                <div className="bg-black/60 px-3 py-1 rounded text-[10px] font-bold border border-red-900/30 text-red-200 mt-2 backdrop-blur-sm">
-                    {enemy.name} <span className="text-slate-500 ml-1">Lvl {enemy.level}</span>
-                </div>
-             </div>
+              <div className="bg-panel/60 px-3 py-1.5 rounded border border-border text-[10px] font-black uppercase tracking-widest text-tx-main mt-2 backdrop-blur-md">
+                {enemy.name}{" "}
+                <span className="text-tx-muted ml-1 font-mono">
+                  Lvl {enemy.level}
+                </span>
+              </div>
+            </div>
           ) : (
-             !combatStats.respawnTimer && (
-                 <div className="opacity-30 text-slate-500 text-xs font-mono mt-20 flex flex-col items-center gap-2">
-                    {/* KORJAUS: Vaihdettu emoji kuvaan */}
-                    <img src="/assets/ui/icon_battle.png" className="w-8 h-8 object-contain pixelated opacity-50" alt="No Target" />
-                    <span>NO TARGET</span>
-                 </div>
-             )
+            !combatStats.respawnTimer && (
+              <div className="opacity-20 text-tx-muted text-xs font-mono mt-20 flex flex-col items-center gap-3">
+                <img
+                  src="/assets/ui/icon_battle.png"
+                  className="w-10 h-10 object-contain pixelated grayscale"
+                  alt="No Target"
+                />
+                <span className="tracking-[0.3em] font-black uppercase text-[10px]">
+                  No Target
+                </span>
+              </div>
+            )
           )}
         </div>
-
       </div>
     </div>
   );

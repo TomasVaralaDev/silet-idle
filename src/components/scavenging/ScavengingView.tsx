@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useGameStore } from '../../store/useGameStore';
-import LocationSelector from './LocationSelector';
-import DurationSlider from './DurationSlider';
-import ActiveExpeditions from './ActiveExpeditions';
-import { WORLD_INFO } from '../../data/worlds';
+import { useState } from "react";
+import { useGameStore } from "../../store/useGameStore";
+import LocationSelector from "./LocationSelector";
+import DurationSlider from "./DurationSlider";
+import ActiveExpeditions from "./ActiveExpeditions";
+import { WORLD_INFO } from "../../data/worlds";
 
 export default function ScavengingView() {
   const [selectedWorldId, setSelectedWorldId] = useState<number | null>(null);
@@ -28,11 +28,11 @@ export default function ScavengingView() {
     selectedWorldId !== null && !isSlotsFull && !isSelectedWorldLocked;
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-200 font-sans overflow-hidden text-left">
+    <div className="h-full w-full flex flex-col bg-app-base text-tx-main font-sans overflow-hidden text-left">
       {/* HEADER */}
-      <div className="p-6 border-b border-slate-800/50 bg-slate-900/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div
-          className={`w-16 h-16 rounded-xl flex items-center justify-center bg-emerald-500/20 border border-emerald-500/30 shadow-lg shrink-0`}
+          className={`w-16 h-16 rounded-xl flex items-center justify-center bg-success/20 border border-success/30 shadow-lg shrink-0`}
         >
           <img
             src="/assets/skills/scavenging.png"
@@ -42,22 +42,21 @@ export default function ScavengingView() {
         </div>
         <div className="flex-1">
           <h1
-            className={`text-3xl font-black uppercase tracking-widest text-emerald-500 mb-1`}
+            className={`text-3xl font-black uppercase tracking-widest text-success mb-1`}
           >
             Expeditions
           </h1>
-          <p className="text-slate-500 text-sm font-medium">
+          <p className="text-tx-muted text-sm font-medium">
             Dispatch brave scouts to recover lost relics and treasures from
             surrounding worlds.
           </p>
         </div>
-        {/* Oikean puolen tekstit poistettu tästä */}
       </div>
 
       {/* JAKOVIIVA / PROGRESS BAR STYLE */}
-      <div className="h-1 bg-slate-900 w-full shrink-0">
+      <div className="h-1 bg-panel w-full shrink-0">
         <div
-          className={`h-full bg-emerald-500 transition-all duration-300 shadow-[0_0_10px_rgba(16,185,129,0.5)]`}
+          className={`h-full bg-success transition-all duration-300 shadow-[0_0_10px_rgb(var(--color-success)/0.5)]`}
           style={{ width: `100%` }}
         ></div>
       </div>
@@ -68,7 +67,7 @@ export default function ScavengingView() {
         <div className="flex-1 flex flex-col p-6 min-w-0 overflow-y-auto custom-scrollbar">
           {/* ACTIVE EXPEDITIONS */}
           <div className="mb-8">
-            <h2 className="text-[10px] font-black uppercase text-slate-500 mb-3 tracking-[0.2em]">
+            <h2 className="text-[10px] font-black uppercase text-tx-muted mb-3 tracking-[0.2em]">
               Active Scouting Parties ({scavenger.activeExpeditions.length}/
               {scavenger.unlockedSlots})
             </h2>
@@ -76,28 +75,30 @@ export default function ScavengingView() {
           </div>
 
           {/* CONFIGURE NEW */}
-          <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-5">
-            <h2 className="text-sm font-black text-white mb-4 flex items-center gap-2 uppercase tracking-tight">
+          <div className="bg-panel/30 border border-border rounded-xl p-5">
+            <h2 className="text-sm font-black text-tx-main mb-4 flex items-center gap-2 uppercase tracking-tight">
               Prepare New Expedition
             </h2>
 
             <div className="space-y-6">
-              <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 flex items-center justify-between">
+              <div className="bg-app-base border border-border rounded-lg p-4 flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] uppercase text-slate-500 font-black tracking-widest">
+                  <div className="text-[10px] uppercase text-tx-muted font-black tracking-widest">
                     Target World
                   </div>
                   <div
-                    className={`text-lg font-bold ${selectedWorld ? 'text-cyan-400' : 'text-slate-600'}`}
+                    className={`text-lg font-bold ${
+                      selectedWorld ? "text-accent" : "text-tx-muted/60"
+                    }`}
                   >
                     {selectedWorld
                       ? selectedWorld.name
-                      : 'Choose Destination →'}
+                      : "Choose Destination →"}
                   </div>
                 </div>
                 {selectedWorld && (
                   <div className="text-right">
-                    <div className="text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="text-[10px] font-mono text-tx-muted uppercase">
                       WORLD {selectedWorldId}
                     </div>
                   </div>
@@ -117,25 +118,25 @@ export default function ScavengingView() {
                   w-full py-4 rounded-lg font-black uppercase tracking-widest text-sm transition-all
                   ${
                     canStart
-                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20'
-                      : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'
+                      ? "bg-success hover:bg-success/80 text-white shadow-lg shadow-success/20"
+                      : "bg-panel-hover text-tx-muted/60 cursor-not-allowed opacity-50 border border-border/50"
                   }
                 `}
               >
                 {isSlotsFull
-                  ? 'Parties Full'
+                  ? "Parties Full"
                   : !selectedWorldId
-                    ? 'Pick a World'
-                    : isSelectedWorldLocked
-                      ? 'World Locked'
-                      : 'Begin Expedition'}
+                  ? "Pick a World"
+                  : isSelectedWorldLocked
+                  ? "World Locked"
+                  : "Begin Expedition"}
               </button>
             </div>
           </div>
         </div>
 
         {/* OIKEA: Location Selector */}
-        <div className="w-80 flex-shrink-0 bg-slate-900 border-l border-slate-800">
+        <div className="w-80 flex-shrink-0 bg-panel border-l border-border">
           <LocationSelector
             selectedWorldId={selectedWorldId}
             onSelect={setSelectedWorldId}

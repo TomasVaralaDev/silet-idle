@@ -1,5 +1,5 @@
-import { getItemDetails } from '../../data';
-import type { QuestReward as RewardType } from '../../types';
+import { getItemDetails } from "../../data";
+import type { QuestReward as RewardType } from "../../types";
 
 interface QuestRewardProps {
   reward: RewardType;
@@ -8,30 +8,52 @@ interface QuestRewardProps {
 export default function QuestReward({ reward }: QuestRewardProps) {
   const elements = [];
 
+  // Fragments / Kolikot -> Warning (Kulta)
   if (reward.coins) {
     elements.push(
-      <span key="coins" className="text-yellow-400 font-bold">
-        {reward.coins} Fragments
+      <span
+        key="coins"
+        className="text-warning font-bold flex items-center gap-1"
+      >
+        <img
+          src="/assets/ui/coins.png"
+          className="w-3.5 h-3.5 pixelated"
+          alt=""
+        />
+        {reward.coins.toLocaleString()} Fragments
       </span>
     );
   }
 
+  // XP -> Accent (Teeman korostusväri)
   if (reward.xpMap) {
     Object.entries(reward.xpMap).forEach(([skill, xp]) => {
       elements.push(
-        <span key={skill} className="text-cyan-400 font-bold">
+        <span key={skill} className="text-accent font-bold">
           +{xp} {skill} XP
         </span>
       );
     });
   }
 
+  // Esineet -> Success (Vihreä)
   if (reward.items) {
     reward.items.forEach((item) => {
       const details = getItemDetails(item.itemId);
       elements.push(
-        <span key={item.itemId} className="text-emerald-400 font-bold flex items-center gap-1">
-          {details?.icon && <img src={details.icon} className="w-4 h-4 pixelated" alt="item" />}
+        <span
+          key={item.itemId}
+          className="text-success font-bold flex items-center gap-1.5"
+        >
+          {details?.icon && (
+            <div className="bg-app-base p-0.5 rounded border border-border/30">
+              <img
+                src={details.icon}
+                className="w-3.5 h-3.5 pixelated"
+                alt="item"
+              />
+            </div>
+          )}
           {item.amount}x {details?.name || item.itemId}
         </span>
       );
@@ -39,12 +61,18 @@ export default function QuestReward({ reward }: QuestRewardProps) {
   }
 
   return (
-    <div className="mt-4 pt-3 border-t border-slate-700/50 text-xs flex flex-wrap gap-x-2 items-center bg-slate-900/50 p-2 rounded relative z-10">
-      <span className="text-slate-500 uppercase font-bold tracking-wider mr-2">Rewards:</span>
+    <div className="mt-4 pt-3 border-t border-border/50 text-[11px] flex flex-wrap gap-x-3 gap-y-2 items-center bg-app-base/40 p-3 rounded-lg relative z-10 shadow-inner">
+      <span className="text-tx-muted uppercase font-black tracking-widest mr-1 opacity-70">
+        Rewards:
+      </span>
       {elements.map((el, i) => (
         <span key={i} className="flex items-center">
           {el}
-          {i < elements.length - 1 && <span className="text-slate-600 mx-2">•</span>}
+          {i < elements.length - 1 && (
+            <span className="text-border mx-3 font-black opacity-50 select-none">
+              •
+            </span>
+          )}
         </span>
       ))}
     </div>

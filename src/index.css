@@ -3,39 +3,165 @@
 @tailwind utilities;
 
 @layer base {
-  /* FIREFOX TUKI */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #334155 #020617; /* Thumb (Slate-700) & Track (Slate-950) */
+  /* 1. NEON (Sci-Fi / Oletus) */
+  :root,
+  .theme-neon {
+    --color-base: 2 6 23;
+    --color-panel: 15 23 42;
+    --color-panel-hover: 30 41 59;
+    --color-border: 30 41 59;
+    --color-border-hover: 51 65 85;
+    --color-text-main: 226 232 240;
+    --color-text-muted: 148 163 184;
+    --color-accent: 6 182 212;
+    --color-accent-hover: 34 211 238;
+    --color-success: 16 185 129;
+    --color-danger: 239 68 68;
+    --color-warning: 245 158 11;
   }
 
-  /* CHROME, EDGE, SAFARI TUKI */
+  /* 2. TAVERN (Kivi & Puu) */
+  .theme-tavern {
+    --color-base: 12 10 9;
+    --color-panel: 28 25 23;
+    --color-panel-hover: 41 37 36;
+    --color-border: 41 37 36;
+    --color-border-hover: 68 64 60;
+    --color-text-main: 231 229 228;
+    --color-text-muted: 168 162 158;
+    --color-accent: 245 158 11;
+    --color-accent-hover: 251 191 36;
+    --color-success: 22 163 74;
+    --color-danger: 220 38 38;
+    --color-warning: 194 65 12;
+  }
+
+  /* 3. ABYSS (True Dark Mode / OLED Black) */
+  .theme-abyss {
+    --color-base: 0 0 0; /* Täysi musta */
+    --color-panel: 10 10 10;
+    --color-panel-hover: 20 20 20;
+    --color-border: 38 38 38; /* neutral-800 */
+    --color-border-hover: 64 64 64; /* neutral-700 */
+    --color-text-main: 250 250 250; /* neutral-50 */
+    --color-text-muted: 115 115 115; /* neutral-500 */
+    --color-accent: 225 29 72; /* rose-600 / crimson */
+    --color-accent-hover: 244 63 94;
+    --color-success: 16 185 129;
+    --color-danger: 225 29 72;
+    --color-warning: 234 179 8;
+  }
+
+  /* 4. FROST (Jäinen syvänsininen) */
+  .theme-frost {
+    --color-base: 8 15 25;
+    --color-panel: 15 25 40;
+    --color-panel-hover: 25 40 60;
+    --color-border: 30 45 65;
+    --color-border-hover: 50 75 105;
+    --color-text-main: 224 242 254; /* sky-100 */
+    --color-text-muted: 125 160 190;
+    --color-accent: 56 189 248; /* sky-400 */
+    --color-accent-hover: 125 211 252;
+    --color-success: 45 212 191; /* teal-400 */
+    --color-danger: 248 113 113;
+    --color-warning: 250 204 21;
+  }
+
+  /* 5. ARCANE (Magia / Violetti) */
+  .theme-arcane {
+    --color-base: 15 10 25;
+    --color-panel: 28 18 45;
+    --color-panel-hover: 45 30 70;
+    --color-border: 50 35 75;
+    --color-border-hover: 75 55 110;
+    --color-text-main: 243 232 255; /* fuchsia-100 */
+    --color-text-muted: 168 140 200;
+    --color-accent: 192 38 211; /* fuchsia-600 */
+    --color-accent-hover: 217 70 239;
+    --color-success: 34 197 94;
+    --color-danger: 225 29 72;
+    --color-warning: 234 179 8;
+  }
+  /* 6. SAKURA (Söpö / Pastelli) */
+  .theme-sakura {
+    --color-base: 45 35 45; /* Tumma roosa/purppura */
+    --color-panel: 60 45 60; /* Vaaleampi roosa */
+    --color-panel-hover: 75 55 75;
+    --color-border: 95 70 95;
+    --color-border-hover: 120 90 120;
+    --color-text-main: 255 228 242; /* Pastellinpinkki valkoinen */
+    --color-text-muted: 220 180 200;
+    --color-accent: 253 164 175; /* rose-300 */
+    --color-accent-hover: 254 205 211;
+    --color-success: 134 239 172; /* Pehmeä minttu */
+    --color-danger: 252 165 165; /* Pehmeä punainen */
+    --color-warning: 253 224 71; /* Pehmeä keltainen */
+  }
+
+  /* 7. MATTE ASH (Matta / Matala kontrasti) */
+  .theme-matte {
+    --color-base: 36 41 46; /* Pölyinen tummanharmaa */
+    --color-panel: 47 54 61;
+    --color-panel-hover: 58 66 74;
+    --color-border: 68 77 86;
+    --color-border-hover: 88 96 105;
+    --color-text-main: 209 213 218; /* Himmeä vaaleanharmaa */
+    --color-text-muted: 149 157 165;
+    --color-accent: 133 153 173; /* Murrettu teräksensininen */
+    --color-accent-hover: 163 183 203;
+    --color-success: 133 163 143; /* Murrettu salvianvihreä */
+    --color-danger: 183 123 123; /* Murrettu tiilenpunainen */
+    --color-warning: 193 163 123; /* Murrettu okra */
+  }
+
+  /* 8. CYBERPUNK HC (High Contrast / Räikeä) */
+  .theme-hc {
+    --color-base: 0 0 0; /* Puhdas musta */
+    --color-panel: 15 15 15;
+    --color-panel-hover: 30 30 30;
+    --color-border: 255 255 0; /* Puhdas keltainen reunus! */
+    --color-border-hover: 0 255 255; /* Syaani hover */
+    --color-text-main: 255 255 255; /* Puhdas valkoinen */
+    --color-text-muted: 180 180 180;
+    --color-accent: 0 255 255; /* Puhdas syaani */
+    --color-accent-hover: 255 255 255;
+    --color-success: 0 255 0; /* Lime */
+    --color-danger: 255 0 0; /* Puhdas punainen */
+    --color-warning: 255 128 0; /* Puhdas oranssi */
+  }
+
+  /* SCROLLBARIT DYNAMIIKALLA */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-border-hover)) rgb(var(--color-base));
+  }
+
   ::-webkit-scrollbar {
-    width: 8px; /* Pystypalkin leveys */
-    height: 8px; /* Vaakapalkin korkeus */
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #020617; /* Tailwind bg-slate-950 */
+    background: rgb(var(--color-base));
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #1e293b; /* Tailwind bg-slate-800 */
+    background-color: rgb(var(--color-border));
     border-radius: 4px;
-    border: 2px solid #020617; /* Tekee pienen "reunuksen" palkin ympärille */
+    border: 2px solid rgb(var(--color-base));
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #475569; /* Tailwind bg-slate-600 (vaaleampi kun hiiri päällä) */
+    background-color: rgb(var(--color-border-hover));
   }
 
   ::-webkit-scrollbar-corner {
-    background: #020617;
+    background: rgb(var(--color-base));
   }
 }
 
-/* KUSTOMOITU LUOKKA (Varmuuden vuoksi, jos haluat pakottaa tiettyyn diviin) */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -43,7 +169,10 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #334155;
+  background-color: rgb(var(--color-border));
   border-radius: 20px;
   border: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--color-border-hover));
 }

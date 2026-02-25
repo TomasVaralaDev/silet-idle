@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
-import { useGameStore } from '../store/useGameStore';
-import { SKILL_DEFINITIONS } from '../config/skillDefinitions';
-import type { ViewType } from '../types';
-import { formatNumber } from '../utils/formatUtils';
-import { getRequiredXpForLevel } from '../utils/gameUtils'; // <-- UUSI IMPORT
+import { useState, useRef, useEffect } from "react";
+import { useGameStore } from "../store/useGameStore";
+import { SKILL_DEFINITIONS } from "../config/skillDefinitions";
+import type { ViewType } from "../types";
+import { formatNumber } from "../utils/formatUtils";
+import { getRequiredXpForLevel } from "../utils/gameUtils";
 
 interface SidebarProps {
   currentView: ViewType;
@@ -43,15 +43,17 @@ function NavButton({
         w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group mb-1
         ${
           isActive
-            ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
-            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent'
+            ? "bg-accent/20 text-accent border border-accent/30 shadow-[0_0_10px_rgb(var(--color-accent)/0.2)]"
+            : "text-tx-muted hover:bg-panel-hover hover:text-tx-main border border-transparent"
         }
       `}
     >
       <div className="flex items-center gap-3">
         <img
           src={icon}
-          className={`w-5 h-5 pixelated transition-transform group-hover:scale-110 ${isActive ? 'brightness-125' : 'opacity-70 group-hover:opacity-100'}`}
+          className={`w-5 h-5 pixelated transition-transform group-hover:scale-110 ${
+            isActive ? "brightness-125" : "opacity-70 group-hover:opacity-100"
+          }`}
           alt=""
         />
         <span className="text-xs font-bold uppercase tracking-wide">
@@ -60,7 +62,9 @@ function NavButton({
       </div>
       {level !== undefined && (
         <span
-          className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isActive ? 'bg-cyan-950 text-cyan-300' : 'bg-slate-900 text-slate-600'}`}
+          className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+            isActive ? "bg-accent/10 text-accent" : "bg-panel text-tx-muted/80"
+          }`}
         >
           Lv.{level}
         </span>
@@ -86,7 +90,6 @@ const StatRow = ({
   textColor,
   bgColor,
 }: StatRowProps) => {
-  // KORJAUS: Haetaan oikea vaatimus utils-funktiosta!
   const nextLevelXp = getRequiredXpForLevel(level);
   const progress = Math.min(100, Math.max(0, (xp / nextLevelXp) * 100));
 
@@ -102,18 +105,18 @@ const StatRow = ({
             alt={label}
             className="w-5 h-5 pixelated opacity-80"
           />
-          <span className="text-slate-400 uppercase tracking-tight font-bold">
+          <span className="text-tx-muted uppercase tracking-tight font-bold">
             {label}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[10px] text-tx-muted/70 opacity-0 group-hover:opacity-100 transition-opacity">
             {progress.toFixed(1)}%
           </span>
           <span className={`font-bold text-sm ${textColor}`}>L.{level}</span>
         </div>
       </div>
-      <div className="w-full h-1.5 bg-slate-950/80 overflow-hidden border border-slate-800/50 rounded-sm">
+      <div className="w-full h-1.5 bg-app-base/80 overflow-hidden border border-border/50 rounded-sm">
         <div
           className={`h-full ${bgColor} opacity-90`}
           style={{ width: `${progress}%` }}
@@ -151,8 +154,8 @@ export default function Sidebar({
       if (menuRef.current && !menuRef.current.contains(event.target as Node))
         setIsProfileOpen(false);
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -171,23 +174,23 @@ export default function Sidebar({
 
   const totalLevel = (Object.values(skills) as { level: number }[]).reduce(
     (acc, s) => acc + s.level,
-    0,
+    0
   );
 
   const hasCompletableQuests = quests.dailyQuests.some(
-    (q) => q.isCompleted && !q.isClaimed,
+    (q) => q.isCompleted && !q.isClaimed
   );
 
   return (
-    <nav className="w-full md:w-72 bg-slate-950 border-r border-slate-800/50 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative font-sans">
+    <nav className="w-full md:w-72 bg-app-base border-r border-border/50 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative font-sans">
       {/* HEADER */}
-      <div className="p-5 border-b border-slate-800/50 bg-slate-950 relative z-20">
+      <div className="p-5 border-b border-border/50 bg-app-base relative z-20">
         <div className="flex justify-between items-center mb-4">
           <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-slate-200 tracking-widest uppercase flex flex-col leading-none">
-              Time<span className="text-cyan-500 text-3xl">Ring</span>
+            <h1 className="text-2xl font-bold text-tx-main tracking-widest uppercase flex flex-col leading-none">
+              Time<span className="text-accent text-3xl">Ring</span>
             </h1>
-            <span className="text-[10px] text-slate-500 tracking-[0.3em] uppercase mt-1">
+            <span className="text-[10px] text-tx-muted/70 tracking-[0.3em] uppercase mt-1">
               System v1.0
             </span>
           </div>
@@ -195,36 +198,36 @@ export default function Sidebar({
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-3 hover:bg-slate-900 p-2 rounded border border-slate-800 transition-all"
+              className="flex items-center gap-3 hover:bg-panel p-2 rounded border border-border transition-all"
             >
               <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold text-slate-300 truncate max-w-[100px]">
-                  {username || 'Restorer'}
+                <div className="text-xs font-bold text-tx-main truncate max-w-[100px]">
+                  {username || "Restorer"}
                 </div>
-                <div className="text-[10px] text-cyan-500 font-mono">
+                <div className="text-[10px] text-accent font-mono">
                   Level: {totalLevel}
                 </div>
               </div>
-              <div className="w-10 h-10 bg-slate-900 rounded border border-slate-700 flex items-center justify-center relative overflow-hidden">
+              <div className="w-10 h-10 bg-panel rounded border border-border-hover flex items-center justify-center relative overflow-hidden">
                 <img
-                  src={avatar || '/assets/ui/icon_user_avatar.png'}
+                  src={avatar || "/assets/ui/icon_user_avatar.png"}
                   alt="User"
                   className="w-full h-full object-cover pixelated"
                   onError={(e) =>
                     (e.currentTarget.src =
-                      'https://ui-avatars.com/api/?name=U&background=0f172a')
+                      "https://ui-avatars.com/api/?name=U&background=0f172a")
                   }
                 />
               </div>
             </button>
             {isProfileOpen && (
-              <div className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute top-full right-0 mt-2 w-64 bg-panel border border-border-hover rounded-xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 duration-100">
                 <button
                   onClick={() => {
                     setIsProfileOpen(false);
                     onOpenUserConfig();
                   }}
-                  className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3"
+                  className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
                   <span className="text-base">👤</span> User Config
                 </button>
@@ -233,14 +236,14 @@ export default function Sidebar({
                     setIsProfileOpen(false);
                     onOpenSettings();
                   }}
-                  className="w-full text-left px-3 py-2 rounded hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-3"
+                  className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
                   <span className="text-base">⚙️</span> System Config
                 </button>
-                <div className="h-px bg-slate-800 my-1 mx-2"></div>
+                <div className="h-px bg-border/50 my-1 mx-2"></div>
                 <button
                   onClick={onLogout}
-                  className="w-full text-left px-3 py-2 rounded hover:bg-red-900/20 text-xs font-bold text-red-400 flex items-center gap-3"
+                  className="w-full text-left px-3 py-2 rounded hover:bg-danger/10 text-xs font-bold text-danger flex items-center gap-3"
                 >
                   <span className="text-base">🔌</span> Terminate Session
                 </button>
@@ -251,37 +254,37 @@ export default function Sidebar({
 
         {/* FRAGMENTS & QUESTS ROW */}
         <div className="flex gap-2">
-          <div className="bg-slate-900/50 p-3 border border-slate-800/50 flex items-center justify-between flex-1 rounded overflow-hidden">
+          <div className="bg-panel/50 p-3 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden">
             <div className="flex items-center gap-3 shrink-0">
               <img
                 src="/assets/ui/coins.png"
                 className="w-5 h-5 pixelated"
                 alt="Memory"
               />
-              <span className="text-xs font-bold text-slate-400 uppercase">
+              <span className="text-xs font-bold text-tx-muted uppercase">
                 Coins
               </span>
             </div>
             <span
-              className="font-mono text-base font-bold text-amber-500 truncate ml-2"
+              className="font-mono text-base font-bold text-warning truncate ml-2"
               title={coins.toLocaleString()}
             >
               {formatNumber(coins)}
             </span>
           </div>
 
-          <button 
+          <button
             onClick={onOpenQuests}
-            className="bg-slate-900/50 p-3 border border-slate-800/50 rounded hover:bg-slate-800 transition-colors relative flex items-center justify-center shrink-0 w-12"
+            className="bg-panel/50 p-3 border border-border/50 rounded hover:bg-panel-hover transition-colors relative flex items-center justify-center shrink-0 w-12"
             title="Daily Quests"
           >
-            <img 
-              src="/assets/ui/icon_quest.png" 
-              className="w-6 h-6 pixelated" 
-              alt="Quests" 
+            <img
+              src="/assets/ui/icon_quest.png"
+              className="w-6 h-6 pixelated"
+              alt="Quests"
             />
             {hasCompletableQuests && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping border border-slate-950"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-danger rounded-full animate-ping border border-app-base"></span>
             )}
           </button>
         </div>
@@ -290,61 +293,61 @@ export default function Sidebar({
       {/* NAVIGATION */}
       <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10">
         <div>
-          <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
             Core Systems
           </p>
           <NavButton
             view="inventory"
             label="Storage"
             icon="/assets/ui/icon_inventory.png"
-            isActive={currentView === 'inventory'}
+            isActive={currentView === "inventory"}
             onClick={setView}
           />
           <NavButton
             view="enchanting"
             label="Enchanting"
             icon="/assets/ui/icon_enchanting.png"
-            isActive={currentView === 'enchanting'}
+            isActive={currentView === "enchanting"}
             onClick={setView}
           />
           <NavButton
             view="achievements"
             label="Milestones"
             icon="/assets/ui/icon_achievements.png"
-            isActive={currentView === 'achievements'}
+            isActive={currentView === "achievements"}
             onClick={setView}
           />
           <NavButton
             view="worldmarket"
             label="World Market"
             icon="/assets/ui/icon_market.png"
-            isActive={currentView === 'worldmarket'}
+            isActive={currentView === "worldmarket"}
             onClick={setView}
           />
           <NavButton
             view="marketplace"
             label="Market Place"
             icon="/assets/ui/icon_market.png"
-            isActive={currentView === 'marketplace'}
+            isActive={currentView === "marketplace"}
             onClick={setView}
           />
         </div>
 
         <div>
-          <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
             Protocols
           </p>
           <NavButton
             view="scavenger"
             label="Expeditions"
             icon="/assets/skills/scavenging.png"
-            isActive={currentView === 'scavenger'}
+            isActive={currentView === "scavenger"}
             onClick={setView}
           />
 
           {SKILL_DEFINITIONS.filter(
             (def) =>
-              def.category === 'gathering' || def.category === 'production',
+              def.category === "gathering" || def.category === "production"
           ).map((def) => (
             <NavButton
               key={def.id}
@@ -359,18 +362,18 @@ export default function Sidebar({
         </div>
 
         <div>
-          <p className="text-[10px] font-bold text-slate-600 uppercase px-2 mb-3 tracking-[0.2em] border-b border-slate-800/50 pb-1">
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
             Stabilization
           </p>
           <NavButton
             view="combat"
             label="Stabilize Zone"
             icon="/assets/skills/combat.png"
-            isActive={currentView === 'combat'}
+            isActive={currentView === "combat"}
             onClick={setView}
           />
-          <div className="bg-slate-900/30 p-3 border border-slate-800/50 mt-4 rounded space-y-1">
-            {SKILL_DEFINITIONS.filter((def) => def.category === 'combat').map(
+          <div className="bg-panel/30 p-3 border border-border/50 mt-4 rounded space-y-1">
+            {SKILL_DEFINITIONS.filter((def) => def.category === "combat").map(
               (def) => (
                 <StatRow
                   key={def.id}
@@ -378,36 +381,40 @@ export default function Sidebar({
                   level={skills[def.id]?.level || 1}
                   xp={skills[def.id]?.xp || 0}
                   iconPath={def.icon}
-                  textColor={def.color}
-                  bgColor={def.bgColor}
+                  textColor={def.color} // Tämä haetaan yhä konfigistä!
+                  bgColor={def.bgColor} // Tämä haetaan yhä konfigistä!
                 />
-              ),
+              )
             )}
           </div>
         </div>
       </div>
 
       {/* FOOTER */}
-      <div className="p-4 border-t border-slate-800/50 bg-slate-950/50">
+      <div className="p-4 border-t border-border/50 bg-app-base/50">
         <button
           onClick={onStopAction}
-          className="w-full py-3 text-xs font-bold text-amber-500 hover:bg-amber-900/10 border border-amber-900/30 mb-3 transition-colors rounded-sm uppercase"
+          className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase"
         >
           Halt Process
         </button>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={onReset}
-            className="py-2 text-[10px] font-bold text-red-500 border border-red-900/20 hover:bg-red-900/10 rounded-sm uppercase"
+            className="py-2 text-[10px] font-bold text-danger border border-danger/20 hover:bg-danger/10 rounded-sm uppercase"
           >
             Reboot
           </button>
           <button
             onClick={handleForceSaveClick}
             disabled={saveCooldown > 0}
-            className={`py-2 text-[10px] font-bold border rounded-sm uppercase ${saveCooldown > 0 ? 'text-slate-600 border-slate-800 cursor-not-allowed' : 'text-emerald-500 border-emerald-900/20 hover:bg-emerald-900/10'}`}
+            className={`py-2 text-[10px] font-bold border rounded-sm uppercase ${
+              saveCooldown > 0
+                ? "text-tx-muted/60 border-border cursor-not-allowed"
+                : "text-success border-success/20 hover:bg-success/10"
+            }`}
           >
-            {saveCooldown > 0 ? `${saveCooldown}s` : 'Save'}
+            {saveCooldown > 0 ? `${saveCooldown}s` : "Save"}
           </button>
         </div>
       </div>

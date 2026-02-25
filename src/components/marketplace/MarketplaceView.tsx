@@ -4,10 +4,9 @@ import { getActiveListings } from "../../services/marketService";
 import { getItemById } from "../../utils/itemUtils";
 import ListingRow from "./ListingRow";
 import SellForm from "./SellForm";
-import MailboxView from "./MailboxView"; // <--- UUSI IMPORT
+import MailboxView from "./MailboxView";
 import type { MarketListing } from "../../types";
 
-// Lisätty 'mailbox' tyyppiin
 type MarketTab = "buy" | "sell" | "mailbox";
 
 const CATEGORIES = [
@@ -135,17 +134,17 @@ export default function MarketplaceView() {
 
   if (!user)
     return (
-      <div className="p-10 text-slate-500 font-mono italic text-center">
+      <div className="p-10 text-tx-muted font-mono italic text-center">
         Connection to Relay lost...
       </div>
     );
 
   return (
-    <div className="flex flex-col h-full bg-slate-950/80 font-sans overflow-hidden">
+    <div className="flex flex-col h-full bg-app-base/80 font-sans overflow-hidden">
       {/* HEADER */}
-      <div className="p-6 border-b border-slate-800/50 bg-slate-900/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div
-          className={`w-16 h-16 rounded-xl flex items-center justify-center bg-cyan-500/20 border border-cyan-500/30 shadow-lg shrink-0`}
+          className={`w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0`}
         >
           <img
             src="/assets/ui/icon_market.png"
@@ -153,21 +152,20 @@ export default function MarketplaceView() {
             alt="Marketplace"
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 text-left">
           <h1
-            className={`text-3xl font-black uppercase tracking-widest text-cyan-500 mb-1`}
+            className={`text-3xl font-black uppercase tracking-widest text-accent mb-1`}
           >
             Marketplace
           </h1>
-          <p className="text-slate-500 text-sm font-medium">
+          <p className="text-tx-muted text-sm font-medium">
             Global Marketplace for adventurers.
           </p>
         </div>
 
         {/* TABS & MAILBOX BUTTON */}
         <div className="flex items-center gap-2">
-          {/* BUY & SELL TABS */}
-          <div className="flex bg-slate-900 p-1 rounded-sm border border-slate-800 h-fit">
+          <div className="flex bg-panel p-1 rounded-sm border border-border h-fit">
             {(["buy", "sell"] as MarketTab[]).map((t) => (
               <button
                 key={t}
@@ -177,8 +175,8 @@ export default function MarketplaceView() {
                 }}
                 className={`px-6 py-1.5 text-[10px] font-bold uppercase transition-all ${
                   tab === t
-                    ? "bg-cyan-600 text-white shadow-[0_0_15px_rgba(8,145,178,0.3)]"
-                    : "text-slate-500 hover:text-slate-300"
+                    ? "bg-accent text-white shadow-[0_0_15px_rgb(var(--color-accent)/0.3)]"
+                    : "text-tx-muted hover:text-tx-main"
                 }`}
               >
                 {t === "buy" ? "Buy" : "Sell"}
@@ -186,7 +184,6 @@ export default function MarketplaceView() {
             ))}
           </div>
 
-          {/* MAILBOX BUTTON */}
           <button
             onClick={() => {
               setTab("mailbox");
@@ -194,8 +191,8 @@ export default function MarketplaceView() {
             }}
             className={`relative h-full px-4 flex items-center justify-center border rounded-sm transition-all ${
               tab === "mailbox"
-                ? "bg-amber-500/10 border-amber-500 text-amber-500"
-                : "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-600 hover:text-slate-300"
+                ? "bg-warning/10 border-warning text-warning"
+                : "bg-panel border-border text-tx-muted hover:border-border-hover hover:text-tx-main"
             }`}
             title="Mailbox"
           >
@@ -204,14 +201,13 @@ export default function MarketplaceView() {
               className="w-5 h-5 pixelated"
               alt="Mail"
             />
-            {/* Optional: Add red dot notification badge logic here */}
           </button>
         </div>
       </div>
 
-      {/* FILTER & SEARCH BAR (Only show when buying) */}
+      {/* FILTER & SEARCH BAR */}
       {tab === "buy" && (
-        <div className="p-5 border-b border-white/5 bg-slate-900/20 shrink-0">
+        <div className="p-5 border-b border-border/30 bg-panel/20 shrink-0">
           {!selectedItemId && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
@@ -221,8 +217,8 @@ export default function MarketplaceView() {
                     onClick={() => setActiveCategory(cat.id)}
                     className={`px-4 py-1.5 rounded-sm text-[9px] font-bold uppercase border transition-all shrink-0 ${
                       activeCategory === cat.id
-                        ? "border-cyan-500 text-cyan-400 bg-cyan-950/30"
-                        : "border-slate-800 text-slate-500 hover:border-slate-600"
+                        ? "border-accent text-accent bg-accent/10"
+                        : "border-border text-tx-muted hover:border-border-hover"
                     }`}
                   >
                     {cat.label}
@@ -235,12 +231,12 @@ export default function MarketplaceView() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search marketplace..."
-                  className="w-full bg-slate-900/50 border border-slate-800 rounded-sm px-9 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-600 transition-colors"
+                  className="w-full bg-panel/50 border border-border rounded-sm px-9 py-2 text-xs text-tx-main focus:outline-none focus:border-accent transition-colors"
                 />
                 <button
                   onClick={() => fetchListings(true)}
                   disabled={loading}
-                  className="px-4 bg-slate-900 border border-slate-800 text-cyan-500 text-[10px] font-bold uppercase hover:bg-slate-800 transition-colors disabled:opacity-50"
+                  className="px-4 bg-panel border border-border text-accent text-[10px] font-bold uppercase hover:bg-panel-hover transition-colors disabled:opacity-50"
                 >
                   {loading ? "..." : "⟳"}
                 </button>
@@ -251,7 +247,7 @@ export default function MarketplaceView() {
           {selectedItemId && (
             <button
               onClick={() => setSelectedItemId(null)}
-              className="flex items-center gap-2 text-cyan-500 text-[10px] font-bold uppercase hover:text-cyan-400 transition-colors"
+              className="flex items-center gap-2 text-accent text-[10px] font-bold uppercase hover:text-accent-hover transition-colors"
             >
               <span>←</span> Back to Global Catalog
             </button>
@@ -261,7 +257,6 @@ export default function MarketplaceView() {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 overflow-hidden relative">
-        {/* VIEW ROUTING */}
         {tab === "mailbox" && <MailboxView userId={user.uid} />}
 
         {tab === "sell" && (
@@ -282,7 +277,7 @@ export default function MarketplaceView() {
                   <button
                     key={item!.id}
                     onClick={() => setSelectedItemId(item!.id)}
-                    className="group relative bg-slate-900/40 border border-slate-800 p-4 rounded-sm hover:border-cyan-500/50 hover:bg-slate-900/60 transition-all flex flex-col items-center text-center gap-3"
+                    className="group relative bg-panel/40 border border-border p-4 rounded-sm hover:border-accent/50 hover:bg-panel/60 transition-all flex flex-col items-center text-center gap-3"
                   >
                     <img
                       src={item!.icon}
@@ -292,18 +287,18 @@ export default function MarketplaceView() {
                     <div>
                       <div
                         className={`text-xs font-bold leading-tight ${
-                          item!.color || "text-slate-200"
+                          item!.color || "text-tx-main"
                         }`}
                       >
                         {item!.name}
                       </div>
-                      <div className="text-[9px] text-slate-500 font-mono mt-1 uppercase tracking-tighter">
+                      <div className="text-[9px] text-tx-muted font-mono mt-1 uppercase tracking-tighter">
                         {item!.listingCount} Sellers • {item!.totalAvailable}{" "}
                         Qty
                       </div>
                     </div>
-                    <div className="mt-auto pt-2 w-full border-t border-white/5">
-                      <div className="text-[10px] text-amber-500 font-bold font-mono flex items-center justify-center gap-1">
+                    <div className="mt-auto pt-2 w-full border-t border-border/50">
+                      <div className="text-[10px] text-warning font-bold font-mono flex items-center justify-center gap-1">
                         <span>From {item!.lowestPrice.toLocaleString()}</span>
                         <img
                           src="/assets/ui/coins.png"
@@ -319,24 +314,24 @@ export default function MarketplaceView() {
 
             {selectedItemId && (
               <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex items-center gap-4 mb-4 p-4 bg-cyan-950/10 border border-cyan-900/20 rounded-sm">
+                <div className="flex items-center gap-4 mb-4 p-4 bg-accent/5 border border-accent/20 rounded-sm">
                   <img
                     src={getItemById(selectedItemId)?.icon}
                     className="w-12 h-12 pixelated shadow-lg"
                     alt=""
                   />
-                  <div>
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                  <div className="text-left">
+                    <h3 className="text-xl font-bold text-tx-main tracking-tight">
                       {getItemById(selectedItemId)?.name}
                     </h3>
-                    <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">
+                    <p className="text-[10px] text-tx-muted uppercase font-mono tracking-widest">
                       For sale
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center px-4 py-2 text-[9px] font-bold text-slate-600 uppercase tracking-widest border-b border-white/5">
-                  <span className="flex-1">Merchant</span>
+                <div className="flex items-center px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
+                  <span className="flex-1 text-left">Merchant</span>
                   <span className="w-24 text-right">Amount</span>
                   <span className="w-32 text-right pr-4">Unit Price</span>
                   <span className="w-24 text-right">Action</span>
@@ -360,7 +355,7 @@ export default function MarketplaceView() {
                   className="w-20 h-20 pixelated opacity-10 mb-6 grayscale"
                   alt="No signals"
                 />
-                <p className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-slate-700">
+                <p className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-tx-muted/40">
                   No items for sale.
                 </p>
               </div>

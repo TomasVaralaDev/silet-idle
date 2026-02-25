@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useGameStore } from '../../store/useGameStore';
-import { WORLD_INFO } from '../../data/worlds';
-import { formatRemainingTime } from '../../utils/formatUtils';
+import { useState, useEffect } from "react";
+import { useGameStore } from "../../store/useGameStore";
+import { WORLD_INFO } from "../../data/worlds";
+import { formatRemainingTime } from "../../utils/formatUtils";
 
 export default function ActiveExpeditions() {
   const { scavenger, claimExpedition, cancelExpedition } = useGameStore();
@@ -15,7 +15,7 @@ export default function ActiveExpeditions() {
 
   if (scavenger.activeExpeditions.length === 0) {
     return (
-      <div className="p-8 text-center border-2 border-dashed border-slate-800 rounded-xl text-slate-600 flex flex-col items-center justify-center">
+      <div className="p-8 text-center border-2 border-dashed border-border rounded-xl text-tx-muted/70 flex flex-col items-center justify-center bg-app-base/30">
         <img
           src="/assets/ui/icon_map.png"
           alt="No Expeditions"
@@ -40,16 +40,19 @@ export default function ActiveExpeditions() {
         return (
           <div
             key={exp.id}
-            className="bg-slate-900 border border-slate-700 p-4 rounded-lg relative overflow-hidden group"
+            className="bg-panel border border-border p-4 rounded-lg relative overflow-hidden group"
           >
+            {/* Progress Bar - Nyt käyttää semanttista success-väriä */}
             <div
-              className="absolute bottom-0 left-0 h-1 bg-emerald-500 transition-all duration-1000"
+              className={`absolute bottom-0 left-0 h-1 transition-all duration-1000 ${
+                isFinished ? "bg-success" : "bg-warning"
+              }`}
               style={{ width: `${progress}%` }}
             />
 
             <div className="flex justify-between items-center mb-2 relative z-10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded bg-slate-950 border border-slate-800 overflow-hidden shrink-0">
+                <div className="w-10 h-10 rounded bg-app-base border border-border-hover overflow-hidden shrink-0">
                   {worldInfo?.image && (
                     <img
                       src={worldInfo.image}
@@ -59,19 +62,21 @@ export default function ActiveExpeditions() {
                   )}
                 </div>
                 <div>
-                  <div className="font-bold text-slate-200">
+                  <div className="font-bold text-tx-main">
                     {worldInfo?.name || `World ${exp.mapId}`}
                   </div>
-                  <div className="text-[10px] text-slate-500 uppercase font-black tracking-tighter">
+                  <div className="text-[10px] text-tx-muted uppercase font-black tracking-tighter">
                     Active Expedition
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div
-                  className={`font-mono text-sm font-bold ${isFinished ? 'text-emerald-400' : 'text-amber-400'}`}
+                  className={`font-mono text-sm font-bold ${
+                    isFinished ? "text-success" : "text-warning"
+                  }`}
                 >
-                  {isFinished ? 'COMPLETED' : formatRemainingTime(timeLeft)}
+                  {isFinished ? "COMPLETED" : formatRemainingTime(timeLeft)}
                 </div>
               </div>
             </div>
@@ -80,14 +85,14 @@ export default function ActiveExpeditions() {
               {!isFinished ? (
                 <button
                   onClick={() => cancelExpedition(exp.id)}
-                  className="px-3 py-1 bg-red-900/20 hover:bg-red-900/40 text-red-400 text-[10px] font-bold uppercase rounded border border-red-900/30 transition-colors"
+                  className="px-3 py-1 bg-danger/10 hover:bg-danger/20 text-danger text-[10px] font-bold uppercase rounded border border-danger/30 transition-colors"
                 >
                   Abort
                 </button>
               ) : (
                 <button
                   onClick={() => claimExpedition(exp.id)}
-                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded shadow-lg shadow-emerald-900/20 animate-pulse uppercase"
+                  className="px-4 py-1.5 bg-success hover:bg-success/80 text-white text-xs font-bold rounded shadow-lg shadow-success/20 animate-pulse uppercase"
                 >
                   Collect Rewards
                 </button>

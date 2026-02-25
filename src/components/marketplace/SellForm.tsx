@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useGameStore } from '../../store/useGameStore';
-import { getItemById } from '../../utils/itemUtils';
-import { createListing } from '../../services/marketService';
-import InventorySelector from './InventorySelector';
+import { useState } from "react";
+import { useGameStore } from "../../store/useGameStore";
+import { getItemById } from "../../utils/itemUtils";
+import { createListing } from "../../services/marketService";
+import InventorySelector from "./InventorySelector";
 
 interface Props {
   myUid: string;
@@ -24,25 +24,23 @@ export default function SellForm({ myUid, onComplete }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!selectedId || !selectedItem || isSubmitting) return;
 
-    // --- LOPULLINEN VALIDIOINTI ENNEN LÄHETYSTÄ ---
     if (amount < 1) {
-      emitEvent('error', 'Value must be greater or equal to 1');
+      emitEvent("error", "Value must be greater or equal to 1");
       return;
     }
 
     if (amount > maxAmount) {
       emitEvent(
-        'error',
-        `Insufficient stock. You only have ${maxAmount} units.`,
+        "error",
+        `Insufficient stock. You only have ${maxAmount} units.`
       );
       return;
     }
 
     if (price < 1) {
-      emitEvent('error', 'Value must be greater or equal to 1');
+      emitEvent("error", "Value must be greater or equal to 1");
       return;
     }
 
@@ -50,23 +48,23 @@ export default function SellForm({ myUid, onComplete }: Props) {
     try {
       await createListing(myUid, username, selectedId, amount, price);
       emitEvent(
-        'success',
+        "success",
         `Listing created: ${amount}x ${selectedItem.name}`,
-        selectedItem.icon,
+        selectedItem.icon
       );
       onComplete();
     } catch (err: unknown) {
-      emitEvent('error', err instanceof Error ? err.message : String(err));
+      emitEvent("error", err instanceof Error ? err.message : String(err));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="h-full flex flex-col md:flex-row gap-6 p-6 overflow-hidden animate-in fade-in duration-500 text-left">
+    <div className="h-full flex flex-col md:flex-row gap-6 p-6 overflow-hidden animate-in fade-in duration-500 text-left bg-app-base">
       {/* LEFT: Inventory Selection */}
       <div className="flex-1 min-h-[300px] flex flex-col">
-        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">
+        <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4">
           Select Resource from Storage
         </h3>
         <div className="flex-1 overflow-hidden">
@@ -76,31 +74,33 @@ export default function SellForm({ myUid, onComplete }: Props) {
 
       {/* RIGHT: Listing Options */}
       <div className="w-full md:w-80 shrink-0 flex flex-col gap-4">
-        <div className="bg-slate-900/50 border border-slate-800 rounded-sm p-5 flex flex-col h-full shadow-2xl backdrop-blur-sm">
-          <h3 className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.2em] mb-4 border-b border-white/5 pb-3 text-left">
+        <div className="bg-panel/50 border border-border rounded-sm p-5 flex flex-col h-full shadow-2xl backdrop-blur-sm">
+          <h3 className="text-[10px] font-black text-accent uppercase tracking-[0.2em] mb-4 border-b border-border/30 pb-3 text-left">
             Listing Parameters
           </h3>
 
           {selectedItem ? (
             <form
               onSubmit={handleSubmit}
-              noValidate // Estää selaimen omat virheilmoitukset
+              noValidate
               className="flex flex-col gap-6 flex-1"
             >
               {/* Item Info Card */}
-              <div className="bg-slate-950 p-4 rounded-sm border border-slate-800 flex items-center gap-4">
+              <div className="bg-app-base p-4 rounded-sm border border-border flex items-center gap-4 shadow-inner">
                 <img
                   src={selectedItem.icon}
                   className="w-10 h-10 pixelated"
                   alt=""
                 />
-                <div>
+                <div className="min-w-0 flex-1">
                   <p
-                    className={`font-black text-xs uppercase tracking-wider ${selectedItem.color || 'text-white'}`}
+                    className={`font-black text-xs uppercase tracking-wider truncate ${
+                      selectedItem.color || "text-tx-main"
+                    }`}
                   >
                     {selectedItem.name}
                   </p>
-                  <p className="text-[10px] text-slate-500 font-mono mt-1 uppercase">
+                  <p className="text-[10px] text-tx-muted font-mono mt-1 uppercase">
                     Available: {maxAmount}
                   </p>
                 </div>
@@ -109,13 +109,13 @@ export default function SellForm({ myUid, onComplete }: Props) {
               {/* Amount Input */}
               <div>
                 <div className="flex justify-between mb-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <label className="text-[10px] font-black text-tx-muted uppercase tracking-widest">
                     Quantity
                   </label>
                   <button
                     type="button"
                     onClick={() => setAmount(maxAmount)}
-                    className="text-[9px] text-cyan-500 hover:text-cyan-400 font-black uppercase tracking-tighter"
+                    className="text-[9px] text-accent hover:text-accent-hover font-black uppercase tracking-tighter transition-colors"
                   >
                     Set Max
                   </button>
@@ -123,28 +123,26 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 <input
                   type="number"
                   value={amount}
-                  // Estää miinusluvut lennosta
                   onChange={(e) =>
                     setAmount(Math.max(0, parseInt(e.target.value) || 0))
                   }
-                  className="w-full bg-slate-950 border border-slate-800 rounded-sm px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-600 transition-colors font-mono"
+                  className="w-full bg-app-base border border-border rounded-sm px-3 py-2.5 text-sm text-tx-main focus:outline-none focus:border-accent transition-colors font-mono"
                 />
               </div>
 
               {/* Price Input */}
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">
+                <label className="text-[10px] font-black text-tx-muted uppercase tracking-widest block mb-2">
                   Price Per Unit
                 </label>
                 <div className="relative flex items-center">
                   <input
                     type="number"
                     value={price}
-                    // Estää miinusluvut lennosta
                     onChange={(e) =>
                       setPrice(Math.max(0, parseInt(e.target.value) || 0))
                     }
-                    className="w-full bg-slate-950 border border-slate-800 rounded-sm px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-600 transition-colors pl-10 font-mono"
+                    className="w-full bg-app-base border border-border rounded-sm px-3 py-2.5 text-sm text-tx-main focus:outline-none focus:border-warning transition-colors pl-10 font-mono"
                   />
                   <img
                     src="/assets/ui/coins.png"
@@ -154,13 +152,14 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 </div>
               </div>
 
-              <div className="mt-auto p-4 bg-slate-950 rounded-sm border border-slate-800 border-dashed">
-                <p className="text-[9px] text-slate-600 font-black uppercase tracking-widest mb-2 text-left">
+              {/* Revenue calculation */}
+              <div className="mt-auto p-4 bg-app-base rounded-sm border border-border border-dashed">
+                <p className="text-[9px] text-tx-muted font-black uppercase tracking-widest mb-2 text-left">
                   Estimated Revenue
                 </p>
                 <div className="flex items-center gap-2">
                   <img src="/assets/ui/coins.png" className="w-5 h-5" alt="" />
-                  <span className="text-2xl font-black font-mono text-amber-500 tracking-tighter">
+                  <span className="text-2xl font-black font-mono text-warning tracking-tighter">
                     {(amount * price).toLocaleString()}
                   </span>
                 </div>
@@ -169,17 +168,17 @@ export default function SellForm({ myUid, onComplete }: Props) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-900/20 active:scale-95 transition-all"
+                className="w-full py-4 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/20 active:scale-95 transition-all"
               >
-                {isSubmitting ? 'Transmitting...' : 'Authorize Listing'}
+                {isSubmitting ? "Transmitting..." : "Authorize Listing"}
               </button>
             </form>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4">
-              <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-800 flex items-center justify-center text-2xl opacity-10">
+              <div className="w-16 h-16 rounded-full border-2 border-dashed border-border/50 flex items-center justify-center text-2xl opacity-10 grayscale">
                 📦
               </div>
-              <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest leading-relaxed">
+              <p className="text-[10px] text-tx-muted/60 font-black uppercase tracking-widest leading-relaxed">
                 Awaiting Resource Selection
                 <br />
                 From Storage Protocols

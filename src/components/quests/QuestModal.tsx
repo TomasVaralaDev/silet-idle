@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useGameStore } from '../../store/useGameStore';
-import QuestList from './QuestList';
+import { useEffect } from "react";
+import { useGameStore } from "../../store/useGameStore";
+import QuestList from "./QuestList";
 
 interface QuestModalProps {
   isOpen: boolean;
@@ -20,34 +20,33 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-200">
-        
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-app-base/80 backdrop-blur-sm p-4 animate-in fade-in duration-300 text-left">
+      <div className="bg-panel border border-border rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 overflow-hidden">
         {/* HEADER */}
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 rounded-t-xl shrink-0">
+        <div className="p-6 border-b border-border flex justify-between items-center bg-panel-hover/50 shrink-0">
           <div>
-            <h2 className="text-2xl font-black text-slate-100 flex items-center gap-3">
-              <img 
-                src="/assets/ui/icon_quest.png" 
-                className="w-8 h-8 pixelated" 
-                alt="Quests" 
+            <h2 className="text-2xl font-black text-tx-main flex items-center gap-3">
+              <img
+                src="/assets/ui/icon_quest.png"
+                className="w-8 h-8 pixelated drop-shadow-md"
+                alt="Quests"
               />
               Daily Quests
             </h2>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-tx-muted text-sm mt-1">
               Complete tasks to earn rewards. Resets daily.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-white p-2 rounded-lg hover:bg-slate-700 transition-colors"
+            className="text-tx-muted hover:text-tx-main p-2 rounded-lg hover:bg-panel transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* CONTENT */}
-        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-app-base/20">
           <QuestList quests={quests?.dailyQuests || []} />
         </div>
       </div>

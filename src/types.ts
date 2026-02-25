@@ -1,62 +1,62 @@
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 export type AchievementCategory =
-  | 'general'
-  | 'combat'
-  | 'skills'
-  | 'wealth'
-  | 'collection';
+  | "general"
+  | "combat"
+  | "skills"
+  | "wealth"
+  | "collection";
 
 export type SkillType =
-  | 'woodcutting'
-  | 'mining'
-  | 'fishing'
-  | 'foraging'
-  | 'crafting'
-  | 'smithing'
-  | 'alchemy'
-  | 'hitpoints'
-  | 'attack'
-  | 'defense'
-  | 'melee'
-  | 'ranged'
-  | 'magic'
-  | 'combat'
-  | 'scavenging';
+  | "woodcutting"
+  | "mining"
+  | "fishing"
+  | "foraging"
+  | "crafting"
+  | "smithing"
+  | "alchemy"
+  | "hitpoints"
+  | "attack"
+  | "defense"
+  | "melee"
+  | "ranged"
+  | "magic"
+  | "combat"
+  | "scavenging";
 
 export type ViewType =
   | SkillType
-  | 'inventory'
-  | 'shop'
-  | 'gamble'
-  | 'achievements'
-  | 'scavenger'
-  | 'enchanting'
-  | 'worldmarket'
-  | 'marketplace';
+  | "inventory"
+  | "shop"
+  | "gamble"
+  | "achievements"
+  | "scavenger"
+  | "enchanting"
+  | "worldmarket"
+  | "marketplace";
 
 export type EquipmentSlot =
-  | 'head'
-  | 'body'
-  | 'legs'
-  | 'weapon'
-  | 'shield'
-  | 'necklace'
-  | 'ring'
-  | 'rune'
-  | 'skill'
-  | 'food';
+  | "head"
+  | "body"
+  | "legs"
+  | "weapon"
+  | "shield"
+  | "necklace"
+  | "ring"
+  | "rune"
+  | "skill"
+  | "food";
 
-export type CombatStyle = 'melee' | 'ranged' | 'magic';
+export type CombatStyle = "melee" | "ranged" | "magic";
 
 // --- EVENT TYPES ---
 export type GameEventType =
-  | 'info'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'loot'
-  | 'combat'
-  | 'levelUp';
+  | "info"
+  | "success"
+  | "warning"
+  | "error"
+  | "loot"
+  | "combat"
+  | "levelUp";
 
 export interface GameEvent {
   id: string;
@@ -97,7 +97,7 @@ export interface Enemy {
 export interface CombatLogEntry {
   message: string;
   timestamp: string;
-  type?: 'damage' | 'heal' | 'info' | 'loot';
+  type?: "damage" | "heal" | "info" | "loot";
 }
 
 // Taistelun hetkellinen tila
@@ -245,7 +245,7 @@ export interface SkillData {
 }
 
 // --- QUEST TYPES ---
-export type QuestType = 'GATHER' | 'KILL' | 'CRAFT';
+export type QuestType = "GATHER" | "KILL" | "CRAFT";
 
 export interface QuestReward {
   coins?: number;
@@ -338,7 +338,7 @@ export interface FriendRequest {
   fromUid: string;
   fromUsername: string;
   toUid: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   timestamp: number;
 }
 
@@ -368,9 +368,19 @@ export interface MarketListing {
   pricePerItem: number;
   totalPrice: number;
   createdAt: number;
-  status: 'active' | 'sold' | 'expired' | 'cancelled';
+  status: "active" | "sold" | "expired" | "cancelled";
 }
-
+// Mail system
+export interface MailMessage {
+  id: string; // Firestore doc ID
+  type: "market_sale" | "system_gift";
+  title: string;
+  message: string;
+  coinsAttached?: number;
+  itemsAttached?: { itemId: string; amount: number }[];
+  timestamp: number;
+  isClaimed: boolean;
+}
 // --- ROOT GAME STATE ---
 
 export interface GameState {
@@ -379,7 +389,7 @@ export interface GameState {
   settings: GameSettings;
   inventory: Record<string, number>;
   skills: Record<SkillType, SkillData>;
-  equipment: Record<Exclude<EquipmentSlot, 'food'>, string | null>;
+  equipment: Record<Exclude<EquipmentSlot, "food">, string | null>;
   equippedFood: { itemId: string; count: number } | null;
   combatSettings: CombatSettings;
   scavenger: ScavengerState;

@@ -6,6 +6,7 @@ import type {
   GameEvent,
   Enemy,
   RewardEntry,
+  SkillType,
 } from '../types';
 
 // Slices
@@ -137,6 +138,57 @@ export const DEFAULT_STATE: GameState = {
   enemy: null,
 };
 
+/**
+ * Erillinen merge-funktio testausta varten.
+ * Varmistaa syvän yhdistämisen skilleille ja muille kriittisille objekteille.
+ */
+export const customMerge = (persistedState: unknown, currentState: FullStoreState): FullStoreState => {
+  const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
+  if (!typedPersisted) return currentState;
+
+  // Syvä yhdistäminen skilleille: säilytetään vanhat tasot, mutta lisätään uudet skillit
+  const mergedSkills = { ...DEFAULT_STATE.skills };
+  if (typedPersisted.skills) {
+    (Object.keys(DEFAULT_STATE.skills) as SkillType[]).forEach(skillKey => {
+      mergedSkills[skillKey] = {
+        ...DEFAULT_STATE.skills[skillKey],
+        ...(typedPersisted.skills![skillKey] || {})
+      };
+    });
+  }
+
+  return {
+    ...currentState,
+    ...typedPersisted,
+
+    // Pakotetaan syvä merge tietyille komponenteille
+    combatStats: {
+      ...DEFAULT_STATE.combatStats,
+      ...(typedPersisted.combatStats || {}),
+      combatLog: typedPersisted.combatStats?.combatLog || [],
+    },
+    skills: mergedSkills,
+    social: {
+      ...DEFAULT_STATE.social,
+      ...(typedPersisted.social || {}),
+      activeChatFriendId: null,
+      incomingRequests: typedPersisted.social?.incomingRequests || [],
+      outgoingRequests: typedPersisted.social?.outgoingRequests || [],
+    },
+    quests: {
+      ...DEFAULT_STATE.quests,
+      ...(typedPersisted.quests || {}),
+      dailyQuests: typedPersisted.quests?.dailyQuests || [],
+    },
+
+    // Resetoidaan väliaikaiset tilat
+    enemy: null,
+    activeAction: typedPersisted.activeAction || null,
+    rewardModal: { isOpen: false, title: '', rewards: [] },
+    offlineSummary: null,
+  } as FullStoreState;
+};
+
 export const useGameStore = create<FullStoreState>()(
   persist(
     (set, get, ...args) => ({
@@ -144,7 +196,7 @@ export const useGameStore = create<FullStoreState>()(
       offlineSummary: null,
       rewardModal: { isOpen: false, title: '', rewards: [] },
 
-      // Combine slices
+      // Yhdistetään slicet
       ...createInventorySlice(set, get, ...args),
       ...createSkillSlice(set, get, ...args),
       ...createCombatSlice(set, get, ...args),
@@ -154,7 +206,7 @@ export const useGameStore = create<FullStoreState>()(
       ...createSocialSlice(set, get, ...args),
       ...createQuestSlice(set, get, ...args),
 
-      // Global actions
+      // Globaalit actionit
       emitEvent: (type, message, icon) =>
         set((state) => {
           const newEvent: GameEvent = {
@@ -196,56 +248,11 @@ export const useGameStore = create<FullStoreState>()(
     }),
     {
       name: 'ggez-idle-storage',
-
-      merge: (persistedState: unknown, currentState: FullStoreState) => {
-        const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
-        if (!typedPersisted) return currentState;
-
-        // TÄRKEÄ KORJAUS: Varmistetaan syvä yhdistäminen (Deep Merge) skilleille!
-        // Muuten vanha tila voi ylikirjoittautua ja lukita tasot tai jättää uudet skillit pois.
-        const mergedSkills = { ...DEFAULT_STATE.skills };
-        if (typedPersisted.skills) {
-          Object.keys(DEFAULT_STATE.skills).forEach(key => {
-            const skillKey = key as keyof typeof DEFAULT_STATE.skills;
-            mergedSkills[skillKey] = {
-              ...DEFAULT_STATE.skills[skillKey],
-              ...(typedPersisted.skills![skillKey] || {})
-            };
-          });
-        }
-
-        return {
-          ...currentState,
-          ...typedPersisted,
-
-          combatStats: {
-            ...DEFAULT_STATE.combatStats,
-            ...(typedPersisted.combatStats || {}),
-            combatLog: typedPersisted.combatStats?.combatLog || [],
-          },
-          // Asetetaan täysin turvallinen kopio skilleistä
-          skills: mergedSkills,
-          social: {
-            ...DEFAULT_STATE.social,
-            ...(typedPersisted.social || {}),
-            activeChatFriendId: null,
-            incomingRequests: typedPersisted.social?.incomingRequests || [],
-            outgoingRequests: typedPersisted.social?.outgoingRequests || [],
-          },
-          quests: {
-            ...DEFAULT_STATE.quests,
-            ...(typedPersisted.quests || {}),
-            dailyQuests: typedPersisted.quests?.dailyQuests || [],
-          },
-
-          enemy: null,
-          activeAction: typedPersisted.activeAction || null,
-          rewardModal: { isOpen: false, title: '', rewards: [] },
-        };
-      },
-
+      version: 1, // Mahdollistaa migraatiot tulevaisuudessa
+      merge: (persisted, current) => customMerge(persisted, current as FullStoreState),
       partialize: (state) => {
         const rest = { ...state };
+        // Poistetaan UI-tila tallennuksesta
         delete (rest as Partial<FullStoreState>).offlineSummary;
         delete (rest as Partial<FullStoreState>).rewardModal;
         return rest;

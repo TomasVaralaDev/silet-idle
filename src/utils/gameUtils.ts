@@ -1,9 +1,5 @@
 import type { SkillType, WeightedDrop } from '../types';
 
-/**
- * Laskee vaaditun XP-määrän tietylle tasolle.
- * UUSI KAAVA: 40 * Level^2
- */
 export const getRequiredXpForLevel = (level: number): number => {
   const numLevel = Number(level);
   if (isNaN(numLevel) || numLevel < 1) return 40;
@@ -12,10 +8,9 @@ export const getRequiredXpForLevel = (level: number): number => {
 
 /**
  * POMMINKESTÄVÄ XP-LASKURI.
- * Korjaa automaattisesti "1500 / 1000" -tyyppiset jumiutumiset.
+ * RAJOITETTU TASOLLE 99.
  */
 export const calculateXpGain = (currentLevel: number | string, currentXp: number | string, xpReward: number | string) => {
-  // 1. Pakotetaan kaikki arvot puhtaiksi numeroiksi, estetään NaN-korruptio
   let cLevel = Number(currentLevel);
   if (isNaN(cLevel) || cLevel < 1) cLevel = 1;
 
@@ -25,26 +20,31 @@ export const calculateXpGain = (currentLevel: number | string, currentXp: number
   const reward = Number(xpReward);
   if (isNaN(reward) || reward < 0) return { level: cLevel, xp: cXp };
 
-  // 2. Lasketaan uusi kokonais-XP yhteen (säilyttää desimaalit)
   let totalXp = cXp + reward;
   let newLevel = cLevel;
   
-  // 3. Haetaan vaatimus
+  // 1. Jos taso on jo valmiiksi yli 99, pakotetaan se 99:ään ja korjataan XP maksimiin.
+  if (newLevel >= 99) {
+    return { level: 99, xp: getRequiredXpForLevel(99) };
+  }
+
   let reqXp = getRequiredXpForLevel(newLevel);
   
-  // 4. Tämä on ydin: Niin kauan kuin XP on yli vaatimuksen, taso NOUSEE.
-  // Suoritetaan heti, jos peli on ladattu jumitilassa (esim. 1500 XP vs 1000 Req)
+  // 2. XP:n "syönti" ja tasojen nosto
   while (totalXp >= reqXp) {
-    if (newLevel >= 120) {
-      newLevel = 120;
-      break; // Pysäytetään, jos tasokatto saavutetaan
+    totalXp -= reqXp;
+    newLevel++;
+
+    // 3. Pysäytys heti, kun saavutetaan 99
+    if (newLevel >= 99) {
+      newLevel = 99;
+      totalXp = getRequiredXpForLevel(99); // Lukitaan XP maksimiin
+      break;
     }
-    totalXp -= reqXp;     // Vähennetään kulunut XP
-    newLevel++;           // Nostetaan tasoa
-    reqXp = getRequiredXpForLevel(newLevel); // Uusi raja
+
+    reqXp = getRequiredXpForLevel(newLevel);
   }
   
-  // 5. Palautetaan taso ja nollataan mahdolliset bugiset negatiiviset luvut
   return { 
     level: newLevel, 
     xp: Math.max(0, totalXp) 

@@ -5,8 +5,8 @@ import { processCombatTick } from '../systems/combatSystem';
 import { checkNewAchievements } from '../systems/achievementSystem'; 
 import { ACHIEVEMENTS } from '../data/achievements'; 
 import { GAME_DATA, getItemDetails } from '../data'; 
-import { calculateXpGain } from '../utils/gameUtils';
-import type { GameState } from '../types';
+import { calculateXpGain, getRequiredXpForLevel } from '../utils/gameUtils';
+import type { GameState, SkillType } from '../types';
 
 export const useGameEngine = () => {
   const { setState, checkDailyReset, emitEvent } = useGameStore();
@@ -22,7 +22,25 @@ export const useGameEngine = () => {
         let nextUnlockedAchievements = [...state.unlockedAchievements];
         let hasNewAchievements = false;
 
-        // --- 1. SAAVUTUSTEN JA QUESTIEN TARKISTUS ---
+        // --- 1. JUMIUTUNEIDEN TASOJEN KORJAUS (MAX 99) ---
+        if (ticks % 10 === 0) {
+          let needsFix = false;
+          const healedSkills = { ...state.skills };
+          
+          (Object.keys(healedSkills) as SkillType[]).forEach((skill) => {
+            const skillData = healedSkills[skill];
+            if (skillData && (skillData.level > 99 || skillData.xp >= getRequiredXpForLevel(skillData.level))) {
+              needsFix = true;
+              healedSkills[skill] = calculateXpGain(skillData.level, skillData.xp, 0);
+            }
+          });
+
+          if (needsFix) {
+            return { skills: healedSkills } as Partial<FullStoreState>;
+          }
+        }
+
+        // --- 2. SAAVUTUSTEN JA QUESTIEN TARKISTUS ---
         if (ticks % 10 === 0) {
           const newUnlockIds = checkNewAchievements(state as unknown as GameState);
           
@@ -39,7 +57,7 @@ export const useGameEngine = () => {
           checkDailyReset();
         }
 
-        // --- 2. AKTIIVISEN TOIMINNON PROSESSOINTI ---
+        // --- 3. AKTIIVISEN TOIMINNON PROSESSOINTI ---
         if (!state.activeAction) {
           return hasNewAchievements 
             ? { unlockedAchievements: nextUnlockedAchievements } 
@@ -87,14 +105,12 @@ export const useGameEngine = () => {
           if (newProgress >= targetTime) {
             const newInventory = { ...state.inventory };
             
-            // Kulutetaan materiaalit ja siivotaan nollat
             if (resource.inputs) {
               resource.inputs.forEach(input => {
                 const current = newInventory[input.id] || 0;
                 const result = current - input.count;
-                
                 if (result <= 0) {
-                  delete newInventory[input.id]; // Siivotaan avain pois
+                  delete newInventory[input.id];
                 } else {
                   newInventory[input.id] = result;
                 }

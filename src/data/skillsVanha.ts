@@ -1,3 +1,4 @@
+/*
 import { autoScaleResource } from '../utils/skillScaling';
 import type { Resource } from '../types';
 
@@ -2162,3 +2163,5 @@ export const GAME_DATA: Record<string, Resource[]> = Object.keys(
   },
   {} as Record<string, Resource[]>,
 );
+
+*/

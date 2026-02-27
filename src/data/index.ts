@@ -1,9 +1,9 @@
 import { WORLD_INFO, WORLD_LOOT } from './worlds';
 import { COMBAT_DATA } from './combat';
-import { GAME_DATA } from './skills';
+import { GAME_DATA } from './skills'; // Hakee automaattisesti skills/index.ts tiedoston
 import { SHOP_ITEMS } from './shop';
 import { ACHIEVEMENTS } from './achievements';
-import { RUNES_DATA } from './runes'; // Tuodaan erillinen rune-data
+import { RUNES_DATA } from './runes'; 
 import { getBaseId, getEnchantLevel, applyEnchantStats } from '../utils/enchanting';
 import type { Resource } from '../types';
 
@@ -19,7 +19,6 @@ interface ItemSubFactory {
 
 /**
  * 2. Rune Factory (DYNAAMINEN)
- * Etsii tiedot runes.ts tiedostosta. Prioriteetti #1.
  */
 const RuneFactory: ItemSubFactory = {
   canHandle: (id) => id.startsWith('rune_'),
@@ -30,15 +29,14 @@ const RuneFactory: ItemSubFactory = {
 };
 
 /**
- * 3. World Loot Factory (KORJATTU)
- * Estetty rune-id:iden käsittely ja parannettu tyypin tunnistusta.
+ * 3. World Loot Factory
  */
 const WorldLootFactory: ItemSubFactory = {
   canHandle: (id) => !id.startsWith('rune_') && (id.includes('_basic') || id.includes('_rare') || id.includes('_exotic')),
   create: (id) => {
     const parts = id.split('_');
     const worldNameRaw = parts[0];
-    const type = parts[parts.length - 1]; // basic, rare tai exotic
+    const type = parts[parts.length - 1]; 
     
     const worldDisplay = worldNameRaw.charAt(0).toUpperCase() + worldNameRaw.slice(1);
     
@@ -105,17 +103,20 @@ const EnchantScrollFactory: ItemSubFactory = {
 };
 
 /**
- * 6. Skill Resource Factory
+ * 6. Skill Resource Factory (KORJATTU)
+ * Lisätty tyypitykset Resource[][], jotta TypeScript tunnistaa skillListin ja itemin oikein.
  */
 const SkillResourceFactory: ItemSubFactory = {
-  canHandle: (id) => {
-    return Object.values(GAME_DATA).some(skillList => 
-      skillList.some(item => item.id === id)
+  canHandle: (id: string) => {
+    const categories = Object.values(GAME_DATA) as Resource[][];
+    return categories.some((skillList) => 
+      skillList.some((item) => item.id === id)
     );
   },
-  create: (id) => {
-    for (const skillList of Object.values(GAME_DATA)) {
-      const found = skillList.find(item => item.id === id);
+  create: (id: string) => {
+    const categories = Object.values(GAME_DATA) as Resource[][];
+    for (const skillList of categories) {
+      const found = skillList.find((item) => item.id === id);
       if (found) return found;
     }
     return {};
@@ -135,7 +136,6 @@ export const getItemDetails = (id: string): Resource | null => {
   const baseId = getBaseId(id);
   const enchantLevel = getEnchantLevel(id);
 
-  // PRIORITEETTIJÄRJESTYS: RuneFactory ensin, WorldLootFactory myöhemmin
   const factories = [
     RuneFactory,
     KeyFactory,

@@ -1,30 +1,30 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { getActiveListings } from "../../services/marketService";
-import { getItemById } from "../../utils/itemUtils";
-import ListingRow from "./ListingRow";
-import SellForm from "./SellForm";
-import MailboxView from "./MailboxView";
-import type { MarketListing } from "../../types";
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { getActiveListings } from '../../services/marketService';
+import { getItemById } from '../../utils/itemUtils';
+import ListingRow from './ListingRow';
+import SellForm from './SellForm';
+import MailboxView from './MailboxView';
+import type { MarketListing } from '../../types';
 
-type MarketTab = "buy" | "sell" | "mailbox";
+type MarketTab = 'buy' | 'sell' | 'mailbox';
 
 const CATEGORIES = [
-  { id: "all", label: "All Resources" },
-  { id: "woodcutting", label: "Wood" },
-  { id: "mining", label: "Ores & Bars" },
-  { id: "smithing", label: "Equipment" },
-  { id: "alchemy", label: "Potions" },
-  { id: "foraging", label: "Materials" },
+  { id: 'all', label: 'All Resources' },
+  { id: 'woodcutting', label: 'Wood' },
+  { id: 'mining', label: 'Ores & Bars' },
+  { id: 'smithing', label: 'Equipment' },
+  { id: 'alchemy', label: 'Potions' },
+  { id: 'foraging', label: 'Materials' },
 ];
 
 export default function MarketplaceView() {
-  const [tab, setTab] = useState<MarketTab>("buy");
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [tab, setTab] = useState<MarketTab>('buy');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const lastFetchTime = useRef<number>(0);
   const FETCH_COOLDOWN = 30000;
@@ -40,14 +40,14 @@ export default function MarketplaceView() {
       setListings(data);
       lastFetchTime.current = now;
     } catch (err) {
-      console.error("Relay error:", err);
+      console.error('Relay error:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (tab === "buy") fetchListings();
+    if (tab === 'buy') fetchListings();
   }, [tab, fetchListings]);
 
   const catalog = useMemo(() => {
@@ -60,11 +60,11 @@ export default function MarketplaceView() {
 
         const itemListings = listings.filter((l) => l.itemId === id);
         const lowestPrice = Math.min(
-          ...itemListings.map((l) => l.pricePerItem)
+          ...itemListings.map((l) => l.pricePerItem),
         );
         const totalAvailable = itemListings.reduce(
           (acc, l) => acc + l.amount,
-          0
+          0,
         );
 
         return {
@@ -86,36 +86,36 @@ export default function MarketplaceView() {
         .includes(searchQuery.toLowerCase());
       let matchesCategory = false;
 
-      if (activeCategory === "all") {
+      if (activeCategory === 'all') {
         matchesCategory = true;
       } else {
         const cat = item.category;
 
         switch (activeCategory) {
-          case "woodcutting":
-            matchesCategory = cat === "log" || cat === "plank";
+          case 'woodcutting':
+            matchesCategory = cat === 'log' || cat === 'plank';
             break;
-          case "mining":
-            matchesCategory = cat === "ore" || cat === "ingot";
+          case 'mining':
+            matchesCategory = cat === 'ore' || cat === 'ingot';
             break;
-          case "smithing":
+          case 'smithing':
             matchesCategory = [
-              "sword",
-              "bow",
-              "staff",
-              "helmet",
-              "chestplate",
-              "legs",
-              "shield",
-              "ring",
-              "necklace",
+              'sword',
+              'bow',
+              'staff',
+              'helmet',
+              'chestplate',
+              'legs',
+              'shield',
+              'ring',
+              'necklace',
             ].includes(cat as string);
             break;
-          case "alchemy":
-            matchesCategory = cat === "potion";
+          case 'alchemy':
+            matchesCategory = cat === 'potion';
             break;
-          case "foraging":
-            matchesCategory = cat === "foraging_material";
+          case 'foraging':
+            matchesCategory = cat === 'foraging_material';
             break;
           default:
             matchesCategory = cat === activeCategory;
@@ -166,7 +166,7 @@ export default function MarketplaceView() {
         {/* TABS & MAILBOX BUTTON */}
         <div className="flex items-center gap-2">
           <div className="flex bg-panel p-1 rounded-sm border border-border h-fit">
-            {(["buy", "sell"] as MarketTab[]).map((t) => (
+            {(['buy', 'sell'] as MarketTab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => {
@@ -175,29 +175,29 @@ export default function MarketplaceView() {
                 }}
                 className={`px-6 py-1.5 text-[10px] font-bold uppercase transition-all ${
                   tab === t
-                    ? "bg-accent text-white shadow-[0_0_15px_rgb(var(--color-accent)/0.3)]"
-                    : "text-tx-muted hover:text-tx-main"
+                    ? 'bg-accent text-white shadow-[0_0_15px_rgb(var(--color-accent)/0.3)]'
+                    : 'text-tx-muted hover:text-tx-main'
                 }`}
               >
-                {t === "buy" ? "Buy" : "Sell"}
+                {t === 'buy' ? 'Buy' : 'Sell'}
               </button>
             ))}
           </div>
 
           <button
             onClick={() => {
-              setTab("mailbox");
+              setTab('mailbox');
               setSelectedItemId(null);
             }}
             className={`relative h-full px-4 flex items-center justify-center border rounded-sm transition-all ${
-              tab === "mailbox"
-                ? "bg-warning/10 border-warning text-warning"
-                : "bg-panel border-border text-tx-muted hover:border-border-hover hover:text-tx-main"
+              tab === 'mailbox'
+                ? 'bg-warning/10 border-warning text-warning'
+                : 'bg-panel border-border text-tx-muted hover:border-border-hover hover:text-tx-main'
             }`}
             title="Mailbox"
           >
             <img
-              src="/assets/ui/icon_mail.png"
+              src="/assets/ui/coins.png"
               className="w-5 h-5 pixelated"
               alt="Mail"
             />
@@ -206,7 +206,7 @@ export default function MarketplaceView() {
       </div>
 
       {/* FILTER & SEARCH BAR */}
-      {tab === "buy" && (
+      {tab === 'buy' && (
         <div className="p-5 border-b border-border/30 bg-panel/20 shrink-0">
           {!selectedItemId && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -217,8 +217,8 @@ export default function MarketplaceView() {
                     onClick={() => setActiveCategory(cat.id)}
                     className={`px-4 py-1.5 rounded-sm text-[9px] font-bold uppercase border transition-all shrink-0 ${
                       activeCategory === cat.id
-                        ? "border-accent text-accent bg-accent/10"
-                        : "border-border text-tx-muted hover:border-border-hover"
+                        ? 'border-accent text-accent bg-accent/10'
+                        : 'border-border text-tx-muted hover:border-border-hover'
                     }`}
                   >
                     {cat.label}
@@ -238,7 +238,7 @@ export default function MarketplaceView() {
                   disabled={loading}
                   className="px-4 bg-panel border border-border text-accent text-[10px] font-bold uppercase hover:bg-panel-hover transition-colors disabled:opacity-50"
                 >
-                  {loading ? "..." : "⟳"}
+                  {loading ? '...' : '⟳'}
                 </button>
               </div>
             </div>
@@ -257,19 +257,19 @@ export default function MarketplaceView() {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 overflow-hidden relative">
-        {tab === "mailbox" && <MailboxView userId={user.uid} />}
+        {tab === 'mailbox' && <MailboxView userId={user.uid} />}
 
-        {tab === "sell" && (
+        {tab === 'sell' && (
           <SellForm
             myUid={user.uid}
             onComplete={() => {
-              setTab("buy");
+              setTab('buy');
               fetchListings(true);
             }}
           />
         )}
 
-        {tab === "buy" && (
+        {tab === 'buy' && (
           <div className="h-full overflow-y-auto custom-scrollbar p-4">
             {!selectedItemId && (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -287,13 +287,13 @@ export default function MarketplaceView() {
                     <div>
                       <div
                         className={`text-xs font-bold leading-tight ${
-                          item!.color || "text-tx-main"
+                          item!.color || 'text-tx-main'
                         }`}
                       >
                         {item!.name}
                       </div>
                       <div className="text-[9px] text-tx-muted font-mono mt-1 uppercase tracking-tighter">
-                        {item!.listingCount} Sellers • {item!.totalAvailable}{" "}
+                        {item!.listingCount} Sellers • {item!.totalAvailable}{' '}
                         Qty
                       </div>
                     </div>

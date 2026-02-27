@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { MailboxService } from "../../services/mailboxService";
-import { useGameStore } from "../../store/useGameStore";
-import type { MailMessage } from "../../types";
-import { getItemById } from "../../utils/itemUtils";
+import { useEffect, useState, useCallback } from 'react'; // Lisätty useCallback
+import { MailboxService } from '../../services/mailboxService';
+import { useGameStore } from '../../store/useGameStore';
+import type { MailMessage } from '../../types';
+import { getItemById } from '../../utils/itemUtils';
 
 interface Props {
   userId: string;
@@ -14,16 +14,24 @@ export default function MailboxView({ userId }: Props) {
 
   const setState = useGameStore((state) => state.setState);
 
-  const fetchMail = async () => {
+  // 1. Memoisoidaan fetchMail, jotta se on stabiili riippuvuus
+  const fetchMail = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
-    const msgs = await MailboxService.getMessages(userId);
-    setMessages(msgs);
-    setLoading(false);
-  };
+    try {
+      const msgs = await MailboxService.getMessages(userId);
+      setMessages(msgs);
+    } catch (error) {
+      console.error('Relay connection failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]); // Funktio päivittyy vain jos userId vaihtuu
 
+  // 2. Efekti on nyt puhdas ja linter-ystävällinen
   useEffect(() => {
     fetchMail();
-  }, [userId]);
+  }, [fetchMail]);
 
   const handleClaim = async (msg: MailMessage) => {
     setState((state) => {
@@ -44,8 +52,12 @@ export default function MailboxView({ userId }: Props) {
       };
     });
 
-    await MailboxService.deleteMessage(userId, msg.id);
-    setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+    try {
+      await MailboxService.deleteMessage(userId, msg.id);
+      setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+    } catch (error) {
+      console.error('Failed to purge message from relay:', error);
+    }
   };
 
   if (loading)
@@ -75,7 +87,6 @@ export default function MailboxView({ userId }: Props) {
               key={msg.id}
               className="bg-panel border border-border p-4 rounded-lg flex items-center gap-4 hover:border-accent/50 transition-all shadow-sm group"
             >
-              {/* Ikoni-kontti */}
               <div className="w-12 h-12 bg-app-base rounded flex items-center justify-center shrink-0 border border-border group-hover:border-accent/30 transition-colors">
                 <img
                   src="/assets/ui/icon_mail.png"
@@ -92,7 +103,6 @@ export default function MailboxView({ userId }: Props) {
                   {msg.message}
                 </p>
 
-                {/* Liitteet */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {msg.coinsAttached && (
                     <div className="flex items-center gap-1.5 text-warning font-mono text-[10px] font-bold bg-warning/10 px-2 py-1 rounded border border-warning/20">
@@ -120,7 +130,7 @@ export default function MailboxView({ userId }: Props) {
                         )}
                         <span className="font-bold text-accent">
                           {item.amount}x
-                        </span>{" "}
+                        </span>{' '}
                         {itemData?.name || item.itemId}
                       </div>
                     );

@@ -90,8 +90,9 @@ export const processCombatTick = (
   );
 
   // 2. HP LASKENTA & TURVATARKISTUS
-  const currentHpLevel = skills.hitpoints?.level || 10;
-  const maxHp = currentHpLevel * 10 + gearStats.hpBonus;
+  const currentHpLevel = skills.hitpoints?.level || 1;
+  // MUUTETTU: 100 base HP lisätty
+  const maxHp = 100 + currentHpLevel * 10 + gearStats.hpBonus;
 
   // Jos nykyinen HP on suurempi kuin maksimi (varuste poistettu), tiputetaan HP maksimiin.
   let pHP = Math.min(maxHp, extendedStats.hp);

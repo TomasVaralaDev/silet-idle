@@ -32,8 +32,9 @@ export const useGameEngine = () => {
             return acc + (item?.stats?.hpBonus || 0);
           }, 0);
 
-          const currentHpLevel = state.skills.hitpoints?.level || 10;
-          const maxHp = currentHpLevel * 10 + gearHpBonus;
+          const currentHpLevel = state.skills.hitpoints?.level || 1;
+          // MUUTETTU: Base HP on nyt 100
+          const maxHp = 100 + currentHpLevel * 10 + gearHpBonus;
 
           // 1. Jos HP on yli maksimin (esim. varuste otettiin pois), tiputetaan se maksimiin.
           if (state.combatStats.hp > maxHp) {

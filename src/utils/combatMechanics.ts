@@ -117,8 +117,9 @@ export const getPlayerStats = (
   const baseAttackLevel = skills.attack?.level || 1;
   const totalDamageLevel = baseAttackLevel + styleLevel;
 
-  const hitpointsLevel = skills.hitpoints?.level || 10;
-  const baseHp = hitpointsLevel * 10;
+  const hitpointsLevel = skills.hitpoints?.level || 1;
+  // MUUTETTU: Base HP on nyt aina vähintään 100, plus taso * 10
+  const baseHp = 100 + hitpointsLevel * 10;
   const baseCritChance = 0.05 + totalDamageLevel * 0.001;
   const baseCritMulti = 1.5;
 

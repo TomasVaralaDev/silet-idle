@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type {
   GameState,
   GameEventType,
@@ -7,31 +7,31 @@ import type {
   Enemy,
   RewardEntry,
   SkillType,
-} from '../types';
+} from "../types";
 
 // Slices
 import {
   createInventorySlice,
   type InventorySlice,
-} from './slices/inventorySlice';
-import { createSkillSlice, type SkillSlice } from './slices/skillSlice';
-import { createCombatSlice, type CombatSlice } from './slices/combatSlice';
+} from "./slices/inventorySlice";
+import { createSkillSlice, type SkillSlice } from "./slices/skillSlice";
+import { createCombatSlice, type CombatSlice } from "./slices/combatSlice";
 import {
   createScavengerSlice,
   type ScavengerSlice,
-} from './slices/scavengerSlice';
+} from "./slices/scavengerSlice";
 import {
   createWorldShopSlice,
   type WorldShopSlice,
-} from './slices/worldShopSlice';
+} from "./slices/worldShopSlice";
 import {
   createEnchantingSlice,
   type EnchantingSlice,
-} from './slices/enchantingSlice';
-import { createSocialSlice, type SocialSlice } from './slices/socialSlice';
-import { createQuestSlice, type QuestSlice } from './slices/questSlice';
+} from "./slices/enchantingSlice";
+import { createSocialSlice, type SocialSlice } from "./slices/socialSlice";
+import { createQuestSlice, type QuestSlice } from "./slices/questSlice";
 
-import type { OfflineSummary } from '../systems/offlineSystem';
+import type { OfflineSummary } from "../systems/offlineSystem";
 
 interface RewardModalState {
   isOpen: boolean;
@@ -47,7 +47,7 @@ export type FullStoreState = GameState &
   WorldShopSlice &
   EnchantingSlice &
   SocialSlice &
-  QuestSlice & { 
+  QuestSlice & {
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
     rewardModal: RewardModalState;
@@ -69,8 +69,8 @@ export type FullStoreState = GameState &
 
 // Initial state
 export const DEFAULT_STATE: GameState = {
-  username: 'Player',
-  avatar: '/assets/avatars/avatar_1.png',
+  username: "Player",
+  avatar: "/assets/avatars/avatar_1.png",
   lastTimestamp: Date.now(),
   events: [],
   settings: { notifications: true, sound: true, music: true, particles: true },
@@ -86,7 +86,7 @@ export const DEFAULT_STATE: GameState = {
 
   quests: {
     dailyQuests: [],
-    lastResetTime: 0, 
+    lastResetTime: 0,
   },
 
   inventory: {},
@@ -98,7 +98,8 @@ export const DEFAULT_STATE: GameState = {
     crafting: { xp: 0, level: 1 },
     smithing: { xp: 0, level: 1 },
     alchemy: { xp: 0, level: 1 },
-    hitpoints: { xp: 0, level: 10 },
+    // MUUTETTU: Uusi hahmo aloittaa hitpoints levelillä 1
+    hitpoints: { xp: 0, level: 1 },
     attack: { xp: 0, level: 1 },
     defense: { xp: 0, level: 1 },
     melee: { xp: 0, level: 1 },
@@ -126,7 +127,8 @@ export const DEFAULT_STATE: GameState = {
   upgrades: [],
   unlockedAchievements: [],
   combatStats: {
-    hp: 100,
+    // MUUTETTU: Tason 1 HP on nyt 110 (100 base + 1*10)
+    hp: 110,
     currentMapId: null,
     maxMapCompleted: 0,
     enemyCurrentHp: 0,
@@ -142,17 +144,20 @@ export const DEFAULT_STATE: GameState = {
  * Erillinen merge-funktio testausta varten.
  * Varmistaa syvän yhdistämisen skilleille ja muille kriittisille objekteille.
  */
-export const customMerge = (persistedState: unknown, currentState: FullStoreState): FullStoreState => {
+export const customMerge = (
+  persistedState: unknown,
+  currentState: FullStoreState,
+): FullStoreState => {
   const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
   if (!typedPersisted) return currentState;
 
   // Syvä yhdistäminen skilleille: säilytetään vanhat tasot, mutta lisätään uudet skillit
   const mergedSkills = { ...DEFAULT_STATE.skills };
   if (typedPersisted.skills) {
-    (Object.keys(DEFAULT_STATE.skills) as SkillType[]).forEach(skillKey => {
+    (Object.keys(DEFAULT_STATE.skills) as SkillType[]).forEach((skillKey) => {
       mergedSkills[skillKey] = {
         ...DEFAULT_STATE.skills[skillKey],
-        ...(typedPersisted.skills![skillKey] || {})
+        ...(typedPersisted.skills![skillKey] || {}),
       };
     });
   }
@@ -184,7 +189,7 @@ export const customMerge = (persistedState: unknown, currentState: FullStoreStat
     // Resetoidaan väliaikaiset tilat
     enemy: null,
     activeAction: typedPersisted.activeAction || null,
-    rewardModal: { isOpen: false, title: '', rewards: [] },
+    rewardModal: { isOpen: false, title: "", rewards: [] },
     offlineSummary: null,
   } as FullStoreState;
 };
@@ -194,7 +199,7 @@ export const useGameStore = create<FullStoreState>()(
     (set, get, ...args) => ({
       ...DEFAULT_STATE,
       offlineSummary: null,
-      rewardModal: { isOpen: false, title: '', rewards: [] },
+      rewardModal: { isOpen: false, title: "", rewards: [] },
 
       // Yhdistetään slicet
       ...createInventorySlice(set, get, ...args),
@@ -236,20 +241,21 @@ export const useGameStore = create<FullStoreState>()(
 
       closeRewardModal: () =>
         set({
-          rewardModal: { isOpen: false, title: '', rewards: [] },
+          rewardModal: { isOpen: false, title: "", rewards: [] },
         }),
 
       setState: (updater) =>
         set((state: FullStoreState) => {
           const nextState =
-            typeof updater === 'function' ? updater(state) : updater;
+            typeof updater === "function" ? updater(state) : updater;
           return nextState as Partial<FullStoreState>;
         }),
     }),
     {
-      name: 'ggez-idle-storage',
+      name: "ggez-idle-storage",
       version: 1, // Mahdollistaa migraatiot tulevaisuudessa
-      merge: (persisted, current) => customMerge(persisted, current as FullStoreState),
+      merge: (persisted, current) =>
+        customMerge(persisted, current as FullStoreState),
       partialize: (state) => {
         const rest = { ...state };
         // Poistetaan UI-tila tallennuksesta

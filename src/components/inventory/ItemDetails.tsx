@@ -1,5 +1,6 @@
 import type { InventoryItem } from "./InventoryGrid";
-import { formatAttackSpeed } from "../../utils/formatUtils";
+import { getEquippedItem } from "../../utils/equipmentUtils";
+import StatComparison from "./StatComparison";
 
 interface Props {
   item: InventoryItem;
@@ -10,6 +11,9 @@ interface Props {
 
 export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
   const isEquippable = item.slot || item.healing || item.category === "Food";
+
+  // Haetaan tällä hetkellä kyseisessä slotissa oleva esine vertailua varten
+  const currentlyEquipped = getEquippedItem(item.slot);
 
   // Määritellään väriteemat rarityn mukaan
   const getRarityColors = () => {
@@ -59,7 +63,7 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
       <div className="p-4 flex gap-4 relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-tx-muted hover:text-tx-main transition-colors text-xs p-2"
+          className="absolute top-2 right-2 text-tx-muted hover:text-tx-main transition-colors text-xs p-2 z-20"
         >
           ✕
         </button>
@@ -112,78 +116,62 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
         {/* Stats Grid */}
         {(item.stats || item.healing) && (
           <div className="grid grid-cols-2 gap-2 mt-2">
-            {/* OFFENSIVE STATS (Aseet jne) */}
-            {item.stats?.attack && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
-                <span className="text-tx-muted font-bold uppercase text-[10px]">
-                  Attack
-                </span>
-                <span className="text-warning font-mono font-bold">
-                  +{item.stats.attack}
-                </span>
-              </div>
+            {/* OFFENSIVE STATS */}
+            {(item.stats?.attack || currentlyEquipped?.stats?.attack) && (
+              <StatComparison
+                label="Attack"
+                newValue={item.stats?.attack}
+                oldValue={currentlyEquipped?.stats?.attack}
+              />
             )}
-            {item.stats?.attackSpeed && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
-                <span className="text-tx-muted font-bold uppercase text-[10px]">
-                  Speed
-                </span>
-                <span className="text-accent font-mono font-bold">
-                  {formatAttackSpeed(item.stats.attackSpeed)}
-                </span>
-              </div>
+            {(item.stats?.attackSpeed ||
+              currentlyEquipped?.stats?.attackSpeed) && (
+              <StatComparison
+                label="Speed"
+                newValue={item.stats?.attackSpeed}
+                oldValue={currentlyEquipped?.stats?.attackSpeed}
+                isSpeed={true}
+              />
             )}
-            {item.stats?.critChance && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
-                <span className="text-tx-muted font-bold uppercase text-[10px]">
-                  Crit %
-                </span>
-                <span className="text-danger font-mono font-bold">
-                  {(item.stats.critChance * 100).toFixed(0)}%
-                </span>
-              </div>
+            {(item.stats?.critChance ||
+              currentlyEquipped?.stats?.critChance) && (
+              <StatComparison
+                label="Crit %"
+                newValue={item.stats?.critChance}
+                oldValue={currentlyEquipped?.stats?.critChance}
+                isPercentage={true}
+              />
             )}
-            {item.stats?.critMulti && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
-                <span className="text-tx-muted font-bold uppercase text-[10px]">
-                  Crit DMG
-                </span>
-                <span className="text-danger font-mono font-bold">
-                  {item.stats.critMulti}x
-                </span>
-              </div>
+            {(item.stats?.critMulti || currentlyEquipped?.stats?.critMulti) && (
+              <StatComparison
+                label="Crit DMG"
+                newValue={item.stats?.critMulti}
+                oldValue={currentlyEquipped?.stats?.critMulti}
+                isMultiplier={true}
+              />
             )}
 
-            {/* DEFENSIVE STATS (Armorit jne) */}
-            {item.stats?.defense && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
-                <span className="text-tx-muted font-bold uppercase text-[10px]">
-                  Defense
-                </span>
-                <span className="text-accent-hover font-mono font-bold">
-                  +{item.stats.defense}
-                </span>
-              </div>
+            {/* DEFENSIVE STATS */}
+            {(item.stats?.defense || currentlyEquipped?.stats?.defense) && (
+              <StatComparison
+                label="Defense"
+                newValue={item.stats?.defense}
+                oldValue={currentlyEquipped?.stats?.defense}
+              />
             )}
-            {item.stats?.hpBonus && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
-                <span className="text-tx-muted font-bold uppercase text-[10px]">
-                  Max HP
-                </span>
-                <span className="text-success font-mono font-bold">
-                  +{item.stats.hpBonus}
-                </span>
-              </div>
+            {(item.stats?.hpBonus || currentlyEquipped?.stats?.hpBonus) && (
+              <StatComparison
+                label="Max HP"
+                newValue={item.stats?.hpBonus}
+                oldValue={currentlyEquipped?.stats?.hpBonus}
+              />
             )}
-            {item.stats?.strength && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
-                <span className="text-tx-muted font-bold uppercase text-[10px]">
-                  Strength
-                </span>
-                <span className="text-danger font-mono font-bold">
-                  +{item.stats.strength}
-                </span>
-              </div>
+            {(item.stats?.strength || currentlyEquipped?.stats?.strength) && (
+              <StatComparison
+                label="Strength"
+                newValue={item.stats?.strength}
+                oldValue={currentlyEquipped?.stats?.strength}
+              />
             )}
 
             {/* HEALING */}

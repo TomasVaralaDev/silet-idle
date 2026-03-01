@@ -50,6 +50,7 @@ export default function SkillView({ skill }: SkillViewProps) {
     useGameStore();
 
   const [activeCategory, setActiveCategory] = useState("all");
+  const [showAffordableOnly, setShowAffordableOnly] = useState(false); // UUSI SUODATIN
   const [prevSkill, setPrevSkill] = useState(skill);
 
   if (skill !== prevSkill) {
@@ -69,15 +70,28 @@ export default function SkillView({ skill }: SkillViewProps) {
   const nextLevelXp = getRequiredXpForLevel(currentLevel);
   const progressPercent = Math.min(
     100,
-    Math.max(0, (skillState.xp / nextLevelXp) * 100)
+    Math.max(0, (skillState.xp / nextLevelXp) * 100),
   );
 
   const categories = SKILL_CATEGORIES[skill];
 
+  // LOGIIKKA: Suodatetaan resurssit kategorian JA valinnaisesti materiaalien mukaan
   const filteredResources = resources.filter((resource) => {
-    if (!categories) return true;
-    const currentFilter = categories.find((c) => c.id === activeCategory);
-    return currentFilter ? currentFilter.filter(resource) : true;
+    // 1. Kategoriasuodatin
+    if (categories) {
+      const currentFilter = categories.find((c) => c.id === activeCategory);
+      if (currentFilter && !currentFilter.filter(resource)) return false;
+    }
+
+    // 2. Materiaali-suodatin (jos päällä)
+    if (showAffordableOnly && resource.inputs) {
+      const canAfford = resource.inputs.every(
+        (input) => (inventory[input.id] || 0) >= input.count,
+      );
+      if (!canAfford) return false;
+    }
+
+    return true;
   });
 
   const runeDetails = equipment.rune ? getItemDetails(equipment.rune) : null;
@@ -142,10 +156,10 @@ export default function SkillView({ skill }: SkillViewProps) {
         ></div>
       </div>
 
-      {/* TABS */}
-      {categories && (
-        <div className="px-6 pt-4 flex gap-2 overflow-x-auto custom-scrollbar pb-2">
-          {categories.map((cat) => (
+      {/* TABS & FILTERS */}
+      <div className="px-6 pt-4 flex items-center justify-between gap-4 border-b border-border/20 pb-2">
+        <div className="flex gap-2 overflow-x-auto custom-scrollbar">
+          {categories?.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
@@ -161,7 +175,25 @@ export default function SkillView({ skill }: SkillViewProps) {
             </button>
           ))}
         </div>
-      )}
+
+        {/* UUSI SUODATIN-KYTKIN */}
+        {["smithing", "crafting", "alchemy"].includes(skill) && (
+          <button
+            onClick={() => setShowAffordableOnly(!showAffordableOnly)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all shrink-0
+              ${
+                showAffordableOnly
+                  ? "bg-success/20 border-success text-success shadow-[0_0_10px_rgba(var(--color-success)/0.2)]"
+                  : "bg-panel border-border text-tx-muted hover:text-tx-main"
+              }`}
+          >
+            <span className={showAffordableOnly ? "animate-pulse" : ""}>
+              🛠️
+            </span>
+            {showAffordableOnly ? "Showing Affordable" : "Show All Unlocked"}
+          </button>
+        )}
+      </div>
 
       {/* GRID */}
       <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
@@ -182,11 +214,14 @@ export default function SkillView({ skill }: SkillViewProps) {
             let canAfford = true;
             if (resource.inputs) {
               canAfford = resource.inputs.every(
-                (input) => (inventory[input.id] || 0) >= input.count
+                (input) => (inventory[input.id] || 0) >= input.count,
               );
             }
 
             const hasDrops = resource.drops && resource.drops.length > 0;
+
+            // MUUTETTU LOGIIKKA: isDisabled on vain jos taso ei riitä tai materiaalit puuttuvat
+            // Mutta visualisointi (grayscale) on vain jos taso puuttuu.
             const isDisabled = !isUnlocked || !canAfford;
 
             return (
@@ -201,9 +236,11 @@ export default function SkillView({ skill }: SkillViewProps) {
                   ${
                     isActive
                       ? `bg-panel border-accent shadow-[0_0_20px_rgb(var(--color-accent)/0.2)] scale-[1.02] z-10`
-                      : isDisabled
-                      ? "bg-app-base border-panel opacity-50 cursor-not-allowed grayscale"
-                      : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel"
+                      : !isUnlocked
+                        ? "bg-app-base border-panel opacity-50 cursor-not-allowed grayscale" // Tasolukko: Harmaa ja himmeä
+                        : !canAfford
+                          ? "bg-panel/60 border-border/50 opacity-90 cursor-default" // Materiaalilukko: Kirkas, mutta ei klikattava
+                          : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel" // Valmis: Täysin kirkas
                   }
                 `}
               >
@@ -218,7 +255,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                           <div
                             key={index}
                             className="relative group/drop"
-                            title={`${drop.chance}%`}
+                            title={`${itemDetails?.name || drop.itemId} (${drop.chance}%)`}
                           >
                             <img
                               src={
@@ -241,28 +278,30 @@ export default function SkillView({ skill }: SkillViewProps) {
                       />
                     )}
                   </div>
-                  {isActive && (
-                    <span
-                      className={`px-2 py-1 rounded bg-success/10 text-success text-[10px] font-bold border border-success/20 animate-pulse ml-2`}
-                    >
-                      ACTIVE
-                    </span>
-                  )}
-                  {!isUnlocked ? (
-                    <span className="px-2 py-1 rounded bg-danger/20 text-danger text-[10px] font-bold border border-danger/30 ml-2">
-                      LVL {resource.level}
-                    </span>
-                  ) : !canAfford ? (
-                    <span className="px-2 py-1 rounded bg-warning/20 text-warning text-[10px] font-bold border border-warning/30 ml-2">
-                      COST
-                    </span>
-                  ) : null}
+
+                  <div className="flex flex-col gap-1 items-end">
+                    {isActive && (
+                      <span className="px-2 py-1 rounded bg-success/10 text-success text-[10px] font-bold border border-success/20 animate-pulse">
+                        ACTIVE
+                      </span>
+                    )}
+                    {!isUnlocked && (
+                      <span className="px-2 py-1 rounded bg-danger/20 text-danger text-[10px] font-bold border border-danger/30">
+                        LVL {resource.level}
+                      </span>
+                    )}
+                    {isUnlocked && !canAfford && (
+                      <span className="px-2 py-1 rounded bg-warning/20 text-warning text-[10px] font-bold border border-warning/30">
+                        NEED MATERIALS
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mb-4 flex-1">
                   <h3
                     className={`font-bold text-sm ${
-                      !isDisabled ? "text-tx-main" : "text-tx-muted/60"
+                      isUnlocked ? "text-tx-main" : "text-tx-muted/60"
                     }`}
                   >
                     {resource.name}
@@ -273,9 +312,15 @@ export default function SkillView({ skill }: SkillViewProps) {
                 </div>
 
                 {resource.inputs && (
-                  <div className="mb-3 p-2 bg-app-base/50 rounded border border-border/50">
-                    <p className="text-[10px] uppercase font-bold text-tx-muted mb-1">
-                      Requires:
+                  <div
+                    className={`mb-3 p-2 rounded border shadow-inner transition-colors ${
+                      canAfford
+                        ? "bg-panel/60 border-accent/20"
+                        : "bg-warning/5 border-warning/20"
+                    }`}
+                  >
+                    <p className="text-[10px] uppercase font-black text-tx-muted mb-1 tracking-widest opacity-70">
+                      Materials Required:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {resource.inputs.map((input) => {
@@ -285,16 +330,19 @@ export default function SkillView({ skill }: SkillViewProps) {
                         return (
                           <div
                             key={input.id}
-                            className={`text-xs flex items-center gap-1 ${
-                              hasEnough ? "text-tx-main" : "text-danger"
+                            className={`text-xs flex items-center gap-1.5 px-2 py-1 rounded-md bg-app-base/80 border ${
+                              hasEnough
+                                ? "border-success/30 text-success"
+                                : "border-danger/30 text-danger"
                             }`}
+                            title={item?.name || "Unknown Material"}
                           >
                             <img
                               src={item?.icon}
-                              className="w-3 h-3 pixelated"
+                              className="w-4 h-4 pixelated object-contain"
                               alt=""
                             />
-                            <span>
+                            <span className="font-mono font-bold">
                               {have}/{input.count}
                             </span>
                           </div>

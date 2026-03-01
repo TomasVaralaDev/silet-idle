@@ -10,14 +10,32 @@ import { formatRemainingTime } from "../utils/formatUtils";
 
 export default function CombatView() {
   const combatStats = useGameStore((s) => s.combatStats);
+
+  // KORJAUS: Käytetään lazy initializationia (nuolifunktio).
+  // Näin Date.now() suoritetaan vain kerran mount-hetkellä, mikä pitää linterin tyytyväisenä!
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
+    // Päivitetään "now"-arvoa kerran sekunnissa, jos cooldown on voimassa
+    let interval: ReturnType<typeof setInterval>;
+
     if (combatStats.cooldownUntil > now) {
-      const timer = setInterval(() => setNow(Date.now()), 1000);
-      return () => clearInterval(timer);
+      interval = setInterval(() => {
+        // setIntervalin sisällä (side effect) Date.now() on täysin sallittu
+        setNow(Date.now());
+      }, 1000);
     }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [combatStats.cooldownUntil, now]);
+
+  // Lasketaan jäljellä oleva aika puhtaasti tilan perusteella
+  const rawDiff = combatStats.cooldownUntil - now;
+  // Clämppäys varmistaa, ettei aika näy koskaan yli minuutin
+  const cooldownLeft = rawDiff > 0 ? Math.min(rawDiff, 60000) : 0;
+  const isRecovering = cooldownLeft > 0;
 
   const currentMap = combatStats.currentMapId
     ? COMBAT_DATA.find((m) => m.id === combatStats.currentMapId)
@@ -40,9 +58,6 @@ export default function CombatView() {
     setPrevActiveWorldId(activeWorldId);
     setSelectedWorld(activeWorldId || 1);
   }
-
-  const cooldownLeft = combatStats.cooldownUntil - now;
-  const isRecovering = cooldownLeft > 0;
 
   return (
     <div className="h-full w-full flex bg-app-base overflow-hidden text-tx-main font-sans selection:bg-accent/30 selection:text-accent">
@@ -90,7 +105,7 @@ export default function CombatView() {
             </div>
           </div>
 
-          {/* LOG SECTION - Siivottu ylimääräinen header pois */}
+          {/* LOG SECTION */}
           <div className="w-1/2 flex flex-col bg-app-base">
             <div className="flex-1 overflow-hidden relative">
               <div className="absolute inset-0">

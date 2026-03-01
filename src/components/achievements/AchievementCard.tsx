@@ -60,7 +60,7 @@ export default function AchievementCard({ achievement, isUnlocked }: Props) {
                 : "text-tx-muted/50 bg-app-base border-border"
             }`}
           >
-            {isUnlocked ? "Protocol Complete" : "Locked"}
+            {isUnlocked ? "Completed" : "Locked"}
           </span>
         </div>
       </div>

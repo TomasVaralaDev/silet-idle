@@ -17,7 +17,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
   } = useGameStore();
 
   const zones = COMBAT_DATA.filter(
-    (map: CombatMap) => map.world === selectedWorldId
+    (map: CombatMap) => map.world === selectedWorldId,
   );
 
   return (
@@ -26,7 +26,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
       <div className="p-4 border-b border-border flex items-center justify-between bg-panel/90 shadow-sm z-10">
         <div className="flex flex-col text-left">
           <span className="text-[10px] font-black uppercase tracking-widest text-success">
-            Campaign Zones
+            Maps
           </span>
           <span className="text-[9px] text-tx-muted font-mono">
             World {selectedWorldId}
@@ -35,7 +35,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
 
         <div className="flex items-center gap-2 bg-app-base/50 px-2 py-1 rounded-lg border border-border">
           <span className="text-[9px] text-tx-muted uppercase font-black tracking-wider">
-            Auto
+            Auto push
           </span>
           <button
             onClick={toggleAutoProgress}
@@ -87,8 +87,8 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                   isActive
                     ? "bg-success/10 border-l-4 border-l-success"
                     : isLocked
-                    ? "opacity-40 cursor-not-allowed bg-app-base grayscale"
-                    : "hover:bg-panel-hover/40 border-l-4 border-l-transparent hover:border-l-border-hover"
+                      ? "opacity-40 cursor-not-allowed bg-app-base grayscale"
+                      : "hover:bg-panel-hover/40 border-l-4 border-l-transparent hover:border-l-border-hover"
                 }
               `}
             >
@@ -99,8 +99,8 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                       isActive
                         ? "text-tx-main"
                         : isLocked
-                        ? "text-tx-muted/60"
-                        : "text-tx-main/80"
+                          ? "text-tx-muted/60"
+                          : "text-tx-main/80"
                     }`}
                   >
                     <span className="truncate">{map.name}</span>
@@ -148,8 +148,8 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                       isActive
                         ? "bg-panel border-success/30 shadow-[0_0_10px_rgb(var(--color-success)/0.2)]"
                         : isLocked
-                        ? "bg-app-base border-border"
-                        : "bg-app-base border-border"
+                          ? "bg-app-base border-border"
+                          : "bg-app-base border-border"
                     }
                 `}
                 >

@@ -174,11 +174,11 @@ export default function Sidebar({
 
   const totalLevel = (Object.values(skills) as { level: number }[]).reduce(
     (acc, s) => acc + s.level,
-    0
+    0,
   );
 
   const hasCompletableQuests = quests.dailyQuests.some(
-    (q) => q.isCompleted && !q.isClaimed
+    (q) => q.isCompleted && !q.isClaimed,
   );
 
   return (
@@ -229,7 +229,7 @@ export default function Sidebar({
                   }}
                   className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
-                  <span className="text-base">👤</span> User Config
+                  <span className="text-base">👤</span> User Settings
                 </button>
                 <button
                   onClick={() => {
@@ -238,14 +238,14 @@ export default function Sidebar({
                   }}
                   className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
-                  <span className="text-base">⚙️</span> System Config
+                  <span className="text-base">⚙️</span> Settings
                 </button>
                 <div className="h-px bg-border/50 my-1 mx-2"></div>
                 <button
                   onClick={onLogout}
                   className="w-full text-left px-3 py-2 rounded hover:bg-danger/10 text-xs font-bold text-danger flex items-center gap-3"
                 >
-                  <span className="text-base">🔌</span> Terminate Session
+                  <span className="text-base">🔌</span> Log Out
                 </button>
               </div>
             )}
@@ -294,7 +294,7 @@ export default function Sidebar({
       <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10">
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
-            Core Systems
+            General
           </p>
           <NavButton
             view="inventory"
@@ -319,14 +319,14 @@ export default function Sidebar({
           />
           <NavButton
             view="worldmarket"
-            label="World Market"
+            label="World Vendors"
             icon="/assets/ui/icon_market.png"
             isActive={currentView === "worldmarket"}
             onClick={setView}
           />
           <NavButton
             view="marketplace"
-            label="Market Place"
+            label="Marketplace"
             icon="/assets/ui/icon_market.png"
             isActive={currentView === "marketplace"}
             onClick={setView}
@@ -335,7 +335,7 @@ export default function Sidebar({
 
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
-            Protocols
+            Skills
           </p>
           <NavButton
             view="scavenger"
@@ -347,7 +347,7 @@ export default function Sidebar({
 
           {SKILL_DEFINITIONS.filter(
             (def) =>
-              def.category === "gathering" || def.category === "production"
+              def.category === "gathering" || def.category === "production",
           ).map((def) => (
             <NavButton
               key={def.id}
@@ -363,11 +363,11 @@ export default function Sidebar({
 
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
-            Stabilization
+            Combat
           </p>
           <NavButton
             view="combat"
-            label="Stabilize Zone"
+            label="Maps"
             icon="/assets/skills/combat.png"
             isActive={currentView === "combat"}
             onClick={setView}
@@ -384,7 +384,7 @@ export default function Sidebar({
                   textColor={def.color} // Tämä haetaan yhä konfigistä!
                   bgColor={def.bgColor} // Tämä haetaan yhä konfigistä!
                 />
-              )
+              ),
             )}
           </div>
         </div>
@@ -396,14 +396,14 @@ export default function Sidebar({
           onClick={onStopAction}
           className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase"
         >
-          Halt Process
+          Stop
         </button>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={onReset}
             className="py-2 text-[10px] font-bold text-danger border border-danger/20 hover:bg-danger/10 rounded-sm uppercase"
           >
-            Reboot
+            Reset
           </button>
           <button
             onClick={handleForceSaveClick}

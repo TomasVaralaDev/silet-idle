@@ -21,25 +21,41 @@ export default function CombatLog() {
           </div>
         ) : (
           logs.map((log, index) => {
-            // Määritellään värit teemamuuttujien mukaan
-            let logColor = "text-tx-muted"; // Oletusväri
+            // Oletusväri ja tyyli
+            let logColor = "text-tx-muted";
             let fontWeight = "font-medium";
+            let bgHighlight = "";
 
-            if (log.includes("Victory")) {
+            if (log.includes("Victory!")) {
               logColor = "text-warning";
               fontWeight = "font-black";
-            } else if (log.includes("Loot")) {
-              logColor = "text-success";
-            } else if (log.includes("Hit")) {
+            } else if (log.startsWith("Loot:")) {
+              logColor = "text-accent-hover";
+              fontWeight = "font-bold";
+            } else if (log.startsWith("Hit ")) {
+              // Pelaajan iskut
               logColor = "text-tx-main";
-            } else if (log.includes("Take")) {
+              if (log.includes("Critical!")) {
+                logColor = "text-warning";
+                fontWeight = "font-black";
+              }
+            } else if (log.startsWith("Took ") || log.includes("Defeated!")) {
+              // Vihollisen iskut tai kuolema
               logColor = "text-danger";
+              bgHighlight = "bg-danger/5";
+            } else if (log.includes("blocked!")) {
+              // Blokattu isku
+              logColor = "text-success opacity-80";
+            } else if (log.includes("Healed")) {
+              // Parantuminen
+              logColor = "text-success";
+              fontWeight = "font-bold";
             }
 
             return (
               <div
                 key={index}
-                className="animate-in fade-in slide-in-from-left-2 duration-300 border-l border-border/20 pl-2"
+                className={`animate-in fade-in slide-in-from-left-2 duration-300 border-l-2 border-border/20 pl-2 py-0.5 ${bgHighlight}`}
               >
                 <span className={`${logColor} ${fontWeight} leading-relaxed`}>
                   {log}

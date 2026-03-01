@@ -1,4 +1,5 @@
 import type { InventoryItem } from "./InventoryGrid";
+import { formatAttackSpeed } from "../../utils/formatUtils";
 
 interface Props {
   item: InventoryItem;
@@ -10,7 +11,7 @@ interface Props {
 export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
   const isEquippable = item.slot || item.healing || item.category === "Food";
 
-  // Määritellään väriteemat rarityn mukaan (Säilytetään pelillinen selkeys)
+  // Määritellään väriteemat rarityn mukaan
   const getRarityColors = () => {
     switch (item.rarity) {
       case "legendary":
@@ -56,7 +57,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
     >
       {/* HEADER SECTION */}
       <div className="p-4 flex gap-4 relative">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-tx-muted hover:text-tx-main transition-colors text-xs p-2"
@@ -112,6 +112,7 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
         {/* Stats Grid */}
         {(item.stats || item.healing) && (
           <div className="grid grid-cols-2 gap-2 mt-2">
+            {/* OFFENSIVE STATS (Aseet jne) */}
             {item.stats?.attack && (
               <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
                 <span className="text-tx-muted font-bold uppercase text-[10px]">
@@ -122,13 +123,55 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
                 </span>
               </div>
             )}
+            {item.stats?.attackSpeed && (
+              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
+                <span className="text-tx-muted font-bold uppercase text-[10px]">
+                  Speed
+                </span>
+                <span className="text-accent font-mono font-bold">
+                  {formatAttackSpeed(item.stats.attackSpeed)}
+                </span>
+              </div>
+            )}
+            {item.stats?.critChance && (
+              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
+                <span className="text-tx-muted font-bold uppercase text-[10px]">
+                  Crit %
+                </span>
+                <span className="text-danger font-mono font-bold">
+                  {(item.stats.critChance * 100).toFixed(0)}%
+                </span>
+              </div>
+            )}
+            {item.stats?.critMulti && (
+              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
+                <span className="text-tx-muted font-bold uppercase text-[10px]">
+                  Crit DMG
+                </span>
+                <span className="text-danger font-mono font-bold">
+                  {item.stats.critMulti}x
+                </span>
+              </div>
+            )}
+
+            {/* DEFENSIVE STATS (Armorit jne) */}
             {item.stats?.defense && (
               <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
                 <span className="text-tx-muted font-bold uppercase text-[10px]">
                   Defense
                 </span>
-                <span className="text-accent font-mono font-bold">
+                <span className="text-accent-hover font-mono font-bold">
                   +{item.stats.defense}
+                </span>
+              </div>
+            )}
+            {item.stats?.hpBonus && (
+              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs">
+                <span className="text-tx-muted font-bold uppercase text-[10px]">
+                  Max HP
+                </span>
+                <span className="text-success font-mono font-bold">
+                  +{item.stats.hpBonus}
                 </span>
               </div>
             )}
@@ -142,6 +185,8 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
                 </span>
               </div>
             )}
+
+            {/* HEALING */}
             {item.healing && (
               <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs col-span-2">
                 <span className="text-success font-bold uppercase text-[10px]">

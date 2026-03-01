@@ -1,12 +1,28 @@
 import { useGameStore } from "../../store/useGameStore";
 import { getRequiredXpForLevel } from "../../utils/gameUtils";
+import { getItemDetails } from "../../data";
+import type { Resource } from "../../types";
 
 export default function PlayerStats() {
-  const { skills, combatStats, username } = useGameStore();
+  const { skills, combatStats, username, equipment } = useGameStore();
 
+  // 1. Lasketaan varusteiden HP-bonus
+  const gearHpBonus = (Object.values(equipment) as (string | null)[]).reduce(
+    (acc, itemId) => {
+      if (!itemId) return acc;
+      const item = getItemDetails(itemId) as Resource;
+      return acc + (item?.stats?.hpBonus || 0);
+    },
+    0,
+  );
+
+  // 2. Lasketaan lopullinen Max HP (Varmistetaan identtinen kaava combatMechanicsin kanssa)
   const currentHpLevel = skills.hitpoints?.level || 10;
-  const maxHp = 100 + currentHpLevel * 10;
-  const currentHp = combatStats.hp;
+  const baseHp = currentHpLevel * 10;
+  const maxHp = baseHp + gearHpBonus;
+
+  // 3. Nykyinen HP (ja varmistus ettei se visuaalisesti ylitä maksimia)
+  const currentHp = Math.min(combatStats.hp, maxHp);
   const hpPercent = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
 
   const hitpointsXp = skills.hitpoints?.xp || 0;
@@ -37,7 +53,7 @@ export default function PlayerStats() {
             </span>
           </div>
 
-          {/* HP XP Bar (Progress towards next HP level) */}
+          {/* HP XP Bar */}
           <div className="h-1 bg-app-base rounded-full mt-1 border border-border/50 overflow-hidden">
             <div
               className="h-full bg-accent transition-all duration-500 shadow-[0_0_8px_rgb(var(--color-accent)/0.4)]"

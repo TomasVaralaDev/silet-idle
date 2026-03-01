@@ -149,6 +149,11 @@ export interface Resource {
     attack?: number;
     defense?: number;
     strength?: number;
+    // Uudet taistelustatsit:
+    attackSpeed?: number; // Hyökkäysnopeus (esim. 2400 ms)
+    critChance?: number; // Kriittisen osuman mahdollisuus (esim. 0.05 eli 5%)
+    critMulti?: number; // Kriittisen osuman kerroin (esim. 1.5x)
+    hpBonus?: number; // Bonus HP armoreista (esim. +50 HP)
   };
   combatStyle?: CombatStyle;
   healing?: number;
@@ -249,7 +254,7 @@ export type QuestType = "GATHER" | "KILL" | "CRAFT";
 
 export interface QuestReward {
   coins?: number;
-  xpMap?: Partial<Record<SkillType, number>>; // Korjattu: Ei enää vaadi kaikkia skillejä
+  xpMap?: Partial<Record<SkillType, number>>;
   items?: { itemId: string; amount: number }[];
 }
 
@@ -402,5 +407,5 @@ export interface GameState {
   lastTimestamp: number;
   events: GameEvent[];
   social: SocialState;
-  quests: QuestState; // Korjattu: Lisätty tänne
+  quests: QuestState;
 }

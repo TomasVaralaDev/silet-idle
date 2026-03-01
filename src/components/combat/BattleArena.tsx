@@ -1,21 +1,54 @@
 import { useGameStore } from "../../store/useGameStore";
 import { WORLD_INFO } from "../../data/worlds";
+import { getItemDetails } from "../../data";
+import { getPlayerStats } from "../../utils/combatMechanics";
+import type { Resource, CombatStyle } from "../../types";
+import { useMemo } from "react";
 
 export default function BattleArena({
   selectedWorldId,
 }: {
   selectedWorldId: number;
 }) {
-  const { enemy, combatStats, stopCombat, skills, avatar } = useGameStore();
+  const { enemy, combatStats, stopCombat, skills, avatar, equipment } =
+    useGameStore();
 
   const bgImage = WORLD_INFO[selectedWorldId]?.image || "";
 
-  const playerMaxHp = skills.hitpoints.level * 10;
-  const playerHpPercent = Math.max(0, (combatStats.hp / playerMaxHp) * 100);
+  // 1. Lasketaan oikea Max HP varusteiden kanssa
+  const playerCombatStats = useMemo(() => {
+    const gearTotals = Object.values(equipment).reduce(
+      (acc, itemId) => {
+        if (!itemId) return acc;
+        const item = getItemDetails(itemId) as Resource;
+        if (item?.stats) {
+          acc.hpBonus += item.stats.hpBonus || 0;
+          // Muut statsit voidaan jättää tästä pois, koska BattleArena tarvitsee vain Max HP:n
+        }
+        return acc;
+      },
+      { hpBonus: 0 },
+    );
+
+    const weaponItem = equipment.weapon
+      ? (getItemDetails(equipment.weapon) as Resource)
+      : null;
+    const style: CombatStyle = weaponItem?.combatStyle || "melee";
+
+    // Haetaan lopulliset statsit mechanics-logiikan kautta
+    return getPlayerStats(skills, style, { hpBonus: gearTotals.hpBonus });
+  }, [equipment, skills]);
+
+  const playerMaxHp = playerCombatStats.maxHp;
+
+  // Varmistetaan ettei nykyinen HP visuaalisesti ylitä uutta maksimia
+  const currentHp = Math.min(combatStats.hp, playerMaxHp);
+  const playerHpPercent = Math.max(0, (currentHp / playerMaxHp) * 100);
+
   const enemyMaxHp = enemy?.maxHp || 100;
   const enemyHpPercent = Math.max(
     0,
-    (combatStats.enemyCurrentHp / enemyMaxHp) * 100
+    (combatStats.enemyCurrentHp / enemyMaxHp) * 100,
   );
 
   return (
@@ -41,7 +74,7 @@ export default function BattleArena({
             />
           </div>
           <div className="text-[10px] font-black text-tx-muted mb-2 font-mono">
-            {Math.ceil(combatStats.hp)} / {playerMaxHp}
+            {Math.ceil(currentHp)} / {playerMaxHp}
           </div>
 
           {/* Hahmo & Glow */}

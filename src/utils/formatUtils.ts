@@ -18,15 +18,24 @@ export const formatNumber = (num: number): string => {
   }
 
   const suffix = suffixes.find((s) => num >= s.value);
-  
+
   if (suffix) {
     const formatted = (num / suffix.value).toFixed(1);
-    return formatted.endsWith(".0") 
-      ? formatted.slice(0, -2) + suffix.symbol 
+    return formatted.endsWith(".0")
+      ? formatted.slice(0, -2) + suffix.symbol
       : formatted + suffix.symbol;
   }
 
   return Math.floor(num).toString();
+};
+
+/**
+ * Muotoilee taistelun hyökkäysnopeuden millisekunneista sekunneiksi.
+ * Esim. 2400 -> "2.4s"
+ */
+export const formatAttackSpeed = (ms: number | undefined): string => {
+  if (!ms) return "0s";
+  return `${(ms / 1000).toFixed(1)}s`;
 };
 
 /**

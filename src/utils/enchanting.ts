@@ -1,70 +1,99 @@
-import type { Resource } from '../types';
+import type { Resource, Rarity } from "../types";
 
+/**
+ * Maksimitaso, jolle esineen voi lumota.
+ * Exportataan tämä, jotta enchantingSlice.ts löytää sen.
+ */
 export const MAX_ENCHANT_LEVEL = 10;
 
-export const getEnchantLevel = (itemId: string): number => {
-  if (!itemId) return 0;
-  const parts = itemId.split('_e');
-  if (parts.length < 2) return 0;
-  const level = parseInt(parts[parts.length - 1]);
-  return isNaN(level) ? 0 : level;
-};
-
-export const getBaseId = (itemId: string): string => {
-  if (!itemId) return '';
-  const currentLevel = getEnchantLevel(itemId);
-  if (currentLevel === 0) return itemId;
-  return itemId.substring(0, itemId.lastIndexOf(`_e${currentLevel}`));
-};
-
-export const getNextEnchantId = (itemId: string): string => {
-  const baseId = getBaseId(itemId);
-  const currentLevel = getEnchantLevel(itemId);
-  if (currentLevel >= MAX_ENCHANT_LEVEL) return itemId;
-  return `${baseId}_e${currentLevel + 1}`;
-};
-
-export const getEnchantCost = (level: number, itemValue: number) => {
-  const baseCost = Math.max(100, itemValue * 10);
-  return Math.floor(baseCost * (1 + level * 0.75 + Math.pow(level, 1.5) * 0.2));
+/**
+ * Poistaa tasomerkinnän ID:stä (Esim. "iron_sword_e1" -> "iron_sword")
+ */
+export const getBaseId = (id: string): string => {
+  return id.replace(/_e\d+$/, "");
 };
 
 /**
- * UUSI KAAVA: Scroll on pakollinen ja määrittää onnistumisen.
- * @param currentLevel Itemin nykyinen taso (Vaikeusaste)
- * @param scrollTier Scrollin voimakkuus 1-8 (0 = ei scrollia)
+ * Palauttaa esineen lumoustason (Esim. "item_e1" -> 1)
  */
-export const getSuccessChance = (currentLevel: number, scrollTier: number): number => {
-  // 1. Jos ei scrollia, ei voi onnistua.
-  if (!scrollTier || scrollTier < 1) return 0;
-
-  // 2. Määritellään scrollin "voima" (Base Chance)
-  const baseChance = 30 + (scrollTier * 10); 
-
-  // 3. Määritellään vaikeusaste per level.
-  const difficultyPenalty = currentLevel * 10;
-
-  // 4. Lasketaan lopullinen (KORJAUS: const)
-  const chance = baseChance - difficultyPenalty;
-
-  // 5. Asetetaan rajat (min 5%, max 100%)
-  if (chance < 5) return 5; 
-  if (chance > 100) return 100;
-
-  return chance;
+export const getEnchantLevel = (id: string): number => {
+  const match = id.match(/_e(\d+)$/);
+  return match ? parseInt(match[1]) : 0;
 };
 
+/**
+ * Luo seuraavan tason ID:n. Rajoitettu MAX_ENCHANT_LEVEL -vakioon.
+ */
+export const getNextEnchantId = (id: string): string => {
+  const baseId = getBaseId(id);
+  const currentLevel = getEnchantLevel(id);
+
+  if (currentLevel >= MAX_ENCHANT_LEVEL) return id;
+
+  return `${baseId}_e${currentLevel + 1}`;
+};
+
+/**
+ * Laskee onnistumistodennäköisyyden (Testien kaavan mukaan)
+ * Kaava: (Käärön Tier * 10 + 30) - (Esineen nykyinen taso * 10)
+ */
+export const getSuccessChance = (level: number, scrollTier: number): number => {
+  if (scrollTier <= 0) return 0;
+  const baseChance = scrollTier * 10 + 30;
+  const penalty = level * 10;
+  const chance = baseChance - penalty;
+  return Math.max(5, Math.min(100, chance));
+};
+
+/**
+ * Laskee lumoamisen hinnan
+ */
+export const getEnchantCost = (level: number, baseValue: number): number => {
+  // Perushinta nousee tason mukaan
+  return Math.floor(baseValue * (level + 1) * 10);
+};
+
+/**
+ * Laskee ja asettaa esineelle lumotut statsit, nimen ja harvinaisuuden.
+ */
 export const applyEnchantStats = (item: Resource, level: number): Resource => {
-  if (level === 0 || !item.stats) return item;
-  const multiplier = 1 + (level * 0.10);
+  if (level <= 0 || !item.stats) return item;
+
+  const enchantedStats = { ...item.stats };
+  const multiplier = 1 + level * 0.1;
+
+  if (enchantedStats.attack) {
+    enchantedStats.attack = Math.floor(enchantedStats.attack * multiplier);
+  }
+  if (enchantedStats.defense) {
+    enchantedStats.defense = Math.floor(enchantedStats.defense * multiplier);
+  }
+  if (enchantedStats.hpBonus) {
+    enchantedStats.hpBonus = Math.floor(enchantedStats.hpBonus * multiplier);
+  }
+
+  // Päivitetään harvinaisuus tason mukaan
+  let newRarity: Rarity = item.rarity;
+  if (level >= 9) newRarity = "legendary";
+  else if (level >= 7) newRarity = "epic";
+  else if (level >= 5) newRarity = "rare";
+  else if (level >= 3) newRarity = "uncommon";
+
   return {
     ...item,
     name: `${item.name} +${level}`,
-    stats: {
-      ...item.stats,
-      attack: item.stats.attack ? Math.floor(item.stats.attack * multiplier) : undefined,
-      defense: item.stats.defense ? Math.floor(item.stats.defense * multiplier) : undefined,
-    },
-    rarity: level >= 10 ? 'legendary' : level >= 5 ? 'rare' : level >= 3 ? 'uncommon' : item.rarity
+    rarity: newRarity,
+    stats: enchantedStats,
+  };
+};
+
+/**
+ * Apufunktio, joka varmistaa että resurssilla on kaikki tarvittavat kentät
+ */
+export const fillMissingResourceFields = (item: Resource): Resource => {
+  return {
+    description: "",
+    category: "misc",
+    ...item,
   };
 };

@@ -4,6 +4,7 @@ import { GAME_DATA } from "../../data/skills";
 import { getItemDetails } from "../../data";
 import { SKILL_DEFINITIONS } from "../../config/skillDefinitions";
 import { getRequiredXpForLevel } from "../../utils/gameUtils";
+import { MAX_LEVEL } from "../../utils/skillScaling";
 import type { SkillType, Resource } from "../../types";
 
 interface SkillViewProps {
@@ -67,11 +68,14 @@ export default function SkillView({ skill }: SkillViewProps) {
   const skillState = skills[skill] || { level: 1, xp: 0 };
   const currentLevel = skillState.level;
 
-  const nextLevelXp = getRequiredXpForLevel(currentLevel);
-  const progressPercent = Math.min(
-    100,
-    Math.max(0, (skillState.xp / nextLevelXp) * 100),
-  );
+  // MAX LEVEL TARKISTUS
+  const isMaxLevel = currentLevel >= MAX_LEVEL;
+  const nextLevelXp = isMaxLevel ? 0 : getRequiredXpForLevel(currentLevel);
+
+  // Estetään nollalla jakaminen / NaN, lukitaan 100%
+  const progressPercent = isMaxLevel
+    ? 100
+    : Math.min(100, Math.max(0, (skillState.xp / (nextLevelXp || 1)) * 100));
 
   const categories = SKILL_CATEGORIES[skill];
 
@@ -139,8 +143,11 @@ export default function SkillView({ skill }: SkillViewProps) {
             Level {currentLevel}
           </div>
           <div className="text-xs font-mono text-tx-muted mt-1">
-            {Math.floor(skillState.xp).toLocaleString()} /{" "}
-            {nextLevelXp.toLocaleString()} XP
+            {isMaxLevel ? (
+              <span className="text-success font-bold">MAX LEVEL</span>
+            ) : (
+              `${Math.floor(skillState.xp).toLocaleString()} / ${nextLevelXp.toLocaleString()} XP`
+            )}
           </div>
         </div>
       </div>

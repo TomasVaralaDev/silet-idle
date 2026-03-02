@@ -1,15 +1,19 @@
-import { GAME_DATA, getItemDetails } from '../data';
-import { calculateXpGain, getXpMultiplier } from '../utils/gameUtils';
-import type { GameState, Resource, SkillType, Ingredient } from '../types';
+import { GAME_DATA, getItemDetails } from "../data";
+import { calculateXpGain, getXpMultiplier } from "../utils/gameUtils";
+import { MAX_LEVEL } from "../utils/skillScaling";
+import type { GameState, Resource, SkillType, Ingredient } from "../types";
 
 /**
  * Laskee taitojen edistymisen ja hoitaa materiaalien kulutuksen.
  * Sisältää tuen nopeus- ja XP-runeille kaikille elämäntaidoille.
  */
-export const processSkillTick = (state: GameState, deltaTime: number): Partial<GameState> => {
+export const processSkillTick = (
+  state: GameState,
+  deltaTime: number,
+): Partial<GameState> => {
   const { activeAction, inventory, skills, upgrades, equipment } = state;
 
-  if (!activeAction || activeAction.skill === 'combat') return {};
+  if (!activeAction || activeAction.skill === "combat") return {};
 
   const skill = activeAction.skill as SkillType;
 
@@ -20,7 +24,6 @@ export const processSkillTick = (state: GameState, deltaTime: number): Partial<G
   if (equipment.rune) {
     const runeItem = getItemDetails(equipment.rune);
     if (runeItem?.skillModifiers) {
-      // Haetaan dynaamisesti oikea modifier-avain (esim. "miningSpeed" tai "miningXp")
       const speedKey = `${skill}Speed` as keyof typeof runeItem.skillModifiers;
       const xpKey = `${skill}Xp` as keyof typeof runeItem.skillModifiers;
 
@@ -31,20 +34,21 @@ export const processSkillTick = (state: GameState, deltaTime: number): Partial<G
 
   // --- 2. EDISTYMISEN LASKENTA (SPEED) ---
   const bonusMultiplier = 1 + speedBonus;
-  const newProgress = (activeAction.progress || 0) + (deltaTime * bonusMultiplier);
-  
+  const newProgress =
+    (activeAction.progress || 0) + deltaTime * bonusMultiplier;
+
   if (newProgress < activeAction.targetTime) {
     return {
-      activeAction: { ...activeAction, progress: newProgress }
+      activeAction: { ...activeAction, progress: newProgress },
     };
   }
 
   // --- 3. TOIMINNON VALMISTUMINEN ---
   const resourceId = activeAction.resourceId;
   const resource = GAME_DATA[skill as keyof typeof GAME_DATA]?.find(
-    (r: Resource) => r.id === resourceId
+    (r: Resource) => r.id === resourceId,
   );
-  
+
   if (!resource) return { activeAction: null };
 
   const newInventory = { ...inventory };
@@ -52,12 +56,14 @@ export const processSkillTick = (state: GameState, deltaTime: number): Partial<G
 
   // A) Materiaalitarkistus
   if (resource.inputs && resource.inputs.length > 0) {
-    const canAfford = resource.inputs.every((req: Ingredient) => (newInventory[req.id] || 0) >= req.count);
-    
+    const canAfford = resource.inputs.every(
+      (req: Ingredient) => (newInventory[req.id] || 0) >= req.count,
+    );
+
     if (!canAfford) {
-      return { activeAction: null }; 
+      return { activeAction: null };
     }
-    
+
     resource.inputs.forEach((req: Ingredient) => {
       newInventory[req.id] -= req.count;
     });
@@ -67,32 +73,43 @@ export const processSkillTick = (state: GameState, deltaTime: number): Partial<G
   newInventory[resource.id] = (newInventory[resource.id] || 0) + 1;
 
   // Siivotaan nollat inventorysta
-  Object.keys(newInventory).forEach(key => {
+  Object.keys(newInventory).forEach((key) => {
     if (newInventory[key] <= 0) {
       delete newInventory[key];
     }
   });
 
-  // --- 4. XP JA LEVEL UP (XP RUNE) ---
-  // Yhdistetään perus XP-multiplikaattori ja runesta saatu bonus
-  const xpMult = Math.max(1, getXpMultiplier(skill, upgrades)) + runeXpBonus;
-  const baseXP = resource.xpReward ?? 0;
+  // --- 4. XP JA LEVEL UP (MAX LEVEL CHECK) ---
+  const currentSkillData = newSkills[skill] || { level: 1, xp: 0 };
 
-  const currentSkillData = newSkills[skill];
-  const { level, xp } = calculateXpGain(
-    currentSkillData.level, 
-    currentSkillData.xp, 
-    baseXP * xpMult
-  );
-  
-  newSkills[skill] = { level, xp };
+  // Jos taso on alle maksimin, lasketaan XP
+  if (currentSkillData.level < MAX_LEVEL) {
+    const xpMult = Math.max(1, getXpMultiplier(skill, upgrades)) + runeXpBonus;
+    const baseXP = resource.xpReward ?? 0;
+
+    const { level, xp } = calculateXpGain(
+      currentSkillData.level,
+      currentSkillData.xp,
+      baseXP * xpMult,
+    );
+
+    // Varmistetaan, ettei mennä yli katon
+    if (level >= MAX_LEVEL) {
+      newSkills[skill] = { level: MAX_LEVEL, xp: 0 };
+    } else {
+      newSkills[skill] = { level, xp };
+    }
+  } else {
+    // Jos ollaan jo max levelillä, varmistetaan että data pysyy siistinä
+    newSkills[skill] = { level: MAX_LEVEL, xp: 0 };
+  }
 
   return {
     inventory: newInventory,
     skills: newSkills,
-    activeAction: { 
-      ...activeAction, 
-      progress: newProgress % activeAction.targetTime 
-    }
+    activeAction: {
+      ...activeAction,
+      progress: newProgress % activeAction.targetTime,
+    },
   };
 };

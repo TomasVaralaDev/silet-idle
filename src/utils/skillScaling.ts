@@ -1,6 +1,8 @@
 // src/utils/skillScaling.ts
 
-import type { Resource } from '../types';
+import type { Resource } from "../types";
+
+export const MAX_LEVEL = 99;
 
 /**
  * Laskee resurssin perus-XP:n sen vaatiman tason perusteella.
@@ -8,7 +10,7 @@ import type { Resource } from '../types';
  * Kaava: 10 + (Level * 1.5) -> Lvl 1 = 11 XP | Lvl 50 = 85 XP | Lvl 99 = 158 XP
  */
 export const calculateResourceXp = (level: number): number => {
-  return Math.floor(10 + (level * 1.5));
+  return Math.floor(10 + level * 1.5);
 };
 
 /**
@@ -16,7 +18,7 @@ export const calculateResourceXp = (level: number): number => {
  * Kaava: 3000ms + (Level * 100ms) -> Lvl 1 = 3.1s | Lvl 99 = ~13s
  */
 export const calculateResourceInterval = (level: number): number => {
-  return Math.floor(3000 + (level * 100));
+  return Math.floor(3000 + level * 100);
 };
 
 /**

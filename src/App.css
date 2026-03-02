@@ -65,3 +65,62 @@
   /* MUUTETTU: 0.9s -> 0.45s */
   animation: damage-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
+
+/* --- COMBAT VFX --- */
+
+/* Screen Shake: Pieni ja nopea tärinä */
+@keyframes shake {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(4px, -4px);
+  }
+  50% {
+    transform: translate(-4px, 4px);
+  }
+  75% {
+    transform: translate(4px, 4px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.15s ease-in-out;
+}
+
+/* Valkoinen välähdys (Osumat viholliseen) */
+@keyframes flash-white {
+  0% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(5) contrast(2);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+.animate-flash-white {
+  animation: flash-white 0.15s ease-in-out;
+}
+
+/* Punainen välähdys (Osumat pelaajaan / Kritit) */
+@keyframes flash-red {
+  0% {
+    filter: brightness(1) sepia(0);
+  }
+  50% {
+    filter: brightness(1.5) sepia(1) saturate(10) hue-rotate(-50deg);
+  }
+  100% {
+    filter: brightness(1) sepia(0);
+  }
+}
+
+.animate-flash-red {
+  animation: flash-red 0.2s ease-in-out;
+}

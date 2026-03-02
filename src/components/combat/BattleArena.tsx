@@ -3,7 +3,7 @@ import { WORLD_INFO } from "../../data/worlds";
 import { getItemDetails } from "../../data";
 import { getPlayerStats } from "../../utils/combatMechanics";
 import type { Resource, CombatStyle } from "../../types";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 
 export default function BattleArena({
   selectedWorldId,
@@ -13,8 +13,61 @@ export default function BattleArena({
   const { enemy, combatStats, stopCombat, skills, avatar, equipment } =
     useGameStore();
 
+  // --- VFX TILAT ---
+  const [isShaking, setIsShaking] = useState(false);
+  const [playerFlash, setPlayerFlash] = useState(false);
+  const [enemyFlash, setEnemyFlash] = useState(false);
+
+  // Ref seuraa jo käsiteltyjä osumia välttääkseen tuplaanimaatiot
+  const processedIds = useRef<Set<string>>(new Set());
+
+  // VFX Logiikka: Tarkkailee uusia vahinkonumeroita
+  useEffect(() => {
+    const popUps = combatStats.damagePopUps || [];
+    if (popUps.length === 0) return;
+
+    let triggeredShake = false;
+    let triggeredPlayerFlash = false;
+    let triggeredEnemyFlash = false;
+
+    popUps.forEach((p) => {
+      if (!processedIds.current.has(p.id)) {
+        processedIds.current.add(p.id);
+
+        if (p.type === "player") {
+          triggeredPlayerFlash = true;
+          triggeredShake = true; // Ruutu tärisee kun pelaajaan osutaan
+        } else if (p.type === "enemy") {
+          triggeredEnemyFlash = true;
+        }
+      }
+    });
+
+    // requestAnimationFrame korjaa ESLint "cascading renders" -virheen
+    requestAnimationFrame(() => {
+      if (triggeredShake) {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 150);
+      }
+      if (triggeredPlayerFlash) {
+        setPlayerFlash(true);
+        setTimeout(() => setPlayerFlash(false), 200);
+      }
+      if (triggeredEnemyFlash) {
+        setEnemyFlash(true);
+        setTimeout(() => setEnemyFlash(false), 150);
+      }
+    });
+
+    // Pidetään muisti puhtaana
+    if (processedIds.current.size > 50) {
+      processedIds.current.clear();
+    }
+  }, [combatStats.damagePopUps]);
+
   const bgImage = WORLD_INFO[selectedWorldId]?.image || "";
 
+  // Lasketaan pelaajan max HP varusteiden perusteella
   const playerCombatStats = useMemo(() => {
     const gearTotals = Object.values(equipment).reduce(
       (acc, itemId) => {
@@ -45,7 +98,9 @@ export default function BattleArena({
     (combatStats.enemyCurrentHp / enemyMaxHp) * 100,
   );
 
+  // Vahinkonumeroiden renderöinti
   const renderPopUps = (targetType: "player" | "enemy") => {
+    // hp <= 0 riittää turvalukoksi; vältetään Date.now() renderöinnin aikana
     if (combatStats.hp <= 0) return null;
 
     return (
@@ -53,6 +108,7 @@ export default function BattleArena({
         {(combatStats.damagePopUps || [])
           .filter((p) => p.type === targetType)
           .map((p, index) => {
+            // Vakaa offset indeksin perusteella estää numeroiden heilumisen
             const offsetPx = -15 + ((index * 15) % 30);
             return (
               <div
@@ -89,7 +145,10 @@ export default function BattleArena({
   };
 
   return (
-    <div className="h-full w-full relative bg-app-base select-none overflow-hidden">
+    <div
+      className={`h-full w-full relative bg-app-base select-none overflow-hidden ${isShaking ? "animate-shake" : ""}`}
+    >
+      {/* TAUSTA */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000 opacity-30 scale-105"
         style={{ backgroundImage: `url(${bgImage})` }}
@@ -116,7 +175,7 @@ export default function BattleArena({
             <img
               src={avatar || "/assets/ui/icon_user_avatar.png"}
               alt="Player"
-              className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-success)/0.4)] transform scale-x-[-1] transition-transform"
+              className={`w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-success)/0.4)] transform scale-x-[-1] transition-transform ${playerFlash ? "animate-flash-red" : ""}`}
               onError={(e) =>
                 (e.currentTarget.src =
                   "https://ui-avatars.com/api/?name=P&background=0f172a")
@@ -143,9 +202,8 @@ export default function BattleArena({
         </div>
 
         {/* --- VIHOLLINEN (Oikea) --- */}
-        {/* KORJATTU: Annetaan laatikolle kiinteä tila (min-h-[180px] ja justify-end), jotta numerot nousevat aina oikeasta kohdasta riippumatta onko vihollinen elossa! */}
         <div className="flex flex-col items-center justify-end gap-3 relative w-32 min-h-[180px]">
-          {/* LENTÄVÄT NUMEROT ON NYT TÄÄLLÄ (Aina renderöitynä vihollisen ulkopuolella!) */}
+          {/* Numerot vihollisen päällä (näkyvät vaikka vihollinen kuolisi one-shotilla) */}
           {renderPopUps("enemy")}
 
           {enemy ? (
@@ -161,15 +219,17 @@ export default function BattleArena({
               </div>
 
               <div className="w-24 h-24 relative flex items-center justify-center">
-                {enemy.icon ? (
-                  <img
-                    src={enemy.icon}
-                    className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-danger)/0.4)]"
-                    alt={enemy.name}
-                  />
-                ) : (
-                  <span className="text-6xl">👾</span>
-                )}
+                <div className={enemyFlash ? "animate-flash-white" : ""}>
+                  {enemy.icon ? (
+                    <img
+                      src={enemy.icon}
+                      className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-danger)/0.4)]"
+                      alt={enemy.name}
+                    />
+                  ) : (
+                    <span className="text-6xl">👾</span>
+                  )}
+                </div>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/40 blur-md rounded-full"></div>
               </div>
 

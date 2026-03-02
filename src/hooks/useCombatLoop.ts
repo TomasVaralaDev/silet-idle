@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { useGameStore } from '../store/useGameStore';
-import { processCombatTick } from '../systems/combatSystem';
-import type { GameState } from '../types';
+import { useEffect } from "react";
+import { useGameStore } from "../store/useGameStore";
+import { processCombatTick } from "../systems/combatSystem";
+import type { GameState } from "../types";
 
 /**
- * useCombatLoop: Erillinen hook taistelun tikitykselle, 
- * jos sitä ei ajeta globaalin pelimoottorin kautta.
+ * useCombatLoop: Erillinen hook taistelun tikitykselle,
+ * joka pyörii nyt nopealla 100ms syklillä itsenäisten hyökkäysnopeuksien tukemiseksi.
  */
 export const useCombatLoop = () => {
   const setState = useGameStore((s) => s.setState);
@@ -14,21 +14,20 @@ export const useCombatLoop = () => {
 
   useEffect(() => {
     let intervalId: number | undefined;
-    const TICK_RATE = 1000; // 1 sekunnin välein
+    const TICK_RATE = 100; // UUSI: 100ms välein, jotta progress bar ja speed toimivat sileästi!
 
-    if (activeAction?.skill === 'combat' && currentMapId) {
+    if (activeAction?.skill === "combat" && currentMapId) {
       intervalId = window.setInterval(() => {
         setState((prev: GameState) => {
-          // KORJATTU: Lisätty TICK_RATE (1000) toiseksi argumentiksi
           const updates = processCombatTick(prev, TICK_RATE);
-          
-          return { 
-            ...prev, 
-            ...updates 
+
+          return {
+            ...prev,
+            ...updates,
           };
         });
       }, TICK_RATE);
-    } 
+    }
 
     return () => {
       if (intervalId) window.clearInterval(intervalId);

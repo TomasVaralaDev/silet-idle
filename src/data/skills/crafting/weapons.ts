@@ -182,8 +182,8 @@ export const weapons: Resource[] = [
     inputs: [{ id: "ore_copper_smelted", count: 2 }],
     slot: "weapon",
     stats: {
-      attack: 1000000000,
-      attackSpeed: 100,
+      attack: 101000000000,
+      attackSpeed: 800,
       critChance: 1.0,
       critMulti: 10.0,
     },

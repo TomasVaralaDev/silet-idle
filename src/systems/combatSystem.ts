@@ -10,15 +10,11 @@ import type {
   GameState,
   Resource,
   CombatStyle,
-  CombatState,
   SkillType,
   Enemy,
+  CombatState,
 } from "../types";
 import { useGameStore } from "../store/useGameStore";
-
-interface ExtendedCombatState extends CombatState {
-  attackTimer?: number;
-}
 
 const DEFAULT_ATTACK_SPEED = 2400;
 
@@ -48,14 +44,13 @@ export const processCombatTick = (
     if (currentLog.length > 50) currentLog.splice(50);
   };
 
-  const extendedStats = { ...combatStats } as ExtendedCombatState;
+  const extendedStats = { ...combatStats } as CombatState;
   const newInventory = { ...inventory };
   let newEquippedFood = equippedFood ? { ...equippedFood } : null;
 
-  // --- LISÄTTY: Pop-upien siivous (poistetaan yli 0.5s vanhat) ---
+  // Pop-upien siivous (poistetaan yli 0.5s vanhat)
   const now = Date.now();
   extendedStats.damagePopUps = (extendedStats.damagePopUps || []).filter(
-    // MUUTETTU: 1000 -> 500
     (p) => now - p.createdAt < 500,
   );
 
@@ -127,7 +122,6 @@ export const processCombatTick = (
       extendedStats.foodTimer = 10000;
       newEquippedFood.count -= 1;
 
-      // Lisätään pop-up parannukselle
       extendedStats.damagePopUps.push({
         id: `heal_${now}`,
         amount: `+${pHP - oldHp}`,
@@ -145,7 +139,7 @@ export const processCombatTick = (
     }
   }
 
-  // 3. RESPAWN
+  // 3. RESPAWN LOGIIKKA
   if (extendedStats.respawnTimer > 0) {
     const nextTimer = Math.max(0, extendedStats.respawnTimer - tickMs);
     if (nextTimer === 0) {
@@ -173,7 +167,7 @@ export const processCombatTick = (
         newInventory[currentMapNow.keyRequired]--;
       }
 
-      const enemyStats = getEnemyStats({
+      const enemyStatsInit = getEnemyStats({
         attack: currentMapNow.enemyAttack,
         level: currentMapNow.id,
         maxHp: currentMapNow.enemyHp,
@@ -185,7 +179,7 @@ export const processCombatTick = (
         name: currentMapNow.enemyName,
         icon: currentMapNow.image || "",
         maxHp: currentMapNow.enemyHp,
-        currentHp: enemyStats.hp,
+        currentHp: enemyStatsInit.hp,
         level: currentMapNow.id,
         attack: currentMapNow.enemyAttack,
         defense: Math.floor(currentMapNow.enemyAttack * 0.1),
@@ -200,8 +194,9 @@ export const processCombatTick = (
           ...extendedStats,
           hp: pHP,
           respawnTimer: 0,
-          enemyCurrentHp: enemyStats.hp,
-          attackTimer: 1000,
+          enemyCurrentHp: enemyStatsInit.hp,
+          playerAttackTimer: Math.min(1000, gearStats.attackSpeed), // Reilu alku molemmille
+          enemyAttackTimer: Math.min(1500, enemyStatsInit.attackSpeed),
           combatLog: currentLog,
         },
       };
@@ -218,38 +213,18 @@ export const processCombatTick = (
     };
   }
 
-  if ((extendedStats.attackTimer || 0) > 0) {
-    return {
-      combatStats: {
-        ...extendedStats,
-        hp: pHP,
-        attackTimer: Math.max(0, (extendedStats.attackTimer || 0) - tickMs),
-        combatLog: currentLog,
-      },
-      equippedFood: newEquippedFood,
-      inventory: cleanInventory(newInventory),
-    };
-  }
+  // 4. TAISTELU - TICK DOWN AJASTIMET
+  extendedStats.playerAttackTimer = Math.max(
+    0,
+    (extendedStats.playerAttackTimer || 0) - tickMs,
+  );
+  extendedStats.enemyAttackTimer = Math.max(
+    0,
+    (extendedStats.enemyAttackTimer || 0) - tickMs,
+  );
 
-  // 4. TAISTELU
-  extendedStats.attackTimer = gearStats.attackSpeed;
   let currentEnemyHp = extendedStats.enemyCurrentHp;
-
   const newSkills = JSON.parse(JSON.stringify(skills)) as GameState["skills"];
-
-  if (currentEnemyHp <= 0) {
-    return {
-      combatStats: {
-        ...extendedStats,
-        hp: pHP,
-        respawnTimer: 2000,
-        enemyCurrentHp: 0,
-        combatLog: currentLog,
-      },
-      equippedFood: newEquippedFood,
-      inventory: cleanInventory(newInventory),
-    };
-  }
 
   const weaponItem = equipment.weapon
     ? (getItemDetails(equipment.weapon) as Resource)
@@ -265,33 +240,34 @@ export const processCombatTick = (
   });
 
   // --- PELAAJA LYÖ VIHOLLISTA ---
-  const playerHit = calculateHit(playerStats, enemyStats);
-  currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
+  if (extendedStats.playerAttackTimer <= 0 && currentEnemyHp > 0) {
+    const playerHit = calculateHit(playerStats, enemyStats);
+    currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
+    extendedStats.playerAttackTimer = playerStats.attackSpeed; // Reset Timer
 
-  if (playerHit.finalDamage > 0) {
-    // LISÄTTY: Vahinkonumero vihollisen päälle
-    extendedStats.damagePopUps.push({
-      id: `p_hit_${now}_${Math.random()}`,
-      amount: playerHit.finalDamage,
-      isCrit: playerHit.isCrit,
-      type: "enemy",
-      createdAt: now,
-    });
-
-    addLog(
-      `Hit ${map.enemyName} for ${playerHit.finalDamage} DMG${playerHit.isCrit ? " (Critical!)" : ""}`,
-    );
-  } else {
-    extendedStats.damagePopUps.push({
-      id: `p_miss_${now}`,
-      amount: "MISS",
-      isCrit: false,
-      type: "enemy",
-      createdAt: now,
-    });
+    if (playerHit.finalDamage > 0) {
+      extendedStats.damagePopUps.push({
+        id: `p_hit_${now}_${Math.random()}`,
+        amount: playerHit.finalDamage,
+        isCrit: playerHit.isCrit,
+        type: "enemy",
+        createdAt: now,
+      });
+      addLog(
+        `Hit ${map.enemyName} for ${playerHit.finalDamage} DMG${playerHit.isCrit ? " (Critical!)" : ""}`,
+      );
+    } else {
+      extendedStats.damagePopUps.push({
+        id: `p_miss_${now}`,
+        amount: "MISS",
+        isCrit: false,
+        type: "enemy",
+        createdAt: now,
+      });
+    }
   }
 
-  // VIHOLLINEN KUOLI -> JAA XP JA LOOT
+  // --- VIHOLLINEN KUOLI -> JAA XP JA LOOT ---
   if (currentEnemyHp <= 0) {
     addLog(`Victory! Defeated ${map.enemyName}.`);
     const safeXpReward = map.xpReward || 1;
@@ -352,7 +328,8 @@ export const processCombatTick = (
         hp: pHP,
         enemyCurrentHp: 0,
         respawnTimer: 2000,
-        attackTimer: 0,
+        playerAttackTimer: 0,
+        enemyAttackTimer: 0,
         combatLog: currentLog,
         maxMapCompleted: newMaxMapCompleted,
         currentMapId: nextMapId,
@@ -361,35 +338,37 @@ export const processCombatTick = (
   }
 
   // --- VIHOLLINEN LYÖ PELAAJAA ---
-  const enemyHit = calculateHit(enemyStats, playerStats);
-  pHP = Math.max(0, pHP - enemyHit.finalDamage);
+  if (extendedStats.enemyAttackTimer <= 0 && pHP > 0) {
+    const enemyHit = calculateHit(enemyStats, playerStats);
+    pHP = Math.max(0, pHP - enemyHit.finalDamage);
+    extendedStats.enemyAttackTimer = enemyStats.attackSpeed; // Reset Timer
 
-  if (enemyHit.finalDamage > 0) {
-    // LISÄTTY: Vahinkonumero pelaajan päälle
-    extendedStats.damagePopUps.push({
-      id: `e_hit_${now}_${Math.random()}`,
-      amount: enemyHit.finalDamage,
-      isCrit: false,
-      type: "player",
-      createdAt: now,
-    });
+    if (enemyHit.finalDamage > 0) {
+      extendedStats.damagePopUps.push({
+        id: `e_hit_${now}_${Math.random()}`,
+        amount: enemyHit.finalDamage,
+        isCrit: false,
+        type: "player",
+        createdAt: now,
+      });
 
-    let logMsg = `Took ${enemyHit.finalDamage} DMG from ${map.enemyName}`;
-    if (enemyHit.mitigationPercent > 0)
-      logMsg += ` (${enemyHit.mitigationPercent}% mitigated)`;
-    addLog(logMsg);
-  } else {
-    extendedStats.damagePopUps.push({
-      id: `e_miss_${now}`,
-      amount: "BLOCK",
-      isCrit: false,
-      type: "player",
-      createdAt: now,
-    });
-    addLog(`${map.enemyName}'s attack was fully blocked!`);
+      let logMsg = `Took ${enemyHit.finalDamage} DMG from ${map.enemyName}`;
+      if (enemyHit.mitigationPercent > 0)
+        logMsg += ` (${enemyHit.mitigationPercent}% mitigated)`;
+      addLog(logMsg);
+    } else {
+      extendedStats.damagePopUps.push({
+        id: `e_miss_${now}`,
+        amount: "BLOCK",
+        isCrit: false,
+        type: "player",
+        createdAt: now,
+      });
+      addLog(`${map.enemyName}'s attack was fully blocked!`);
+    }
   }
 
-  // KUOLEMA
+  // --- KUOLEMA ---
   if (pHP <= 0) {
     addLog("Defeated! Returning to safety. 1min System Recovery...");
     return {
@@ -400,15 +379,18 @@ export const processCombatTick = (
         hp: 0,
         currentMapId: null,
         enemyCurrentHp: 0,
+        playerAttackTimer: 0,
+        enemyAttackTimer: 0,
         combatLog: currentLog,
         cooldownUntil: Date.now() + 60000,
-        damagePopUps: [], // KORJAUS: Tyhjennetään numerot kuollessa
+        damagePopUps: [],
       },
       equippedFood: newEquippedFood,
       inventory: cleanInventory(newInventory),
     };
   }
 
+  // --- NORMAALI TILANNE (Kukaan ei kuollut) ---
   return {
     inventory: cleanInventory(newInventory),
     equippedFood: newEquippedFood,

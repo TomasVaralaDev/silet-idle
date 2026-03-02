@@ -109,7 +109,8 @@ export interface CombatState {
   respawnTimer: number;
   foodTimer: number;
   combatLog: string[];
-  attackTimer?: number;
+  playerAttackTimer: number; // UUSI: Pelaajan oma ajastin (ms)
+  enemyAttackTimer: number; // UUSI: Vihollisen oma ajastin (ms)
   cooldownUntil: number;
   damagePopUps: DamagePopUp[];
 }
@@ -150,11 +151,10 @@ export interface Resource {
     attack?: number;
     defense?: number;
     strength?: number;
-    // Uudet taistelustatsit:
-    attackSpeed?: number; // Hyökkäysnopeus (esim. 2400 ms)
-    critChance?: number; // Kriittisen osuman mahdollisuus (esim. 0.05 eli 5%)
-    critMulti?: number; // Kriittisen osuman kerroin (esim. 1.5x)
-    hpBonus?: number; // Bonus HP armoreista (esim. +50 HP)
+    attackSpeed?: number;
+    critChance?: number;
+    critMulti?: number;
+    hpBonus?: number;
   };
   combatStyle?: CombatStyle;
   healing?: number;
@@ -376,6 +376,7 @@ export interface MarketListing {
   createdAt: number;
   status: "active" | "sold" | "expired" | "cancelled";
 }
+
 // Mail system
 export interface MailMessage {
   id: string; // Firestore doc ID
@@ -387,6 +388,7 @@ export interface MailMessage {
   timestamp: number;
   isClaimed: boolean;
 }
+
 // --- ROOT GAME STATE ---
 
 export interface GameState {
@@ -416,6 +418,6 @@ export interface DamagePopUp {
   id: string;
   amount: number | string;
   isCrit: boolean;
-  type: "player" | "enemy"; // Kuka ottaa vahinkoa
+  type: "player" | "enemy";
   createdAt: number;
 }

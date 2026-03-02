@@ -13,20 +13,27 @@ export const useGameEngine = () => {
 
   useEffect(() => {
     const TICK_RATE = 100;
-    let ticks = 0;
 
     const interval = setInterval(() => {
-      ticks++;
-
       setState((state: FullStoreState) => {
-        // Kerätään kaikki muutokset tähän objektiin
-        let updates: Partial<FullStoreState> = {};
+        const now = Date.now();
+        const last = state.lastTimestamp || now;
+        const deltaMs = now - last;
+
+        // Lasketaan kuinka monta tickiä on jäänyt välistä (esim. välilehti taustalla)
+        const ticksToProcess = Math.floor(deltaMs / TICK_RATE);
+
+        // Jos aikaa on kulunut liian vähän yhteenkään tickiin, odotetaan
+        if (ticksToProcess <= 0) return {};
+
+        let updates: Partial<FullStoreState> = { lastTimestamp: now };
 
         let nextUnlockedAchievements = [...state.unlockedAchievements];
         let hasNewAchievements = false;
 
         // --- 0. HARVEMMIN TEHTÄVÄT TARKISTUKSET (Kerran sekunnissa) ---
-        if (ticks % 10 === 0) {
+        // Tarkistetaan onko sekunti vaihtunut edellisestä tickistä
+        if (Math.floor(last / 1000) !== Math.floor(now / 1000)) {
           // A) HP & STATS
           const gearHpBonus = (
             Object.values(state.equipment) as (string | null)[]
@@ -39,27 +46,26 @@ export const useGameEngine = () => {
           const currentHpLevel = state.skills.hitpoints?.level || 1;
           const maxHp = 100 + currentHpLevel * 10 + gearHpBonus;
 
-          // HP Korjaus tai Auto-heal
           if (state.combatStats.hp > maxHp) {
             updates.combatStats = { ...state.combatStats, hp: maxHp };
           } else if (
             (!state.activeAction || state.activeAction.skill !== "combat") &&
             state.combatStats.hp < maxHp
           ) {
-            updates.combatStats = { ...state.combatStats, hp: maxHp };
+            updates.combatStats = {
+              ...(updates.combatStats || state.combatStats),
+              hp: maxHp,
+            };
           }
 
-          // B) JUMIUTUNEIDEN TASOJEN KORJAUS (MAX 99)
+          // B) JUMIUTUNEIDEN TASOJEN KORJAUS
           let needsFix = false;
           const healedSkills = { ...state.skills };
           (Object.keys(healedSkills) as SkillType[]).forEach((skill) => {
             const skillData = healedSkills[skill];
-            if (skillData && skillData.level >= MAX_LEVEL) {
-              // Varmistetaan että taso on tasan 99 eikä esim 105
-              if (skillData.level > MAX_LEVEL) {
-                needsFix = true;
-                healedSkills[skill] = { level: MAX_LEVEL, xp: 0 };
-              }
+            if (skillData && skillData.level > MAX_LEVEL) {
+              needsFix = true;
+              healedSkills[skill] = { level: MAX_LEVEL, xp: 0 };
             }
           });
           if (needsFix) updates.skills = healedSkills;
@@ -71,13 +77,12 @@ export const useGameEngine = () => {
           if (newUnlockIds.length > 0) {
             newUnlockIds.forEach((id: string) => {
               const ach = ACHIEVEMENTS.find((a) => a.id === id);
-              if (ach) {
+              if (ach)
                 emitEvent(
                   "success",
                   `Milestone Reached: ${ach.name}`,
                   ach.icon,
                 );
-              }
             });
             nextUnlockedAchievements = [
               ...nextUnlockedAchievements,
@@ -89,12 +94,14 @@ export const useGameEngine = () => {
           checkDailyReset();
         }
 
-        // --- 1. AKTIIVISEN TOIMINNON PROSESSOINTI (Joka tick!) ---
+        // --- 1. AKTIIVISEN TOIMINNON PROSESSOINTI (Catch-up tuki) ---
         if (state.activeAction) {
+          const totalElapsedMs = ticksToProcess * TICK_RATE;
+
           if (state.activeAction.skill === "combat") {
             const combatUpdates = processCombatTick(
               state as unknown as GameState,
-              TICK_RATE,
+              totalElapsedMs,
             );
             updates = { ...updates, ...combatUpdates };
           } else {
@@ -105,83 +112,85 @@ export const useGameEngine = () => {
             if (!resource) {
               updates.activeAction = null;
             } else {
-              // Materiaalitarkistus
-              let canAfford = true;
-              if (resource.inputs) {
-                for (const input of resource.inputs) {
-                  if ((state.inventory[input.id] || 0) < input.count) {
-                    canAfford = false;
-                    break;
-                  }
+              let speedMultiplier = 1;
+              let runeXpBonus = 0;
+              if (state.equipment.rune) {
+                const runeDetails = getItemDetails(state.equipment.rune);
+                if (runeDetails?.skillModifiers) {
+                  const speedKey =
+                    `${skill}Speed` as keyof typeof runeDetails.skillModifiers;
+                  const xpKey =
+                    `${skill}Xp` as keyof typeof runeDetails.skillModifiers;
+                  speedMultiplier += runeDetails.skillModifiers[speedKey] || 0;
+                  runeXpBonus = runeDetails.skillModifiers[xpKey] || 0;
                 }
               }
 
-              if (!canAfford) {
-                updates.activeAction = null;
-              } else {
-                // Nopeuslaskenta
-                let speedMultiplier = 1;
-                let runeXpBonus = 0;
-                if (state.equipment.rune) {
-                  const runeDetails = getItemDetails(state.equipment.rune);
-                  if (runeDetails?.skillModifiers) {
-                    const speedKey =
-                      `${skill}Speed` as keyof typeof runeDetails.skillModifiers;
-                    const xpKey =
-                      `${skill}Xp` as keyof typeof runeDetails.skillModifiers;
-                    speedMultiplier +=
-                      runeDetails.skillModifiers[speedKey] || 0;
-                    runeXpBonus = runeDetails.skillModifiers[xpKey] || 0;
+              const addedProgress = totalElapsedMs * speedMultiplier;
+              const totalProgress = progress + addedProgress;
+
+              if (totalProgress >= targetTime) {
+                const completions = Math.floor(totalProgress / targetTime);
+                const remainingProgress = totalProgress % targetTime;
+
+                const newInventory = { ...state.inventory };
+                let possibleCompletions = completions;
+
+                if (resource.inputs) {
+                  for (const input of resource.inputs) {
+                    const available = state.inventory[input.id] || 0;
+                    const maxByInput = Math.floor(available / input.count);
+                    possibleCompletions = Math.min(
+                      possibleCompletions,
+                      maxByInput,
+                    );
                   }
                 }
 
-                const newProgress = progress + TICK_RATE * speedMultiplier;
-
-                if (newProgress >= targetTime) {
-                  const newInventory = { ...state.inventory };
-
-                  // Kulutetaan materiaalit
+                if (possibleCompletions > 0) {
                   if (resource.inputs) {
                     resource.inputs.forEach((input) => {
+                      const cost = input.count * possibleCompletions;
                       newInventory[input.id] =
-                        (newInventory[input.id] || 0) - input.count;
+                        (newInventory[input.id] || 0) - cost;
                       if (newInventory[input.id] <= 0)
                         delete newInventory[input.id];
                     });
                   }
 
-                  // XP ja Level up
                   const currentSkillData = state.skills[skill] || {
                     xp: 0,
                     level: 1,
                   };
                   const totalXpGain =
-                    (resource.xpReward || 0) * (1 + runeXpBonus);
+                    (resource.xpReward || 0) *
+                    (1 + runeXpBonus) *
+                    possibleCompletions;
                   const { level: newLevel, xp: newXp } = calculateXpGain(
                     currentSkillData.level,
                     currentSkillData.xp,
                     totalXpGain,
                   );
 
-                  // Loot
-                  if (resource.drops && resource.drops.length > 0) {
-                    resource.drops.forEach((drop) => {
-                      if (Math.random() * 100 <= drop.chance) {
-                        const amount =
-                          Math.floor(
-                            Math.random() *
-                              (drop.amountMax - drop.amountMin + 1),
-                          ) + drop.amountMin;
-                        newInventory[drop.itemId] =
-                          (newInventory[drop.itemId] || 0) + amount;
-                      }
-                    });
-                  } else {
-                    newInventory[resource.id] =
-                      (newInventory[resource.id] || 0) + 1;
+                  for (let i = 0; i < possibleCompletions; i++) {
+                    if (resource.drops && resource.drops.length > 0) {
+                      resource.drops.forEach((drop) => {
+                        if (Math.random() * 100 <= drop.chance) {
+                          const amount =
+                            Math.floor(
+                              Math.random() *
+                                (drop.amountMax - drop.amountMin + 1),
+                            ) + drop.amountMin;
+                          newInventory[drop.itemId] =
+                            (newInventory[drop.itemId] || 0) + amount;
+                        }
+                      });
+                    } else {
+                      newInventory[resource.id] =
+                        (newInventory[resource.id] || 0) + 1;
+                    }
                   }
 
-                  // Quests
                   const isCrafting = [
                     "crafting",
                     "smithing",
@@ -190,7 +199,7 @@ export const useGameEngine = () => {
                   state.updateQuestProgress(
                     isCrafting ? "CRAFT" : "GATHER",
                     resource.id,
-                    1,
+                    possibleCompletions,
                   );
 
                   updates.inventory = newInventory;
@@ -198,25 +207,27 @@ export const useGameEngine = () => {
                     ...state.skills,
                     [skill]: { xp: newXp, level: newLevel },
                   };
-                  updates.activeAction = { ...state.activeAction, progress: 0 };
-                } else {
                   updates.activeAction = {
                     ...state.activeAction,
-                    progress: newProgress,
+                    progress: remainingProgress,
                   };
+                } else {
+                  updates.activeAction = null;
                 }
+              } else {
+                updates.activeAction = {
+                  ...state.activeAction,
+                  progress: totalProgress,
+                };
               }
             }
           }
         }
 
-        // --- 2. LOPULLINEN PÄIVITYS ---
-        // Jos uusia saavutuksia tuli, mutta niitä ei vielä lisätty updates-olioon
         if (hasNewAchievements && !updates.unlockedAchievements) {
           updates.unlockedAchievements = nextUnlockedAchievements;
         }
 
-        // Palautetaan muutokset vain jos niitä on
         return Object.keys(updates).length > 0 ? updates : {};
       });
     }, TICK_RATE);

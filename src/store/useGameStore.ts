@@ -137,6 +137,8 @@ export const DEFAULT_STATE: GameState = {
     combatLog: [],
     cooldownUntil: 0,
     damagePopUps: [],
+    playerAttackTimer: 0,
+    enemyAttackTimer: 0,
   },
   enemy: null,
 };

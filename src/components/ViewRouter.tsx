@@ -1,8 +1,8 @@
-import CombatView from "./CombatView";
+import CombatView from "./combat/CombatView"; // Päivitetty polku
 import ScavengingView from "./scavenging/ScavengingView";
-import EnchantingView from "./enchanting/EnchantingView"; // Päivitetty polku
-import SkillView from "./skills/SkillView"; // Päivitetty polku
-import InventoryView from "./inventory/Inventory"; // Päivitetty polku
+import EnchantingView from "./enchanting/EnchantingView";
+import SkillView from "./skills/SkillView";
+import InventoryView from "./inventory/Inventory";
 import AchievementsView from "./achievements/AchievementsView";
 import WorldShopView from "./worldShop/WorldShopView";
 import MarketplaceView from "./marketplace/MarketplaceView";

@@ -1,27 +1,23 @@
 import { useState, useEffect } from "react";
-import { useGameStore } from "../store/useGameStore";
-import { COMBAT_DATA } from "../data";
-import WorldSelector from "./combat/WorldSelector";
-import BattleArena from "./combat/BattleArena";
-import ZoneSelector from "./combat/ZoneSelector";
-import CombatLog from "./combat/CombatLog";
-import FoodSelector from "./combat/FoodSelector";
-import { formatRemainingTime } from "../utils/formatUtils";
+import { useGameStore } from "../../store/useGameStore"; // Päivitetty
+import { COMBAT_DATA } from "../../data"; // Päivitetty
+import WorldSelector from "./WorldSelector"; // Päivitetty (samassa kansiossa)
+import BattleArena from "./BattleArena"; // Päivitetty
+import ZoneSelector from "./ZoneSelector"; // Päivitetty
+import CombatLog from "./CombatLog"; // Päivitetty
+import FoodSelector from "./FoodSelector"; // Päivitetty
+import { formatRemainingTime } from "../../utils/formatUtils"; // Päivitetty
 
 export default function CombatView() {
   const combatStats = useGameStore((s) => s.combatStats);
 
-  // KORJAUS: Käytetään lazy initializationia (nuolifunktio).
-  // Näin Date.now() suoritetaan vain kerran mount-hetkellä, mikä pitää linterin tyytyväisenä!
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    // Päivitetään "now"-arvoa kerran sekunnissa, jos cooldown on voimassa
     let interval: ReturnType<typeof setInterval>;
 
     if (combatStats.cooldownUntil > now) {
       interval = setInterval(() => {
-        // setIntervalin sisällä (side effect) Date.now() on täysin sallittu
         setNow(Date.now());
       }, 1000);
     }
@@ -31,9 +27,7 @@ export default function CombatView() {
     };
   }, [combatStats.cooldownUntil, now]);
 
-  // Lasketaan jäljellä oleva aika puhtaasti tilan perusteella
   const rawDiff = combatStats.cooldownUntil - now;
-  // Clämppäys varmistaa, ettei aika näy koskaan yli minuutin
   const cooldownLeft = rawDiff > 0 ? Math.min(rawDiff, 60000) : 0;
   const isRecovering = cooldownLeft > 0;
 
@@ -94,7 +88,6 @@ export default function CombatView() {
 
         {/* BOTTOM PANEL: LOGS & CONSUMABLES */}
         <div className="flex-1 min-h-0 bg-app-base flex z-20">
-          {/* CONSUMABLES SECTION */}
           <div className="w-1/2 border-r border-border p-5 flex flex-col bg-panel/30">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-4 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
@@ -105,7 +98,6 @@ export default function CombatView() {
             </div>
           </div>
 
-          {/* LOG SECTION */}
           <div className="w-1/2 flex flex-col bg-app-base">
             <div className="flex-1 overflow-hidden relative">
               <div className="absolute inset-0">

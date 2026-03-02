@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { ACHIEVEMENTS } from "../data/achievements";
-import AchievementCard from "./achievements/AchievementCard";
-import type { AchievementCategory } from "../types";
+import { ACHIEVEMENTS } from "../../data/achievements";
+import AchievementCard from "./AchievementCard";
+import type { AchievementCategory } from "../../types";
 
 interface AchievementsViewProps {
   unlockedIds: string[];
@@ -15,7 +15,7 @@ export default function AchievementsView({
   >("all");
 
   const filteredAchievements = ACHIEVEMENTS.filter(
-    (ach) => activeCategory === "all" || ach.category === activeCategory
+    (ach) => activeCategory === "all" || ach.category === activeCategory,
   );
 
   const categories: { id: AchievementCategory | "all"; label: string }[] = [

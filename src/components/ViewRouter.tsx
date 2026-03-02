@@ -1,13 +1,13 @@
-import CombatView from './CombatView';
-import ScavengingView from './scavenging/ScavengingView';
-import EnchantingView from './EnchantingView';
-import SkillView from './SkillView';
-import InventoryView from './Inventory';
-import AchievementsView from './AchievementsView';
-import WorldShopView from './worldShop/WorldShopView';
-import MarketplaceView from './marketplace/MarketplaceView';
-import type { FullStoreState } from '../store/useGameStore';
-import type { ViewType, SkillType } from '../types';
+import CombatView from "./CombatView";
+import ScavengingView from "./scavenging/ScavengingView";
+import EnchantingView from "./enchanting/EnchantingView"; // Päivitetty polku
+import SkillView from "./skills/SkillView"; // Päivitetty polku
+import InventoryView from "./inventory/Inventory"; // Päivitetty polku
+import AchievementsView from "./achievements/AchievementsView";
+import WorldShopView from "./worldShop/WorldShopView";
+import MarketplaceView from "./marketplace/MarketplaceView";
+import type { FullStoreState } from "../store/useGameStore";
+import type { ViewType, SkillType } from "../types";
 
 interface Props {
   currentView: ViewType;
@@ -17,28 +17,28 @@ interface Props {
 
 export default function ViewRouter({ currentView, state, onSellClick }: Props) {
   // CORE SYSTEMS
-  if (currentView === 'combat') return <CombatView />;
-  if (currentView === 'scavenger') return <ScavengingView />;
-  if (currentView === 'inventory')
+  if (currentView === "combat") return <CombatView />;
+  if (currentView === "scavenger") return <ScavengingView />;
+  if (currentView === "inventory")
     return <InventoryView onSellClick={onSellClick} />;
-  if (currentView === 'enchanting') return <EnchantingView />;
-  if (currentView === 'worldmarket') return <WorldShopView />;
-  if (currentView === 'marketplace') return <MarketplaceView />;
+  if (currentView === "enchanting") return <EnchantingView />;
+  if (currentView === "worldmarket") return <WorldShopView />;
+  if (currentView === "marketplace") return <MarketplaceView />;
 
-  // MILESTONES (KORJATTU: Ei enää achievements-propsia, vain unlockedIds)
-  if (currentView === 'achievements') {
+  // MILESTONES
+  if (currentView === "achievements") {
     return <AchievementsView unlockedIds={state.unlockedAchievements || []} />;
   }
 
   // SKILLS (Gathering & Production)
   const skillList: SkillType[] = [
-    'woodcutting',
-    'mining',
-    'fishing',
-    'foraging',
-    'crafting',
-    'smithing',
-    'alchemy',
+    "woodcutting",
+    "mining",
+    "fishing",
+    "foraging",
+    "crafting",
+    "smithing",
+    "alchemy",
   ];
 
   if (skillList.includes(currentView as SkillType)) {

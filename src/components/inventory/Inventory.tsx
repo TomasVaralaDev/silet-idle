@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useGameStore } from "../store/useGameStore";
+import { useGameStore } from "../../store/useGameStore"; // Päivitetty polku kaksi tasoa ylös
 
-import EquipmentPanel from "./inventory/EquipmentPanel";
-import StatsPanel from "./inventory/StatsPanel";
-import InventoryGrid, { type InventoryItem } from "./inventory/InventoryGrid";
-import ItemDetails from "./inventory/ItemDetails";
-import InventoryControls from "./inventory/InventoryControls";
-
-import { useInventoryFiltering } from "./inventory/useInventoryFiltering";
+// Päivitetty: Nämä ovat nyt samassa kansiossa pääkomponentin kanssa
+import EquipmentPanel from "./EquipmentPanel";
+import StatsPanel from "./StatsPanel";
+import InventoryGrid, { type InventoryItem } from "./InventoryGrid";
+import ItemDetails from "./ItemDetails";
+import InventoryControls from "./InventoryControls";
+import { useInventoryFiltering } from "./useInventoryFiltering";
 
 interface Props {
   onSellClick: (itemId: string) => void;

@@ -17,14 +17,17 @@ import SocialOverlay from "./components/social/SocialOverlay";
 import Sidebar from "./components/Sidebar";
 import ViewRouter from "./components/ViewRouter";
 import NotificationManager from "./components/NotificationManager";
-import OfflineSummaryModal from "./components/OfflineSummaryModal";
-import SellModal from "./components/SellModal";
-import UsernameModal from "./components/UsernameModal";
-import SettingsModal from "./components/SettingsModal";
-import Auth from "./components/Auth";
-import RewardModal from "./components/RewardModal";
-import UserConfigModal from "./components/UserConfigModal";
+
+// MODALS (Siirretty uuteen kansioon)
+import OfflineSummaryModal from "./components/modals/OfflineSummaryModal";
+import SellModal from "./components/modals/SellModal";
+import UsernameModal from "./components/modals/UsernameModal";
+import SettingsModal from "./components/modals/SettingsModal";
+import RewardModal from "./components/modals/RewardModal";
+import UserConfigModal from "./components/modals/UserConfigModal";
 import QuestModal from "./components/quests/QuestModal";
+
+import Auth from "./components/Auth";
 
 //DEV MANAGER POISTA PRODIIN
 import DevManager from "./components/DevManager";
@@ -32,7 +35,7 @@ import DevManager from "./components/DevManager";
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>("woodcutting");
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(
-    null
+    null,
   );
 
   const [showSettings, setShowSettings] = useState(false);
@@ -79,12 +82,13 @@ export default function App() {
     return (
       <div className="min-h-screen bg-app-base flex items-center justify-center relative">
         <UsernameModal
-          onConfirm={(name, avatarUrl) => {
+          // LISÄTTY: Tyyppimäärittelyt name ja avatarUrl parametreille
+          onConfirm={(name: string, avatarUrl: string) => {
             setState({ username: name, avatar: avatarUrl });
             emitEvent(
               "success",
               `Identity Confirmed: ${name}`,
-              "/assets/ui/icon_check.png"
+              "/assets/ui/icon_check.png",
             );
           }}
           onLogout={() => signOut(auth)}
@@ -98,13 +102,13 @@ export default function App() {
       <NotificationManager />
       <RewardModal />
       <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
-      {/* QuestTracker poistettu tästä */}
 
       {showUserConfig && (
         <UserConfigModal
           currentUsername={username}
           currentAvatar={avatar}
-          onSave={(name, avatarUrl) => {
+          // LISÄTTY: Tyyppimäärittelyt name ja avatarUrl parametreille
+          onSave={(name: string, avatarUrl: string) => {
             setState({ username: name, avatar: avatarUrl });
             emitEvent("info", `Identity Updated`, "/assets/ui/icon_check.png");
           }}

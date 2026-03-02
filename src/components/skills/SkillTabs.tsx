@@ -1,4 +1,4 @@
-import type { TabConfig } from '../config/skillTabs';
+import type { TabConfig } from "../../config/skillTabs";
 
 interface Props {
   tabs: TabConfig[];
@@ -7,7 +7,6 @@ interface Props {
 }
 
 export default function SkillTabs({ tabs, activeTab, onTabChange }: Props) {
-  // Jos ei ole tabeja tai vain "All", ei renderöidä mitään turhaa
   if (!tabs || tabs.length <= 1) return null;
 
   return (
@@ -18,9 +17,10 @@ export default function SkillTabs({ tabs, activeTab, onTabChange }: Props) {
           onClick={() => onTabChange(tab.id)}
           className={`
             px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all
-            ${activeTab === tab.id 
-              ? 'bg-emerald-500 text-slate-900 shadow-[0_0_10px_rgba(16,185,129,0.4)]' 
-              : 'bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-slate-300 border border-slate-700'
+            ${
+              activeTab === tab.id
+                ? "bg-emerald-500 text-slate-900 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+                : "bg-slate-800 text-slate-500 hover:bg-slate-700 hover:text-slate-300 border border-slate-700"
             }
           `}
         >

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useGameStore } from "../store/useGameStore";
-import { GAME_DATA } from "../data/skills";
-import { getItemDetails } from "../data";
-import { SKILL_DEFINITIONS } from "../config/skillDefinitions";
-import { getRequiredXpForLevel } from "../utils/gameUtils";
-import type { SkillType, Resource } from "../types";
+import { useGameStore } from "../../store/useGameStore";
+import { GAME_DATA } from "../../data/skills";
+import { getItemDetails } from "../../data";
+import { SKILL_DEFINITIONS } from "../../config/skillDefinitions";
+import { getRequiredXpForLevel } from "../../utils/gameUtils";
+import type { SkillType, Resource } from "../../types";
 
 interface SkillViewProps {
   skill: SkillType;
@@ -50,7 +50,7 @@ export default function SkillView({ skill }: SkillViewProps) {
     useGameStore();
 
   const [activeCategory, setActiveCategory] = useState("all");
-  const [showAffordableOnly, setShowAffordableOnly] = useState(false); // UUSI SUODATIN
+  const [showAffordableOnly, setShowAffordableOnly] = useState(false);
   const [prevSkill, setPrevSkill] = useState(skill);
 
   if (skill !== prevSkill) {
@@ -75,15 +75,12 @@ export default function SkillView({ skill }: SkillViewProps) {
 
   const categories = SKILL_CATEGORIES[skill];
 
-  // LOGIIKKA: Suodatetaan resurssit kategorian JA valinnaisesti materiaalien mukaan
   const filteredResources = resources.filter((resource) => {
-    // 1. Kategoriasuodatin
     if (categories) {
       const currentFilter = categories.find((c) => c.id === activeCategory);
       if (currentFilter && !currentFilter.filter(resource)) return false;
     }
 
-    // 2. Materiaali-suodatin (jos päällä)
     if (showAffordableOnly && resource.inputs) {
       const canAfford = resource.inputs.every(
         (input) => (inventory[input.id] || 0) >= input.count,
@@ -117,7 +114,6 @@ export default function SkillView({ skill }: SkillViewProps) {
 
   return (
     <div className="h-full flex flex-col bg-app-base text-tx-main">
-      {/* HEADER */}
       <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm">
         <div
           className={`w-16 h-16 rounded-xl flex items-center justify-center ${definition.bgColor} shadow-lg shrink-0`}
@@ -156,7 +152,6 @@ export default function SkillView({ skill }: SkillViewProps) {
         ></div>
       </div>
 
-      {/* TABS & FILTERS */}
       <div className="px-6 pt-4 flex items-center justify-between gap-4 border-b border-border/20 pb-2">
         <div className="flex gap-2 overflow-x-auto custom-scrollbar">
           {categories?.map((cat) => (
@@ -176,7 +171,6 @@ export default function SkillView({ skill }: SkillViewProps) {
           ))}
         </div>
 
-        {/* UUSI SUODATIN-KYTKIN */}
         {["smithing", "crafting", "alchemy"].includes(skill) && (
           <button
             onClick={() => setShowAffordableOnly(!showAffordableOnly)}
@@ -195,7 +189,6 @@ export default function SkillView({ skill }: SkillViewProps) {
         )}
       </div>
 
-      {/* GRID */}
       <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredResources.map((resource) => {
@@ -219,9 +212,6 @@ export default function SkillView({ skill }: SkillViewProps) {
             }
 
             const hasDrops = resource.drops && resource.drops.length > 0;
-
-            // MUUTETTU LOGIIKKA: isDisabled on vain jos taso ei riitä tai materiaalit puuttuvat
-            // Mutta visualisointi (grayscale) on vain jos taso puuttuu.
             const isDisabled = !isUnlocked || !canAfford;
 
             return (
@@ -237,10 +227,10 @@ export default function SkillView({ skill }: SkillViewProps) {
                     isActive
                       ? `bg-panel border-accent shadow-[0_0_20px_rgb(var(--color-accent)/0.2)] scale-[1.02] z-10`
                       : !isUnlocked
-                        ? "bg-app-base border-panel opacity-50 cursor-not-allowed grayscale" // Tasolukko: Harmaa ja himmeä
+                        ? "bg-app-base border-panel opacity-50 cursor-not-allowed grayscale"
                         : !canAfford
-                          ? "bg-panel/60 border-border/50 opacity-90 cursor-default" // Materiaalilukko: Kirkas, mutta ei klikattava
-                          : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel" // Valmis: Täysin kirkas
+                          ? "bg-panel/60 border-border/50 opacity-90 cursor-default"
+                          : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel"
                   }
                 `}
               >

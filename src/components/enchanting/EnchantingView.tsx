@@ -1,14 +1,14 @@
 import { useState, useMemo } from "react";
-import { useGameStore } from "../store/useGameStore";
-import { getItemDetails } from "../data";
+import { useGameStore } from "../../store/useGameStore";
+import { getItemDetails } from "../../data";
 import {
   getEnchantLevel,
   getEnchantCost,
   MAX_ENCHANT_LEVEL,
   getSuccessChance,
-} from "../utils/enchanting";
-import { getRarityStyle } from "../utils/rarity";
-import type { Resource } from "../types";
+} from "../../utils/enchanting";
+import { getRarityStyle } from "../../utils/rarity";
+import type { Resource } from "../../types";
 
 export default function EnchantingView() {
   const { inventory, equipment, coins, attemptEnchant } = useGameStore();
@@ -63,7 +63,6 @@ export default function EnchantingView() {
 
   return (
     <div className="p-6 h-full bg-app-base overflow-y-auto custom-scrollbar flex flex-col lg:flex-row gap-8 items-start justify-center">
-      {/* LEFT SIDE: Loadout */}
       <div className="flex-shrink-0 w-full max-w-md mx-auto lg:mx-0">
         <div className="bg-panel border border-border rounded-xl p-6 relative min-h-[400px] shadow-xl">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-accent-hover opacity-50"></div>
@@ -72,7 +71,6 @@ export default function EnchantingView() {
           </h2>
 
           <div className="relative h-[420px] w-full flex justify-center items-center select-none">
-            {/* Silhouette opacityä säädetty teeman mukaan */}
             <img
               src="/assets/ui/character_silhouette.png"
               className="absolute h-full opacity-10 contrast-0 brightness-200 pointer-events-none"
@@ -147,9 +145,7 @@ export default function EnchantingView() {
         </div>
       </div>
 
-      {/* RIGHT SIDE: Panel */}
       <div className="flex-1 w-full lg:max-w-md bg-panel border border-border rounded-xl p-6 flex flex-col relative overflow-hidden shadow-2xl min-h-[550px]">
-        {/* Magic Glow Effect - Käyttää nyt accent-väriä */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent pointer-events-none"></div>
 
         {selectedItem ? (
@@ -167,7 +163,6 @@ export default function EnchantingView() {
               </div>
             </div>
 
-            {/* SCROLL SELECTION */}
             {!isMaxLevel && (
               <div
                 className={`rounded-lg p-3 border transition-colors ${
@@ -199,7 +194,7 @@ export default function EnchantingView() {
                         key={scroll.id}
                         onClick={() =>
                           setSelectedScrollId(
-                            selectedScrollId === scroll.id ? null : scroll.id
+                            selectedScrollId === scroll.id ? null : scroll.id,
                           )
                         }
                         className={`
@@ -233,7 +228,6 @@ export default function EnchantingView() {
               </div>
             )}
 
-            {/* INFO PANEL */}
             {!isMaxLevel && (
               <div className="bg-app-base/40 rounded-xl p-4 border border-border space-y-4">
                 <div className="flex justify-between items-center pb-3 border-b border-border/50">
@@ -266,7 +260,6 @@ export default function EnchantingView() {
               </div>
             )}
 
-            {/* ACTION BUTTON */}
             {!isMaxLevel && (
               <button
                 onClick={() =>
@@ -284,8 +277,8 @@ export default function EnchantingView() {
                 {!isScrollSelected
                   ? "Select Scroll to Enchant"
                   : canAfford
-                  ? "Attempt Enchant"
-                  : "Insufficient Coins"}
+                    ? "Attempt Enchant"
+                    : "Insufficient Coins"}
               </button>
             )}
 
@@ -309,7 +302,6 @@ export default function EnchantingView() {
   );
 }
 
-// --- HELPER: ENCHANT SLOT ---
 function EnchantSlot({
   slot,
   itemId,

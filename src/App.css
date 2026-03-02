@@ -40,3 +40,28 @@
 .read-the-docs {
   color: #888;
 }
+
+/* --- LENTÄVÄT VAHINKONUMEROT --- */
+@keyframes damage-pop {
+  0% {
+    transform: translate(-50%, 0) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, -20px) scale(1.2);
+    opacity: 1;
+  }
+  35% {
+    transform: translate(-50%, -30px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -80px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.animate-damage-pop {
+  /* MUUTETTU: 0.9s -> 0.45s */
+  animation: damage-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}

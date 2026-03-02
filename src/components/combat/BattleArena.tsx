@@ -15,7 +15,6 @@ export default function BattleArena({
 
   const bgImage = WORLD_INFO[selectedWorldId]?.image || "";
 
-  // 1. Lasketaan oikea Max HP varusteiden kanssa
   const playerCombatStats = useMemo(() => {
     const gearTotals = Object.values(equipment).reduce(
       (acc, itemId) => {
@@ -23,7 +22,6 @@ export default function BattleArena({
         const item = getItemDetails(itemId) as Resource;
         if (item?.stats) {
           acc.hpBonus += item.stats.hpBonus || 0;
-          // Muut statsit voidaan jättää tästä pois, koska BattleArena tarvitsee vain Max HP:n
         }
         return acc;
       },
@@ -34,14 +32,10 @@ export default function BattleArena({
       ? (getItemDetails(equipment.weapon) as Resource)
       : null;
     const style: CombatStyle = weaponItem?.combatStyle || "melee";
-
-    // Haetaan lopulliset statsit mechanics-logiikan kautta
     return getPlayerStats(skills, style, { hpBonus: gearTotals.hpBonus });
   }, [equipment, skills]);
 
   const playerMaxHp = playerCombatStats.maxHp;
-
-  // Varmistetaan ettei nykyinen HP visuaalisesti ylitä uutta maksimia
   const currentHp = Math.min(combatStats.hp, playerMaxHp);
   const playerHpPercent = Math.max(0, (currentHp / playerMaxHp) * 100);
 
@@ -51,22 +45,63 @@ export default function BattleArena({
     (combatStats.enemyCurrentHp / enemyMaxHp) * 100,
   );
 
+  const renderPopUps = (targetType: "player" | "enemy") => {
+    if (combatStats.hp <= 0) return null;
+
+    return (
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-full h-32 pointer-events-none z-[60] mb-2 flex items-end justify-center">
+        {(combatStats.damagePopUps || [])
+          .filter((p) => p.type === targetType)
+          .map((p, index) => {
+            const offsetPx = -15 + ((index * 15) % 30);
+            return (
+              <div
+                key={p.id}
+                className={`absolute bottom-0 font-black animate-damage-pop whitespace-nowrap
+                  ${
+                    p.amount.toString().startsWith("+")
+                      ? "text-emerald-400 text-xl"
+                      : p.isCrit
+                        ? "text-amber-400 text-4xl"
+                        : targetType === "player"
+                          ? "text-red-500 text-3xl"
+                          : "text-white text-3xl"
+                  }
+                `}
+                style={{
+                  left: "50%",
+                  marginLeft: `${offsetPx}px`,
+                  textShadow:
+                    "2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 4px 6px rgba(0,0,0,0.5)",
+                }}
+              >
+                {p.amount}
+                {p.isCrit && (
+                  <span className="block text-[12px] uppercase -mt-2 text-center text-amber-200">
+                    CRIT!
+                  </span>
+                )}
+              </div>
+            );
+          })}
+      </div>
+    );
+  };
+
   return (
     <div className="h-full w-full relative bg-app-base select-none overflow-hidden">
-      {/* 1. TAUSTAKUVA & GRADIENTIT */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000 opacity-30 scale-105"
         style={{ backgroundImage: `url(${bgImage})` }}
       >
-        {/* Gradientti pohjalla sulauttaa areenan muuhun UI:hin */}
         <div className="absolute inset-0 bg-gradient-to-t from-app-base via-transparent to-app-base/40"></div>
       </div>
 
-      {/* 2. PELIKENTTÄ */}
       <div className="relative h-full w-full flex justify-between items-end pb-12 px-16 max-w-6xl mx-auto">
         {/* --- PELAAJA (Vasen) --- */}
-        <div className="flex flex-col items-center gap-3 relative group">
-          {/* HP Palkki - Success väri */}
+        <div className="flex flex-col items-center gap-3 relative group w-32">
+          {renderPopUps("player")}
+
           <div className="w-32 h-2.5 bg-panel/80 rounded border border-border shadow-lg overflow-hidden mb-1 relative">
             <div
               className="h-full bg-success transition-all duration-300 shadow-[0_0_10px_rgb(var(--color-success)/0.5)]"
@@ -77,7 +112,6 @@ export default function BattleArena({
             {Math.ceil(currentHp)} / {playerMaxHp}
           </div>
 
-          {/* Hahmo & Glow */}
           <div className="w-24 h-24 relative flex items-center justify-center">
             <img
               src={avatar || "/assets/ui/icon_user_avatar.png"}
@@ -88,8 +122,6 @@ export default function BattleArena({
                   "https://ui-avatars.com/api/?name=P&background=0f172a")
               }
             />
-
-            {/* Varjo areenan lattialla */}
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/40 blur-md rounded-full"></div>
           </div>
 
@@ -111,10 +143,13 @@ export default function BattleArena({
         </div>
 
         {/* --- VIHOLLINEN (Oikea) --- */}
-        <div className="flex flex-col items-center gap-3 relative min-w-[128px]">
+        {/* KORJATTU: Annetaan laatikolle kiinteä tila (min-h-[180px] ja justify-end), jotta numerot nousevat aina oikeasta kohdasta riippumatta onko vihollinen elossa! */}
+        <div className="flex flex-col items-center justify-end gap-3 relative w-32 min-h-[180px]">
+          {/* LENTÄVÄT NUMEROT ON NYT TÄÄLLÄ (Aina renderöitynä vihollisen ulkopuolella!) */}
+          {renderPopUps("enemy")}
+
           {enemy ? (
-            <div className="flex flex-col items-center animate-in fade-in duration-500 slide-in-from-right-4">
-              {/* Enemy HP Bar - Danger väri */}
+            <div className="flex flex-col items-center animate-in fade-in duration-500 w-full">
               <div className="w-32 h-2.5 bg-panel/80 rounded border border-border shadow-lg overflow-hidden mb-1 relative">
                 <div
                   className="h-full bg-danger transition-all duration-150 shadow-[0_0_10px_rgb(var(--color-danger)/0.5)]"
@@ -125,14 +160,7 @@ export default function BattleArena({
                 {Math.ceil(combatStats.enemyCurrentHp)} / {enemyMaxHp}
               </div>
 
-              {/* Enemy Sprite & Glow */}
-              <div
-                className={`w-24 h-24 relative flex items-center justify-center transition-all duration-300 ${
-                  combatStats.enemyCurrentHp <= 0
-                    ? "opacity-0 scale-75 grayscale"
-                    : "opacity-100 scale-100"
-                }`}
-              >
+              <div className="w-24 h-24 relative flex items-center justify-center">
                 {enemy.icon ? (
                   <img
                     src={enemy.icon}
@@ -140,9 +168,7 @@ export default function BattleArena({
                     alt={enemy.name}
                   />
                 ) : (
-                  <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                    👾
-                  </span>
+                  <span className="text-6xl">👾</span>
                 )}
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/40 blur-md rounded-full"></div>
               </div>
@@ -155,18 +181,20 @@ export default function BattleArena({
               </div>
             </div>
           ) : (
-            !combatStats.respawnTimer && (
-              <div className="opacity-20 text-tx-muted text-xs font-mono mt-20 flex flex-col items-center gap-3">
-                <img
-                  src="/assets/ui/icon_battle.png"
-                  className="w-10 h-10 object-contain pixelated grayscale"
-                  alt="No Target"
-                />
-                <span className="tracking-[0.3em] font-black uppercase text-[10px]">
-                  No Target
-                </span>
-              </div>
-            )
+            <div className="w-full flex flex-col items-center pb-8 opacity-20 text-tx-muted text-xs font-mono gap-3">
+              {!combatStats.respawnTimer && (
+                <>
+                  <img
+                    src="/assets/ui/icon_battle.png"
+                    className="w-10 h-10 pixelated grayscale"
+                    alt=""
+                  />
+                  <span className="tracking-[0.3em] font-black uppercase text-[10px]">
+                    No Target
+                  </span>
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>

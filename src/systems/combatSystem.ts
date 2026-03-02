@@ -45,12 +45,19 @@ export const processCombatTick = (
   const currentLog = [...(combatStats.combatLog || [])];
   const addLog = (msg: string) => {
     currentLog.unshift(msg);
-    if (currentLog.length > 50) currentLog.splice(50); // Nostetaan logien määrää hieman
+    if (currentLog.length > 50) currentLog.splice(50);
   };
 
   const extendedStats = { ...combatStats } as ExtendedCombatState;
   const newInventory = { ...inventory };
   let newEquippedFood = equippedFood ? { ...equippedFood } : null;
+
+  // --- LISÄTTY: Pop-upien siivous (poistetaan yli 0.5s vanhat) ---
+  const now = Date.now();
+  extendedStats.damagePopUps = (extendedStats.damagePopUps || []).filter(
+    // MUUTETTU: 1000 -> 500
+    (p) => now - p.createdAt < 500,
+  );
 
   const cleanInventory = (inv: Record<string, number>) => {
     const cleaned = { ...inv };
@@ -91,10 +98,8 @@ export const processCombatTick = (
 
   // 2. HP LASKENTA & TURVATARKISTUS
   const currentHpLevel = skills.hitpoints?.level || 1;
-  // MUUTETTU: 100 base HP lisätty
   const maxHp = 100 + currentHpLevel * 10 + gearStats.hpBonus;
 
-  // Jos nykyinen HP on suurempi kuin maksimi (varuste poistettu), tiputetaan HP maksimiin.
   let pHP = Math.min(maxHp, extendedStats.hp);
   extendedStats.hp = pHP;
 
@@ -121,6 +126,16 @@ export const processCombatTick = (
       extendedStats.hp = pHP;
       extendedStats.foodTimer = 10000;
       newEquippedFood.count -= 1;
+
+      // Lisätään pop-up parannukselle
+      extendedStats.damagePopUps.push({
+        id: `heal_${now}`,
+        amount: `+${pHP - oldHp}`,
+        isCrit: false,
+        type: "player",
+        createdAt: now,
+      });
+
       if (newEquippedFood.count <= 0) {
         newEquippedFood = null;
         addLog(`Consumed last ${foodItem.name}! (10s CD)`);
@@ -137,7 +152,6 @@ export const processCombatTick = (
       const currentMapNow =
         COMBAT_DATA.find((m) => m.id === extendedStats.currentMapId) || map;
 
-      // Tarkistetaan boss-avaimet
       if (currentMapNow.isBoss && currentMapNow.keyRequired) {
         const keyCount = newInventory[currentMapNow.keyRequired] || 0;
         if (keyCount < 1) {
@@ -250,21 +264,37 @@ export const processCombatTick = (
     attack: map.enemyAttack,
   });
 
+  // --- PELAAJA LYÖ VIHOLLISTA ---
   const playerHit = calculateHit(playerStats, enemyStats);
   currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
 
   if (playerHit.finalDamage > 0) {
+    // LISÄTTY: Vahinkonumero vihollisen päälle
+    extendedStats.damagePopUps.push({
+      id: `p_hit_${now}_${Math.random()}`,
+      amount: playerHit.finalDamage,
+      isCrit: playerHit.isCrit,
+      type: "enemy",
+      createdAt: now,
+    });
+
     addLog(
       `Hit ${map.enemyName} for ${playerHit.finalDamage} DMG${playerHit.isCrit ? " (Critical!)" : ""}`,
     );
+  } else {
+    extendedStats.damagePopUps.push({
+      id: `p_miss_${now}`,
+      amount: "MISS",
+      isCrit: false,
+      type: "enemy",
+      createdAt: now,
+    });
   }
 
   // VIHOLLINEN KUOLI -> JAA XP JA LOOT
   if (currentEnemyHp <= 0) {
     addLog(`Victory! Defeated ${map.enemyName}.`);
-
     const safeXpReward = map.xpReward || 1;
-
     const skillList: SkillType[] = [
       "hitpoints",
       "attack",
@@ -274,10 +304,8 @@ export const processCombatTick = (
 
     skillList.forEach((s) => {
       if (!newSkills[s]) newSkills[s] = { level: 1, xp: 0 };
-
       const mult = getXpMultiplier(s, upgrades);
       const rawReward = s === "hitpoints" ? safeXpReward * 0.4 : safeXpReward;
-
       const res = calculateXpGain(
         newSkills[s].level,
         newSkills[s].xp,
@@ -291,14 +319,9 @@ export const processCombatTick = (
     if (dropResult) {
       newInventory[dropResult.itemId] =
         (newInventory[dropResult.itemId] || 0) + dropResult.amount;
-
-      // LISÄTTY: Lootin kirjaus logiin
       const droppedItem = getItemDetails(dropResult.itemId);
-      if (droppedItem) {
+      if (droppedItem)
         addLog(`Loot: Acquired ${dropResult.amount}x ${droppedItem.name}`);
-      }
-    } else {
-      addLog(`Loot: Nothing dropped.`);
     }
 
     const store = useGameStore.getState();
@@ -337,18 +360,32 @@ export const processCombatTick = (
     };
   }
 
-  // VIHOLLISEN ISKU JOS SE ON ELOSSA
+  // --- VIHOLLINEN LYÖ PELAAJAA ---
   const enemyHit = calculateHit(enemyStats, playerStats);
   pHP = Math.max(0, pHP - enemyHit.finalDamage);
 
-  // LISÄTTY: Vihollisen osuman kirjaus logiin
   if (enemyHit.finalDamage > 0) {
+    // LISÄTTY: Vahinkonumero pelaajan päälle
+    extendedStats.damagePopUps.push({
+      id: `e_hit_${now}_${Math.random()}`,
+      amount: enemyHit.finalDamage,
+      isCrit: false,
+      type: "player",
+      createdAt: now,
+    });
+
     let logMsg = `Took ${enemyHit.finalDamage} DMG from ${map.enemyName}`;
-    if (enemyHit.mitigationPercent > 0) {
+    if (enemyHit.mitigationPercent > 0)
       logMsg += ` (${enemyHit.mitigationPercent}% mitigated)`;
-    }
     addLog(logMsg);
   } else {
+    extendedStats.damagePopUps.push({
+      id: `e_miss_${now}`,
+      amount: "BLOCK",
+      isCrit: false,
+      type: "player",
+      createdAt: now,
+    });
     addLog(`${map.enemyName}'s attack was fully blocked!`);
   }
 
@@ -365,6 +402,7 @@ export const processCombatTick = (
         enemyCurrentHp: 0,
         combatLog: currentLog,
         cooldownUntil: Date.now() + 60000,
+        damagePopUps: [], // KORJAUS: Tyhjennetään numerot kuollessa
       },
       equippedFood: newEquippedFood,
       inventory: cleanInventory(newInventory),

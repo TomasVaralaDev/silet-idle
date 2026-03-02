@@ -111,6 +111,7 @@ export interface CombatState {
   combatLog: string[];
   attackTimer?: number;
   cooldownUntil: number;
+  damagePopUps: DamagePopUp[];
 }
 
 export interface CalculatedStats {
@@ -408,4 +409,13 @@ export interface GameState {
   events: GameEvent[];
   social: SocialState;
   quests: QuestState;
+}
+
+// --- DAMAGE POP UP ---
+export interface DamagePopUp {
+  id: string;
+  amount: number | string;
+  isCrit: boolean;
+  type: "player" | "enemy"; // Kuka ottaa vahinkoa
+  createdAt: number;
 }

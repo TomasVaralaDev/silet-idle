@@ -32,7 +32,12 @@ export type ViewType =
   | "scavenger"
   | "enchanting"
   | "worldmarket"
-  | "marketplace";
+  | "marketplace"
+  | "announcements"
+  | "patch_notes"
+  | "faq"
+  | "guide"
+  | "privacy_policy";
 
 export type EquipmentSlot =
   | "head"
@@ -420,4 +425,23 @@ export interface DamagePopUp {
   isCrit: boolean;
   type: "player" | "enemy";
   createdAt: number;
+}
+
+// --- META Vew DATA ---
+export interface PatchNote {
+  version: string;
+  date: string;
+  changes: string[];
+  isMajor?: boolean;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface GuideSection {
+  title: string;
+  content: string;
+  icon?: string;
 }

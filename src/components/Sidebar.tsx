@@ -387,6 +387,44 @@ export default function Sidebar({
               ),
             )}
           </div>
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
+            System Information
+          </p>
+          <NavButton
+            view="announcements"
+            label="Announcements"
+            icon="/assets/ui/icon_announcements.png"
+            isActive={currentView === "announcements"}
+            onClick={setView}
+          />
+          <NavButton
+            view="patch_notes"
+            label="Patch Notes"
+            icon="/assets/ui/icon_patch_notes.png"
+            isActive={currentView === "patch_notes"}
+            onClick={setView}
+          />
+          <NavButton
+            view="guide"
+            label="Game Guide"
+            icon="/assets/ui/icon_guide.png"
+            isActive={currentView === "guide"}
+            onClick={setView}
+          />
+          <NavButton
+            view="faq"
+            label="F.A.Q."
+            icon="/assets/ui/icon_faq.png"
+            isActive={currentView === "faq"}
+            onClick={setView}
+          />
+          <NavButton
+            view="privacy_policy"
+            label="Privacy Policy"
+            icon="/assets/ui/icon_privacy.png"
+            isActive={currentView === "privacy_policy"}
+            onClick={setView}
+          />
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import {
   getMyRankData,
 } from "../../services/leaderboardService";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useGameStore } from "../../store/useGameStore"; // TUOTU STORE
 import type { LeaderboardEntry } from "../../types";
 
 export default function LeaderboardView() {
@@ -13,8 +14,16 @@ export default function LeaderboardView() {
   const [currentUid, setCurrentUid] = useState<string | null>(null);
 
   /**
+   * REAKTIIVINEN TILA:
+   * Haetaan maxMapCompleted storesta. Kun tämä muuttuu pelissä,
+   * Leaderboard hakee tiedot uudelleen Firebasesta.
+   */
+  const localMaxMap = useGameStore(
+    (state) => state.combatStats.maxMapCompleted,
+  );
+
+  /**
    * OPTIMOINTI: Haetaan UID suoraan auth-tilasta.
-   * Tämä varmistaa, ettei kutsuja tehdä ennen kuin käyttäjä on tunnistettu.
    */
   useEffect(() => {
     const auth = getAuth();
@@ -22,7 +31,6 @@ export default function LeaderboardView() {
       if (user) {
         setCurrentUid(user.uid);
       } else {
-        // Jos käyttäjä ei ole kirjautunut, ladataan vain yleinen lista
         setCurrentUid(null);
       }
     });
@@ -30,7 +38,7 @@ export default function LeaderboardView() {
   }, []);
 
   /**
-   * DATA-FETCH: Kutsutaan Firebasea vain, kun currentUid muuttuu tai komponentti ladataan.
+   * DATA-FETCH: Nyt riippuvaisena sekä käyttäjästä että paikallisesta edistymisestä.
    */
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -52,16 +60,16 @@ export default function LeaderboardView() {
     };
 
     loadLeaderboard();
-  }, [currentUid]);
+  }, [currentUid, localMaxMap]); // PÄIVITTYY KUN ENNÄTYS NOUSEE
 
   // Tarkistus: Onko pelaaja jo Top 50 -listalla
   const isPlayerInTop50 =
     myRank && typeof myRank.rank === "number" && myRank.rank <= 50;
 
   return (
-    <div className="h-full flex flex-col bg-app-base font-sans overflow-hidden italic-none">
+    <div className="h-full flex flex-col bg-app-base font-sans overflow-hidden italic-none text-left">
       {/* HEADER SECTION */}
-      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
+      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
             src="/assets/ui/icon_leaderboard.png"
@@ -80,7 +88,6 @@ export default function LeaderboardView() {
         </div>
 
         <div className="text-right hidden md:block">
-          {/* RANK DISPLAY: Näyttää sijoituksen heti kun se on ladattu */}
           <div className="text-2xl font-black text-tx-main uppercase tracking-tighter">
             {myRank?.rank ? `#${myRank.rank}` : loading ? "..." : "---"}
           </div>
@@ -168,7 +175,7 @@ function LeaderboardRow({
       </div>
 
       {/* AVATAR & NAME */}
-      <div className="flex items-center gap-4 flex-1 overflow-hidden">
+      <div className="flex items-center gap-4 flex-1 overflow-hidden text-left">
         <img
           src={entry.avatar}
           className={`w-12 h-12 pixelated rounded-lg bg-app-base border p-1 shrink-0 ${

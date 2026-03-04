@@ -60,10 +60,7 @@ export const jewelry: Resource[] = [
     icon: "/assets/items/necklace/necklace_emerald.png",
     color: "text-emerald-400",
     description: "Glowing emerald pendant.",
-    inputs: [
-      { id: "ore_emerald_smelted", count: 120 },
-      { id: "ore_emerald_smelted", count: 2 }, // Käytetään jalokivinä
-    ],
+    inputs: [{ id: "ore_emerald_smelted", count: 120 }],
     slot: "necklace",
     stats: { attack: 75, defense: 75 },
     category: "necklace",

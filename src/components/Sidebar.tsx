@@ -331,6 +331,13 @@ export default function Sidebar({
             isActive={currentView === "marketplace"}
             onClick={setView}
           />
+          <NavButton
+            view="leaderboard"
+            label="Leaderboards"
+            icon="/assets/ui/icon_leaderboard.png"
+            isActive={currentView === "leaderboard"}
+            onClick={setView}
+          />
         </div>
 
         <div>

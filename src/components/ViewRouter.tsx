@@ -6,8 +6,7 @@ import InventoryView from "./inventory/Inventory";
 import AchievementsView from "./achievements/AchievementsView";
 import WorldShopView from "./worldShop/WorldShopView";
 import MarketplaceView from "./marketplace/MarketplaceView";
-
-// TUONNIT META-NÄKYMILLE - Lisätty puuttuvat PrivacyPolicyView ja AnnouncementsView
+import LeaderboardView from "./leaderboard/LeaderboardView"; // TUONNIT META-NÄKYMILLE - Lisätty puuttuvat PrivacyPolicyView ja AnnouncementsView
 import {
   AnnouncementsView,
   PatchNotesView,
@@ -31,6 +30,7 @@ export default function ViewRouter({ currentView, state, onSellClick }: Props) {
   if (currentView === "scavenger") return <ScavengingView />;
   if (currentView === "inventory")
     return <InventoryView onSellClick={onSellClick} />;
+  if (currentView === "leaderboard") return <LeaderboardView />;
   if (currentView === "enchanting") return <EnchantingView />;
   if (currentView === "worldmarket") return <WorldShopView />;
   if (currentView === "marketplace") return <MarketplaceView />;

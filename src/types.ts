@@ -37,7 +37,8 @@ export type ViewType =
   | "patch_notes"
   | "faq"
   | "guide"
-  | "privacy_policy";
+  | "privacy_policy"
+  | "leaderboard";
 
 export type EquipmentSlot =
   | "head"
@@ -444,4 +445,16 @@ export interface GuideSection {
   title: string;
   content: string;
   icon?: string;
+}
+
+// Lisää 'export' alkuun ja varmista että maxMapCompleted on oikein
+export type LeaderboardFilter = "totalLevel" | "maxMapCompleted";
+
+export interface LeaderboardEntry {
+  uid: string;
+  username: string;
+  avatar: string;
+  totalLevel: number;
+  maxMapCompleted: number;
+  rank?: number;
 }

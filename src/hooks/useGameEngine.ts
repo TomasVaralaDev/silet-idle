@@ -5,8 +5,8 @@ import { processCombatTick } from "../systems/combatSystem";
 import { checkNewAchievements } from "../systems/achievementSystem";
 import { ACHIEVEMENTS } from "../data/achievements";
 import { GAME_DATA, getItemDetails } from "../data";
-import { calculateXpGain, MAX_LEVEL } from "../utils/gameUtils";
-import type { GameState, SkillType, Resource } from "../types";
+import { calculateXpGain } from "../utils/gameUtils";
+import type { GameState, Resource } from "../types";
 
 export const useGameEngine = () => {
   const { setState, checkDailyReset, emitEvent } = useGameStore();

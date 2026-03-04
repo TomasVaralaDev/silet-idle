@@ -11,40 +11,40 @@ export interface GameMap {
 export const CAMPAIGN_MAPS: GameMap[] = [
   // WORLD 1: Greenvale
   {
-    id: 'zone_1_1',
-    name: 'Slime Fields',
+    id: "zone_1_1",
+    name: "Slime Fields",
     levelRequirement: 1,
-    enemies: ['slime_green'],
+    enemies: ["slime_green"],
     worldId: 1,
   },
   {
-    id: 'zone_1_2',
-    name: 'Rat Cellar',
+    id: "zone_1_2",
+    name: "Rat Cellar",
     levelRequirement: 3,
-    enemies: ['giant_rat'],
+    enemies: ["giant_rat"],
     worldId: 1,
   },
   {
-    id: 'zone_1_3',
-    name: 'Goblin Camp',
+    id: "zone_1_3",
+    name: "Goblin Camp",
     levelRequirement: 5,
-    enemies: ['goblin_grunt'],
+    enemies: ["goblin_grunt"],
     worldId: 1,
   },
 
   // WORLD 2: Stonefall
   {
-    id: 'zone_2_1',
-    name: 'Rocky Pass',
+    id: "zone_2_1",
+    name: "Rocky Pass",
     levelRequirement: 10,
-    enemies: ['rock_crab'],
+    enemies: ["rock_crab"],
     worldId: 2,
   },
   {
-    id: 'zone_2_2',
-    name: 'Deep Mine',
+    id: "zone_2_2",
+    name: "Deep Mine",
     levelRequirement: 12,
-    enemies: ['bat', 'miner_ghost'],
+    enemies: ["bat", "miner_ghost"],
     worldId: 2,
   },
 

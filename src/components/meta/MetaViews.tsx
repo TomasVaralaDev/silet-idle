@@ -97,7 +97,7 @@ export const FaqView = () => (
 export const GuideView = () => (
   <MetaContainer title="Field Manual">
     <div className="grid gap-6">
-      {GUIDE_DATA.map((section, i) => (
+      {GUIDE_DATA.map((section) => (
         <div
           key={section.title}
           className="flex gap-6 items-start p-4 bg-panel/10 rounded-xl border border-border/20"

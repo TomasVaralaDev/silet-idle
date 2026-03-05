@@ -39,12 +39,13 @@ export const formatAttackSpeed = (ms: number | undefined): string => {
 };
 
 /**
- * Muotoilee jäljellä olevan ajan:
- * - Yli 1h: "Xh Ym"
- * - Alle 1h: "Xm Ys"
+ * Muotoilee jäljellä olevan ajan tyylikkäästi queue-paneeliin:
+ * - >1h: "1h 15m 30s"
+ * - <1h: "15m 30s"
+ * - <1m: "30s"
  */
 export const formatRemainingTime = (ms: number): string => {
-  if (ms <= 0) return "Ready!";
+  if (ms <= 0) return "Ready";
 
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -52,10 +53,12 @@ export const formatRemainingTime = (ms: number): string => {
   const seconds = totalSeconds % 60;
 
   if (hours > 0) {
-    // Näytetään tunnit ja minuutit
-    return `${hours}h ${minutes}m`;
+    return `${hours}h ${minutes}m ${seconds}s`;
   }
 
-  // Näytetään minuutit ja sekunnit
-  return `${minutes}m ${seconds}s`;
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+
+  return `${seconds}s`;
 };

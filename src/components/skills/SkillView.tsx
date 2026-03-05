@@ -339,10 +339,22 @@ export default function SkillView({ skill }: SkillViewProps) {
                       <button
                         onClick={() => setSelectedForQueue(resource)}
                         disabled={!isUnlocked || isQueueFull}
-                        className={`px-3 py-1.5 rounded text-xs font-black border transition-all ${isQueueFull ? "bg-panel border-danger/30 text-danger/50 cursor-not-allowed" : "bg-panel border-border hover:bg-panel-hover text-tx-main"}`}
+                        className={`px-3 py-1.5 rounded text-xs font-black border transition-all flex items-center justify-center gap-1.5 ${isQueueFull ? "bg-panel border-danger/30 text-danger/50 cursor-not-allowed" : "bg-panel border-border hover:bg-panel-hover text-tx-main"}`}
                         title={isQueueFull ? "Queue Full!" : "Add to Queue"}
                       >
-                        {isQueueFull ? "🔒 FULL" : "+ QUEUE"}
+                        {/* KORJATTU TÄMÄ KOHTA: Käyttää nyt kuvaa jos jono on täynnä! */}
+                        {isQueueFull ? (
+                          <>
+                            <img
+                              src="/assets/ui/icon_locked.png"
+                              className="w-3.5 h-3.5 pixelated opacity-50"
+                              alt=""
+                            />
+                            <span>FULL</span>
+                          </>
+                        ) : (
+                          "+ QUEUE"
+                        )}
                       </button>
                     </div>
 

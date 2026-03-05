@@ -5,6 +5,7 @@ import { getItemDetails } from "../../data";
 import { SKILL_DEFINITIONS } from "../../config/skillDefinitions";
 import { getRequiredXpForLevel } from "../../utils/gameUtils";
 import { MAX_LEVEL } from "../../utils/skillScaling";
+import QuantityModal from "../modals/QuantityModal";
 import type { SkillType, Resource } from "../../types";
 
 interface SkillViewProps {
@@ -47,12 +48,24 @@ const SKILL_CATEGORIES: Record<
 };
 
 export default function SkillView({ skill }: SkillViewProps) {
-  const { skills, activeAction, inventory, setState, equipment } =
-    useGameStore();
+  const {
+    skills,
+    activeAction,
+    inventory,
+    setState,
+    equipment,
+    addToQueue,
+    queue,
+    unlockedQueueSlots,
+  } = useGameStore();
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [showAffordableOnly, setShowAffordableOnly] = useState(false);
   const [prevSkill, setPrevSkill] = useState(skill);
+
+  const [selectedForQueue, setSelectedForQueue] = useState<Resource | null>(
+    null,
+  );
 
   if (skill !== prevSkill) {
     setPrevSkill(skill);
@@ -68,11 +81,8 @@ export default function SkillView({ skill }: SkillViewProps) {
   const skillState = skills[skill] || { level: 1, xp: 0 };
   const currentLevel = skillState.level;
 
-  // MAX LEVEL TARKISTUS
   const isMaxLevel = currentLevel >= MAX_LEVEL;
   const nextLevelXp = isMaxLevel ? 0 : getRequiredXpForLevel(currentLevel);
-
-  // Estetään nollalla jakaminen / NaN, lukitaan 100%
   const progressPercent = isMaxLevel
     ? 100
     : Math.min(100, Math.max(0, (skillState.xp / (nextLevelXp || 1)) * 100));
@@ -84,14 +94,12 @@ export default function SkillView({ skill }: SkillViewProps) {
       const currentFilter = categories.find((c) => c.id === activeCategory);
       if (currentFilter && !currentFilter.filter(resource)) return false;
     }
-
     if (showAffordableOnly && resource.inputs) {
       const canAfford = resource.inputs.every(
         (input) => (inventory[input.id] || 0) >= input.count,
       );
       if (!canAfford) return false;
     }
-
     return true;
   });
 
@@ -112,12 +120,16 @@ export default function SkillView({ skill }: SkillViewProps) {
     } else {
       setState({
         activeAction: { skill, resourceId, progress: 0, targetTime: interval },
+        queue: [],
       });
     }
   };
 
+  const maxSlots = unlockedQueueSlots;
+  const isQueueFull = queue.length >= maxSlots;
+
   return (
-    <div className="h-full flex flex-col bg-app-base text-tx-main">
+    <div className="h-full flex flex-col bg-app-base text-tx-main relative">
       <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm">
         <div
           className={`w-16 h-16 rounded-xl flex items-center justify-center ${definition.bgColor} shadow-lg shrink-0`}
@@ -165,28 +177,16 @@ export default function SkillView({ skill }: SkillViewProps) {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap
-                ${
-                  activeCategory === cat.id
-                    ? "bg-tx-main text-app-base"
-                    : "bg-panel text-tx-muted hover:bg-panel-hover hover:text-tx-main"
-                }
-              `}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeCategory === cat.id ? "bg-tx-main text-app-base" : "bg-panel text-tx-muted hover:bg-panel-hover hover:text-tx-main"}`}
             >
               {cat.label}
             </button>
           ))}
         </div>
-
         {["smithing", "crafting", "alchemy"].includes(skill) && (
           <button
             onClick={() => setShowAffordableOnly(!showAffordableOnly)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all shrink-0
-              ${
-                showAffordableOnly
-                  ? "bg-success/20 border-success text-success shadow-[0_0_10px_rgba(var(--color-success)/0.2)]"
-                  : "bg-panel border-border text-tx-muted hover:text-tx-main"
-              }`}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all shrink-0 ${showAffordableOnly ? "bg-success/20 border-success text-success shadow-[0_0_10px_rgba(var(--color-success)/0.2)]" : "bg-panel border-border text-tx-muted hover:text-tx-main"}`}
           >
             <span className={showAffordableOnly ? "animate-pulse" : ""}>
               🛠️
@@ -202,10 +202,13 @@ export default function SkillView({ skill }: SkillViewProps) {
             const isUnlocked = currentLevel >= (resource.level || 1);
             const isActive = activeAction?.resourceId === resource.id;
 
+            const queueCount = queue
+              .filter((q) => q.resourceId === resource.id)
+              .reduce((sum, item) => sum + (item.amount - item.completed), 0);
+
             const effectiveInterval =
               (resource.interval || 3000) / globalSpeedMultiplier;
             const effectiveXp = (resource.xpReward || 0) * globalXpMultiplier;
-
             const progress =
               isActive && activeAction
                 ? (activeAction.progress / activeAction.targetTime) * 100
@@ -217,29 +220,13 @@ export default function SkillView({ skill }: SkillViewProps) {
                 (input) => (inventory[input.id] || 0) >= input.count,
               );
             }
-
             const hasDrops = resource.drops && resource.drops.length > 0;
-            const isDisabled = !isUnlocked || !canAfford;
+            const isDisabled = !isUnlocked || (!canAfford && queueCount === 0);
 
             return (
-              <button
+              <div
                 key={resource.id}
-                onClick={() =>
-                  !isDisabled &&
-                  handleStartAction(resource.id, resource.interval || 3000)
-                }
-                disabled={isDisabled}
-                className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col h-full group
-                  ${
-                    isActive
-                      ? `bg-panel border-accent shadow-[0_0_20px_rgb(var(--color-accent)/0.2)] scale-[1.02] z-10`
-                      : !isUnlocked
-                        ? "bg-app-base border-panel opacity-50 cursor-not-allowed grayscale"
-                        : !canAfford
-                          ? "bg-panel/60 border-border/50 opacity-90 cursor-default"
-                          : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel"
-                  }
-                `}
+                className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col h-full group ${isActive ? `bg-panel border-accent shadow-[0_0_20px_rgb(var(--color-accent)/0.2)] scale-[1.02] z-10` : !isUnlocked ? "bg-app-base border-panel opacity-50 grayscale" : !canAfford && queueCount === 0 ? "bg-panel/60 border-border/50 opacity-90" : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel"}`}
               >
                 <div className="flex items-start justify-between mb-4 w-full relative">
                   <div
@@ -268,9 +255,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                     ) : (
                       <img
                         src={resource.icon}
-                        className={`w-10 h-10 pixelated transition-transform duration-500 ${
-                          isActive ? "scale-110 rotate-3" : ""
-                        }`}
+                        className={`w-10 h-10 pixelated transition-transform duration-500 ${isActive ? "scale-110 rotate-3" : ""}`}
                         alt={resource.name}
                       />
                     )}
@@ -282,14 +267,14 @@ export default function SkillView({ skill }: SkillViewProps) {
                         ACTIVE
                       </span>
                     )}
+                    {queueCount > 0 && (
+                      <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-[10px] font-bold border border-blue-500/30">
+                        {queueCount} IN QUEUE
+                      </span>
+                    )}
                     {!isUnlocked && (
                       <span className="px-2 py-1 rounded bg-danger/20 text-danger text-[10px] font-bold border border-danger/30">
                         LVL {resource.level}
-                      </span>
-                    )}
-                    {isUnlocked && !canAfford && (
-                      <span className="px-2 py-1 rounded bg-warning/20 text-warning text-[10px] font-bold border border-warning/30">
-                        NEED MATERIALS
                       </span>
                     )}
                   </div>
@@ -297,9 +282,7 @@ export default function SkillView({ skill }: SkillViewProps) {
 
                 <div className="mb-4 flex-1">
                   <h3
-                    className={`font-bold text-sm ${
-                      isUnlocked ? "text-tx-main" : "text-tx-muted/60"
-                    }`}
+                    className={`font-bold text-sm ${isUnlocked ? "text-tx-main" : "text-tx-muted/60"}`}
                   >
                     {resource.name}
                   </h3>
@@ -310,15 +293,8 @@ export default function SkillView({ skill }: SkillViewProps) {
 
                 {resource.inputs && (
                   <div
-                    className={`mb-3 p-2 rounded border shadow-inner transition-colors ${
-                      canAfford
-                        ? "bg-panel/60 border-accent/20"
-                        : "bg-warning/5 border-warning/20"
-                    }`}
+                    className={`mb-3 p-2 rounded border shadow-inner transition-colors ${canAfford ? "bg-panel/60 border-accent/20" : "bg-warning/5 border-warning/20"}`}
                   >
-                    <p className="text-[10px] uppercase font-black text-tx-muted mb-1 tracking-widest opacity-70">
-                      Materials Required:
-                    </p>
                     <div className="flex flex-wrap gap-2">
                       {resource.inputs.map((input) => {
                         const item = getItemDetails(input.id);
@@ -327,11 +303,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                         return (
                           <div
                             key={input.id}
-                            className={`text-xs flex items-center gap-1.5 px-2 py-1 rounded-md bg-app-base/80 border ${
-                              hasEnough
-                                ? "border-success/30 text-success"
-                                : "border-danger/30 text-danger"
-                            }`}
+                            className={`text-xs flex items-center gap-1.5 px-2 py-1 rounded-md bg-app-base/80 border ${hasEnough ? "border-success/30 text-success" : "border-danger/30 text-danger"}`}
                             title={item?.name || "Unknown Material"}
                           >
                             <img
@@ -351,41 +323,67 @@ export default function SkillView({ skill }: SkillViewProps) {
 
                 {isUnlocked && (
                   <div className="mt-auto pt-3 border-t border-border/50 w-full">
-                    <div className="flex justify-between items-center text-xs mb-2">
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        onClick={() =>
+                          handleStartAction(
+                            resource.id,
+                            resource.interval || 3000,
+                          )
+                        }
+                        disabled={isDisabled && queueCount === 0}
+                        className={`flex-1 py-1.5 rounded text-xs font-black transition-all ${isActive ? "bg-danger text-white hover:bg-danger/80" : "bg-accent/20 text-accent hover:bg-accent hover:text-app-base border border-accent/30"}`}
+                      >
+                        {isActive ? "STOP" : "START"}
+                      </button>
+                      <button
+                        onClick={() => setSelectedForQueue(resource)}
+                        disabled={!isUnlocked || isQueueFull}
+                        className={`px-3 py-1.5 rounded text-xs font-black border transition-all ${isQueueFull ? "bg-panel border-danger/30 text-danger/50 cursor-not-allowed" : "bg-panel border-border hover:bg-panel-hover text-tx-main"}`}
+                        title={isQueueFull ? "Queue Full!" : "Add to Queue"}
+                      >
+                        {isQueueFull ? "🔒 FULL" : "+ QUEUE"}
+                      </button>
+                    </div>
+
+                    <div className="flex justify-between items-center text-[10px] mb-1">
                       <span
-                        className={`font-bold ${
-                          globalXpMultiplier > 1
-                            ? "text-success"
-                            : "text-accent"
-                        }`}
+                        className={`font-bold ${globalXpMultiplier > 1 ? "text-success" : "text-tx-muted"}`}
                       >
                         +{effectiveXp.toFixed(1)} XP
                       </span>
                       <span
-                        className={`font-bold ${
-                          globalSpeedMultiplier > 1
-                            ? "text-success"
-                            : "text-tx-muted"
-                        }`}
+                        className={`font-bold ${globalSpeedMultiplier > 1 ? "text-success" : "text-tx-muted"}`}
                       >
                         {(effectiveInterval / 1000).toFixed(1)}s
                       </span>
                     </div>
-                    <div className="w-full h-1.5 bg-app-base rounded-full overflow-hidden">
+                    <div className="w-full h-1 bg-app-base rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${
-                          isActive ? definition.bgColor : "bg-transparent"
-                        } transition-all duration-100 ease-linear`}
+                        className={`h-full ${isActive ? definition.bgColor : "bg-transparent"} transition-all duration-100 ease-linear`}
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                   </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
       </div>
+
+      {selectedForQueue && !isQueueFull && (
+        <QuantityModal
+          itemId={selectedForQueue.id}
+          title={`Queue: ${selectedForQueue.name}`}
+          maxAmount={9999}
+          onClose={() => setSelectedForQueue(null)}
+          onConfirm={(amount) => {
+            addToQueue(skill, selectedForQueue.id, amount);
+            setSelectedForQueue(null);
+          }}
+        />
+      )}
     </div>
   );
 }

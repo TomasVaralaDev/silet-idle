@@ -52,7 +52,6 @@ export type FullStoreState = GameState &
     offlineSummary: OfflineSummary | null;
     rewardModal: RewardModalState;
 
-    // Core actions
     setState: (
       updater:
         | Partial<FullStoreState>
@@ -61,16 +60,14 @@ export type FullStoreState = GameState &
     emitEvent: (type: GameEventType, message: string, icon?: string) => void;
     clearEvent: (id: string) => void;
     setOfflineSummary: (summary: OfflineSummary | null) => void;
-
-    // UI actions
     openRewardModal: (title: string, rewards: RewardEntry[]) => void;
     closeRewardModal: () => void;
   };
 
-// Initial state
 export const DEFAULT_STATE: GameState = {
   username: "Player",
   avatar: "/assets/avatars/avatar_1.png",
+  unlockedQueueSlots: 2, // UUSI: Oletuksena 2 jono-paikkaa ilmaiseksi
   lastTimestamp: Date.now(),
   events: [],
   settings: { notifications: true, sound: true, music: true, particles: true },
@@ -98,7 +95,6 @@ export const DEFAULT_STATE: GameState = {
     crafting: { xp: 0, level: 1 },
     smithing: { xp: 0, level: 1 },
     alchemy: { xp: 0, level: 1 },
-    // MUUTETTU: Uusi hahmo aloittaa hitpoints levelillä 1
     hitpoints: { xp: 0, level: 1 },
     attack: { xp: 0, level: 1 },
     defense: { xp: 0, level: 1 },
@@ -123,11 +119,11 @@ export const DEFAULT_STATE: GameState = {
   combatSettings: { autoEatThreshold: 50, autoProgress: false },
   scavenger: { activeExpeditions: [], unlockedSlots: 1 },
   activeAction: null,
+  queue: [],
   coins: 0,
   upgrades: [],
   unlockedAchievements: [],
   combatStats: {
-    // MUUTETTU: Tason 1 HP on nyt 110 (100 base + 1*10)
     hp: 110,
     currentMapId: null,
     maxMapCompleted: 0,
@@ -143,10 +139,6 @@ export const DEFAULT_STATE: GameState = {
   enemy: null,
 };
 
-/**
- * Erillinen merge-funktio testausta varten.
- * Varmistaa syvän yhdistämisen skilleille ja muille kriittisille objekteille.
- */
 export const customMerge = (
   persistedState: unknown,
   currentState: FullStoreState,
@@ -154,7 +146,6 @@ export const customMerge = (
   const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
   if (!typedPersisted) return currentState;
 
-  // Syvä yhdistäminen skilleille: säilytetään vanhat tasot, mutta lisätään uudet skillit
   const mergedSkills = { ...DEFAULT_STATE.skills };
   if (typedPersisted.skills) {
     (Object.keys(DEFAULT_STATE.skills) as SkillType[]).forEach((skillKey) => {
@@ -168,8 +159,9 @@ export const customMerge = (
   return {
     ...currentState,
     ...typedPersisted,
+    // Varmistetaan että vanhoilla tallennuksilla on vähintään 2 slottia
+    unlockedQueueSlots: typedPersisted.unlockedQueueSlots ?? 2,
 
-    // Pakotetaan syvä merge tietyille komponenteille
     combatStats: {
       ...DEFAULT_STATE.combatStats,
       ...(typedPersisted.combatStats || {}),
@@ -189,8 +181,8 @@ export const customMerge = (
       dailyQuests: typedPersisted.quests?.dailyQuests || [],
     },
 
-    // Resetoidaan väliaikaiset tilat
     enemy: null,
+    queue: typedPersisted.queue || [],
     activeAction: typedPersisted.activeAction || null,
     rewardModal: { isOpen: false, title: "", rewards: [] },
     offlineSummary: null,
@@ -204,7 +196,6 @@ export const useGameStore = create<FullStoreState>()(
       offlineSummary: null,
       rewardModal: { isOpen: false, title: "", rewards: [] },
 
-      // Yhdistetään slicet
       ...createInventorySlice(set, get, ...args),
       ...createSkillSlice(set, get, ...args),
       ...createCombatSlice(set, get, ...args),
@@ -214,7 +205,6 @@ export const useGameStore = create<FullStoreState>()(
       ...createSocialSlice(set, get, ...args),
       ...createQuestSlice(set, get, ...args),
 
-      // Globaalit actionit
       emitEvent: (type, message, icon) =>
         set((state) => {
           const newEvent: GameEvent = {
@@ -256,12 +246,11 @@ export const useGameStore = create<FullStoreState>()(
     }),
     {
       name: "ggez-idle-storage",
-      version: 1, // Mahdollistaa migraatiot tulevaisuudessa
+      version: 1,
       merge: (persisted, current) =>
         customMerge(persisted, current as FullStoreState),
       partialize: (state) => {
         const rest = { ...state };
-        // Poistetaan UI-tila tallennuksesta
         delete (rest as Partial<FullStoreState>).offlineSummary;
         delete (rest as Partial<FullStoreState>).rewardModal;
         return rest;

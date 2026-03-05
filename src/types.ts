@@ -400,6 +400,7 @@ export interface MailMessage {
 export interface GameState {
   username: string;
   avatar: string;
+  unlockedQueueSlots: number;
   settings: GameSettings;
   inventory: Record<string, number>;
   skills: Record<SkillType, SkillData>;
@@ -417,6 +418,15 @@ export interface GameState {
   events: GameEvent[];
   social: SocialState;
   quests: QuestState;
+  queue: QueueItem[];
+}
+
+export interface QueueItem {
+  id: string;
+  skill: SkillType;
+  resourceId: string;
+  amount: number;
+  completed: number;
 }
 
 // --- DAMAGE POP UP ---

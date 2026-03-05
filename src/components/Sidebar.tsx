@@ -4,6 +4,7 @@ import { SKILL_DEFINITIONS } from "../config/skillDefinitions";
 import type { ViewType } from "../types";
 import { formatNumber } from "../utils/formatUtils";
 import { getRequiredXpForLevel } from "../utils/gameUtils";
+import QueuePanel from "./QueuePanel"; // UUSI: Importtaa QueuePanel!
 
 interface SidebarProps {
   currentView: ViewType;
@@ -399,7 +400,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* LOHKO 4: SYSTEM INFORMATION (Nyt omassa divissään) */}
+        {/* LOHKO 4: SYSTEM INFORMATION */}
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             System Information
@@ -442,8 +443,11 @@ export default function Sidebar({
         </div>
       </div>
 
+      {/* TÄHÄN TULEE JONO (QUEUE)! */}
+      <QueuePanel />
+
       {/* FOOTER */}
-      <div className="p-4 border-t border-border/50 bg-app-base/50">
+      <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20">
         <button
           onClick={onStopAction}
           className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase"

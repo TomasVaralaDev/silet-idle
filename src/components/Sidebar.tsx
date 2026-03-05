@@ -186,7 +186,7 @@ export default function Sidebar({
       {/* HEADER */}
       <div className="p-5 border-b border-border/50 bg-app-base relative z-20">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex flex-col">
+          <div className="flex flex-col text-left">
             <h1 className="text-2xl font-bold text-tx-main tracking-widest uppercase flex flex-col leading-none">
               Time<span className="text-accent text-3xl">Ring</span>
             </h1>
@@ -208,7 +208,7 @@ export default function Sidebar({
                   Level: {totalLevel}
                 </div>
               </div>
-              <div className="w-10 h-10 bg-panel rounded border border-border-hover flex items-center justify-center relative overflow-hidden">
+              <div className="w-10 h-10 bg-panel rounded border border-border-hover flex items-center justify-center relative overflow-hidden text-left">
                 <img
                   src={avatar || "/assets/ui/icon_user_avatar.png"}
                   alt="User"
@@ -292,8 +292,9 @@ export default function Sidebar({
 
       {/* NAVIGATION */}
       <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10">
+        {/* LOHKO 1: GENERAL */}
         <div>
-          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             General
           </p>
           <NavButton
@@ -340,8 +341,9 @@ export default function Sidebar({
           />
         </div>
 
+        {/* LOHKO 2: SKILLS */}
         <div>
-          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             Skills
           </p>
           <NavButton
@@ -368,8 +370,9 @@ export default function Sidebar({
           ))}
         </div>
 
+        {/* LOHKO 3: COMBAT */}
         <div>
-          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             Combat
           </p>
           <NavButton
@@ -388,13 +391,17 @@ export default function Sidebar({
                   level={skills[def.id]?.level || 1}
                   xp={skills[def.id]?.xp || 0}
                   iconPath={def.icon}
-                  textColor={def.color} // Tämä haetaan yhä konfigistä!
-                  bgColor={def.bgColor} // Tämä haetaan yhä konfigistä!
+                  textColor={def.color}
+                  bgColor={def.bgColor}
                 />
               ),
             )}
           </div>
-          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1">
+        </div>
+
+        {/* LOHKO 4: SYSTEM INFORMATION (Nyt omassa divissään) */}
+        <div>
+          <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             System Information
           </p>
           <NavButton

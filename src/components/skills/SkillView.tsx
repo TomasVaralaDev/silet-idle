@@ -55,6 +55,7 @@ export default function SkillView({ skill }: SkillViewProps) {
     setState,
     equipment,
     addToQueue,
+    cancelResourceFromQueue, // UUSI FUNKTIO TUOTU TÄNNE
     queue,
     unlockedQueueSlots,
   } = useGameStore();
@@ -120,7 +121,7 @@ export default function SkillView({ skill }: SkillViewProps) {
     } else {
       setState({
         activeAction: { skill, resourceId, progress: 0, targetTime: interval },
-        queue: [],
+        queue: [], // Nollaa muut jonot jos aloitetaan uusi normaali loputon loop
       });
     }
   };
@@ -324,25 +325,35 @@ export default function SkillView({ skill }: SkillViewProps) {
                 {isUnlocked && (
                   <div className="mt-auto pt-3 border-t border-border/50 w-full">
                     <div className="flex gap-2 mb-3">
-                      <button
-                        onClick={() =>
-                          handleStartAction(
-                            resource.id,
-                            resource.interval || 3000,
-                          )
-                        }
-                        disabled={isDisabled && queueCount === 0}
-                        className={`flex-1 py-1.5 rounded text-xs font-black transition-all ${isActive ? "bg-danger text-white hover:bg-danger/80" : "bg-accent/20 text-accent hover:bg-accent hover:text-app-base border border-accent/30"}`}
-                      >
-                        {isActive ? "STOP" : "START"}
-                      </button>
+                      {/* MUUTETTU NAPIN LOGIIKKAA TÄSSÄ */}
+                      {queueCount > 0 ? (
+                        <button
+                          onClick={() => cancelResourceFromQueue(resource.id)}
+                          className="flex-1 py-1.5 rounded text-[10px] font-black transition-all bg-danger text-white hover:bg-danger/80 tracking-wider"
+                        >
+                          CANCEL QUEUE
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            handleStartAction(
+                              resource.id,
+                              resource.interval || 3000,
+                            )
+                          }
+                          disabled={isDisabled}
+                          className={`flex-1 py-1.5 rounded text-xs font-black transition-all ${isActive ? "bg-danger text-white hover:bg-danger/80" : "bg-accent/20 text-accent hover:bg-accent hover:text-app-base border border-accent/30"}`}
+                        >
+                          {isActive ? "STOP" : "START"}
+                        </button>
+                      )}
+
                       <button
                         onClick={() => setSelectedForQueue(resource)}
                         disabled={!isUnlocked || isQueueFull}
                         className={`px-3 py-1.5 rounded text-xs font-black border transition-all flex items-center justify-center gap-1.5 ${isQueueFull ? "bg-panel border-danger/30 text-danger/50 cursor-not-allowed" : "bg-panel border-border hover:bg-panel-hover text-tx-main"}`}
                         title={isQueueFull ? "Queue Full!" : "Add to Queue"}
                       >
-                        {/* KORJATTU TÄMÄ KOHTA: Käyttää nyt kuvaa jos jono on täynnä! */}
                         {isQueueFull ? (
                           <>
                             <img

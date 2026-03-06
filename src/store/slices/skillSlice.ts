@@ -19,6 +19,7 @@ export interface SkillSlice {
   toggleAction: (skill: SkillType, resourceId: string) => void;
   addToQueue: (skill: SkillType, resourceId: string, amount: number) => void;
   removeFromQueue: (queueId: string) => void;
+  cancelResourceFromQueue: (resourceId: string) => void; // UUSI FUNKTIO
   clearQueue: () => void;
 }
 
@@ -100,6 +101,25 @@ export const createSkillSlice: StateCreator<
     set((state) => ({
       queue: state.queue.filter((item) => item.id !== queueId),
     })),
+
+  // UUSI FUNKTIO: Poistaa kaikki tietyt resurssit jonosta kerralla
+  cancelResourceFromQueue: (resourceId) =>
+    set((state) => {
+      const newQueue = state.queue.filter(
+        (item) => item.resourceId !== resourceId,
+      );
+
+      // Jos aktiivinen toiminto on tämä poistettava resurssi, nollataan myös se
+      const newActiveAction =
+        state.activeAction?.resourceId === resourceId
+          ? null
+          : state.activeAction;
+
+      return {
+        queue: newQueue,
+        activeAction: newActiveAction,
+      };
+    }),
 
   clearQueue: () => set({ queue: [] }),
 });

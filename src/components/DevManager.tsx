@@ -2,36 +2,48 @@ import { useState, useEffect } from "react";
 import { useGameStore } from "../store/useGameStore";
 import type { SkillType } from "../types";
 import { getRequiredXpForLevel } from "../utils/gameUtils";
+import BattleSimView from "./battleSim/BattleSimView"; // UUSI IMPORT
+import { weapons } from "../data/skills/crafting/weapons";
+import { armor } from "../data/skills/smithing/armor";
+import { jewelry } from "../data/skills/crafting/jewelry";
+import { tools } from "../data/skills/smithing/tools";
+import { alchemyResources } from "../data/skills/alchemy";
+
+const THEMES = [
+  { id: "theme-neon", label: "Neon (Sci-Fi)" },
+  { id: "theme-tavern", label: "Tavern & Wood" },
+  { id: "theme-abyss", label: "Abyss (OLED Dark)" },
+  { id: "theme-frost", label: "Frost (Ice)" },
+  { id: "theme-arcane", label: "Arcane (Magic)" },
+  { id: "theme-sakura", label: "Sakura (Cute)" },
+  { id: "theme-matte", label: "Matte Ash" },
+  { id: "theme-hc", label: "High Contrast" },
+];
 
 export default function DevManager() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState("theme-neon");
+  const [isSimModalOpen, setIsSimModalOpen] = useState(false); // UUSI TILA SIMULAATTORILLE
 
   // Dev-tilat
   const [coinAmount, setCoinAmount] = useState<number>(10000);
   const [targetLevel, setTargetLevel] = useState<number>(99);
   const [itemAmount] = useState<number>(1);
 
+  // Tilat Gearin injektointiin
+  const [selectedGear, setSelectedGear] = useState<string>(
+    "weapon_sword_bronze",
+  );
+  const [gearAmount, setGearAmount] = useState<number>(1);
+
   const setState = useGameStore((state) => state.setState);
   const emitEvent = useGameStore((state) => state.emitEvent);
   const currentCoins = useGameStore((state) => state.coins);
 
-  const themes = [
-    { id: "theme-neon", label: "Neon (Sci-Fi)" },
-    { id: "theme-tavern", label: "Tavern & Wood" },
-    { id: "theme-abyss", label: "Abyss (OLED Dark)" },
-    { id: "theme-frost", label: "Frost (Ice)" },
-    { id: "theme-arcane", label: "Arcane (Magic)" },
-    { id: "theme-sakura", label: "Sakura (Cute)" },
-    { id: "theme-matte", label: "Matte Ash" },
-    { id: "theme-hc", label: "High Contrast" },
-  ];
-
-  // Avainten ID:t
   const bossKeys = Array.from({ length: 8 }, (_, i) => `bosskey_w${i + 1}`);
 
   useEffect(() => {
-    document.body.classList.remove(...themes.map((t) => t.id));
+    document.body.classList.remove(...THEMES.map((t) => t.id));
     document.body.classList.add(currentTheme);
   }, [currentTheme]);
 
@@ -43,10 +55,59 @@ export default function DevManager() {
         [id]: (state.inventory[id] || 0) + qty,
       },
     }));
+
+    const allItems = [
+      ...weapons,
+      ...armor,
+      ...jewelry,
+      ...tools,
+      ...alchemyResources,
+    ];
+    const foundItem = allItems.find((item) => item.id === id);
+    const iconPath = foundItem?.icon || `/assets/items/bosskey/${id}.png`;
+
+    emitEvent("success", `Injected ${qty}x ${id}`, iconPath);
+  };
+
+  const addAllGearWithEnchants = () => {
+    setState((state) => {
+      const newInventory = { ...state.inventory };
+      const allGear = [...weapons, ...armor, ...jewelry, ...tools];
+
+      allGear.forEach((item) => {
+        newInventory[item.id] = (newInventory[item.id] || 0) + gearAmount;
+        for (let i = 1; i <= 5; i++) {
+          const enchantedId = `${item.id}_e${i}`;
+          newInventory[enchantedId] =
+            (newInventory[enchantedId] || 0) + gearAmount;
+        }
+      });
+
+      return { inventory: newInventory };
+    });
+
     emitEvent(
       "success",
-      `Injected ${qty}x ${id}`,
-      `/assets/items/bosskey/${id}.png`
+      "GOD MODE: All gear (Base + E1-E5) injected!",
+      "/assets/ui/icon_level_up.png",
+    );
+  };
+
+  const addAllPotions = () => {
+    setState((state) => {
+      const newInventory = { ...state.inventory };
+
+      alchemyResources.forEach((potion) => {
+        newInventory[potion.id] = (newInventory[potion.id] || 0) + 999;
+      });
+
+      return { inventory: newInventory };
+    });
+
+    emitEvent(
+      "success",
+      "MEDICAL RESUPPLY: 999x of all potions injected!",
+      "/assets/items/alchemy/potion_tier8.png",
     );
   };
 
@@ -69,8 +130,8 @@ export default function DevManager() {
     emitEvent(
       type,
       `${amount > 0 ? "Injected" : "Extracted"} ${Math.abs(
-        amount
-      ).toLocaleString()} fragments`
+        amount,
+      ).toLocaleString()} fragments`,
     );
   };
 
@@ -87,7 +148,22 @@ export default function DevManager() {
     emitEvent(
       "info",
       `Neural Link: All skills synchronized to level ${lvl}`,
-      "/assets/ui/icon_level_up.png"
+      "/assets/ui/icon_level_up.png",
+    );
+  };
+
+  const unlockAllMaps = () => {
+    setState((state) => ({
+      combatStats: {
+        ...state.combatStats,
+        maxMapCompleted: 80,
+      },
+    }));
+
+    emitEvent(
+      "success",
+      "MAP OVERRIDE: All 80 zones unlocked!",
+      "/assets/ui/icon_maps.png",
     );
   };
 
@@ -142,10 +218,85 @@ export default function DevManager() {
             </div>
           </section>
 
-          {/* KEY ACCESS INJECTION */}
+          {/* GEAR & ITEMS INJECTION */}
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
-              Key Access Injection
+              Items & Gear Injection
+            </div>
+            <div className="flex gap-1 mb-1">
+              <select
+                value={selectedGear}
+                onChange={(e) => setSelectedGear(e.target.value)}
+                className="flex-1 bg-green-950/20 border border-green-900 text-green-400 px-1 py-1.5 focus:outline-none focus:border-green-500 text-[9px] cursor-pointer"
+              >
+                <optgroup label="WEAPONS" className="bg-black text-green-500">
+                  {weapons.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      [Lv.{w.level}] {w.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="ARMOR" className="bg-black text-green-500">
+                  {armor.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      [Lv.{a.level}] {a.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="JEWELRY" className="bg-black text-green-500">
+                  {jewelry.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      [Lv.{j.level}] {j.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="TOOLS" className="bg-black text-green-500">
+                  {tools.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      [Lv.{t.level}] {t.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="POTIONS" className="bg-black text-green-500">
+                  {alchemyResources.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      [Lv.{p.level}] {p.name}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+              <input
+                type="number"
+                min="1"
+                value={gearAmount}
+                onChange={(e) => setGearAmount(parseInt(e.target.value) || 1)}
+                className="w-10 bg-green-950/20 border border-green-900 text-green-400 px-1 py-1.5 focus:outline-none focus:border-green-500 text-center text-[9px]"
+              />
+              <button
+                onClick={() => addItems(selectedGear, gearAmount)}
+                className="bg-green-900/40 border border-green-500/50 text-green-400 px-2 py-1 hover:bg-green-500 hover:text-black transition-all font-bold text-[9px]"
+              >
+                ADD
+              </button>
+            </div>
+            <button
+              onClick={addAllGearWithEnchants}
+              className="w-full border border-purple-500/50 text-purple-400 py-1 text-[8px] uppercase font-black hover:bg-purple-500 hover:text-black transition-all mb-1"
+            >
+              Inject ALL Gear (Base + E1-E5)
+            </button>
+            <button
+              onClick={addAllPotions}
+              className="w-full border border-pink-500/50 text-pink-400 py-1 text-[8px] uppercase font-black hover:bg-pink-500 hover:text-black transition-all"
+            >
+              Inject All Potions (999x)
+            </button>
+          </section>
+
+          {/* KEY & MAP OVERRIDE */}
+          <section className="space-y-2">
+            <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
+              Progression Overrides
             </div>
             <div className="grid grid-cols-4 gap-1">
               {bossKeys.map((id, index) => (
@@ -164,6 +315,12 @@ export default function DevManager() {
               className="w-full mt-1 border border-green-500/30 text-green-500 py-1 text-[8px] uppercase font-black hover:bg-green-500/10"
             >
               Grant Full Access (All Keys)
+            </button>
+            <button
+              onClick={unlockAllMaps}
+              className="w-full mt-1 border border-cyan-500/50 text-cyan-400 py-1 text-[8px] uppercase font-black hover:bg-cyan-500 hover:text-black transition-all shadow-[0_0_10px_rgba(0,255,255,0.2)]"
+            >
+              Unlock All Maps (Max Level 80)
             </button>
           </section>
 
@@ -188,13 +345,26 @@ export default function DevManager() {
             </div>
           </section>
 
+          {/* UUSI: SIMULATOR LAUNCH BUTTON */}
+          <section className="space-y-2 pt-2 border-t border-green-500/30">
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                setIsSimModalOpen(true);
+              }}
+              className="w-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 py-2 text-[10px] uppercase font-black hover:bg-yellow-500 hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)]"
+            >
+              🚀 Launch Combat Simulator
+            </button>
+          </section>
+
           {/* UI SUBSYSTEM */}
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               UI_Subsystem
             </div>
             <div className="max-h-24 overflow-y-auto custom-scrollbar space-y-1 pr-1 text-left">
-              {themes.map((theme) => (
+              {THEMES.map((theme) => (
                 <button
                   key={theme.id}
                   onClick={() => setCurrentTheme(theme.id)}
@@ -211,6 +381,12 @@ export default function DevManager() {
           </section>
         </div>
       </div>
+
+      {/* RENDERÖIDÄÄN MODAALI TÄÄLLÄ KAIKEN PÄÄLLE */}
+      <BattleSimView
+        isOpen={isSimModalOpen}
+        onClose={() => setIsSimModalOpen(false)}
+      />
     </div>
   );
 }

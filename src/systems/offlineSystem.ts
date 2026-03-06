@@ -1,8 +1,7 @@
-import { processSkillTick } from './skillSystem';
-import { processCombatTick } from './combatSystem';
-import { calculateXpGain, getSpeedMultiplier } from '../utils/gameUtils';
-import { GAME_DATA } from '../data';
-import type { GameState, SkillType, Resource } from '../types';
+import { processCombatTick } from "./combatSystem";
+import { calculateXpGain, getSpeedMultiplier } from "../utils/gameUtils";
+import { GAME_DATA } from "../data";
+import type { GameState, SkillType, Resource, Ingredient } from "../types";
 
 export interface OfflineSummary {
   seconds: number;
@@ -12,102 +11,216 @@ export interface OfflineSummary {
 
 export const calculateOfflineProgress = (
   initialState: GameState,
-  elapsedSeconds: number
+  elapsedSeconds: number,
 ): { updatedState: GameState; summary: OfflineSummary } => {
-  const maxSeconds = 43200; // 12h
-  const simulatedSeconds = Math.min(elapsedSeconds, maxSeconds);
-  
-  // Tehdään kopio tilasta muokattavaksi
-  let currentState: GameState = JSON.parse(JSON.stringify(initialState));
+  const maxSeconds = 43200; // 12h katto
+  let remainingSeconds = Math.min(elapsedSeconds, maxSeconds);
+  const simulatedSeconds = remainingSeconds;
 
-  // TARKISTUS 1: Tarkistetaan suoraan currentState:sta, jotta TypeScript ymmärtää sen olevan olemassa
-  if (!currentState.activeAction) {
-    return { updatedState: currentState, summary: { seconds: simulatedSeconds, xpGained: {}, itemsGained: {} } };
+  const currentState: GameState = JSON.parse(JSON.stringify(initialState));
+
+  // TURVA: Varmistetaan että queue on olemassa (estää vanhojen testien ja savejen kaatumisen)
+  currentState.queue = currentState.queue || [];
+
+  const summary: OfflineSummary = {
+    seconds: simulatedSeconds,
+    xpGained: {},
+    itemsGained: {},
+  };
+
+  if (!currentState.activeAction && currentState.queue.length === 0) {
+    return { updatedState: currentState, summary };
   }
 
-  // Nyt TypeScript tietää varmasti, ettei tämä ole null
-  const { skill, resourceId } = currentState.activeAction;
+  // =====================================================================
+  // SKENAARIO 1: JONON KÄSITTELY (Pelaaja on jonottanut asioita)
+  // =====================================================================
+  if (currentState.queue.length > 0) {
+    while (remainingSeconds > 0 && currentState.queue.length > 0) {
+      const currentItem = currentState.queue[0];
+      const skillData = GAME_DATA[currentItem.skill as keyof typeof GAME_DATA];
+      const resource = skillData?.find(
+        (r: Resource) => r.id === currentItem.resourceId,
+      );
 
-  // --- BULK LASKENTA (Elämäntaidot / Non-Combat) ---
-  if (skill !== 'combat') {
-    const resource = GAME_DATA[skill as keyof typeof GAME_DATA]?.find((r: Resource) => r.id === resourceId);
-    
-    if (resource) {
-      const speedMult = getSpeedMultiplier(skill as SkillType, currentState.upgrades);
-      const intervalSeconds = (resource.interval || 3000) / speedMult / 1000;
-      const completions = Math.floor(simulatedSeconds / intervalSeconds);
-      
-      if (completions > 0) {
-        const totalXpReward = completions * (resource.xpReward || 0);
-        const skillData = currentState.skills[skill as SkillType];
-        
-        // Päivitetään tila (calculateXpGain hoitaa 99 katon automaattisesti)
-        const newSkillData = calculateXpGain(skillData.level, skillData.xp, totalXpReward);
-        currentState.skills[skill as SkillType] = newSkillData;
-        currentState.inventory[resource.id] = (currentState.inventory[resource.id] || 0) + completions;
-        currentState.lastTimestamp = Date.now();
-
-        // PALAUTETAAN TARKKA SUMMA (bulk-laskennassa ei vertailla erotuksia)
-        return { 
-          updatedState: currentState, 
-          summary: { 
-            seconds: simulatedSeconds, 
-            xpGained: { [skill as SkillType]: totalXpReward }, 
-            itemsGained: { [resource.id]: completions } 
-          } 
-        };
+      if (!resource) {
+        currentState.queue.shift(); // Viallinen item, siirrytään seuraavaan
+        continue;
       }
+
+      // --- MATERIAALITARKISTUS ---
+      let maxByMaterials = Infinity;
+      if (resource.inputs && resource.inputs.length > 0) {
+        resource.inputs.forEach((input: Ingredient) => {
+          const available = currentState.inventory[input.id] || 0;
+          const possibleWithThisInput = Math.floor(available / input.count);
+          maxByMaterials = Math.min(maxByMaterials, possibleWithThisInput);
+        });
+      }
+
+      if (maxByMaterials === 0 && resource.inputs) {
+        // Materiaalit loppu, tätä ei voi tehdä enää yhtään.
+        // Pysäytetään jono tähän (ei poisteta, jotta pelaaja näkee mihin se jäi).
+        break;
+      }
+
+      const speedMult = getSpeedMultiplier(
+        currentItem.skill,
+        currentState.upgrades,
+      );
+      const intervalSeconds = (resource.interval || 3000) / speedMult / 1000;
+
+      const todoCount = currentItem.amount - currentItem.completed;
+      const possibleByTime = Math.floor(remainingSeconds / intervalSeconds);
+
+      // Valmistetaan niin monta kuin aika JA materiaalit sallivat
+      const actualCompletions = Math.min(
+        todoCount,
+        possibleByTime,
+        maxByMaterials,
+      );
+
+      if (actualCompletions > 0) {
+        // 1. KULUTETAAN MATERIAALIT
+        if (resource.inputs) {
+          resource.inputs.forEach((input: Ingredient) => {
+            currentState.inventory[input.id] -= input.count * actualCompletions;
+          });
+        }
+
+        const xpReward = actualCompletions * (resource.xpReward || 0);
+        const skillId = currentItem.skill;
+
+        // 2. Päivitetään XP
+        const sd = currentState.skills[skillId];
+        currentState.skills[skillId] = calculateXpGain(
+          sd.level,
+          sd.xp,
+          xpReward,
+        );
+        summary.xpGained[skillId] = (summary.xpGained[skillId] || 0) + xpReward;
+
+        // 3. Päivitetään Tavarat (tuotokset)
+        currentState.inventory[resource.id] =
+          (currentState.inventory[resource.id] || 0) + actualCompletions;
+        summary.itemsGained[resource.id] =
+          (summary.itemsGained[resource.id] || 0) + actualCompletions;
+
+        // 4. Kulutetaan aika
+        remainingSeconds -= actualCompletions * intervalSeconds;
+        currentItem.completed += actualCompletions;
+      }
+
+      // Jos tehtävä tuli täyteen, poistetaan se
+      if (currentItem.completed >= currentItem.amount) {
+        currentState.queue.shift();
+      } else {
+        break; // Aika tai materiaalit loppui kesken
+      }
+    }
+
+    // Synkronoidaan activeAction uuden jonon tilan mukaiseksi
+    if (currentState.queue.length > 0) {
+      const next = currentState.queue[0];
+      const skillData = GAME_DATA[next.skill as keyof typeof GAME_DATA];
+      const res = skillData?.find((r: Resource) => r.id === next.resourceId);
+      const speedMult = getSpeedMultiplier(next.skill, currentState.upgrades);
+
+      currentState.activeAction = {
+        skill: next.skill,
+        resourceId: next.resourceId,
+        progress: 0,
+        targetTime: (res?.interval || 3000) / speedMult,
+      };
+    } else {
+      currentState.activeAction = null;
+    }
+  }
+  // =====================================================================
+  // SKENAARIO 2: LOPUTON TOIMINTO (Pelaaja painoi "START", ei käyttänyt jonoa)
+  // =====================================================================
+  else if (currentState.activeAction) {
+    const { skill, resourceId } = currentState.activeAction;
+
+    if (skill !== "combat") {
+      const skillData = GAME_DATA[skill as keyof typeof GAME_DATA];
+      const resource = skillData?.find((r: Resource) => r.id === resourceId);
+
+      if (resource) {
+        const speedMult = getSpeedMultiplier(
+          skill as SkillType,
+          currentState.upgrades,
+        );
+        const intervalSeconds = (resource.interval || 3000) / speedMult / 1000;
+        const completions = Math.floor(remainingSeconds / intervalSeconds);
+
+        if (completions > 0) {
+          const totalXpReward = completions * (resource.xpReward || 0);
+          const sd = currentState.skills[skill as SkillType];
+
+          currentState.skills[skill as SkillType] = calculateXpGain(
+            sd.level,
+            sd.xp,
+            totalXpReward,
+          );
+          currentState.inventory[resource.id] =
+            (currentState.inventory[resource.id] || 0) + completions;
+
+          summary.xpGained[skill as SkillType] = totalXpReward;
+          summary.itemsGained[resource.id] = completions;
+        }
+      }
+    } else {
+      // COMBAT SIMULAATIO
+      const xpAtStart = { ...initialState.skills };
+      for (let i = 0; i < remainingSeconds; i++) {
+        if (!currentState.activeAction) break;
+        const updates = processCombatTick(currentState, 1000);
+        Object.assign(currentState, updates);
+
+        if (updates.combatStats)
+          currentState.combatStats = {
+            ...currentState.combatStats,
+            ...updates.combatStats,
+          };
+        if (updates.inventory)
+          currentState.inventory = {
+            ...currentState.inventory,
+            ...updates.inventory,
+          };
+        if (updates.skills)
+          currentState.skills = { ...currentState.skills, ...updates.skills };
+      }
+
+      summary.xpGained = calculateXpDifference(xpAtStart, currentState.skills);
+      summary.itemsGained = calculateItemDifference(
+        initialState.inventory,
+        currentState.inventory,
+      );
     }
   }
 
-  // --- SIMULAATIO (Combat tai tilanteet joissa bulk epäonnistuu) ---
-  const xpAtStart = { ...initialState.skills }; // Tallennetaan alkutilanne vertailua varten
-
-  for (let i = 0; i < simulatedSeconds; i++) {
-    if (!currentState.activeAction) break;
-    
-    // TARKISTUS 2: Vaihdettiin let -> const, kuten ESLint pyysi
-    const updates = currentState.activeAction.skill === 'combat' 
-      ? processCombatTick(currentState, 1000) 
-      : processSkillTick(currentState, 1000);
-
-    currentState = {
-      ...currentState,
-      ...updates,
-      combatStats: updates.combatStats ? { ...currentState.combatStats, ...updates.combatStats } : currentState.combatStats,
-      inventory: updates.inventory ? { ...currentState.inventory, ...updates.inventory } : currentState.inventory,
-      skills: updates.skills ? { ...currentState.skills, ...updates.skills } : currentState.skills
-    };
-  }
-
-  return { 
-    updatedState: currentState, 
-    summary: { 
-      seconds: simulatedSeconds, 
-      xpGained: calculateXpDifference(xpAtStart, currentState.skills), 
-      itemsGained: calculateItemDifference(initialState.inventory, currentState.inventory) 
-    } 
-  };
+  currentState.lastTimestamp = Date.now();
+  return { updatedState: currentState, summary };
 };
 
-/**
- * Laskee XP-eron taitojen välillä (Käytetään vain simulaatiossa, esim. Combat)
- */
-function calculateXpDifference(oldSkills: GameState['skills'], newSkills: GameState['skills']): Partial<Record<SkillType, number>> {
+// Apufunktiot
+function calculateXpDifference(
+  oldSkills: GameState["skills"],
+  newSkills: GameState["skills"],
+) {
   const diff: Partial<Record<SkillType, number>> = {};
   (Object.keys(oldSkills) as SkillType[]).forEach((skillId) => {
     const xpDiff = newSkills[skillId].xp - oldSkills[skillId].xp;
-    // Jos taso on noussut simulaation aikana, pelkkä xp-erotus näyttää vain jämän.
-    // Tämän takia elämäntaidoille käytetään yllä olevaa Bulk-laskentaa, joka on 100% tarkka.
     if (xpDiff > 0) diff[skillId] = xpDiff;
   });
   return diff;
 }
 
-/**
- * Laskee tavaraerot varaston välillä (Käytetään vain simulaatiossa)
- */
-function calculateItemDifference(oldInv: GameState['inventory'], newInv: GameState['inventory']): Record<string, number> {
+function calculateItemDifference(
+  oldInv: GameState["inventory"],
+  newInv: GameState["inventory"],
+) {
   const diff: Record<string, number> = {};
   for (const itemId in newInv) {
     const countDiff = (newInv[itemId] || 0) - (oldInv[itemId] || 0);

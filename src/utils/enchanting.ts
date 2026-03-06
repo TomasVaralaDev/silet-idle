@@ -2,9 +2,9 @@ import type { Resource, Rarity } from "../types";
 
 /**
  * Maksimitaso, jolle esineen voi lumota.
- * Exportataan tämä, jotta enchantingSlice.ts löytää sen.
+ * Laskettu arvosta 10 -> 5 nopeamman pelituntuman luomiseksi.
  */
-export const MAX_ENCHANT_LEVEL = 10;
+export const MAX_ENCHANT_LEVEL = 5;
 
 /**
  * Poistaa tasomerkinnän ID:stä (Esim. "iron_sword_e1" -> "iron_sword")
@@ -34,13 +34,14 @@ export const getNextEnchantId = (id: string): string => {
 };
 
 /**
- * Laskee onnistumistodennäköisyyden (Testien kaavan mukaan)
- * Kaava: (Käärön Tier * 10 + 30) - (Esineen nykyinen taso * 10)
+ * Laskee onnistumistodennäköisyyden.
+ * Koska tasoja on vähemmän ja ne ovat voimakkaampia, rangaistus on suurempi.
+ * Kaava: (Käärön Tier * 10 + 40) - (Esineen nykyinen taso * 20)
  */
 export const getSuccessChance = (level: number, scrollTier: number): number => {
   if (scrollTier <= 0) return 0;
-  const baseChance = scrollTier * 10 + 30;
-  const penalty = level * 10;
+  const baseChance = scrollTier * 10 + 40;
+  const penalty = level * 20;
   const chance = baseChance - penalty;
   return Math.max(5, Math.min(100, chance));
 };
@@ -49,8 +50,8 @@ export const getSuccessChance = (level: number, scrollTier: number): number => {
  * Laskee lumoamisen hinnan
  */
 export const getEnchantCost = (level: number, baseValue: number): number => {
-  // Perushinta nousee tason mukaan
-  return Math.floor(baseValue * (level + 1) * 10);
+  // Perushinta nousee jyrkemmin tason mukaan koska boosti on isompi
+  return Math.floor(baseValue * (level + 1) * 15);
 };
 
 /**
@@ -60,7 +61,8 @@ export const applyEnchantStats = (item: Resource, level: number): Resource => {
   if (level <= 0 || !item.stats) return item;
 
   const enchantedStats = { ...item.stats };
-  const multiplier = 1 + level * 0.1;
+  // Boosti per taso: 10% -> 20%
+  const multiplier = 1 + level * 0.2;
 
   if (enchantedStats.attack) {
     enchantedStats.attack = Math.floor(enchantedStats.attack * multiplier);
@@ -74,10 +76,10 @@ export const applyEnchantStats = (item: Resource, level: number): Resource => {
 
   // Päivitetään harvinaisuus tason mukaan
   let newRarity: Rarity = item.rarity;
-  if (level >= 9) newRarity = "legendary";
-  else if (level >= 7) newRarity = "epic";
-  else if (level >= 5) newRarity = "rare";
-  else if (level >= 3) newRarity = "uncommon";
+  if (level >= 5) newRarity = "legendary";
+  else if (level >= 4) newRarity = "epic";
+  else if (level >= 3) newRarity = "rare";
+  else if (level >= 2) newRarity = "uncommon";
 
   return {
     ...item,

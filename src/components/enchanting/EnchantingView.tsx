@@ -25,7 +25,9 @@ export default function EnchantingView() {
   const currentLevel = selectedItemId ? getEnchantLevel(selectedItemId) : 0;
   const isMaxLevel = currentLevel >= MAX_ENCHANT_LEVEL;
   const nextLevel = currentLevel + 1;
-  const cost = selectedItem ? getEnchantCost(nextLevel, selectedItem.value) : 0;
+  const cost = selectedItem
+    ? getEnchantCost(nextLevel, selectedItem.value || 100)
+    : 0;
   const canAfford = coins >= cost;
 
   const availableScrolls = useMemo(() => {
@@ -159,8 +161,13 @@ export default function EnchantingView() {
                   getRarityStyle(selectedItem.rarity).text
                 }`}
               >
-                Current Level: +{currentLevel}
+                Current Level: +{currentLevel} / {MAX_ENCHANT_LEVEL}
               </div>
+              {!isMaxLevel && (
+                <div className="text-accent text-[10px] uppercase font-bold tracking-widest mt-2 animate-pulse">
+                  Next Level: +20% Stats
+                </div>
+              )}
             </div>
 
             {!isMaxLevel && (

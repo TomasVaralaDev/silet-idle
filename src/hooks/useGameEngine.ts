@@ -5,9 +5,8 @@ import { processCombatTick } from "../systems/combatSystem";
 import { checkNewAchievements } from "../systems/achievementSystem";
 import { ACHIEVEMENTS } from "../data/achievements";
 import { GAME_DATA, getItemDetails } from "../data";
-// KORJAUS: Poistettu MAX_LEVEL importti
 import { calculateXpGain, getSpeedMultiplier } from "../utils/gameUtils";
-// KORJAUS: Poistettu QueueItem importti
+import { processQuestProgress } from "../systems/questSystem"; // LISÄTTY: Tuodaan questien päivityslogiikka
 import type { GameState, Resource, SkillType } from "../types";
 
 export const useGameEngine = () => {
@@ -56,7 +55,6 @@ export const useGameEngine = () => {
           const healedSkills = { ...state.skills };
           (Object.keys(healedSkills) as SkillType[]).forEach((skill) => {
             const skillData = healedSkills[skill];
-            // KORJAUS: Käytetään suoraan arvoa 99, jotta ei tarvita ylimääräistä importtia
             if (skillData && skillData.level > 99) {
               needsFix = true;
               healedSkills[skill] = { level: 99, xp: 0 };
@@ -81,7 +79,6 @@ export const useGameEngine = () => {
         }
 
         let currentAction = state.activeAction;
-        // KORJAUS: let -> const, koska currentQueue taulukkoa vain muokataan, ei korvata
         const currentQueue = [...state.queue];
 
         if (!currentAction && currentQueue.length > 0) {
@@ -226,6 +223,26 @@ export const useGameEngine = () => {
                     ...(updates.skills || state.skills),
                     [skill]: { xp: newXp, level: newLevel },
                   };
+
+                  // --- LISÄTTY: QUESTIEN PÄIVITYS TÄSSÄ ---
+                  const questType =
+                    resource.inputs && resource.inputs.length > 0
+                      ? "CRAFT"
+                      : "GATHER";
+                  const currentQuests =
+                    updates.quests?.dailyQuests || state.quests.dailyQuests;
+                  const updatedDailyQuests = processQuestProgress(
+                    currentQuests,
+                    questType,
+                    resource.id,
+                    possibleCompletions,
+                  );
+
+                  updates.quests = {
+                    ...(updates.quests || state.quests),
+                    dailyQuests: updatedDailyQuests,
+                  };
+                  // ----------------------------------------
 
                   if (isQueueTask) {
                     currentQueue[0].completed += possibleCompletions;

@@ -1,6 +1,7 @@
 import { GAME_DATA, getItemDetails } from "../data";
 import { calculateXpGain, getXpMultiplier } from "../utils/gameUtils";
 import { MAX_LEVEL } from "../utils/skillScaling";
+import { processQuestProgress } from "./questSystem"; // LISÄTTY: Tuodaan questien käsittelijä
 import type { GameState, Resource, SkillType, Ingredient } from "../types";
 
 /**
@@ -11,7 +12,8 @@ export const processSkillTick = (
   state: GameState,
   deltaTime: number,
 ): Partial<GameState> => {
-  const { activeAction, inventory, skills, upgrades, equipment } = state;
+  const { activeAction, inventory, skills, upgrades, equipment, quests } =
+    state; // LISÄTTY: quests purettu statesta
 
   if (!activeAction || activeAction.skill === "combat") return {};
 
@@ -72,6 +74,17 @@ export const processSkillTick = (
   // B) Palkinnon lisääminen
   newInventory[resource.id] = (newInventory[resource.id] || 0) + 1;
 
+  // C) QUESTIEN PÄIVITYS (UUSI LISÄYS)
+  // Päätellään onko kyseessä CRAFT vai GATHER. Jos item vaatii inputteja, se on CRAFT. Muuten GATHER.
+  const questType =
+    resource.inputs && resource.inputs.length > 0 ? "CRAFT" : "GATHER";
+  const updatedDailyQuests = processQuestProgress(
+    quests.dailyQuests,
+    questType,
+    resource.id,
+    1,
+  );
+
   // Siivotaan nollat inventorysta
   Object.keys(newInventory).forEach((key) => {
     if (newInventory[key] <= 0) {
@@ -107,6 +120,7 @@ export const processSkillTick = (
   return {
     inventory: newInventory,
     skills: newSkills,
+    quests: { ...quests, dailyQuests: updatedDailyQuests }, // LISÄTTY: Palautetaan päivitetyt questit
     activeAction: {
       ...activeAction,
       progress: newProgress % activeAction.targetTime,

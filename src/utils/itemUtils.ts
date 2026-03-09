@@ -1,15 +1,14 @@
-import { GAME_DATA } from '../data/skills'; // Polku tiedostoosi
-import type { Resource } from '../types';
+import { getItemDetails } from "../data";
+import type { Resource } from "../types";
 
-// Litistetään kaikki esineet yhteen mappiin nopeaa haku varten
-const ALL_ITEMS_MAP: Record<string, Resource> = {};
-
-Object.values(GAME_DATA).forEach((categoryItems) => {
-  categoryItems.forEach((item) => {
-    ALL_ITEMS_MAP[item.id] = item;
-  });
-});
-
+/**
+ * Hakee esineen tiedot ID:n perusteella.
+ * Käyttää pelin dynaamista päätehdasta (getItemDetails),
+ * jotta myös generoidut esineet (avaimet, lootit, lumotut varusteet) otetaan huomioon.
+ */
 export const getItemById = (id: string): Resource | undefined => {
-  return ALL_ITEMS_MAP[id];
+  const item = getItemDetails(id);
+
+  // Palautetaan undefined nullin sijaan, jotta tyypitys säilyy samana kuin aiemmin
+  return item !== null ? item : undefined;
 };

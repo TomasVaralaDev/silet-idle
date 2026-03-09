@@ -37,17 +37,36 @@ export default function InventoryControls({
     <div className="flex flex-col gap-3 p-4 border-b border-border bg-panel/50">
       {/* SEARCH BAR (UUSI) */}
       <div className="relative">
+        {/* SVG Suurennuslasi */}
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-tx-muted/50 flex items-center justify-center pointer-events-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-3.5 h-3.5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+            />
+          </svg>
+        </span>
+
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search items..."
-          className="w-full bg-app-base border border-border rounded-lg py-2 pl-9 pr-4 text-sm text-tx-main placeholder-tx-muted focus:outline-none focus:border-accent/50 transition-all"
+          className="w-full bg-app-base border border-border rounded-lg py-2 pl-9 pr-8 text-sm text-tx-main placeholder-tx-muted focus:outline-none focus:border-accent/50 transition-all"
         />
+
         {searchQuery && (
           <button
             onClick={() => onSearchChange("")}
-            className="absolute right-3 top-2.5 text-tx-muted hover:text-tx-main"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-tx-muted hover:text-tx-main transition-colors text-sm"
           >
             ✕
           </button>

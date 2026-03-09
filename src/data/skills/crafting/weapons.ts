@@ -283,7 +283,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 65, attackSpeed: 2800, critChance: 0.18, critMulti: 2.3 },
     category: "bow",
-    isUnique: false,
+    isUnique: true,
   },
   {
     id: "bow_adamantite",

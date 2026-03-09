@@ -1,13 +1,25 @@
-import { WORLD_INFO, WORLD_LOOT } from './worlds';
-import { COMBAT_DATA } from './combat';
-import { GAME_DATA } from './skills'; // Hakee automaattisesti skills/index.ts tiedoston
-import { SHOP_ITEMS } from './shop';
-import { ACHIEVEMENTS } from './achievements';
-import { RUNES_DATA } from './runes'; 
-import { getBaseId, getEnchantLevel, applyEnchantStats } from '../utils/enchanting';
-import type { Resource } from '../types';
+import { WORLD_INFO, WORLD_LOOT } from "./worlds";
+import { COMBAT_DATA } from "./combat";
+import { GAME_DATA } from "./skills"; // Hakee automaattisesti skills/index.ts tiedoston
+import { SHOP_ITEMS } from "./shop";
+import { ACHIEVEMENTS } from "./achievements";
+import { RUNES_DATA } from "./runes";
+import {
+  getBaseId,
+  getEnchantLevel,
+  applyEnchantStats,
+} from "../utils/enchanting";
+import type { Resource } from "../types";
 
-export { WORLD_INFO, WORLD_LOOT, COMBAT_DATA, GAME_DATA, SHOP_ITEMS, ACHIEVEMENTS, RUNES_DATA };
+export {
+  WORLD_INFO,
+  WORLD_LOOT,
+  COMBAT_DATA,
+  GAME_DATA,
+  SHOP_ITEMS,
+  ACHIEVEMENTS,
+  RUNES_DATA,
+};
 
 /**
  * 1. Määritellään Factory-rajapinta.
@@ -21,33 +33,44 @@ interface ItemSubFactory {
  * 2. Rune Factory (DYNAAMINEN)
  */
 const RuneFactory: ItemSubFactory = {
-  canHandle: (id) => id.startsWith('rune_'),
+  canHandle: (id) => id.startsWith("rune_"),
   create: (id) => {
-    const rune = RUNES_DATA.find(r => r.id === id);
+    const rune = RUNES_DATA.find((r) => r.id === id);
     return rune || {};
-  }
+  },
 };
 
 /**
  * 3. World Loot Factory
  */
 const WorldLootFactory: ItemSubFactory = {
-  canHandle: (id) => !id.startsWith('rune_') && (id.includes('_basic') || id.includes('_rare') || id.includes('_exotic')),
+  canHandle: (id) =>
+    !id.startsWith("rune_") &&
+    (id.includes("_basic") || id.includes("_rare") || id.includes("_exotic")),
   create: (id) => {
-    const parts = id.split('_');
+    const parts = id.split("_");
     const worldNameRaw = parts[0];
-    const type = parts[parts.length - 1]; 
-    
-    const worldDisplay = worldNameRaw.charAt(0).toUpperCase() + worldNameRaw.slice(1);
-    
-    const configs: Record<string, { suffix: string, val: number, rar: Resource['rarity'], col: string }> = {
-      basic: { suffix: 'Dust', val: 10, rar: 'common', col: 'text-slate-400' },
-      rare: { suffix: 'Gem', val: 100, rar: 'rare', col: 'text-cyan-400' },
-      exotic: { suffix: 'Elite', val: 1000, rar: 'legendary', col: 'text-orange-500' }
+    const type = parts[parts.length - 1];
+
+    const worldDisplay =
+      worldNameRaw.charAt(0).toUpperCase() + worldNameRaw.slice(1);
+
+    const configs: Record<
+      string,
+      { suffix: string; val: number; rar: Resource["rarity"]; col: string }
+    > = {
+      basic: { suffix: "Dust", val: 10, rar: "common", col: "text-slate-400" },
+      rare: { suffix: "Gem", val: 100, rar: "rare", col: "text-cyan-400" },
+      exotic: {
+        suffix: "Elite",
+        val: 1000,
+        rar: "legendary",
+        col: "text-orange-500",
+      },
     };
 
     const config = configs[type];
-    if (!config) return { name: id, value: 0, rarity: 'common' };
+    if (!config) return { name: id, value: 0, rarity: "common" };
 
     return {
       name: `${worldDisplay} ${config.suffix}`,
@@ -55,51 +78,72 @@ const WorldLootFactory: ItemSubFactory = {
       rarity: config.rar,
       color: config.col,
       icon: `/assets/lootpoolszones/${id}.png`,
-      description: `${config.rar} energy source from ${worldDisplay}.`
+      description: `${config.rar} energy source from ${worldDisplay}.`,
     };
-  }
+  },
 };
 
 /**
  * 4. Key Factory
  */
 const KeyFactory: ItemSubFactory = {
-  canHandle: (id) => id.startsWith('bosskey_w'),
+  canHandle: (id) => id.startsWith("bosskey_w"),
   create: (id) => {
-    const worldNum = id.replace('bosskey_w', '');
+    const worldNum = id.replace("bosskey_w", "");
     return {
       name: `World ${worldNum} Key`,
       value: 500,
-      color: 'text-yellow-500',
+      color: "text-yellow-500",
       icon: `/assets/items/bosskey/${id}.png`,
-      description: 'Provides access to the regional boss.',
-      rarity: 'rare'
+      description: "Provides access to the regional boss.",
+      rarity: "rare",
+      isUnique: false,
     };
-  }
+  },
 };
 
 /**
  * 5. Enchant Scroll Factory
  */
 const EnchantScrollFactory: ItemSubFactory = {
-  canHandle: (id) => id.startsWith('scroll_enchant_'),
+  canHandle: (id) => id.startsWith("scroll_enchant_"),
   create: (id) => {
-    const tierPart = id.split('_').pop(); 
-    const tier = parseInt(tierPart?.replace('w', '') || '1');
-    const chances = [0, 5, 8, 12, 15, 20, 25, 30, 40]; 
+    const tierPart = id.split("_").pop();
+    const tier = parseInt(tierPart?.replace("w", "") || "1");
+    const chances = [0, 5, 8, 12, 15, 20, 25, 30, 40];
     const chance = chances[tier] || 5;
-    const rarityMap = ['common', 'common', 'common', 'rare', 'rare', 'epic', 'epic', 'legendary', 'legendary'];
-    const colorMap = ['text-slate-400', 'text-slate-400', 'text-green-400', 'text-blue-400', 'text-blue-300', 'text-purple-400', 'text-purple-300', 'text-orange-400', 'text-yellow-400'];
+    const rarityMap = [
+      "common",
+      "common",
+      "common",
+      "rare",
+      "rare",
+      "epic",
+      "epic",
+      "legendary",
+      "legendary",
+    ];
+    const colorMap = [
+      "text-slate-400",
+      "text-slate-400",
+      "text-green-400",
+      "text-blue-400",
+      "text-blue-300",
+      "text-purple-400",
+      "text-purple-300",
+      "text-orange-400",
+      "text-yellow-400",
+    ];
 
     return {
       name: `Enchant Scroll T${tier}`,
       value: 100 * tier,
-      rarity: (rarityMap[tier] || 'common') as Resource['rarity'],
-      color: colorMap[tier] || 'text-slate-400',
+      rarity: (rarityMap[tier] || "common") as Resource["rarity"],
+      color: colorMap[tier] || "text-slate-400",
       icon: `/assets/items/enchantingscroll/enchanting_tier${tier}.png`,
-      description: `Magical scroll. Increases enchanting success chance by +${chance}%.`
+      description: `Magical scroll. Increases enchanting success chance by +${chance}%.`,
     };
-  }
+  },
 };
 
 /**
@@ -109,8 +153,8 @@ const EnchantScrollFactory: ItemSubFactory = {
 const SkillResourceFactory: ItemSubFactory = {
   canHandle: (id: string) => {
     const categories = Object.values(GAME_DATA) as Resource[][];
-    return categories.some((skillList) => 
-      skillList.some((item) => item.id === id)
+    return categories.some((skillList) =>
+      skillList.some((item) => item.id === id),
     );
   },
   create: (id: string) => {
@@ -120,7 +164,7 @@ const SkillResourceFactory: ItemSubFactory = {
       if (found) return found;
     }
     return {};
-  }
+  },
 };
 
 /**
@@ -129,8 +173,14 @@ const SkillResourceFactory: ItemSubFactory = {
 export const getItemDetails = (id: string): Resource | null => {
   if (!id) return null;
 
-  if (id === 'coins') {
-    return { id: 'coins', name: 'Coins', value: 1, icon: '/assets/ui/coins.png', rarity: 'common' } as Resource;
+  if (id === "coins") {
+    return {
+      id: "coins",
+      name: "Coins",
+      value: 1,
+      icon: "/assets/ui/coins.png",
+      rarity: "common",
+    } as Resource;
   }
 
   const baseId = getBaseId(id);
@@ -140,16 +190,18 @@ export const getItemDetails = (id: string): Resource | null => {
     RuneFactory,
     KeyFactory,
     EnchantScrollFactory,
-    WorldLootFactory, 
-    SkillResourceFactory
+    WorldLootFactory,
+    SkillResourceFactory,
   ];
-  
-  const factory = factories.find(f => f.canHandle(baseId));
+
+  const factory = factories.find((f) => f.canHandle(baseId));
 
   if (!factory) return null;
 
   const baseItem = factory.create(baseId);
   const finalItem = { ...baseItem, id: id } as Resource;
 
-  return enchantLevel > 0 ? applyEnchantStats(finalItem, enchantLevel) : finalItem;
+  return enchantLevel > 0
+    ? applyEnchantStats(finalItem, enchantLevel)
+    : finalItem;
 };

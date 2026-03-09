@@ -153,6 +153,7 @@ export interface Resource {
   area?: number;
   inputs?: Ingredient[];
   slot?: EquipmentSlot;
+  isUnique?: boolean;
   stats?: {
     attack?: number;
     defense?: number;

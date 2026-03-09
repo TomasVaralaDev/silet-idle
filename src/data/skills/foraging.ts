@@ -16,6 +16,7 @@ export const foragingResources: Resource[] = [
     color: "text-red-500",
     description: "A common red mushroom found in damp areas.",
     area: 1,
+    isUnique: false,
   },
   {
     id: "red_stick",
@@ -31,6 +32,7 @@ export const foragingResources: Resource[] = [
     color: "text-red-400",
     description: "A simple stick infused with red essence.",
     area: 1,
+    isUnique: false,
   },
 
   // --- TIER 2 (Level 10) ---
@@ -48,6 +50,7 @@ export const foragingResources: Resource[] = [
     color: "text-slate-200",
     description: "A sturdy, pale branch.",
     area: 2,
+    isUnique: false,
   },
 
   // --- TIER 3 (Level 25) ---
@@ -65,6 +68,7 @@ export const foragingResources: Resource[] = [
     color: "text-orange-500",
     description: "Petals that radiate a faint heat.",
     area: 3,
+    isUnique: false,
   },
   {
     id: "tier3_bigleaf",
@@ -80,6 +84,7 @@ export const foragingResources: Resource[] = [
     color: "text-emerald-500",
     description: "A large, durable leaf used in brewing.",
     area: 3,
+    isUnique: false,
   },
 
   // --- TIER 4 (Level 40) ---
@@ -97,6 +102,7 @@ export const foragingResources: Resource[] = [
     color: "text-indigo-400",
     description: "A leaf that seems to absorb light.",
     area: 5,
+    isUnique: false,
   },
 
   // --- TIER 5 (Level 55) ---
@@ -114,6 +120,7 @@ export const foragingResources: Resource[] = [
     color: "text-yellow-400",
     description: "A rare flower that glimmers like gold.",
     area: 6,
+    isUnique: false,
   },
 
   // --- TIER 6 (Level 70) ---
@@ -131,6 +138,7 @@ export const foragingResources: Resource[] = [
     color: "text-green-500",
     description: "Vibrant and full of biological energy.",
     area: 8,
+    isUnique: false,
   },
   {
     id: "green_mushroom",
@@ -146,6 +154,7 @@ export const foragingResources: Resource[] = [
     color: "text-green-400",
     description: "A rare neon-green fungus.",
     area: 8,
+    isUnique: false,
   },
 
   // --- TIER 7 (Level 85) ---
@@ -163,6 +172,7 @@ export const foragingResources: Resource[] = [
     color: "text-purple-400",
     description: "A flower that never wilts or loses its glow.",
     area: 9,
+    isUnique: false,
   },
 
   // --- TIER 8 (Level 99) ---
@@ -180,5 +190,6 @@ export const foragingResources: Resource[] = [
     color: "text-red-600",
     description: "A legendary flower forged in intense heat.",
     area: 10,
+    isUnique: false,
   },
 ];

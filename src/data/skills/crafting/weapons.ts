@@ -21,6 +21,7 @@ export const weapons: Resource[] = [
     stats: { attack: 8, attackSpeed: 2400, critChance: 0.05, critMulti: 1.5 },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   {
     id: "weapon_sword_iron",
@@ -41,6 +42,7 @@ export const weapons: Resource[] = [
     stats: { attack: 22, attackSpeed: 2400, critChance: 0.05, critMulti: 1.5 },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   {
     id: "weapon_sword_gold",
@@ -61,6 +63,7 @@ export const weapons: Resource[] = [
     stats: { attack: 45, attackSpeed: 2500, critChance: 0.08, critMulti: 1.6 },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   {
     id: "weapon_sword_mithril",
@@ -81,6 +84,7 @@ export const weapons: Resource[] = [
     stats: { attack: 85, attackSpeed: 2200, critChance: 0.1, critMulti: 1.7 },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   {
     id: "weapon_sword_adamantite",
@@ -101,6 +105,7 @@ export const weapons: Resource[] = [
     stats: { attack: 180, attackSpeed: 2400, critChance: 0.12, critMulti: 1.8 },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   {
     id: "weapon_sword_emerald",
@@ -121,6 +126,7 @@ export const weapons: Resource[] = [
     stats: { attack: 350, attackSpeed: 2300, critChance: 0.15, critMulti: 2.0 },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   {
     id: "weapon_sword_eternium",
@@ -141,6 +147,7 @@ export const weapons: Resource[] = [
     stats: { attack: 800, attackSpeed: 2000, critChance: 0.2, critMulti: 2.2 },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   {
     id: "weapon_sword_starfallalloy",
@@ -166,6 +173,7 @@ export const weapons: Resource[] = [
     },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
   // --- EXCALIBUR (Dev Tool) ---
   {
@@ -189,6 +197,7 @@ export const weapons: Resource[] = [
     },
     category: "sword",
     combatStyle: "melee",
+    isUnique: false,
   },
 
   // --- BOWS --- (Hitaita, mutta isompia crittejä)
@@ -211,6 +220,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 6, attackSpeed: 3000, critChance: 0.1, critMulti: 2.0 },
     category: "bow",
+    isUnique: false,
   },
   {
     id: "bow_iron",
@@ -231,6 +241,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 16, attackSpeed: 3000, critChance: 0.12, critMulti: 2.0 },
     category: "bow",
+    isUnique: false,
   },
   {
     id: "bow_gold",
@@ -251,6 +262,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 35, attackSpeed: 3200, critChance: 0.15, critMulti: 2.2 },
     category: "bow",
+    isUnique: false,
   },
   {
     id: "bow_mithril",
@@ -271,6 +283,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 65, attackSpeed: 2800, critChance: 0.18, critMulti: 2.3 },
     category: "bow",
+    isUnique: false,
   },
   {
     id: "bow_adamantite",
@@ -291,6 +304,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 140, attackSpeed: 3000, critChance: 0.2, critMulti: 2.5 },
     category: "bow",
+    isUnique: false,
   },
   {
     id: "bow_emerald",
@@ -311,6 +325,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 280, attackSpeed: 2800, critChance: 0.25, critMulti: 2.8 },
     category: "bow",
+    isUnique: false,
   },
   {
     id: "bow_eternium",
@@ -331,6 +346,7 @@ export const weapons: Resource[] = [
     combatStyle: "ranged",
     stats: { attack: 650, attackSpeed: 2500, critChance: 0.3, critMulti: 3.0 },
     category: "bow",
+    isUnique: false,
   },
   {
     id: "bow_starfall",
@@ -356,6 +372,7 @@ export const weapons: Resource[] = [
       critMulti: 3.5,
     },
     category: "bow",
+    isUnique: false,
   },
 
   // --- STAFFS --- (Magiaa, jatkuva nopeus)
@@ -378,6 +395,7 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 5, attackSpeed: 2600, critChance: 0.05, critMulti: 1.5 },
     category: "staff",
+    isUnique: false,
   },
   {
     id: "staff_iron",
@@ -398,6 +416,7 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 14, attackSpeed: 2600, critChance: 0.05, critMulti: 1.5 },
     category: "staff",
+    isUnique: false,
   },
   {
     id: "staff_gold",
@@ -418,6 +437,7 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 30, attackSpeed: 2600, critChance: 0.06, critMulti: 1.6 },
     category: "staff",
+    isUnique: false,
   },
   {
     id: "staff_mithril",
@@ -438,6 +458,7 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 55, attackSpeed: 2400, critChance: 0.08, critMulti: 1.7 },
     category: "staff",
+    isUnique: false,
   },
   {
     id: "staff_adamantite",
@@ -458,6 +479,7 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 120, attackSpeed: 2600, critChance: 0.1, critMulti: 1.8 },
     category: "staff",
+    isUnique: false,
   },
   {
     id: "staff_emerald",
@@ -478,6 +500,7 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 240, attackSpeed: 2500, critChance: 0.12, critMulti: 2.0 },
     category: "staff",
+    isUnique: false,
   },
   {
     id: "staff_eternium",
@@ -498,6 +521,7 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 550, attackSpeed: 2200, critChance: 0.15, critMulti: 2.2 },
     category: "staff",
+    isUnique: false,
   },
   {
     id: "staff_starfall",
@@ -518,5 +542,6 @@ export const weapons: Resource[] = [
     combatStyle: "magic",
     stats: { attack: 1400, attackSpeed: 2400, critChance: 0.2, critMulti: 2.5 },
     category: "staff",
+    isUnique: false,
   },
 ];

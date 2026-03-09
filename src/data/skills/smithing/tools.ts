@@ -19,6 +19,7 @@ export const tools: Resource[] = [
     slot: "ring",
     stats: { attack: 3, defense: 3 },
     inputs: [{ id: "ore_iron_smelted", count: 5 }],
+    isUnique: false,
   },
   {
     id: "ring_gold",
@@ -35,6 +36,7 @@ export const tools: Resource[] = [
     slot: "ring",
     stats: { attack: 8, defense: 8 },
     inputs: [{ id: "ore_gold_smelted", count: 12 }],
+    isUnique: false,
   },
   {
     id: "ring_adamantite",
@@ -51,6 +53,7 @@ export const tools: Resource[] = [
     slot: "ring",
     stats: { attack: 25, defense: 25 },
     inputs: [{ id: "ore_adamantite_smelted", count: 50 }],
+    isUnique: false,
   },
   {
     id: "ring_emerald",
@@ -67,6 +70,7 @@ export const tools: Resource[] = [
     slot: "ring",
     stats: { attack: 50, defense: 50 },
     inputs: [{ id: "ore_emerald_smelted", count: 100 }],
+    isUnique: false,
   },
   {
     id: "ring_eternium",
@@ -83,6 +87,7 @@ export const tools: Resource[] = [
     slot: "ring",
     stats: { attack: 100, defense: 100 },
     inputs: [{ id: "ore_eternium_smelted", count: 300 }],
+    isUnique: false,
   },
   {
     id: "ring_starfallalloy",
@@ -99,6 +104,7 @@ export const tools: Resource[] = [
     slot: "ring",
     stats: { attack: 250, defense: 250 },
     inputs: [{ id: "ore_starfallalloy_smelted", count: 1000 }],
+    isUnique: false,
   },
 
   // ==========================================
@@ -119,6 +125,7 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 12 },
     inputs: [{ id: "ore_copper_smelted", count: 5 }],
+    isUnique: false,
   },
   {
     id: "shield_iron",
@@ -135,6 +142,7 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 28 },
     inputs: [{ id: "ore_iron_smelted", count: 12 }],
+    isUnique: false,
   },
   {
     id: "shield_gold",
@@ -151,6 +159,7 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 55 },
     inputs: [{ id: "ore_gold_smelted", count: 25 }],
+    isUnique: false,
   },
   {
     id: "shield_mithril",
@@ -167,6 +176,7 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 120 },
     inputs: [{ id: "ore_mithril_smelted", count: 45 }],
+    isUnique: false,
   },
   {
     id: "shield_adamantite",
@@ -183,6 +193,7 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 250 },
     inputs: [{ id: "ore_adamantite_smelted", count: 90 }],
+    isUnique: false,
   },
   {
     id: "shield_emerald",
@@ -199,6 +210,7 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 500 },
     inputs: [{ id: "ore_emerald_smelted", count: 180 }],
+    isUnique: false,
   },
   {
     id: "shield_eternium",
@@ -215,6 +227,7 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 1100 },
     inputs: [{ id: "ore_eternium_smelted", count: 450 }],
+    isUnique: false,
   },
   {
     id: "shield_starfall",
@@ -231,5 +244,6 @@ export const tools: Resource[] = [
     slot: "shield",
     stats: { defense: 2500 },
     inputs: [{ id: "ore_starfallalloy_smelted", count: 3500 }],
+    isUnique: false,
   },
 ];

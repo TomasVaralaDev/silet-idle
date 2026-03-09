@@ -16,6 +16,7 @@ export const jewelry: Resource[] = [
     slot: "necklace",
     stats: { attack: 5, defense: 5 },
     category: "necklace",
+    isUnique: false,
   },
   {
     id: "necklace_gold",
@@ -32,6 +33,7 @@ export const jewelry: Resource[] = [
     slot: "necklace",
     stats: { attack: 12, defense: 12 },
     category: "necklace",
+    isUnique: false,
   },
   {
     id: "necklace_adamantite",
@@ -48,6 +50,7 @@ export const jewelry: Resource[] = [
     slot: "necklace",
     stats: { attack: 35, defense: 35 },
     category: "necklace",
+    isUnique: false,
   },
   {
     id: "necklace_emerald",
@@ -64,6 +67,7 @@ export const jewelry: Resource[] = [
     slot: "necklace",
     stats: { attack: 75, defense: 75 },
     category: "necklace",
+    isUnique: false,
   },
   {
     id: "necklace_eternium",
@@ -83,6 +87,7 @@ export const jewelry: Resource[] = [
     slot: "necklace",
     stats: { attack: 150, defense: 150 },
     category: "necklace",
+    isUnique: false,
   },
   {
     id: "necklace_starfallalloy",
@@ -102,5 +107,6 @@ export const jewelry: Resource[] = [
     slot: "necklace",
     stats: { attack: 350, defense: 350 },
     category: "necklace",
+    isUnique: false,
   },
 ];

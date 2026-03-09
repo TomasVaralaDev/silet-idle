@@ -18,6 +18,7 @@ export const alchemyResources: Resource[] = [
       { id: "red_stick", count: 1 },
       { id: "red_mushroom", count: 1 },
     ],
+    isUnique: false,
   },
   {
     id: "potion_tier2",
@@ -36,6 +37,7 @@ export const alchemyResources: Resource[] = [
       { id: "red_mushroom", count: 1 },
       { id: "white_stick", count: 1 },
     ],
+    isUnique: false,
   },
   {
     id: "potion_tier3",
@@ -54,6 +56,7 @@ export const alchemyResources: Resource[] = [
       { id: "flame_flower", count: 1 },
       { id: "white_stick", count: 1 },
     ],
+    isUnique: false,
   },
   {
     id: "potion_tier4",
@@ -72,6 +75,7 @@ export const alchemyResources: Resource[] = [
       { id: "dark_leaf", count: 1 },
       { id: "white_stick", count: 1 },
     ],
+    isUnique: false,
   },
   {
     id: "potion_tier5",
@@ -91,6 +95,7 @@ export const alchemyResources: Resource[] = [
       { id: "dark_leaf", count: 1 },
       { id: "flame_flower", count: 1 },
     ],
+    isUnique: false,
   },
   {
     id: "potion_tier6",
@@ -109,6 +114,7 @@ export const alchemyResources: Resource[] = [
       { id: "green_leaf", count: 1 },
       { id: "green_mushroom", count: 1 },
     ],
+    isUnique: false,
   },
   {
     id: "potion_tier7",
@@ -127,6 +133,7 @@ export const alchemyResources: Resource[] = [
       { id: "eternal_flower", count: 1 },
       { id: "green_mushroom", count: 1 },
     ],
+    isUnique: false,
   },
   {
     id: "potion_tier8",
@@ -146,5 +153,6 @@ export const alchemyResources: Resource[] = [
       { id: "eternal_flower", count: 1 },
       { id: "green_mushroom", count: 1 },
     ],
+    isUnique: false,
   },
 ];

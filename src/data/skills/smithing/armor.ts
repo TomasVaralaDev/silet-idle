@@ -29,6 +29,7 @@ export const armor: Resource[] = [
     slot: "head",
     stats: { defense: 5, hpBonus: 10 },
     inputs: [{ id: "ore_iron_smelted", count: 10 }],
+    isUnique: false,
   },
   {
     id: "armor_gold_helm",
@@ -43,6 +44,7 @@ export const armor: Resource[] = [
     slot: "head",
     stats: { defense: 8, hpBonus: 15 },
     inputs: [{ id: "ore_gold_smelted", count: 30 }],
+    isUnique: false,
   },
   {
     id: "armor_mithril_helm",
@@ -57,6 +59,7 @@ export const armor: Resource[] = [
     slot: "head",
     stats: { defense: 12, hpBonus: 25 },
     inputs: [{ id: "ore_mithril_smelted", count: 75 }],
+    isUnique: false,
   },
   {
     id: "armor_adamantite_helm",
@@ -71,6 +74,7 @@ export const armor: Resource[] = [
     slot: "head",
     stats: { defense: 18, hpBonus: 40 },
     inputs: [{ id: "ore_adamantite_smelted", count: 220 }],
+    isUnique: false,
   },
   {
     id: "armor_emerald_helm",
@@ -85,6 +89,7 @@ export const armor: Resource[] = [
     slot: "head",
     stats: { defense: 28, hpBonus: 60 },
     inputs: [{ id: "ore_emerald_smelted", count: 600 }],
+    isUnique: false,
   },
   {
     id: "armor_eternium_helm",
@@ -99,6 +104,7 @@ export const armor: Resource[] = [
     slot: "head",
     stats: { defense: 40, hpBonus: 100 },
     inputs: [{ id: "ore_eternium_smelted", count: 1500 }],
+    isUnique: false,
   },
   {
     id: "armor_starfall_helm",
@@ -113,6 +119,7 @@ export const armor: Resource[] = [
     slot: "head",
     stats: { defense: 60, hpBonus: 150 },
     inputs: [{ id: "ore_starfallalloy_smelted", count: 4000 }],
+    isUnique: false,
   },
 
   // --- CHESTPLATES (Large) ---
@@ -129,6 +136,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 5, hpBonus: 15 },
     inputs: [{ id: "ore_copper_smelted", count: 8 }],
+    isUnique: false,
   },
   {
     id: "armor_iron_body",
@@ -143,6 +151,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 15, hpBonus: 40 },
     inputs: [{ id: "ore_iron_smelted", count: 20 }],
+    isUnique: false,
   },
   {
     id: "armor_gold_body",
@@ -157,6 +166,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 35, hpBonus: 80 },
     inputs: [{ id: "ore_gold_smelted", count: 60 }],
+    isUnique: false,
   },
   {
     id: "armor_mithril_body",
@@ -171,6 +181,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 80, hpBonus: 180 },
     inputs: [{ id: "ore_mithril_smelted", count: 150 }],
+    isUnique: false,
   },
   {
     id: "armor_adamantite_body",
@@ -185,6 +196,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 180, hpBonus: 400 },
     inputs: [{ id: "ore_adamantite_smelted", count: 450 }],
+    isUnique: false,
   },
   {
     id: "armor_emerald_body",
@@ -199,6 +211,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 450, hpBonus: 1000 },
     inputs: [{ id: "ore_emerald_smelted", count: 1200 }],
+    isUnique: false,
   },
   {
     id: "armor_eternium_body",
@@ -213,6 +226,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 1200, hpBonus: 2500 },
     inputs: [{ id: "ore_eternium_smelted", count: 3000 }],
+    isUnique: false,
   },
   {
     id: "armor_starfall_body",
@@ -227,6 +241,7 @@ export const armor: Resource[] = [
     slot: "body",
     stats: { defense: 3500, hpBonus: 8000 },
     inputs: [{ id: "ore_starfallalloy_smelted", count: 8000 }],
+    isUnique: false,
   },
 
   // --- LEGS (Medium) ---
@@ -243,6 +258,7 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 4, hpBonus: 10 },
     inputs: [{ id: "ore_copper_smelted", count: 6 }],
+    isUnique: false,
   },
   {
     id: "armor_iron_legs",
@@ -257,6 +273,7 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 10, hpBonus: 25 },
     inputs: [{ id: "ore_iron_smelted", count: 15 }],
+    isUnique: false,
   },
   {
     id: "armor_gold_legs",
@@ -271,6 +288,7 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 22, hpBonus: 50 },
     inputs: [{ id: "ore_gold_smelted", count: 45 }],
+    isUnique: false,
   },
   {
     id: "armor_mithril_legs",
@@ -285,6 +303,7 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 50, hpBonus: 120 },
     inputs: [{ id: "ore_mithril_smelted", count: 110 }],
+    isUnique: false,
   },
   {
     id: "armor_adamantite_legs",
@@ -299,6 +318,7 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 110, hpBonus: 260 },
     inputs: [{ id: "ore_adamantite_smelted", count: 320 }],
+    isUnique: false,
   },
   {
     id: "armor_emerald_legs",
@@ -313,6 +333,7 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 280, hpBonus: 650 },
     inputs: [{ id: "ore_emerald_smelted", count: 850 }],
+    isUnique: false,
   },
   {
     id: "armor_eternium_legs",
@@ -327,6 +348,7 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 750, hpBonus: 1600 },
     inputs: [{ id: "ore_eternium_smelted", count: 2200 }],
+    isUnique: false,
   },
   {
     id: "armor_starfall_legs",
@@ -341,5 +363,6 @@ export const armor: Resource[] = [
     slot: "legs",
     stats: { defense: 2200, hpBonus: 5000 },
     inputs: [{ id: "ore_starfallalloy_smelted", count: 6000 }],
+    isUnique: false,
   },
 ];

@@ -9,7 +9,8 @@ export interface InventorySlice {
   upgrades: string[];
   equipment: Record<Exclude<EquipmentSlot, "food">, string | null>;
   equippedFood: { itemId: string; count: number } | null;
-  sellItem: (itemId: string, amount: number) => void;
+  // KORJAUS: Tyypitykseen lisätty | "all", jotta UI voi lähettää sen turvallisesti
+  sellItem: (itemId: string, amount: number | "all") => void;
   buyUpgrade: (item: ShopItem) => void;
   gamble: (amount: number, callback: (win: boolean) => void) => void;
   equipItem: (itemId: string) => void;
@@ -39,7 +40,7 @@ export const createInventorySlice: StateCreator<
   },
   equippedFood: null,
 
-  sellItem: (itemId, amount: number | string) =>
+  sellItem: (itemId, amount) =>
     set((state) => {
       const item = getItemDetails(itemId);
       const currentCount = state.inventory[itemId] || 0;

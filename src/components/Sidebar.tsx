@@ -268,9 +268,9 @@ export default function Sidebar({
             </div>
             <span
               className="font-mono text-base font-bold text-warning truncate ml-2"
-              title={coins.toLocaleString()}
+              title={(coins || 0).toLocaleString()} // KORJATTU: Fallback nollaan jos coins on null/undefined
             >
-              {formatNumber(coins)}
+              {formatNumber(coins || 0)}
             </span>
           </div>
 

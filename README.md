@@ -74,6 +74,10 @@ Curious about how the game works under the hood? I have documented the core engi
 - [The Math of Offline Progression](./docs/offline-progression.md) - Simulating hours of gameplay, queue processing, and combat instantly when the user returns.
 - [Post-Mortem: The Queue Synchronization Bug](./docs/post-mortem-queue.md) - A deep dive into a bug where idle queues bypassed the quest tracking system, and how I fixed it using automated tests (Vitest).
 
+- [Post-Mortem: The Exponential Scaling Trap](./docs/post-mortem-boss-scaling.md) - Re-balancing the game's math to fix an early-game progression wall.
+
+- [Robust Game Logic: Testing Strategy](./docs/testing-strategy.md) - How Vitest is used to guarantee data integrity, balance RNG math, and protect player save files.
+
 ## Getting Started (Local Development)
 
 ### Prerequisites

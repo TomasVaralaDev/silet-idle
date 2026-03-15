@@ -28,7 +28,7 @@ export interface InventorySlice {
 
 These independent slices are then merged into a single useGameStore using a centralized initialization file (useGameStore.ts). This provides a unified state tree while keeping the codebase strictly modular:
 
-```
+```typescript
 export type FullStoreState = GameState &
   InventorySlice &
   SkillSlice &
@@ -61,7 +61,7 @@ Because Zustand allows updating state from outside React components, we can deco
 
 Furthermore, functions inside slices act as robust gatekeepers. A great example of this is the sellItem function. UI inputs can be unpredictable, so the slice logic includes failsafes to ensure game economy integrity:
 
-```
+```typescript
 sellItem: (itemId, amount) =>
   set((state) => {
     const item = getItemDetails(itemId);
@@ -97,7 +97,7 @@ sellItem: (itemId, amount) =>
 
 By using Zustand with the slice pattern, components only subscribe to the exact pieces of state they need.
 
-```
+```typescript
 // The UI only re-renders when the player's coins change.
 // It ignores the 10-times-a-second updates happening to the combat timer.
 const coins = useGameStore((state) => state.coins);

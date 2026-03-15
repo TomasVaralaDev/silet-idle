@@ -49,6 +49,31 @@ Because the game uses Zustand with local storage persistence (`zustand/middlewar
 
 - **`persist.test.ts`** verifies the customMerge function. It simulates loading an outdated v1.0 save file into a v1.1 game engine, asserting that missing default values (like newly added unlocked queue slots) are injected safely without overwriting the player's existing progress.
 
+## Test Suite Structure
+
+The following tree demonstrates the organized approach to quality assurance, covering state mutations, core systems, and mathematical utilities:
+
+```text
+tests/
+├── slices/
+│   └── scavenger.test.ts      # State logic for expeditions
+├── store/
+│   └── persist.test.ts        # Migration & hydration safety
+├── systems/
+│   ├── achievementSystem.test.ts
+│   ├── combatSystem.test.ts   # Real-time battle logic
+│   ├── offlineQueue.test.ts   # Simulation accuracy
+│   ├── offlineSystem.test.ts  # Time-delta calculations
+│   ├── questSystem.test.ts
+│   └── questTracking.test.ts  # Data integrity & integration
+└── utils/
+    ├── enchanting.test.ts     # RNG & probability curves
+    ├── gameUtils.test.ts      # Experience & scaling math
+    ├── itemUtils.test.ts
+    ├── loot.test.ts           # Weighted drop table validation
+    └── queueUtils.test.ts     # Speed multiplier logic
+```
+
 ## Why This Matters
 
 1. Fearless Refactoring: I can completely rewrite the combat formula, run npm test, and know instantly if I accidentally broke the early-game balance.

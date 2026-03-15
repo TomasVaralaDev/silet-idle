@@ -7,13 +7,14 @@
 [![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
 [![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 
-> **Play the Live Demo:** [Insert Link to Hosted Game Here]
+> **Play the Live Demo:** https://silet-idle.vercel.app/
 
 **TimeRing** is a modern, feature-rich Idle RPG built with **React**, **TypeScript**, and **Zustand**. Players take on the role of a "Restorer," gathering resources, crafting powerful gear, and battling through corrupted time zones to stabilize the world.
 
 This project was built to demonstrate advanced front-end architecture, complex state management, custom React game loops, and real-time database synchronization.
 
-![Gameplay Screenshot](docs/gameplay_showcase.png) ---
+![Gameplay Screenshot](docs/img/pic1.png) Combat
+![Gameplay Screenshot](docs/img/pic2.png) Gathering
 
 ## Key Features
 

@@ -65,6 +65,15 @@ Unit tests are utilized extensively to guarantee data integrity and balance. Tes
 
 ---
 
+## Technical Documentation & Devlogs
+
+Curious about how the game works under the hood? I have documented the core engineering challenges and architectural decisions in the `docs` folder:
+
+- [Building a 100ms Game Loop in React](./docs/game-loop.md) - How to manage continuous state updates without triggering massive re-render storms.
+- [Scaling State with Zustand Slices](./docs/state-management.md) - Why I chose Zustand over Redux/Context and how the Slice pattern keeps the codebase maintainable.
+- [The Math of Offline Progression](./docs/offline-progression.md) - Simulating hours of gameplay, queue processing, and combat instantly when the user returns.
+- [Post-Mortem: The Queue Synchronization Bug](./docs/post-mortem-queue.md) - A deep dive into a bug where idle queues bypassed the quest tracking system, and how I fixed it using automated tests (Vitest).
+
 ## Getting Started (Local Development)
 
 ### Prerequisites
@@ -77,8 +86,8 @@ Unit tests are utilized extensively to guarantee data integrity and balance. Tes
 1. **Clone the repository**
 
 ```bash
-git clone [https://github.com/yourusername/timering-idle.git](https://github.com/yourusername/timering-idle.git)
-cd timering-idle
+git clone https://github.com/TomasVaralaDev/silet-idle.git
+cd silet-idle
 ```
 
 2. **Install dependencies**

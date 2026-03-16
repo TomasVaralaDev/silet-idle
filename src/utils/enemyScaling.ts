@@ -12,12 +12,12 @@ export interface GeneratedEnemyStats {
 const BOSS_STATS: Record<number, GeneratedEnemyStats> = {
   1: { enemyHp: 400, enemyAttack: 18, xpReward: 250 },
   2: { enemyHp: 900, enemyAttack: 75, xpReward: 1000 },
-  3: { enemyHp: 2000, enemyAttack: 280, xpReward: 3500 },
-  4: { enemyHp: 4500, enemyAttack: 1100, xpReward: 10000 },
-  5: { enemyHp: 9500, enemyAttack: 4000, xpReward: 26000 },
-  6: { enemyHp: 21000, enemyAttack: 15000, xpReward: 70000 },
-  7: { enemyHp: 45000, enemyAttack: 55000, xpReward: 180000 },
-  8: { enemyHp: 100000, enemyAttack: 205000, xpReward: 450000 },
+  3: { enemyHp: 1500, enemyAttack: 230, xpReward: 3500 },
+  4: { enemyHp: 3000, enemyAttack: 700, xpReward: 10000 },
+  5: { enemyHp: 6350, enemyAttack: 2500, xpReward: 26000 },
+  6: { enemyHp: 14000, enemyAttack: 10000, xpReward: 70000 },
+  7: { enemyHp: 45000, enemyAttack: 58000, xpReward: 180000 },
+  8: { enemyHp: 100000, enemyAttack: 275000, xpReward: 450000 },
 };
 
 /**

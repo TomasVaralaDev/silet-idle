@@ -8,6 +8,7 @@ import {
   getPlayerStats,
   getEnemyStats,
 } from "../../utils/combatMechanics";
+import { calculateEnemyStats } from "../../utils/enemyScaling";
 
 interface SimResult {
   winRate: number;
@@ -16,6 +17,8 @@ interface SimResult {
   avgPlayerDps: number;
   avgEnemyDps: number;
   avgStrikeDamage: number;
+  xpPerKill: number;
+  xpPerHour: number;
 }
 
 const formatTime = (ms: number) => {
@@ -77,11 +80,16 @@ export default function BattleSimulator() {
 
     setTimeout(() => {
       const map = COMBAT_DATA.find((m) => m.id === selectedMapId)!;
+      const zone = map.id % 10 === 0 ? 10 : map.id % 10;
+
+      // HAETAAN LIVE-STATIT SUORAAN KAAVASTASI!
+      const scaledStats = calculateEnemyStats(map.world, zone);
+
       const baseEnemyStats = getEnemyStats({
-        level: map.world,
-        attack: map.enemyAttack,
-        maxHp: map.enemyHp,
-        currentHp: map.enemyHp,
+        level: map.id, // map.id = 1-80, josta lasketaan armor (level * 4)
+        attack: scaledStats.enemyAttack,
+        maxHp: scaledStats.enemyHp,
+        currentHp: scaledStats.enemyHp,
       });
 
       let wins = 0;
@@ -99,7 +107,6 @@ export default function BattleSimulator() {
         : 0;
       const autoEatThreshold = store.combatSettings.autoEatThreshold / 100;
 
-      // KORJAUS 1: Oikea pelin sisäinen kovakoodattu cooldown
       const FOOD_COOLDOWN_MS = 10000;
 
       for (let i = 0; i < iterations; i++) {
@@ -107,19 +114,17 @@ export default function BattleSimulator() {
         const eStats = { ...baseEnemyStats };
 
         let timeMs = 0;
-        // KORJAUS 2: Oikeat taistelun aloitusajat kuten combatSystem.ts tiedostossa
         let pNextAttack = Math.min(1000, pStats.attackSpeed);
         let eNextAttack = Math.min(1500, eStats.attackSpeed);
 
         let potsUsed = 0;
         let nextFoodReadyTime = 0;
 
-        const MAX_BATTLE_TIME_MS = 1000 * 60 * 60 * 24; // 24h aikaraja
+        const MAX_BATTLE_TIME_MS = 1000 * 60 * 60 * 24;
 
         while (pStats.hp > 0 && eStats.hp > 0 && timeMs < MAX_BATTLE_TIME_MS) {
           let nextTick = Math.min(pNextAttack, eNextAttack);
 
-          // Jos ollaan thresholdin alla ja potionin cooldown vapautuu ennen seuraavaa iskua, hypätään siihen hetkeen
           const needsFood = pStats.hp / pStats.maxHp <= autoEatThreshold;
           if (
             needsFood &&
@@ -132,7 +137,6 @@ export default function BattleSimulator() {
 
           timeMs = nextTick;
 
-          // Pelaaja syö tällä sekunnilla, JOS cooldown on ohi ja tarve on todellinen
           if (
             needsFood &&
             timeMs >= nextFoodReadyTime &&
@@ -145,7 +149,6 @@ export default function BattleSimulator() {
             nextFoodReadyTime = timeMs + FOOD_COOLDOWN_MS;
           }
 
-          // Pelaaja iskee
           if (timeMs === pNextAttack) {
             const hit = calculateHit(pStats, eStats);
             eStats.hp -= hit.finalDamage;
@@ -159,7 +162,6 @@ export default function BattleSimulator() {
             break;
           }
 
-          // Vihollinen iskee
           if (timeMs === eNextAttack) {
             const hit = calculateHit(eStats, pStats);
             pStats.hp -= hit.finalDamage;
@@ -172,6 +174,11 @@ export default function BattleSimulator() {
         totalPotsUsed += potsUsed;
       }
 
+      // LASKETAAN EXP/H (Huomioidaan vain voitetut taistelut)
+      const totalXpGained = wins * scaledStats.xpReward;
+      const hoursSimulated = totalTimeMs / (1000 * 60 * 60);
+      const xpPerHour = hoursSimulated > 0 ? totalXpGained / hoursSimulated : 0;
+
       setResult({
         winRate: (wins / iterations) * 100,
         avgTimeMs: totalTimeMs / iterations,
@@ -179,6 +186,8 @@ export default function BattleSimulator() {
         avgPlayerDps: totalDamageDone / (totalTimeMs / 1000) || 0,
         avgEnemyDps: totalDamageTaken / (totalTimeMs / 1000) || 0,
         avgStrikeDamage: totalDamageDone / Math.max(1, totalPlayerHits) || 0,
+        xpPerKill: scaledStats.xpReward,
+        xpPerHour: xpPerHour,
       });
       setIsSimulating(false);
     }, 50);
@@ -188,9 +197,7 @@ export default function BattleSimulator() {
     <div className="bg-slate-900 border border-slate-700 rounded-md p-4 text-slate-300 text-xs font-mono space-y-4 shadow-xl">
       <h3 className="text-accent font-black tracking-widest uppercase border-b border-slate-700 pb-2 flex items-center justify-between">
         <span>Combat Simulator Tool</span>
-        <span className="text-slate-500 text-[10px]">
-          v1.5 (Strict 10s Potion CD + Init Timers)
-        </span>
+        <span className="text-slate-500 text-[10px]">v2.1 (XP Math)</span>
       </h3>
 
       <div className="grid grid-cols-2 gap-4">
@@ -229,13 +236,16 @@ export default function BattleSimulator() {
               onChange={(e) => setSelectedMapId(Number(e.target.value))}
               className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-accent outline-none"
             >
-              {COMBAT_DATA.map((map) => (
-                <option key={map.id} value={map.id}>
-                  {map.isBoss ? "👑 " : ""}W{map.world} Z
-                  {map.id % 10 === 0 ? 10 : map.id % 10} - {map.enemyName} (HP:{" "}
-                  {map.enemyHp.toLocaleString()})
-                </option>
-              ))}
+              {COMBAT_DATA.map((map) => {
+                const zone = map.id % 10 === 0 ? 10 : map.id % 10;
+                const liveStats = calculateEnemyStats(map.world, zone);
+                return (
+                  <option key={map.id} value={map.id}>
+                    {map.isBoss ? "👑 " : ""}W{map.world} Z{zone} -{" "}
+                    {map.enemyName} (HP: {liveStats.enemyHp.toLocaleString()})
+                  </option>
+                );
+              })}
             </select>
           </div>
           <div>
@@ -277,6 +287,7 @@ export default function BattleSimulator() {
           >
             WIN RATE: {result.winRate.toFixed(1)}%
           </div>
+
           <div className="grid grid-cols-5 gap-2 text-center text-[10px]">
             <div className="bg-slate-900 p-1.5 rounded flex flex-col justify-center">
               <div className="text-slate-500">AVG TIME</div>
@@ -306,6 +317,26 @@ export default function BattleSimulator() {
               <div className="text-red-500/70">ENEMY DPS</div>
               <div className="text-red-400 font-bold">
                 {Math.floor(result.avgEnemyDps).toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          {/* XP INFO RIVI */}
+          <div className="grid grid-cols-2 gap-2 text-center text-[10px] mt-2">
+            <div className="bg-slate-900 p-1.5 rounded border border-purple-900/30 flex flex-col justify-center">
+              <div className="text-purple-400/70 uppercase tracking-wider">
+                XP / Kill
+              </div>
+              <div className="text-purple-400 font-bold text-sm">
+                {Math.floor(result.xpPerKill).toLocaleString()}
+              </div>
+            </div>
+            <div className="bg-slate-900 p-1.5 rounded border border-purple-900/50 flex flex-col justify-center shadow-[0_0_10px_rgba(168,85,247,0.1)]">
+              <div className="text-purple-400/70 uppercase tracking-wider">
+                Estimated XP / Hour
+              </div>
+              <div className="text-purple-400 font-black text-sm">
+                {Math.floor(result.xpPerHour).toLocaleString()}
               </div>
             </div>
           </div>

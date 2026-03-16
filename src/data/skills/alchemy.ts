@@ -147,7 +147,7 @@ export const alchemyResources: Resource[] = [
     description: "Drink of the gods.",
     category: "potion",
     slot: "food",
-    healing: 10000,
+    healing: 3500,
     inputs: [
       { id: "dragon_flower", count: 1 },
       { id: "eternal_flower", count: 1 },

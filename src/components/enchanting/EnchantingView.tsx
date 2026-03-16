@@ -7,6 +7,7 @@ import {
   MAX_ENCHANT_LEVEL,
   getSuccessChance,
 } from "../../utils/enchanting";
+import { getScrollTier } from "../../data/scrolls"; // UUSI IMPORT
 import { getRarityStyle } from "../../utils/rarity";
 import type { Resource } from "../../types";
 
@@ -35,7 +36,7 @@ export default function EnchantingView() {
       .filter((id) => id.startsWith("scroll_enchant_"))
       .map((id) => {
         const item = getItemDetails(id);
-        const tier = parseInt(id.split("_").pop()?.replace("w", "") || "0");
+        const tier = getScrollTier(id); // KORJATTU: Puhdas funktiokutsu
         return {
           id,
           count: inventory[id],

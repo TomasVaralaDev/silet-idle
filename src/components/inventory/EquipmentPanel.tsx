@@ -1,10 +1,27 @@
 import { useGameStore } from "../../store/useGameStore";
 import { getItemDetails } from "../../data";
+import { getRarityStyle } from "../../utils/rarity";
 import type { EquipmentSlot } from "../../types";
 
 export default function EquipmentPanel() {
   const equipment = useGameStore((state) => state.equipment);
   const unequipItem = useGameStore((state) => state.unequipItem);
+
+  // Apufunktio kirkkaan alareunan palkin värin hakemiseen
+  const getIndicatorClass = (rarity?: string) => {
+    switch (rarity) {
+      case "legendary":
+        return "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]";
+      case "epic":
+        return "bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]";
+      case "rare":
+        return "bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]";
+      case "uncommon":
+        return "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]";
+      default:
+        return "bg-slate-500";
+    }
+  };
 
   const renderSlot = (
     slot: Exclude<EquipmentSlot, "food">,
@@ -16,6 +33,8 @@ export default function EquipmentPanel() {
     const containerSize = isSmall ? "w-14 h-14" : "w-20 h-20";
     const iconSize = isSmall ? "w-8 h-8" : "w-10 h-10";
 
+    const rarityStyle = item ? getRarityStyle(item.rarity) : null;
+
     return (
       <div
         onClick={() => item && unequipItem(slot)}
@@ -23,7 +42,7 @@ export default function EquipmentPanel() {
           ${containerSize} rounded-xl border flex items-center justify-center relative transition-all group
           ${
             item
-              ? "bg-panel-hover border-border shadow-lg cursor-pointer hover:border-danger/50"
+              ? `bg-panel-hover ${rarityStyle?.border} shadow-lg cursor-pointer hover:border-danger/50`
               : "bg-app-base/20 border-border/40 border-dashed"
           }
         `}
@@ -40,23 +59,17 @@ export default function EquipmentPanel() {
             <img
               src={item.icon}
               alt={item.name}
-              className={`${iconSize} pixelated drop-shadow-[0_0_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform`}
+              className={`${iconSize} pixelated drop-shadow-[0_0_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform z-10`}
             />
-            {/* Rarity Indicator */}
+            {/* KORJATTU: Rarity Indicator kirkkaalla värillä ja hehkulla */}
             <div
-              className={`absolute bottom-0 inset-x-0 h-1 rounded-b-xl opacity-80 ${
-                item.rarity === "legendary"
-                  ? "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]"
-                  : item.rarity === "rare"
-                    ? "bg-accent shadow-[0_0_10px_rgba(6,182,212,0.4)]"
-                    : item.rarity === "uncommon"
-                      ? "bg-success"
-                      : "bg-slate-500"
-              }`}
+              className={`absolute bottom-0 inset-x-0 h-1.5 rounded-b-xl opacity-90 ${getIndicatorClass(
+                item.rarity,
+              )}`}
             />
             {/* Hover Remove Overlay */}
-            <div className="absolute inset-0 bg-danger/10 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center transition-opacity">
-              <span className="text-[7px] font-black uppercase text-danger">
+            <div className="absolute inset-0 bg-danger/10 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center transition-opacity z-20">
+              <span className="text-[7px] font-black uppercase text-danger bg-panel px-1.5 py-0.5 rounded border border-danger/30">
                 Remove
               </span>
             </div>

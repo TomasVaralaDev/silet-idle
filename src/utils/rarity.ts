@@ -1,37 +1,61 @@
-// src/utils/rarity.ts
+export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
-
-// Määritellään värit (Tailwind luokat)
-export const RARITY_STYLES: Record<Rarity, { text: string; border: string; bg: string; shadow: string }> = {
+// Määritellään värit kerran ja käytetään kaikkialla
+export const RARITY_STYLES: Record<
+  Rarity,
+  {
+    text: string;
+    border: string;
+    bg: string;
+    shadow: string;
+    glow: string;
+    lightBg: string;
+  }
+> = {
   common: {
-    text: 'text-slate-300',
-    border: 'border-slate-800',
-    bg: 'bg-slate-900',
-    shadow: ''
+    text: "text-slate-300",
+    border: "border-slate-700",
+    bg: "bg-slate-900",
+    shadow: "",
+    glow: "shadow-none",
+    lightBg: "bg-panel-hover",
   },
   uncommon: {
-    text: 'text-green-400',
-    border: 'border-green-800',
-    bg: 'bg-green-950/30',
-    shadow: 'shadow-green-900/10'
+    text: "text-emerald-400",
+    border: "border-emerald-700",
+    bg: "bg-emerald-950/30",
+    shadow: "shadow-emerald-900/10",
+    glow: "shadow-emerald-500/20",
+    lightBg: "bg-emerald-500/10",
   },
   rare: {
-    text: 'text-blue-400',
-    border: 'border-blue-700',
-    bg: 'bg-blue-950/30',
-    shadow: 'shadow-blue-900/20'
+    text: "text-cyan-400",
+    border: "border-cyan-700",
+    bg: "bg-cyan-950/30",
+    shadow: "shadow-cyan-900/20",
+    glow: "shadow-cyan-500/20",
+    lightBg: "bg-cyan-500/10",
+  },
+  epic: {
+    text: "text-purple-400",
+    border: "border-purple-600",
+    bg: "bg-purple-950/30",
+    shadow: "shadow-purple-900/20",
+    glow: "shadow-purple-500/20",
+    lightBg: "bg-purple-500/10",
   },
   legendary: {
-    text: 'text-amber-400',
-    border: 'border-amber-600',
-    bg: 'bg-amber-950/40',
-    shadow: 'shadow-amber-900/30'
-  }
+    text: "text-orange-400",
+    border: "border-orange-500",
+    bg: "bg-orange-950/40",
+    shadow: "shadow-orange-900/30",
+    glow: "shadow-orange-500/20",
+    lightBg: "bg-orange-500/10",
+  },
 };
 
 // Apufunktio tyylien hakemiseen (oletuksena common)
 export const getRarityStyle = (rarity?: string) => {
-  const key = (rarity || 'common') as Rarity;
+  const key = (rarity || "common") as Rarity;
   return RARITY_STYLES[key] || RARITY_STYLES.common;
 };

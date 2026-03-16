@@ -34,14 +34,20 @@ export const getNextEnchantId = (id: string): string => {
 };
 
 /**
- * Laskee onnistumistodennäköisyyden.
- * Koska tasoja on vähemmän ja ne ovat voimakkaampia, rangaistus on suurempi.
- * Kaava: (Käärön Tier * 10 + 40) - (Esineen nykyinen taso * 20)
+ * Laskee onnistumistodennäköisyyden 4 eri tason scrollille.
+ * - Basic (T1): Aloitus 65% -> Putoo 15% per taso -> Vika yritys (+4 -> +5) on 5%
+ * - Divine (T4): Aloitus 90% -> Putoo 15% per taso -> Vika yritys (+4 -> +5) on 30%
  */
 export const getSuccessChance = (level: number, scrollTier: number): number => {
   if (scrollTier <= 0) return 0;
-  const baseChance = scrollTier * 10 + 40;
-  const penalty = level * 20;
+
+  // Base chance: T1=65, T2=73, T3=81, T4=90
+  const baseChances = [0, 65, 73, 81, 90];
+  const baseChance = baseChances[scrollTier] || 65;
+
+  // Rangaistus kasvaa 15% jokaiselta aiemmalta lumoustasolta
+  const penalty = level * 15;
+
   const chance = baseChance - penalty;
   return Math.max(5, Math.min(100, chance));
 };

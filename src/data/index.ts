@@ -1,9 +1,10 @@
 import { WORLD_INFO, WORLD_LOOT } from "./worlds";
 import { COMBAT_DATA } from "./combat";
-import { GAME_DATA } from "./skills"; // Hakee automaattisesti skills/index.ts tiedoston
+import { GAME_DATA } from "./skills";
 import { SHOP_ITEMS } from "./shop";
 import { ACHIEVEMENTS } from "./achievements";
 import { RUNES_DATA } from "./runes";
+import { SCROLLS_DATA } from "./scrolls"; // UUSI IMPORT
 import {
   getBaseId,
   getEnchantLevel,
@@ -19,6 +20,7 @@ export {
   SHOP_ITEMS,
   ACHIEVEMENTS,
   RUNES_DATA,
+  SCROLLS_DATA,
 };
 
 /**
@@ -104,51 +106,18 @@ const KeyFactory: ItemSubFactory = {
 
 /**
  * 5. Enchant Scroll Factory
+ * OCP: Hakee nyt puhtaasti SCROLLS_DATA -taulukosta!
  */
 const EnchantScrollFactory: ItemSubFactory = {
   canHandle: (id) => id.startsWith("scroll_enchant_"),
   create: (id) => {
-    const tierPart = id.split("_").pop();
-    const tier = parseInt(tierPart?.replace("w", "") || "1");
-    const chances = [0, 5, 8, 12, 15, 20, 25, 30, 40];
-    const chance = chances[tier] || 5;
-    const rarityMap = [
-      "common",
-      "common",
-      "common",
-      "rare",
-      "rare",
-      "epic",
-      "epic",
-      "legendary",
-      "legendary",
-    ];
-    const colorMap = [
-      "text-slate-400",
-      "text-slate-400",
-      "text-green-400",
-      "text-blue-400",
-      "text-blue-300",
-      "text-purple-400",
-      "text-purple-300",
-      "text-orange-400",
-      "text-yellow-400",
-    ];
-
-    return {
-      name: `Enchant Scroll T${tier}`,
-      value: 100 * tier,
-      rarity: (rarityMap[tier] || "common") as Resource["rarity"],
-      color: colorMap[tier] || "text-slate-400",
-      icon: `/assets/items/enchantingscroll/enchanting_tier${tier}.png`,
-      description: `Magical scroll. Increases enchanting success chance by +${chance}%.`,
-    };
+    const scroll = SCROLLS_DATA.find((s) => s.id === id);
+    return scroll || {};
   },
 };
 
 /**
- * 6. Skill Resource Factory (KORJATTU)
- * Lisätty tyypitykset Resource[][], jotta TypeScript tunnistaa skillListin ja itemin oikein.
+ * 6. Skill Resource Factory
  */
 const SkillResourceFactory: ItemSubFactory = {
   canHandle: (id: string) => {
@@ -189,7 +158,7 @@ export const getItemDetails = (id: string): Resource | null => {
   const factories = [
     RuneFactory,
     KeyFactory,
-    EnchantScrollFactory,
+    EnchantScrollFactory, // Nyt täysin puhdas
     WorldLootFactory,
     SkillResourceFactory,
   ];

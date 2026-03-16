@@ -37,21 +37,26 @@ describe("Enchanting & Scaling System", () => {
     });
 
     it("should calculate success chance based on scroll tier and level", () => {
-      // Uusi kaava: (Tier * 10 + 40) - (Level * 20)
+      // UUSI KAAVA: T1 (65 Base) - (Level * 15 Penalty)
 
-      // Tier 1 scroll (50 base) - Level 0 (0 penalty) = 50%
-      expect(getSuccessChance(0, 1)).toBe(50);
+      // Tier 1 scroll (65 base) - Level 0 (0 penalty) = 65%
+      expect(getSuccessChance(0, 1)).toBe(65);
 
-      // Tier 5 scroll (90 base) - Level 3 (60 penalty) = 30%
-      expect(getSuccessChance(3, 5)).toBe(30);
+      // Tier 4 scroll (90 base) - Level 4 (60 penalty) = 30% (Divine Scroll last enchant!)
+      expect(getSuccessChance(4, 4)).toBe(30);
     });
 
     it("should enforce min (5%) and max (100%) bounds", () => {
-      // Tier 1 (50 base) - Level 5 (100 penalty) = -50%, mutta pitäisi rajoittua 5%
+      // Tier 1 (65 base) - Level 4 (60 penalty) = 5% (Basic Scroll last enchant!)
+      expect(getSuccessChance(4, 1)).toBe(5);
+
+      // Tier 1 (65 base) - Level 5 (75 penalty) = -10%, mutta pitäisi rajoittua 5%
       expect(getSuccessChance(5, 1)).toBe(5);
 
-      // Tier 10 (140 base) - Level 0 (0 penalty) = 140%, mutta pitäisi rajoittua 100%
-      expect(getSuccessChance(0, 10)).toBe(100);
+      // Tier 5/6 (OutOfBounds, mutta fallbackaa 65 baseen) -> Testataan max bounds toisella tavalla
+      // Nykykaavalla max chance on 90 (T4 lvl 0). Emme voi saavuttaa 100% normaalisti,
+      // mutta jos syötämme negatiivisen tason (esim. virheellinen syöte), boundsien tulee katkaista se 100%.
+      expect(getSuccessChance(-3, 4)).toBe(100);
     });
 
     it("should increase cost as level and item value rise", () => {
@@ -66,8 +71,8 @@ describe("Enchanting & Scaling System", () => {
       id: "dagger_bronze",
       name: "Bronze Dagger",
       rarity: "common",
-      icon: "/assets/items/weapons/dagger_bronze.png", // LISÄTTY: TS vaatii ikonin
-      value: 100, // LISÄTTY: TS vaatii arvon
+      icon: "/assets/items/weapons/dagger_bronze.png",
+      value: 100,
       stats: { attack: 10, defense: 5 },
     };
 

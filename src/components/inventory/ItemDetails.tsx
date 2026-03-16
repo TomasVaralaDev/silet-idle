@@ -1,6 +1,7 @@
 import type { InventoryItem } from "./InventoryGrid";
 import { getEquippedItem } from "../../utils/equipmentUtils";
 import StatComparison from "./StatComparison";
+import { getRarityStyle } from "../../utils/rarity"; // UUSI IMPORT
 
 interface Props {
   item: InventoryItem;
@@ -11,45 +12,10 @@ interface Props {
 
 export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
   const isEquippable = item.slot || item.healing || item.category === "Food";
-
-  // Haetaan tällä hetkellä kyseisessä slotissa oleva esine vertailua varten
   const currentlyEquipped = getEquippedItem(item.slot);
 
-  // Määritellään väriteemat rarityn mukaan
-  const getRarityColors = () => {
-    switch (item.rarity) {
-      case "legendary":
-        return {
-          border: "border-orange-500",
-          text: "text-orange-500",
-          bg: "bg-orange-500/10",
-          glow: "shadow-orange-500/20",
-        };
-      case "rare":
-        return {
-          border: "border-accent",
-          text: "text-accent",
-          bg: "bg-accent/10",
-          glow: "shadow-accent/20",
-        };
-      case "uncommon":
-        return {
-          border: "border-success",
-          text: "text-success",
-          bg: "bg-success/10",
-          glow: "shadow-success/20",
-        };
-      default:
-        return {
-          border: "border-border",
-          text: "text-tx-main",
-          bg: "bg-panel-hover",
-          glow: "shadow-none",
-        };
-    }
-  };
-
-  const theme = getRarityColors();
+  // KORJAUS: Haetaan globaali teema!
+  const theme = getRarityStyle(item.rarity);
 
   return (
     <div
@@ -59,7 +25,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
       ${theme.border} border-opacity-50
     `}
     >
-      {/* HEADER SECTION */}
       <div className="p-4 flex gap-4 relative">
         <button
           onClick={onClose}
@@ -68,14 +33,15 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
           ✕
         </button>
 
-        {/* ICON BOX */}
         <div
           className={`
-          w-16 h-16 shrink-0 rounded-lg border ${theme.border} ${theme.bg} 
+          w-16 h-16 shrink-0 rounded-lg border ${theme.border} ${theme.lightBg} 
           flex items-center justify-center relative overflow-hidden shadow-lg ${theme.glow}
         `}
         >
-          <div className={`absolute inset-0 ${theme.bg} blur-md opacity-50`} />
+          <div
+            className={`absolute inset-0 ${theme.lightBg} blur-md opacity-50`}
+          />
           <img
             src={item.icon}
             alt={item.name}
@@ -83,7 +49,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
           />
         </div>
 
-        {/* TEXT INFO */}
         <div className="flex flex-col justify-center min-w-0 pr-4">
           <h3
             className={`font-bold text-base leading-tight truncate ${theme.text}`}
@@ -91,7 +56,8 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
             {item.name}
           </h3>
           <p className="text-[10px] uppercase tracking-widest font-bold text-tx-muted mt-1">
-            {item.rarity} {item.category || "Item"}
+            <span className={theme.text}>{item.rarity}</span>{" "}
+            {item.category || "Item"}
           </p>
 
           <div className="flex items-center gap-2 mt-2">
@@ -106,17 +72,13 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
         </div>
       </div>
 
-      {/* CONTENT SECTION */}
       <div className="px-4 pb-4 space-y-3">
-        {/* Description */}
         <p className="text-xs text-tx-muted italic leading-relaxed border-l-2 border-border pl-3">
           "{item.description || "A mysterious item with no description."}"
         </p>
 
-        {/* Stats Grid */}
         {(item.stats || item.healing) && (
           <div className="grid grid-cols-2 gap-2 mt-2">
-            {/* OFFENSIVE STATS */}
             {(item.stats?.attack || currentlyEquipped?.stats?.attack) && (
               <StatComparison
                 label="Attack"
@@ -151,7 +113,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
               />
             )}
 
-            {/* DEFENSIVE STATS */}
             {(item.stats?.defense || currentlyEquipped?.stats?.defense) && (
               <StatComparison
                 label="Defense"
@@ -174,7 +135,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
               />
             )}
 
-            {/* HEALING */}
             {item.healing && (
               <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs col-span-2">
                 <span className="text-success font-bold uppercase text-[10px]">
@@ -189,7 +149,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
         )}
       </div>
 
-      {/* ACTIONS FOOTER */}
       <div
         className={`grid ${
           isEquippable ? "grid-cols-2" : "grid-cols-1"

@@ -1,6 +1,7 @@
 import React from "react";
 import type { Resource } from "../../types";
-import { getRarityStyle } from "../../utils/rarity"; // UUSI IMPORT
+import { getRarityStyle } from "../../utils/rarity";
+import { useTooltipStore } from "../../store/useToolTipStore"; // UUSI IMPORT
 
 export interface InventoryItem extends Resource {
   count: number;
@@ -19,6 +20,10 @@ export default function InventoryGrid({
   onItemClick,
   onRightClick,
 }: Props) {
+  // LISÄTTY: Tooltipin ohjaimet
+  const showTooltip = useTooltipStore((s) => s.showTooltip);
+  const hideTooltip = useTooltipStore((s) => s.hideTooltip);
+
   const handleInteraction = (item: InventoryItem, e: React.MouseEvent) => {
     if (e.shiftKey) {
       onSellClick(item.id);
@@ -28,11 +33,10 @@ export default function InventoryGrid({
   };
 
   const handleContextMenu = (e: React.MouseEvent, itemId: string) => {
-    e.preventDefault(); // Estetään selaimen valikko
+    e.preventDefault();
     onRightClick(itemId);
   };
 
-  // Estetään tekstin valinta shift-klikkauksen aikana
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.shiftKey || e.button === 2) {
       e.preventDefault();
@@ -49,7 +53,6 @@ export default function InventoryGrid({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {items.map((item) => {
-              // Haetaan tyylit KERRAN per item!
               const rarityTheme = getRarityStyle(item.rarity);
 
               return (
@@ -58,7 +61,16 @@ export default function InventoryGrid({
                   onClick={(e) => handleInteraction(item, e)}
                   onContextMenu={(e) => handleContextMenu(e, item.id)}
                   onMouseDown={handleMouseDown}
-                  className="flex items-center gap-3 p-2 rounded bg-app-base border border-border hover:border-border-hover hover:bg-panel cursor-pointer group transition-all animate-in zoom-in-95 duration-200"
+                  // LISÄTTY: Tooltipin eventit!
+                  onMouseEnter={(e) =>
+                    showTooltip(item.id, e.clientX, e.clientY)
+                  }
+                  onMouseMove={(e) =>
+                    showTooltip(item.id, e.clientX, e.clientY)
+                  }
+                  onMouseLeave={hideTooltip}
+                  // ---------------------------
+                  className="flex items-center gap-3 p-2 rounded bg-app-base border border-border hover:border-border-hover hover:bg-panel cursor-pointer group transition-all animate-in zoom-in-95 duration-200 relative"
                 >
                   <div className="relative shrink-0">
                     <div
@@ -66,7 +78,7 @@ export default function InventoryGrid({
                     >
                       <img
                         src={item.icon}
-                        className="w-8 h-8 pixelated drop-shadow-sm"
+                        className="w-8 h-8 pixelated drop-shadow-sm group-hover:scale-110 transition-transform"
                         alt={item.name}
                       />
                     </div>

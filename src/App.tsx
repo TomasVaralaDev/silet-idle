@@ -2,8 +2,7 @@ import { useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import { useGameStore, DEFAULT_STATE } from "./store/useGameStore";
-
-// CUSTOM HOOKS
+import ItemTooltip from "./components/tooltips/ItemTooltip"; // CUSTOM HOOKS
 import { useAuth } from "./hooks/useAuth";
 import { useGameInitialization } from "./hooks/useGameInitialization";
 import { useGameSync } from "./hooks/useGameSync";
@@ -182,6 +181,7 @@ export default function App() {
       </main>
       <SocialOverlay />
       <DevManager />
+      <ItemTooltip />
     </div>
   );
 }

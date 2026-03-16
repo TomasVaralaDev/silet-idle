@@ -7,6 +7,9 @@ import SellForm from "./SellForm";
 import MailboxView from "./MailboxView";
 import type { MarketListing } from "../../types";
 
+// TUODAAN TOOLTIP STORE:
+import { useTooltipStore } from "../../store/useToolTipStore";
+
 type MarketTab = "buy" | "sell" | "mailbox";
 
 const CATEGORIES = [
@@ -16,7 +19,7 @@ const CATEGORIES = [
   { id: "smithing", label: "Equipment" },
   { id: "alchemy", label: "Potions" },
   { id: "foraging", label: "Foraging" },
-  { id: "keys", label: "Keys" }, // Mukana aiemmin lisätty kategoria
+  { id: "keys", label: "Keys" },
 ];
 
 export default function MarketplaceView() {
@@ -30,6 +33,10 @@ export default function MarketplaceView() {
   const lastFetchTime = useRef<number>(0);
   const FETCH_COOLDOWN = 30000;
   const { user } = useAuth();
+
+  // HAETAAN TOOLTIPIN FUNKTIOT (vaihda nimet, jos storessasi ne ovat esim. showTooltip ja clearTooltip)
+  const showTooltip = useTooltipStore((state) => state.showTooltip);
+  const hideTooltip = useTooltipStore((state) => state.hideTooltip);
 
   const fetchListings = useCallback(async (force = false) => {
     const now = Date.now();
@@ -50,6 +57,11 @@ export default function MarketplaceView() {
   useEffect(() => {
     if (tab === "buy") fetchListings();
   }, [tab, fetchListings]);
+
+  // Varmistetaan, että tooltip poistuu, jos tabia vaihdetaan tai komponentti unmounttaa
+  useEffect(() => {
+    return () => hideTooltip && hideTooltip();
+  }, [tab, hideTooltip]);
 
   const catalog = useMemo(() => {
     const uniqueItemIds = Array.from(new Set(listings.map((l) => l.itemId)));
@@ -118,7 +130,7 @@ export default function MarketplaceView() {
           case "foraging":
             matchesCategory = cat === "material";
             break;
-          case "keys": // Mukana aiemmin lisätty logiikka
+          case "keys":
             matchesCategory = item.id.startsWith("bosskey_");
             break;
           default:
@@ -230,11 +242,9 @@ export default function MarketplaceView() {
                 ))}
               </div>
 
-              {/* UUSITTU SEARCH BAR */}
+              {/* SEARCH BAR */}
               <div className="flex gap-2">
-                {/* Relative wrapper ikonille */}
                 <div className="relative flex-1">
-                  {/* SVG Suurennuslasi (sama kuin InventorySelectorissa) */}
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-tx-muted/50 flex items-center justify-center pointer-events-none">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -251,8 +261,6 @@ export default function MarketplaceView() {
                       />
                     </svg>
                   </span>
-
-                  {/* Inputti, lisätty pl-9 jotta teksti ei mene ikonin päälle */}
                   <input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -304,7 +312,18 @@ export default function MarketplaceView() {
                 {filteredCatalog.map((item) => (
                   <button
                     key={item!.id}
-                    onClick={() => setSelectedItemId(item!.id)}
+                    onClick={() => {
+                      setSelectedItemId(item!.id);
+                      hideTooltip(); // Piilotetaan tooltip, kun itemiä klikataan
+                    }}
+                    // TOOLTIPIN TRIGGERS TÄSSÄ:
+                    onMouseEnter={(e) =>
+                      showTooltip(item!.id, e.clientX, e.clientY)
+                    }
+                    onMouseMove={(e) =>
+                      showTooltip(item!.id, e.clientX, e.clientY)
+                    }
+                    onMouseLeave={hideTooltip}
                     className="group relative bg-panel/40 border border-border p-4 rounded-sm hover:border-accent/50 hover:bg-panel/60 transition-all flex flex-col items-center text-center gap-3"
                   >
                     <img
@@ -342,7 +361,17 @@ export default function MarketplaceView() {
 
             {selectedItemId && (
               <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex items-center gap-4 mb-4 p-4 bg-accent/5 border border-accent/20 rounded-sm">
+                <div
+                  className="flex items-center gap-4 mb-4 p-4 bg-accent/5 border border-accent/20 rounded-sm"
+                  // TOOLTIPIN TRIGGERS MYÖS YKSITTÄISEN ITEMIN NÄKYMÄÄN:
+                  onMouseEnter={(e) =>
+                    showTooltip(selectedItemId, e.clientX, e.clientY)
+                  }
+                  onMouseMove={(e) =>
+                    showTooltip(selectedItemId, e.clientX, e.clientY)
+                  }
+                  onMouseLeave={hideTooltip}
+                >
                   <img
                     src={getItemById(selectedItemId)?.icon}
                     className="w-12 h-12 pixelated shadow-lg"

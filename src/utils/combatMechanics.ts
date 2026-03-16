@@ -146,7 +146,11 @@ export const getEnemyStats = (enemy: {
   maxHp?: number;
   currentHp?: number;
 }): CombatStats => {
-  const estimatedArmor = Math.floor(enemy.attack * 0.1);
+  // KORJAUS: Armor ei enää skaalaudu loputtomiin Attackin mukana.
+  // Nyt se perustuu vihollisen "leveliin" (esim. map.id eli 1-80).
+  // Max level 80 * 4 = 320 Armoria (n. 4.2x vahingon vaimennus).
+  // Pelaajan valtavat end-game iskut menevät vihdoin läpi!
+  const estimatedArmor = enemy.level * 4;
 
   return {
     hp: enemy.currentHp || 10,

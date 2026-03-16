@@ -68,11 +68,33 @@ export const createScavengerSlice: StateCreator<
         }
 
         // 2. --- HARVINAINEN RUNE DROP ---
-        // Laskettu 0.5% mahdollisuuteen per minuutti (0.005)
-        // 60min expeditionilla saat keskimäärin 0.3 runea (eli joka kolmas tunti)
+        // 0.5% mahdollisuus per minuutti, että jokin rune tippuu
         if (Math.random() < 0.005 && RUNES_DATA.length > 0) {
-          const randomRune =
-            RUNES_DATA[Math.floor(Math.random() * RUNES_DATA.length)];
+          // Arvotaan riimun harvinaisuus (Secondary roll)
+          const rarityRoll = Math.random();
+          let targetTier = "minor";
+
+          if (rarityRoll < 0.02) {
+            // 2% mahdollisuus, että droppi on Legendary (todella harvinainen!)
+            targetTier = "legendary";
+          } else if (rarityRoll < 0.12) {
+            // 10% mahdollisuus, että droppi on Major
+            targetTier = "major";
+          } else {
+            // 88% mahdollisuus, että droppi pysyy perinteisenä Minorina
+            targetTier = "minor";
+          }
+
+          // Suodatetaan RUNES_DATA valitun tierin mukaan
+          const availableRunes = RUNES_DATA.filter((r) =>
+            r.id.endsWith(`_${targetTier}`),
+          );
+
+          // Fallback: Jos suodatus menisi tyhjäksi, käytetään kaikkia runeja
+          const pool = availableRunes.length > 0 ? availableRunes : RUNES_DATA;
+
+          // Valitaan satunnainen rune filtteröidystä listasta
+          const randomRune = pool[Math.floor(Math.random() * pool.length)];
           const runeId = randomRune.id;
 
           newInventory[runeId] = (newInventory[runeId] || 0) + 1;

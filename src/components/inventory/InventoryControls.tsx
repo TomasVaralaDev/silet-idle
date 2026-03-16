@@ -19,25 +19,29 @@ export default function InventoryControls({
   searchQuery,
   onSearchChange,
 }: Props) {
+  // PÄIVITETTY lista: Materials ja Misc mukana
   const filters: { id: FilterType; label: string }[] = [
     { id: "all", label: "All" },
-    { id: "equipment", label: "Gear" },
-    { id: "consumable", label: "Consumables" },
-    { id: "material", label: "Mats" },
+    { id: "weapons", label: "Weapons" },
+    { id: "armor", label: "Armor" },
+    { id: "runes", label: "Runes" },
+    { id: "pouches", label: "Pouches" },
+    { id: "potions", label: "Potions" },
+    { id: "materials", label: "Mats" },
+    { id: "misc", label: "Misc" },
   ];
 
   const sorts: { id: SortType; label: string }[] = [
     { id: "rarity", label: "Rarity" },
     { id: "level", label: "Level" },
-    { id: "amount", label: "Amount" },
+    { id: "amount", label: "Qty" },
     { id: "value", label: "Value" },
   ];
 
   return (
     <div className="flex flex-col gap-3 p-4 border-b border-border bg-panel/50">
-      {/* SEARCH BAR (UUSI) */}
+      {/* SEARCH BAR */}
       <div className="relative">
-        {/* SVG Suurennuslasi */}
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-tx-muted/50 flex items-center justify-center pointer-events-none">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -54,7 +58,6 @@ export default function InventoryControls({
             />
           </svg>
         </span>
-
         <input
           type="text"
           value={searchQuery}
@@ -62,7 +65,6 @@ export default function InventoryControls({
           placeholder="Search items..."
           className="w-full bg-app-base border border-border rounded-lg py-2 pl-9 pr-8 text-sm text-tx-main placeholder-tx-muted focus:outline-none focus:border-accent/50 transition-all"
         />
-
         {searchQuery && (
           <button
             onClick={() => onSearchChange("")}
@@ -73,46 +75,46 @@ export default function InventoryControls({
         )}
       </div>
 
-      {/* TABS (Filtering) */}
-      <div className="flex bg-app-base p-1 rounded-lg border border-border">
-        {filters.map((f) => (
-          <button
-            key={f.id}
-            onClick={() => onSetFilter(f.id)}
-            className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider rounded transition-all
-              ${
-                activeFilter === f.id
-                  ? "bg-panel-hover text-tx-main shadow"
-                  : "text-tx-muted hover:text-tx-main hover:bg-panel"
-              }
-            `}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* TABS (Filtering) - Rullattava näkymä */}
+      <div className="flex overflow-x-auto pb-1 custom-scrollbar scrollbar-hide">
+        <div className="flex bg-app-base p-1 rounded-lg border border-border min-w-max">
+          {filters.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => onSetFilter(f.id)}
+              className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded transition-all
+                ${
+                  activeFilter === f.id
+                    ? "bg-panel-hover text-tx-main shadow"
+                    : "text-tx-muted hover:text-tx-main hover:bg-panel"
+                }
+              `}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* SORTING */}
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] text-tx-muted font-bold uppercase tracking-widest">
-          Sort By:
+      <div className="flex items-center justify-between mt-1">
+        <span className="text-[9px] text-tx-muted font-bold uppercase tracking-widest">
+          Sort:
         </span>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {sorts.map((s) => (
             <button
               key={s.id}
               onClick={() => onToggleSort(s.id)}
-              className={`text-[10px] uppercase font-bold px-2 py-1 rounded border transition-all flex items-center gap-1
-                ${
-                  activeSort === s.id
-                    ? "bg-success/20 text-success border-success/50"
-                    : "bg-panel text-tx-muted border-border hover:border-border-hover"
-                }
+              className={`text-[9px] uppercase font-bold px-2 py-1 rounded border transition-all flex items-center gap-1
+                ${activeSort === s.id ? "bg-success/20 text-success border-success/30" : "bg-panel text-tx-muted border-border hover:border-border-hover"}
               `}
             >
               {s.label}
               {activeSort === s.id && (
-                <span className="text-[8px]">{sortDesc ? "↓" : "↑"}</span>
+                <span className="text-[8px] opacity-70">
+                  {sortDesc ? "↓" : "↑"}
+                </span>
               )}
             </button>
           ))}

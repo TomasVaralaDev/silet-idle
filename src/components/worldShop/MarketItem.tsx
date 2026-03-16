@@ -18,7 +18,7 @@ export default function MarketItem({
 }: Props) {
   const canAffordCoins = playerCoins >= item.costCoins;
   const canAffordMats = item.costMaterials.every(
-    (m) => (playerInventory[m.itemId] || 0) >= m.amount
+    (m) => (playerInventory[m.itemId] || 0) >= m.amount,
   );
 
   // Daily limit tarkistus
@@ -153,16 +153,16 @@ export default function MarketItem({
             isLimitReached
               ? "bg-panel text-danger/80 border-t border-danger/10 cursor-not-allowed"
               : canAffordAll
-              ? "bg-accent/20 hover:bg-accent text-accent hover:text-white border-t border-accent/30"
-              : "bg-app-base text-tx-muted/60 border-t border-border cursor-not-allowed"
+                ? "bg-accent/20 hover:bg-accent text-accent hover:text-white border-t border-accent/30"
+                : "bg-app-base text-tx-muted/60 border-t border-border cursor-not-allowed"
           }
         `}
       >
         {isLimitReached
           ? "Daily Limit Reached"
           : canAffordAll
-          ? "Authorize Exchange"
-          : "Insufficient Assets"}
+            ? "Authorize Exchange"
+            : "Insufficient Assets"}
       </button>
     </div>
   );

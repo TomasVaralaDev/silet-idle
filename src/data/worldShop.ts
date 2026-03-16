@@ -1,109 +1,141 @@
-import type { WorldShopItem } from '../types';
+import type { WorldShopItem } from "../types";
+import { SCROLLS_DATA } from "./scrolls";
+// HUOM! Varmista, että tämä polku osoittaa oikeaan tiedostoon, jossa miningResources on!
+import { miningResources } from "./skills/mining";
+// HUOM! Varmista myös pussukoiden polku
+import { MYSTERY_POUCHES } from "./pouches";
 
-// 1. Konfiguraatio: Enchant Scrollien tasot ja ominaisuudet
-const ENCHANT_SCROLL_TIERS = [
-  { w: 1, name: 'Minor Enchantment', chance: 5, limit: 100, matName: 'greenvale' },
-  { w: 2, name: 'Lesser Enchantment', chance: 8, limit: 80, matName: 'stonefall' },
-  { w: 3, name: 'Scroll of Binding', chance: 12, limit: 60, matName: 'tideshelf' }, // Oletusnimi
-  { w: 4, name: 'Scroll of Infusion', chance: 15, limit: 50, matName: 'sunfire' },  // Oletusnimi
-  { w: 5, name: 'Greater Enchantment', chance: 20, limit: 40, matName: 'void' },    // Oletusnimi
-  { w: 6, name: 'Master Enchantment', chance: 25, limit: 30, matName: 'iron' },    // Oletusnimi
-  { w: 7, name: 'Ancient Scroll', chance: 30, limit: 20, matName: 'crimson' }, // Oletusnimi
-  { w: 8, name: 'Celestial Scroll', chance: 40, limit: 10, matName: 'celestial' } // Oletusnimi
+// --- 1. KÄÄRÖJEN ASETUKSET ---
+const WORLD_SHOP_CONFIG = [
+  { worldId: 1, tiers: [1], matName: "greenvale" },
+  { worldId: 2, tiers: [1, 2], matName: "stonefall" },
+  { worldId: 3, tiers: [1, 2, 3], matName: "ashridge" },
+  { worldId: 4, tiers: [2, 3, 4], matName: "frostreach" },
+  { worldId: 5, tiers: [3, 4, 5], matName: "duskwood" },
+  { worldId: 6, tiers: [3, 4], matName: "stormcoast" },
+  { worldId: 7, tiers: [1, 2, 3, 4], matName: "voidexpanse" },
+  { worldId: 8, tiers: [4], matName: "eternalnexus" },
 ];
 
-// 2. Helper-funktio scrollien luomiseen kauppaan
-const generateEnchantScroll = (config: typeof ENCHANT_SCROLL_TIERS[0]): WorldShopItem => {
-  const { w, name, chance, limit, matName } = config;
-  
-  // Lasketaan hinta dynaamisesti: (500, 750, 1125...)
-  const coinCost = Math.floor(500 * Math.pow(1.5, w - 1));
-  const matAmount = 1 * w;
-
-  return {
-    id: `shop_scroll_enchant_w${w}`, // Uniikki ID kaupalle
-    name: name,
-    description: `Increases enchanting success chance by +${chance}%.`,
-    icon: `/assets/items/enchantingscroll/enchanting_tier${w}.png`,
-    costCoins: coinCost,
-    costMaterials: [
-      { itemId: `${matName}_basic`, amount: matAmount }
-    ],
-    worldId: w,
-    resultItemId: `scroll_enchant_w${w}`, // Tämä ID menee inventoryyn (ja ItemFactory tunnistaa tämän)
-    resultAmount: 1,
-    dailyLimit: limit
-  };
+const DAILY_LIMITS: Record<number, number> = {
+  1: 50,
+  2: 15,
+  3: 5,
+  4: 1,
 };
 
-// 3. Generoidaan dynaamiset scrollit
-const DYNAMIC_SCROLLS = ENCHANT_SCROLL_TIERS.map(generateEnchantScroll);
-
-// 4. Manuaaliset esineet
-const MANUAL_ITEMS: WorldShopItem[] = [
-  // --- WORLD 1: GREENVALE ---
-  {
-    id: 'w1_potion',
-    name: 'Forest Elixir',
-    description: 'Restores health. Brewed from Greenvale dust.',
-    icon: '/assets/items/potion_red.png',
-    costCoins: 250,
-    costMaterials: [{ itemId: 'greenvale_basic', amount: 20 }],
-    worldId: 1, resultItemId: 'potion_basic', resultAmount: 5,
-    dailyLimit: 10
-  },
-  {
-    id: 'w1_bundle',
-    name: 'Woodcutters Bundle',
-    description: 'A pack of high-quality logs and twigs.',
-    icon: '/assets/items/wood_bundle.png',
-    costCoins: 500,
-    costMaterials: [{ itemId: 'greenvale_basic', amount: 50 }],
-    worldId: 1, resultItemId: 'oak_log', resultAmount: 25
-  },
-  {
-    id: 'w1_key',
-    name: 'Ancient Greenvale Key',
-    description: 'Guaranteed access to the Forest Guardian.',
-    icon: '/assets/items/bosskey/bosskey_w1.png',
-    costCoins: 2500,
-    costMaterials: [{ itemId: 'greenvale_basic', amount: 5 }], 
-    worldId: 1, resultItemId: 'bosskey_w1', resultAmount: 1,
-    dailyLimit: 10
-  },
-
-  // --- WORLD 2: STONEFALL ---
-  {
-    id: 'w2_stone',
-    name: 'Refined Whetstone',
-    description: 'Used for high-level smithing and enchanting.',
-    icon: '/assets/items/stone_upgrade.png',
-    costCoins: 1000,
-    costMaterials: [{ itemId: 'stonefall_basic', amount: 40 }],
-    worldId: 2, resultItemId: 'upgrade_shard', resultAmount: 2
-  },
-  {
-    id: 'w2_ore',
-    name: 'Iron Consignment',
-    description: 'Bulk shipment of raw iron ore.',
-    icon: '/assets/items/iron_ore.png',
-    costCoins: 800,
-    costMaterials: [{ itemId: 'stonefall_basic', amount: 60 }],
-    worldId: 2, resultItemId: 'iron_ore', resultAmount: 30
-  },
-  {
-    id: 'w2_pendant',
-    name: 'Stonefall Emblem',
-    description: 'A rare emblem that boosts defense slightly.',
-    icon: '/assets/items/emblem_stone.png',
-    costCoins: 5000,
-    costMaterials: [{ itemId: 'stonefall_rare', amount: 10 }, { itemId: 'stonefall_exotic', amount: 1 }],
-    worldId: 2, resultItemId: 'stone_pendant', resultAmount: 1
-  }
+// --- 2. MALMIEN ASETUKSET ---
+const WORLD_ORE_CONFIG = [
+  { worldId: 1, oreId: "ore_copper", matName: "greenvale" },
+  { worldId: 2, oreId: "ore_iron", matName: "stonefall" },
+  { worldId: 3, oreId: "ore_gold", matName: "ashridge" },
+  { worldId: 4, oreId: "ore_mithril", matName: "frostreach" },
+  { worldId: 5, oreId: "ore_adamantite", matName: "duskwood" },
+  { worldId: 6, oreId: "ore_emerald", matName: "stormcoast" },
+  { worldId: 7, oreId: "ore_eternium", matName: "voidexpanse" },
+  { worldId: 8, oreId: "ore_starfallalloy", matName: "eternalnexus" },
 ];
 
-// 5. Yhdistetään ja exportataan
-export const WORLD_SHOP_DATA: WorldShopItem[] = [
-  ...MANUAL_ITEMS,
-  ...DYNAMIC_SCROLLS
-].sort((a, b) => a.worldId - b.worldId || a.costCoins - b.costCoins);
+// --- 3. PUSSUKOIDEN ASETUKSET ---
+const WORLD_POUCH_CONFIG = [
+  { worldId: 1, pouchId: "pouch_mystery_minor", matName: "greenvale" },
+  { worldId: 2, pouchId: "pouch_mystery_minor", matName: "stonefall" },
+  { worldId: 3, pouchId: "pouch_mystery_minor", matName: "ashridge" },
+  { worldId: 4, pouchId: "pouch_mystery_major", matName: "frostreach" },
+  { worldId: 5, pouchId: "pouch_mystery_major", matName: "duskwood" },
+  { worldId: 6, pouchId: "pouch_mystery_major", matName: "stormcoast" },
+  { worldId: 7, pouchId: "pouch_mystery_legendary", matName: "voidexpanse" },
+  { worldId: 8, pouchId: "pouch_mystery_legendary", matName: "eternalnexus" },
+];
+
+// Pussukoiden hinnat ja päivärajat
+const POUCH_COSTS: Record<
+  string,
+  { coins: number; mats: number; limit: number }
+> = {
+  pouch_mystery_minor: { coins: 5000, mats: 500, limit: 3 }, // 3 kpl / päivä
+  pouch_mystery_major: { coins: 25000, mats: 1500, limit: 2 }, // 2 kpl / päivä
+  pouch_mystery_legendary: { coins: 100000, mats: 5000, limit: 1 }, // 1 kpl / päivä
+};
+
+const DYNAMIC_SHOP_ITEMS: WorldShopItem[] = [];
+
+// Generoidaan kääröt (Scrolls)
+WORLD_SHOP_CONFIG.forEach(({ worldId, tiers, matName }) => {
+  tiers.forEach((tier) => {
+    const targetScrollId = `scroll_enchant_${tier}`;
+    const scrollItem = SCROLLS_DATA.find((s) => s.id === targetScrollId);
+
+    if (scrollItem) {
+      const coinCost = Math.floor(500 * Math.pow(1.5, tier - 1));
+      const matAmount = tier * 2;
+      const dailyLimit = DAILY_LIMITS[tier] || 1;
+
+      DYNAMIC_SHOP_ITEMS.push({
+        id: `shop_w${worldId}_scroll_t${tier}`,
+        name: scrollItem.name,
+        description: scrollItem.description || "A magical enchanting scroll.",
+        icon: scrollItem.icon || "",
+        costCoins: coinCost,
+        costMaterials: [{ itemId: `${matName}_basic`, amount: matAmount }],
+        worldId: worldId,
+        resultItemId: scrollItem.id,
+        resultAmount: 1,
+        dailyLimit: dailyLimit,
+      });
+    }
+  });
+});
+
+// Generoidaan malminiput (Ores)
+WORLD_ORE_CONFIG.forEach(({ worldId, oreId, matName }) => {
+  const oreItem = miningResources.find((o) => o.id === oreId);
+
+  if (oreItem) {
+    // Hinnan laskenta: Oletetaan että nippu maksaa kolikossa tuplasti sen mitä 100x malmia olisi arvoltaan
+    // Materiaalikuluna pidetään 10x maailman omaa perusmateriaalia. Voit vapaasti hienosäätää näitä!
+    const baseOreValue = oreItem.value || 1;
+    const coinCost = baseOreValue * 100 * 2;
+    const matAmount = 10;
+
+    DYNAMIC_SHOP_ITEMS.push({
+      id: `shop_w${worldId}_ore_bundle`,
+      name: `${oreItem.name} Shipment`, // Näyttää kaupassa esim. "Copper Ore Shipment"
+      description: `A heavy crate containing 100x ${oreItem.name}.`,
+      icon: oreItem.icon || "",
+      costCoins: coinCost,
+      costMaterials: [{ itemId: `${matName}_basic`, amount: matAmount }],
+      worldId: worldId,
+      resultItemId: oreItem.id,
+      resultAmount: 100, // Antaa 100 kpl
+      dailyLimit: 1, // Vain 1 setti (eli 100 kpl) päivässä per maailma
+    });
+  }
+});
+
+// Generoidaan Mysteeripussukat (Pouches)
+WORLD_POUCH_CONFIG.forEach(({ worldId, pouchId, matName }) => {
+  const pouchItem = MYSTERY_POUCHES.find((p) => p.id === pouchId);
+
+  if (pouchItem) {
+    const costs = POUCH_COSTS[pouchId];
+
+    DYNAMIC_SHOP_ITEMS.push({
+      id: `shop_w${worldId}_${pouchId}`,
+      name: pouchItem.name,
+      description: pouchItem.description || "A mysterious pouch.",
+      icon: pouchItem.icon || "",
+      costCoins: costs.coins,
+      costMaterials: [{ itemId: `${matName}_basic`, amount: costs.mats }],
+      worldId: worldId,
+      resultItemId: pouchItem.id,
+      resultAmount: 1,
+      dailyLimit: costs.limit,
+    });
+  }
+});
+
+// --- 4. EXPORT ---
+export const WORLD_SHOP_DATA: WorldShopItem[] = DYNAMIC_SHOP_ITEMS.sort(
+  (a, b) => a.worldId - b.worldId || a.costCoins - b.costCoins,
+);

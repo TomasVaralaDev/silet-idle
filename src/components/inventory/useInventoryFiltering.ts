@@ -1,28 +1,37 @@
-import { useState, useMemo } from 'react';
-import { useGameStore } from '../../store/useGameStore';
-import { getItemDetails } from '../../data';
-import type { InventoryItem } from './InventoryGrid';
+import { useState, useMemo } from "react";
+import { useGameStore } from "../../store/useGameStore";
+import { getItemDetails } from "../../data";
+import type { InventoryItem } from "./InventoryGrid";
 
-export type SortType = 'rarity' | 'level' | 'amount' | 'value';
-export type FilterType = 'all' | 'equipment' | 'consumable' | 'material';
+export type SortType = "rarity" | "level" | "amount" | "value";
+
+// PÄIVITETTY: consumables -> potions
+export type FilterType =
+  | "all"
+  | "weapons"
+  | "armor"
+  | "runes"
+  | "pouches"
+  | "potions"
+  | "materials"
+  | "misc";
 
 const RARITY_WEIGHTS: Record<string, number> = {
   legendary: 4,
   epic: 3,
   rare: 2,
   uncommon: 1,
-  common: 0
+  common: 0,
 };
 
 export function useInventoryFiltering() {
-  const inventory = useGameStore(state => state.inventory);
-  
-  const [filter, setFilter] = useState<FilterType>('all');
-  const [sortBy, setSortBy] = useState<SortType>('rarity');
-  const [sortDesc, setSortDesc] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const inventory = useGameStore((state) => state.inventory);
 
-  // 1. Muunnetaan inventory-objekti listaksi
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [sortBy, setSortBy] = useState<SortType>("rarity");
+  const [sortDesc, setSortDesc] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const rawItems = useMemo(() => {
     return Object.entries(inventory)
       .map(([id, count]) => {
@@ -30,64 +39,99 @@ export function useInventoryFiltering() {
         if (!details) return null;
         return { ...details, count } as InventoryItem;
       })
-      // KORJAUS: Lisätty item.count > 0 tarkistus
-      .filter((item): item is InventoryItem => 
-        item !== null && 
-        item.name !== undefined && 
-        item.count > 0
+      .filter(
+        (item): item is InventoryItem =>
+          item !== null && item.name !== undefined && item.count > 0,
       );
   }, [inventory]);
 
-  // 2. Suodatetaan ja lajitellaan (Memoized performance)
   const processedItems = useMemo(() => {
     let result = [...rawItems];
 
-    // --- SEARCH FILTERING --- (UUSI)
-    if (searchQuery.trim() !== '') {
+    if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
-      result = result.filter(i => 
-        i.name.toLowerCase().includes(query) || 
-        i.description?.toLowerCase().includes(query)
+      result = result.filter(
+        (i) =>
+          i.name.toLowerCase().includes(query) ||
+          i.description?.toLowerCase().includes(query),
       );
     }
 
-    // --- CATEGORY FILTERING ---
-    if (filter === 'equipment') {
-      result = result.filter(i => i.slot !== undefined);
-    } else if (filter === 'consumable') {
-      result = result.filter(i => i.healing !== undefined || i.category === 'Food');
-    } else if (filter === 'material') {
-      result = result.filter(i => !i.slot && !i.healing && i.category !== 'Food');
+    if (filter !== "all") {
+      result = result.filter((i) => {
+        // Tunnistuslogiikka kategorioille
+        const isWeapon = i.slot === "weapon";
+        const isArmor = [
+          "head",
+          "body",
+          "legs",
+          "shield",
+          "necklace",
+          "ring",
+        ].includes(i.slot as string);
+        const isRune = i.id.startsWith("rune_") || i.slot === "rune";
+        const isPouch = i.id.startsWith("pouch_mystery_");
+        // isConsumable kattaa edelleen ruoat ja potionit "Potions" välilehdelle
+        const isConsumable =
+          i.slot === "food" || i.category === "potion" || i.category === "Food";
+        const isMaterial = [
+          "ingot",
+          "plank",
+          "material",
+          "ore",
+          "log",
+        ].includes(i.category as string);
+
+        switch (filter) {
+          case "weapons":
+            return isWeapon;
+          case "armor":
+            return isArmor;
+          case "runes":
+            return isRune;
+          case "pouches":
+            return isPouch;
+          case "potions": // Päivitetty case
+            return isConsumable;
+          case "materials":
+            return isMaterial;
+          case "misc":
+            return (
+              !isWeapon &&
+              !isArmor &&
+              !isRune &&
+              !isPouch &&
+              !isConsumable &&
+              !isMaterial
+            );
+          default:
+            return true;
+        }
+      });
     }
 
-    // --- SORTING ---
     result.sort((a, b) => {
       let valA = 0;
       let valB = 0;
-
       switch (sortBy) {
-        case 'rarity':
+        case "rarity":
           valA = RARITY_WEIGHTS[a.rarity] || 0;
           valB = RARITY_WEIGHTS[b.rarity] || 0;
           break;
-        case 'level':
+        case "level":
           valA = a.level || 0;
           valB = b.level || 0;
           break;
-        case 'amount':
+        case "amount":
           valA = a.count;
           valB = b.count;
           break;
-        case 'value':
+        case "value":
           valA = a.value;
           valB = b.value;
           break;
       }
-
-      if (valA === valB) {
-        return a.name.localeCompare(b.name);
-      }
-
+      if (valA === valB) return a.name.localeCompare(b.name);
       return sortDesc ? valB - valA : valA - valB;
     });
 
@@ -95,9 +139,8 @@ export function useInventoryFiltering() {
   }, [rawItems, filter, sortBy, sortDesc, searchQuery]);
 
   const toggleSort = (type: SortType) => {
-    if (sortBy === type) {
-      setSortDesc(!sortDesc);
-    } else {
+    if (sortBy === type) setSortDesc(!sortDesc);
+    else {
       setSortBy(type);
       setSortDesc(true);
     }
@@ -110,7 +153,7 @@ export function useInventoryFiltering() {
     sortBy,
     sortDesc,
     toggleSort,
-    searchQuery,    // UUSI
-    setSearchQuery  // UUSI
+    searchQuery,
+    setSearchQuery,
   };
 }

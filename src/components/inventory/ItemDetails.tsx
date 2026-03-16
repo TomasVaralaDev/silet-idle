@@ -13,8 +13,11 @@ interface Props {
 
 export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
   const skills = useGameStore((state) => state.skills);
+  // Haetaan openPouch-metodi storesta
+  const openPouch = useGameStore((state) => state.openPouch);
 
-  const isEquippable = !!item.slot; // Kaikki mikä voidaan laittaa päälle (mukaan lukien potionit 'food' slottiin)
+  const isEquippable = !!item.slot;
+  const isPouch = item.id.startsWith("pouch_mystery_");
   const currentlyEquipped = getEquippedItem(item.slot);
   const theme = getRarityStyle(item.rarity);
 
@@ -24,7 +27,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
   let meetsRequirement = true;
 
   if (item.level && item.level > 1) {
-    // Määritetään oikea skill ja taso
     if (item.combatStyle === "ranged") {
       requiredSkillName = "Crafting";
       playerSkillLevel = skills.crafting?.level || 1;
@@ -33,7 +35,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
       playerSkillLevel = skills.alchemy?.level || 1;
     }
 
-    // Potioneille (HP parannus) vaaditaan Alchemy
     if (item.slot === "food" || item.healing) {
       requiredSkillName = "Alchemy";
       playerSkillLevel = skills.alchemy?.level || 1;
@@ -41,7 +42,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
 
     meetsRequirement = playerSkillLevel >= item.level;
   }
-  // ======================================
 
   return (
     <div
@@ -103,7 +103,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
           "{item.description || "A mysterious item with no description."}"
         </p>
 
-        {/* VAROITUS, JOS TASO EI RIITÄ */}
         {!meetsRequirement && (
           <div className="bg-danger/10 border border-danger/30 rounded p-2 text-center mt-2">
             <p className="text-[10px] font-bold text-danger uppercase tracking-wider">
@@ -186,7 +185,7 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
 
       <div
         className={`grid ${
-          isEquippable ? "grid-cols-2" : "grid-cols-1"
+          isEquippable || isPouch ? "grid-cols-2" : "grid-cols-1"
         } border-t border-border divide-x divide-border`}
       >
         <button
@@ -197,6 +196,7 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
           Sell
         </button>
 
+        {/* NÄYTETÄÄN EQUIP-PAINIKE */}
         {isEquippable && (
           <button
             onClick={() => {
@@ -212,6 +212,19 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
             }`}
           >
             Equip <span className="text-tx-muted">→</span>
+          </button>
+        )}
+
+        {/* NÄYTETÄÄN OPEN POUCH -PAINIKE */}
+        {isPouch && (
+          <button
+            onClick={() => {
+              openPouch(item.id);
+              onClose();
+            }}
+            className="py-3 text-xs font-bold uppercase tracking-wider text-accent bg-accent/10 hover:bg-accent/20 transition-colors flex items-center justify-center gap-2"
+          >
+            Open Pouch
           </button>
         )}
       </div>

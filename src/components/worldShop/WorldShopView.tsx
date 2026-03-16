@@ -3,16 +3,18 @@ import { useGameStore } from "../../store/useGameStore";
 import { WORLD_SHOP_DATA } from "../../data/worldShop";
 import { WORLD_INFO } from "../../data/worlds";
 import MarketItem from "./MarketItem";
+import PouchRatesModal from "../modals/PouchRatesModal"; // Muista tuoda modaali
 
 export default function WorldShopView() {
   const [selectedWorld, setSelectedWorld] = useState(1);
+  const [isRatesOpen, setIsRatesOpen] = useState(false); // Lisätty tila modaalille
 
   // HAE worldShop STATE
   const { buyWorldItem, inventory, coins, worldShop, checkDailyReset } =
     useGameStore();
 
   const currentItems = WORLD_SHOP_DATA.filter(
-    (i) => i.worldId === selectedWorld
+    (i) => i.worldId === selectedWorld,
   );
   const currentWorldInfo = WORLD_INFO[selectedWorld];
 
@@ -20,7 +22,13 @@ export default function WorldShopView() {
   checkDailyReset();
 
   return (
-    <div className="h-full flex flex-col bg-app-base text-tx-main overflow-hidden font-sans text-left">
+    <div className="h-full flex flex-col bg-app-base text-tx-main overflow-hidden font-sans text-left relative">
+      {/* POUCH DROP RATES MODAALI */}
+      <PouchRatesModal
+        isOpen={isRatesOpen}
+        onClose={() => setIsRatesOpen(false)}
+      />
+
       {/* HEADER */}
       <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div
@@ -42,7 +50,6 @@ export default function WorldShopView() {
             Buy items with world currencies.
           </p>
         </div>
-        {/* Oikea kulma tyhjennetty */}
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -103,7 +110,7 @@ export default function WorldShopView() {
           </div>
 
           <div className="relative z-10 h-full p-8 overflow-y-auto custom-scrollbar">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto pb-20">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {currentItems.length > 0 ? (
                   currentItems.map((item) => (
@@ -131,6 +138,19 @@ export default function WorldShopView() {
               </div>
             </div>
           </div>
+
+          {/* KELLUVA KYSYMYSMERKKI-IKONI */}
+          <button
+            onClick={() => setIsRatesOpen(true)} // Avaa modaalin
+            className="absolute bottom-6 right-6 z-30 w-12 h-12 flex items-center justify-center bg-panel/80 hover:bg-accent border border-border hover:border-accent-hover rounded-full transition-all shadow-xl backdrop-blur-sm active:scale-95 group"
+            title="View Pouch Drop Rates"
+          >
+            <img
+              src="/assets/ui/icon_question.png"
+              alt="Help"
+              className="w-7 h-7 pixelated group-hover:brightness-200 transition"
+            />
+          </button>
         </main>
       </div>
     </div>

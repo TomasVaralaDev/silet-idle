@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { useGameStore } from "../store/useGameStore";
 import type { SkillType } from "../types";
 import { getRequiredXpForLevel } from "../utils/gameUtils";
-import BattleSimView from "./battleSim/BattleSimView"; // UUSI IMPORT
+import BattleSimView from "./battleSim/BattleSimView";
 import { weapons } from "../data/skills/crafting/weapons";
 import { armor } from "../data/skills/smithing/armor";
 import { jewelry } from "../data/skills/crafting/jewelry";
 import { tools } from "../data/skills/smithing/tools";
 import { alchemyResources } from "../data/skills/alchemy";
+import { MYSTERY_POUCHES } from "../data/pouches"; // UUSI IMPORT
 
 const THEMES = [
   { id: "theme-neon", label: "Neon (Sci-Fi)" },
@@ -23,17 +24,15 @@ const THEMES = [
 export default function DevManager() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState("theme-neon");
-  const [isSimModalOpen, setIsSimModalOpen] = useState(false); // UUSI TILA SIMULAATTORILLE
+  const [isSimModalOpen, setIsSimModalOpen] = useState(false);
 
-  // Dev-tilat
   const [coinAmount, setCoinAmount] = useState<number>(10000);
   const [targetLevel, setTargetLevel] = useState<number>(99);
   const [itemAmount] = useState<number>(1);
 
-  // Tilat Gearin injektointiin
   const [selectedGear, setSelectedGear] = useState<string>(
-    "weapon_sword_bronze",
-  );
+    "pouch_mystery_minor",
+  ); // Oletusarvo vaihdettu pussiin
   const [gearAmount, setGearAmount] = useState<number>(1);
 
   const setState = useGameStore((state) => state.setState);
@@ -56,12 +55,14 @@ export default function DevManager() {
       },
     }));
 
+    // Lisätty MYSTERY_POUCHES hakuun
     const allItems = [
       ...weapons,
       ...armor,
       ...jewelry,
       ...tools,
       ...alchemyResources,
+      ...MYSTERY_POUCHES,
     ];
     const foundItem = allItems.find((item) => item.id === id);
     const iconPath = foundItem?.icon || `/assets/items/bosskey/${id}.png`;
@@ -96,11 +97,9 @@ export default function DevManager() {
   const addAllPotions = () => {
     setState((state) => {
       const newInventory = { ...state.inventory };
-
       alchemyResources.forEach((potion) => {
         newInventory[potion.id] = (newInventory[potion.id] || 0) + 999;
       });
-
       return { inventory: newInventory };
     });
 
@@ -108,6 +107,23 @@ export default function DevManager() {
       "success",
       "MEDICAL RESUPPLY: 999x of all potions injected!",
       "/assets/items/alchemy/potion_tier8.png",
+    );
+  };
+
+  // UUSI: Lisää kaikki pussit
+  const addAllPouches = () => {
+    setState((state) => {
+      const newInventory = { ...state.inventory };
+      MYSTERY_POUCHES.forEach((p) => {
+        newInventory[p.id] = (newInventory[p.id] || 0) + 10;
+      });
+      return { inventory: newInventory };
+    });
+
+    emitEvent(
+      "success",
+      "LOOT OVERFLOW: 10x of all Mystery Pouches injected!",
+      "/assets/items/pouch_legendary.png",
     );
   };
 
@@ -129,9 +145,7 @@ export default function DevManager() {
     const type = amount > 0 ? "success" : "warning";
     emitEvent(
       type,
-      `${amount > 0 ? "Injected" : "Extracted"} ${Math.abs(
-        amount,
-      ).toLocaleString()} fragments`,
+      `${amount > 0 ? "Injected" : "Extracted"} ${Math.abs(amount).toLocaleString()} fragments`,
     );
   };
 
@@ -154,12 +168,8 @@ export default function DevManager() {
 
   const unlockAllMaps = () => {
     setState((state) => ({
-      combatStats: {
-        ...state.combatStats,
-        maxMapCompleted: 80,
-      },
+      combatStats: { ...state.combatStats, maxMapCompleted: 80 },
     }));
-
     emitEvent(
       "success",
       "MAP OVERRIDE: All 80 zones unlocked!",
@@ -178,9 +188,7 @@ export default function DevManager() {
       </button>
 
       <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden relative z-10 ${
-          isOpen ? "max-h-[95vh] opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`transition-all duration-300 ease-in-out overflow-hidden relative z-10 ${isOpen ? "max-h-[95vh] opacity-100" : "max-h-0 opacity-0"}`}
       >
         <div className="bg-black/95 border-b border-x border-green-500/50 p-4 shadow-2xl w-64 font-mono text-xs rounded-b-md space-y-6 overflow-y-auto custom-scrollbar max-h-[85vh]">
           <h3 className="text-green-500 font-bold border-b border-green-500/30 pb-1 flex justify-between items-center uppercase italic text-[10px]">
@@ -229,6 +237,17 @@ export default function DevManager() {
                 onChange={(e) => setSelectedGear(e.target.value)}
                 className="flex-1 bg-green-950/20 border border-green-900 text-green-400 px-1 py-1.5 focus:outline-none focus:border-green-500 text-[9px] cursor-pointer"
               >
+                {/* UUSI OPTGROUP PUSSUKOILLE */}
+                <optgroup
+                  label="MYSTERY POUCHES"
+                  className="bg-black text-yellow-500"
+                >
+                  {MYSTERY_POUCHES.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </optgroup>
                 <optgroup label="WEAPONS" className="bg-black text-green-500">
                   {weapons.map((w) => (
                     <option key={w.id} value={w.id}>
@@ -279,21 +298,33 @@ export default function DevManager() {
                 ADD
               </button>
             </div>
+
+            <div className="grid grid-cols-2 gap-1 mb-1">
+              <button
+                onClick={addAllPouches}
+                className="border border-yellow-500/50 text-yellow-500 py-1 text-[8px] uppercase font-black hover:bg-yellow-500 hover:text-black transition-all"
+              >
+                Inject Pouches (10x)
+              </button>
+              <button
+                onClick={addAllPotions}
+                className="border border-pink-500/50 text-pink-400 py-1 text-[8px] uppercase font-black hover:bg-pink-500 hover:text-black transition-all"
+              >
+                Inject Potions (999x)
+              </button>
+            </div>
+
             <button
               onClick={addAllGearWithEnchants}
               className="w-full border border-purple-500/50 text-purple-400 py-1 text-[8px] uppercase font-black hover:bg-purple-500 hover:text-black transition-all mb-1"
             >
               Inject ALL Gear (Base + E1-E5)
             </button>
-            <button
-              onClick={addAllPotions}
-              className="w-full border border-pink-500/50 text-pink-400 py-1 text-[8px] uppercase font-black hover:bg-pink-500 hover:text-black transition-all"
-            >
-              Inject All Potions (999x)
-            </button>
           </section>
 
-          {/* KEY & MAP OVERRIDE */}
+          {/* PROGRESSION & UI SECTIONS REMAIN UNCHANGED ... */}
+          {/* (Jätin ne koodiin, mutta tässä on tärkeimmät muutokset yllä) */}
+
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               Progression Overrides
@@ -324,7 +355,6 @@ export default function DevManager() {
             </button>
           </section>
 
-          {/* NEURAL-LINK OVERWRITE */}
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               Neural-Link Overwrite
@@ -345,7 +375,6 @@ export default function DevManager() {
             </div>
           </section>
 
-          {/* UUSI: SIMULATOR LAUNCH BUTTON */}
           <section className="space-y-2 pt-2 border-t border-green-500/30">
             <button
               onClick={() => {
@@ -358,7 +387,6 @@ export default function DevManager() {
             </button>
           </section>
 
-          {/* UI SUBSYSTEM */}
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               UI_Subsystem
@@ -368,11 +396,7 @@ export default function DevManager() {
                 <button
                   key={theme.id}
                   onClick={() => setCurrentTheme(theme.id)}
-                  className={`w-full text-left px-2 py-1 uppercase text-[9px] ${
-                    currentTheme === theme.id
-                      ? "bg-green-500 text-black"
-                      : "text-green-700 hover:bg-green-900/10"
-                  }`}
+                  className={`w-full text-left px-2 py-1 uppercase text-[9px] ${currentTheme === theme.id ? "bg-green-500 text-black" : "text-green-700 hover:bg-green-900/10"}`}
                 >
                   &gt; {theme.label}
                 </button>
@@ -382,7 +406,6 @@ export default function DevManager() {
         </div>
       </div>
 
-      {/* RENDERÖIDÄÄN MODAALI TÄÄLLÄ KAIKEN PÄÄLLE */}
       <BattleSimView
         isOpen={isSimModalOpen}
         onClose={() => setIsSimModalOpen(false)}

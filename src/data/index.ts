@@ -4,7 +4,8 @@ import { GAME_DATA } from "./skills";
 import { SHOP_ITEMS } from "./shop";
 import { ACHIEVEMENTS } from "./achievements";
 import { RUNES_DATA } from "./runes";
-import { SCROLLS_DATA } from "./scrolls"; // UUSI IMPORT
+import { SCROLLS_DATA } from "./scrolls";
+import { MYSTERY_POUCHES } from "./pouches"; // 1. UUSI IMPORT
 import {
   getBaseId,
   getEnchantLevel,
@@ -21,18 +22,16 @@ export {
   ACHIEVEMENTS,
   RUNES_DATA,
   SCROLLS_DATA,
+  MYSTERY_POUCHES, // 2. EXPORT MUKAAN
 };
 
-/**
- * 1. Määritellään Factory-rajapinta.
- */
 interface ItemSubFactory {
   canHandle: (id: string) => boolean;
   create: (id: string) => Partial<Resource>;
 }
 
 /**
- * 2. Rune Factory (DYNAAMINEN)
+ * 2. Rune Factory
  */
 const RuneFactory: ItemSubFactory = {
   canHandle: (id) => id.startsWith("rune_"),
@@ -43,11 +42,24 @@ const RuneFactory: ItemSubFactory = {
 };
 
 /**
- * 3. World Loot Factory
+ * 3. Pouch Factory (UUSI)
+ * SRP: Tämä tehdas vastaa vain mysteeripussukoiden luomisesta.
+ */
+const PouchFactory: ItemSubFactory = {
+  canHandle: (id) => id.startsWith("pouch_mystery_"),
+  create: (id) => {
+    const pouch = MYSTERY_POUCHES.find((p) => p.id === id);
+    return pouch || {};
+  },
+};
+
+/**
+ * 4. World Loot Factory
  */
 const WorldLootFactory: ItemSubFactory = {
   canHandle: (id) =>
     !id.startsWith("rune_") &&
+    !id.startsWith("pouch_") && // Lisätty tarkistus, ettei sekoitu pussukoihin
     (id.includes("_basic") || id.includes("_rare") || id.includes("_exotic")),
   create: (id) => {
     const parts = id.split("_");
@@ -86,7 +98,7 @@ const WorldLootFactory: ItemSubFactory = {
 };
 
 /**
- * 4. Key Factory
+ * 5. Key Factory
  */
 const KeyFactory: ItemSubFactory = {
   canHandle: (id) => id.startsWith("bosskey_w"),
@@ -105,8 +117,7 @@ const KeyFactory: ItemSubFactory = {
 };
 
 /**
- * 5. Enchant Scroll Factory
- * OCP: Hakee nyt puhtaasti SCROLLS_DATA -taulukosta!
+ * 6. Enchant Scroll Factory
  */
 const EnchantScrollFactory: ItemSubFactory = {
   canHandle: (id) => id.startsWith("scroll_enchant_"),
@@ -117,7 +128,7 @@ const EnchantScrollFactory: ItemSubFactory = {
 };
 
 /**
- * 6. Skill Resource Factory
+ * 7. Skill Resource Factory
  */
 const SkillResourceFactory: ItemSubFactory = {
   canHandle: (id: string) => {
@@ -137,7 +148,7 @@ const SkillResourceFactory: ItemSubFactory = {
 };
 
 /**
- * 7. PÄÄTEHDAS (The Master Factory)
+ * 8. PÄÄTEHDAS (The Master Factory)
  */
 export const getItemDetails = (id: string): Resource | null => {
   if (!id) return null;
@@ -157,8 +168,9 @@ export const getItemDetails = (id: string): Resource | null => {
 
   const factories = [
     RuneFactory,
+    PouchFactory, // 3. LISÄTTY TEHDAS LISTAAN
     KeyFactory,
-    EnchantScrollFactory, // Nyt täysin puhdas
+    EnchantScrollFactory,
     WorldLootFactory,
     SkillResourceFactory,
   ];

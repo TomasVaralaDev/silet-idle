@@ -21,7 +21,7 @@ export const jewelry: Resource[] = [
   {
     id: "necklace_gold",
     name: "Gold Necklace",
-    rarity: "uncommon",
+    rarity: "common",
     level: 25,
     xpReward: 250,
     interval: 5000,
@@ -38,7 +38,7 @@ export const jewelry: Resource[] = [
   {
     id: "necklace_adamantite",
     name: "Adamantite Necklace",
-    rarity: "rare",
+    rarity: "common",
     level: 55,
     xpReward: 800,
     interval: 7000,
@@ -55,7 +55,7 @@ export const jewelry: Resource[] = [
   {
     id: "necklace_emerald",
     name: "Emerald Necklace",
-    rarity: "rare",
+    rarity: "common",
     level: 70,
     xpReward: 2000,
     interval: 9000,
@@ -72,7 +72,7 @@ export const jewelry: Resource[] = [
   {
     id: "necklace_eternium",
     name: "Eternium Necklace",
-    rarity: "legendary",
+    rarity: "common",
     level: 85,
     xpReward: 5000,
     interval: 12000,
@@ -92,7 +92,7 @@ export const jewelry: Resource[] = [
   {
     id: "necklace_starfallalloy",
     name: "Starfall Necklace",
-    rarity: "legendary",
+    rarity: "common",
     level: 99,
     xpReward: 12000,
     interval: 15000,

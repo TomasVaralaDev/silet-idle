@@ -47,7 +47,7 @@ export const weapons: Resource[] = [
   {
     id: "weapon_sword_gold",
     name: "Gold Sword",
-    rarity: "uncommon",
+    rarity: "common",
     level: 25,
     xpReward: 400,
     interval: 6500,
@@ -68,7 +68,7 @@ export const weapons: Resource[] = [
   {
     id: "weapon_sword_mithril",
     name: "Mithril Sword",
-    rarity: "uncommon",
+    rarity: "common",
     level: 40,
     xpReward: 1200,
     interval: 8000,
@@ -89,7 +89,7 @@ export const weapons: Resource[] = [
   {
     id: "weapon_sword_adamantite",
     name: "Adamantite Sword",
-    rarity: "rare",
+    rarity: "common",
     level: 55,
     xpReward: 3500,
     interval: 9500,
@@ -110,7 +110,7 @@ export const weapons: Resource[] = [
   {
     id: "weapon_sword_emerald",
     name: "Emerald Sword",
-    rarity: "rare",
+    rarity: "common",
     level: 70,
     xpReward: 8000,
     interval: 11000,
@@ -131,7 +131,7 @@ export const weapons: Resource[] = [
   {
     id: "weapon_sword_eternium",
     name: "Eternium Sword",
-    rarity: "legendary",
+    rarity: "common",
     level: 85,
     xpReward: 20000,
     interval: 13000,
@@ -152,7 +152,7 @@ export const weapons: Resource[] = [
   {
     id: "weapon_sword_starfallalloy",
     name: "Starfall Sword",
-    rarity: "legendary",
+    rarity: "common",
     level: 99,
     xpReward: 50000,
     interval: 16000,
@@ -246,7 +246,7 @@ export const weapons: Resource[] = [
   {
     id: "bow_gold",
     name: "Gold Bow",
-    rarity: "uncommon",
+    rarity: "common",
     level: 25,
     xpReward: 400,
     interval: 3500,
@@ -267,7 +267,7 @@ export const weapons: Resource[] = [
   {
     id: "bow_mithril",
     name: "Mithril Bow",
-    rarity: "uncommon",
+    rarity: "common",
     level: 40,
     xpReward: 1200,
     interval: 4000,
@@ -288,7 +288,7 @@ export const weapons: Resource[] = [
   {
     id: "bow_adamantite",
     name: "Adamantite Bow",
-    rarity: "rare",
+    rarity: "common",
     level: 55,
     xpReward: 3500,
     interval: 5000,
@@ -309,7 +309,7 @@ export const weapons: Resource[] = [
   {
     id: "bow_emerald",
     name: "Emerald Bow",
-    rarity: "rare",
+    rarity: "common",
     level: 70,
     xpReward: 8000,
     interval: 6000,
@@ -330,7 +330,7 @@ export const weapons: Resource[] = [
   {
     id: "bow_eternium",
     name: "Eternium Bow",
-    rarity: "legendary",
+    rarity: "common",
     level: 85,
     xpReward: 20000,
     interval: 7500,
@@ -351,7 +351,7 @@ export const weapons: Resource[] = [
   {
     id: "bow_starfall",
     name: "Starfall Bow",
-    rarity: "legendary",
+    rarity: "common",
     level: 99,
     xpReward: 50000,
     interval: 10000,
@@ -421,7 +421,7 @@ export const weapons: Resource[] = [
   {
     id: "staff_gold",
     name: "Gold Staff",
-    rarity: "uncommon",
+    rarity: "common",
     level: 25,
     xpReward: 400,
     interval: 3500,
@@ -442,7 +442,7 @@ export const weapons: Resource[] = [
   {
     id: "staff_mithril",
     name: "Mithril Staff",
-    rarity: "uncommon",
+    rarity: "common",
     level: 40,
     xpReward: 1200,
     interval: 4000,
@@ -463,7 +463,7 @@ export const weapons: Resource[] = [
   {
     id: "staff_adamantite",
     name: "Adamantite Staff",
-    rarity: "rare",
+    rarity: "common",
     level: 55,
     xpReward: 3500,
     interval: 5000,
@@ -484,7 +484,7 @@ export const weapons: Resource[] = [
   {
     id: "staff_emerald",
     name: "Emerald Staff",
-    rarity: "rare",
+    rarity: "common",
     level: 70,
     xpReward: 8000,
     interval: 6000,
@@ -505,7 +505,7 @@ export const weapons: Resource[] = [
   {
     id: "staff_eternium",
     name: "Eternium Staff",
-    rarity: "legendary",
+    rarity: "common",
     level: 85,
     xpReward: 20000,
     interval: 7500,
@@ -526,7 +526,7 @@ export const weapons: Resource[] = [
   {
     id: "staff_starfall",
     name: "Starfall Staff",
-    rarity: "legendary",
+    rarity: "common",
     level: 99,
     xpReward: 50000,
     interval: 10000,

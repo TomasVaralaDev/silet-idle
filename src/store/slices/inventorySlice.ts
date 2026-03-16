@@ -1,6 +1,8 @@
 import type { StateCreator } from "zustand";
 import type { FullStoreState } from "../useGameStore";
 import { getItemDetails } from "../../data";
+import { POUCH_LOOT_TABLES } from "../../data/pouches";
+import { rollWeightedDrop } from "../../utils/loot";
 import type { EquipmentSlot, ShopItem } from "../../types";
 
 export interface InventorySlice {
@@ -9,13 +11,13 @@ export interface InventorySlice {
   upgrades: string[];
   equipment: Record<Exclude<EquipmentSlot, "food">, string | null>;
   equippedFood: { itemId: string; count: number } | null;
-  // KORJAUS: Tyypitykseen lisätty | "all", jotta UI voi lähettää sen turvallisesti
   sellItem: (itemId: string, amount: number | "all") => void;
   buyUpgrade: (item: ShopItem) => void;
   gamble: (amount: number, callback: (win: boolean) => void) => void;
   equipItem: (itemId: string) => void;
   unequipItem: (slot: string) => void;
   enchantItem: (originalId: string, newId: string, cost: number) => void;
+  openPouch: (itemId: string) => void;
 }
 
 export const createInventorySlice: StateCreator<
@@ -23,7 +25,7 @@ export const createInventorySlice: StateCreator<
   [],
   [],
   InventorySlice
-> = (set) => ({
+> = (set, get) => ({
   inventory: {},
   coins: 0,
   upgrades: [],
@@ -47,9 +49,6 @@ export const createInventorySlice: StateCreator<
 
       if (!item || currentCount <= 0) return {};
 
-      // POMMINVARMA MÄÄRÄN TARKISTUS:
-      // Jos UI lähettää vahingossa sanan "all", myydään kaikki.
-      // Muussa tapauksessa muutetaan syöte varmasti numeroksi.
       let parsedAmount = 0;
       if (amount === "all") {
         parsedAmount = currentCount;
@@ -57,7 +56,6 @@ export const createInventorySlice: StateCreator<
         parsedAmount = Number(amount) || 0;
       }
 
-      // Jos määrä on nolla tai vähemmän (esim. viallinen syöte), perutaan myynti
       if (parsedAmount <= 0) return {};
 
       const actualSellAmount = Math.min(parsedAmount, currentCount);
@@ -106,26 +104,15 @@ export const createInventorySlice: StateCreator<
       const item = getItemDetails(itemId);
       if (!item || !item.slot) return {};
 
-      // === LEVEL CAP JÄRJESTELMÄ ===
       if (item.level && item.level > 1) {
-        let requiredSkill: keyof typeof state.skills = "smithing"; // Oletus melee/armor
-
-        // Määritetään vaadittu skill
+        let requiredSkill: keyof typeof state.skills = "smithing";
         if (item.combatStyle === "ranged") requiredSkill = "crafting";
-        if (item.combatStyle === "magic") requiredSkill = "alchemy"; // Aseille/sauvoille
-
-        // JOS esine on parantava potion (slot "food" tai on parantava vaikutus), se vaatii Alchemya
-        if (item.slot === "food" || item.healing) {
-          requiredSkill = "alchemy";
-        }
+        if (item.combatStyle === "magic") requiredSkill = "alchemy";
+        if (item.slot === "food" || item.healing) requiredSkill = "alchemy";
 
         const playerSkillLevel = state.skills[requiredSkill]?.level || 1;
-
-        if (playerSkillLevel < item.level) {
-          return {}; // Ei tarpeeksi tasoa, estetään pukeminen
-        }
+        if (playerSkillLevel < item.level) return {};
       }
-      // ============================
 
       const newInventory = { ...state.inventory };
       const currentCount = newInventory[itemId] || 0;
@@ -133,7 +120,6 @@ export const createInventorySlice: StateCreator<
 
       if (item.slot === "food") {
         let newEquippedCount = currentCount;
-
         if (state.equippedFood) {
           if (state.equippedFood.itemId === itemId) {
             newEquippedCount += state.equippedFood.count;
@@ -143,9 +129,7 @@ export const createInventorySlice: StateCreator<
               (newInventory[oldId] || 0) + state.equippedFood.count;
           }
         }
-
         delete newInventory[itemId];
-
         return {
           inventory: newInventory,
           equippedFood: { itemId, count: newEquippedCount },
@@ -153,24 +137,18 @@ export const createInventorySlice: StateCreator<
       } else {
         const slot = item.slot as Exclude<EquipmentSlot, "food">;
         const currentEquipId = state.equipment[slot];
-
-        if (currentEquipId) {
+        if (currentEquipId)
           newInventory[currentEquipId] =
             (newInventory[currentEquipId] || 0) + 1;
-        }
-
-        if (currentCount > 1) {
-          newInventory[itemId] = currentCount - 1;
-        } else {
-          delete newInventory[itemId];
-        }
-
+        if (currentCount > 1) newInventory[itemId] = currentCount - 1;
+        else delete newInventory[itemId];
         return {
           inventory: newInventory,
           equipment: { ...state.equipment, [slot]: itemId },
         };
       }
     }),
+
   unequipItem: (slot) =>
     set((state) => {
       const newInventory = { ...state.inventory };
@@ -207,9 +185,7 @@ export const createInventorySlice: StateCreator<
         itemFound = true;
       } else if (newInventory[originalId]) {
         newInventory[originalId] -= 1;
-        if (newInventory[originalId] <= 0) {
-          delete newInventory[originalId];
-        }
+        if (newInventory[originalId] <= 0) delete newInventory[originalId];
         newInventory[newId] = (newInventory[newId] || 0) + 1;
         itemFound = true;
       }
@@ -221,4 +197,53 @@ export const createInventorySlice: StateCreator<
         equipment: newEquipment,
       };
     }),
+
+  // Pussukoiden avausmekanismi
+  openPouch: (itemId) => {
+    const { inventory, openRewardModal } = get();
+    const currentCount = inventory[itemId] || 0;
+
+    if (currentCount <= 0) return;
+
+    const lootTable = POUCH_LOOT_TABLES[itemId];
+    if (!lootTable) return;
+
+    const rewardsMap: Record<string, number> = {};
+    // Arvotaan enemmän loottia paremmista pusseista
+    const rolls = itemId.includes("legendary")
+      ? 5
+      : itemId.includes("major")
+        ? 3
+        : 2;
+
+    for (let i = 0; i < rolls; i++) {
+      const drop = rollWeightedDrop(lootTable);
+      if (drop) {
+        rewardsMap[drop.itemId] = (rewardsMap[drop.itemId] || 0) + drop.amount;
+      }
+    }
+
+    set((state) => {
+      const newInventory = { ...state.inventory };
+
+      // Poistetaan pussi
+      newInventory[itemId] -= 1;
+      if (newInventory[itemId] <= 0) delete newInventory[itemId];
+
+      // Lisätään lootti
+      Object.entries(rewardsMap).forEach(([id, amount]) => {
+        newInventory[id] = (newInventory[id] || 0) + amount;
+      });
+
+      return { inventory: newInventory };
+    });
+
+    // Avataan UI palkinto-ikkuna
+    const rewardEntries = Object.entries(rewardsMap).map(([id, amount]) => ({
+      itemId: id,
+      amount,
+    }));
+
+    openRewardModal("Mystery Pouch Opened!", rewardEntries);
+  },
 });

@@ -1,7 +1,8 @@
 import type { InventoryItem } from "./InventoryGrid";
 import { getEquippedItem } from "../../utils/equipmentUtils";
 import StatComparison from "./StatComparison";
-import { getRarityStyle } from "../../utils/rarity"; // UUSI IMPORT
+import { getRarityStyle } from "../../utils/rarity";
+import { useGameStore } from "../../store/useGameStore";
 
 interface Props {
   item: InventoryItem;
@@ -11,11 +12,36 @@ interface Props {
 }
 
 export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
-  const isEquippable = item.slot || item.healing || item.category === "Food";
-  const currentlyEquipped = getEquippedItem(item.slot);
+  const skills = useGameStore((state) => state.skills);
 
-  // KORJAUS: Haetaan globaali teema!
+  const isEquippable = !!item.slot; // Kaikki mikä voidaan laittaa päälle (mukaan lukien potionit 'food' slottiin)
+  const currentlyEquipped = getEquippedItem(item.slot);
   const theme = getRarityStyle(item.rarity);
+
+  // === LEVEL CAP LOGIIKKA UI:ta varten ===
+  let requiredSkillName = "Smithing";
+  let playerSkillLevel = skills.smithing?.level || 1;
+  let meetsRequirement = true;
+
+  if (item.level && item.level > 1) {
+    // Määritetään oikea skill ja taso
+    if (item.combatStyle === "ranged") {
+      requiredSkillName = "Crafting";
+      playerSkillLevel = skills.crafting?.level || 1;
+    } else if (item.combatStyle === "magic") {
+      requiredSkillName = "Alchemy";
+      playerSkillLevel = skills.alchemy?.level || 1;
+    }
+
+    // Potioneille (HP parannus) vaaditaan Alchemy
+    if (item.slot === "food" || item.healing) {
+      requiredSkillName = "Alchemy";
+      playerSkillLevel = skills.alchemy?.level || 1;
+    }
+
+    meetsRequirement = playerSkillLevel >= item.level;
+  }
+  // ======================================
 
   return (
     <div
@@ -76,6 +102,15 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
         <p className="text-xs text-tx-muted italic leading-relaxed border-l-2 border-border pl-3">
           "{item.description || "A mysterious item with no description."}"
         </p>
+
+        {/* VAROITUS, JOS TASO EI RIITÄ */}
+        {!meetsRequirement && (
+          <div className="bg-danger/10 border border-danger/30 rounded p-2 text-center mt-2">
+            <p className="text-[10px] font-bold text-danger uppercase tracking-wider">
+              Requires Lv. {item.level} {requiredSkillName} to equip
+            </p>
+          </div>
+        )}
 
         {(item.stats || item.healing) && (
           <div className="grid grid-cols-2 gap-2 mt-2">
@@ -164,8 +199,17 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
 
         {isEquippable && (
           <button
-            onClick={onEquip}
-            className="py-3 text-xs font-bold uppercase tracking-wider text-tx-main hover:bg-panel-hover transition-colors flex items-center justify-center gap-2 bg-panel-hover/50"
+            onClick={() => {
+              if (meetsRequirement && onEquip) {
+                onEquip();
+              }
+            }}
+            disabled={!meetsRequirement}
+            className={`py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
+              meetsRequirement
+                ? "text-tx-main hover:bg-panel-hover bg-panel-hover/50"
+                : "text-tx-muted/50 bg-app-base cursor-not-allowed opacity-50"
+            }`}
           >
             Equip <span className="text-tx-muted">→</span>
           </button>

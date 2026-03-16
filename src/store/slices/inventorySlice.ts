@@ -106,6 +106,27 @@ export const createInventorySlice: StateCreator<
       const item = getItemDetails(itemId);
       if (!item || !item.slot) return {};
 
+      // === LEVEL CAP JÄRJESTELMÄ ===
+      if (item.level && item.level > 1) {
+        let requiredSkill: keyof typeof state.skills = "smithing"; // Oletus melee/armor
+
+        // Määritetään vaadittu skill
+        if (item.combatStyle === "ranged") requiredSkill = "crafting";
+        if (item.combatStyle === "magic") requiredSkill = "alchemy"; // Aseille/sauvoille
+
+        // JOS esine on parantava potion (slot "food" tai on parantava vaikutus), se vaatii Alchemya
+        if (item.slot === "food" || item.healing) {
+          requiredSkill = "alchemy";
+        }
+
+        const playerSkillLevel = state.skills[requiredSkill]?.level || 1;
+
+        if (playerSkillLevel < item.level) {
+          return {}; // Ei tarpeeksi tasoa, estetään pukeminen
+        }
+      }
+      // ============================
+
       const newInventory = { ...state.inventory };
       const currentCount = newInventory[itemId] || 0;
       if (currentCount <= 0) return {};
@@ -150,7 +171,6 @@ export const createInventorySlice: StateCreator<
         };
       }
     }),
-
   unequipItem: (slot) =>
     set((state) => {
       const newInventory = { ...state.inventory };

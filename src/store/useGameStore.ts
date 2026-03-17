@@ -121,6 +121,7 @@ export const DEFAULT_STATE: GameState = {
   activeAction: null,
   queue: [],
   coins: 0,
+  gems: 0,
   upgrades: [],
   unlockedAchievements: [],
   combatStats: {

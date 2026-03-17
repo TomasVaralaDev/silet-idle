@@ -100,7 +100,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
       description:
         "Born from the spells of the Icebound Sorcerer. Arrows fired from it freeze the air around them.",
       stats: {
-        attack: 252,
+        attack: 245,
         attackSpeed: 2800,
         critChance: 0.22,
         critMulti: 2.7,
@@ -207,9 +207,9 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
       description:
         "Once held by the Nexus Lord, this blade vibrates at the frequency of every existing timeline.",
       stats: {
-        attack: 7500,
+        attack: 4500,
         attackSpeed: 1800,
-        critChance: 0.35,
+        critChance: 0.3,
         critMulti: 3.5,
       },
       color: "text-yellow-400",

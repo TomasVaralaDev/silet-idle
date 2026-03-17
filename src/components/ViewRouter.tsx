@@ -6,7 +6,8 @@ import InventoryView from "./inventory/Inventory";
 import AchievementsView from "./achievements/AchievementsView";
 import WorldShopView from "./worldShop/WorldShopView";
 import MarketplaceView from "./marketplace/MarketplaceView";
-import LeaderboardView from "./leaderboard/LeaderboardView"; // TUONNIT META-NÄKYMILLE - Lisätty puuttuvat PrivacyPolicyView ja AnnouncementsView
+import LeaderboardView from "./leaderboard/LeaderboardView";
+import PremiumShopView from "./premiumShop/PremiumShopView"; // LISÄTTY IMPORT
 import {
   AnnouncementsView,
   PatchNotesView,
@@ -35,6 +36,7 @@ export default function ViewRouter({ currentView, state, onSellClick }: Props) {
   if (currentView === "enchanting") return <EnchantingView />;
   if (currentView === "worldmarket") return <WorldShopView />;
   if (currentView === "marketplace") return <MarketplaceView />;
+  if (currentView === "premium_shop") return <PremiumShopView />; // LISÄTTY REITITYS
 
   // META SYSTEMS
   if (currentView === "announcements") return <AnnouncementsView />;

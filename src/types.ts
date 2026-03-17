@@ -39,7 +39,8 @@ export type ViewType =
   | "guide"
   | "privacy_policy"
   | "leaderboard"
-  | "wiki";
+  | "wiki"
+  | "premium_shop";
 
 export type EquipmentSlot =
   | "head"
@@ -413,6 +414,7 @@ export interface GameState {
   scavenger: ScavengerState;
   activeAction: ActiveAction | null;
   coins: number;
+  gems: number;
   upgrades: string[];
   unlockedAchievements: string[];
   combatStats: CombatState;
@@ -470,4 +472,15 @@ export interface LeaderboardEntry {
   totalLevel: number;
   maxMapCompleted: number;
   rank?: number;
+}
+
+// --- PREMIUM SHOP ---
+export interface PremiumShopItem {
+  id: string;
+  name: string;
+  description: string;
+  priceGems: number;
+  icon: string;
+  category: "Boosts" | "Cosmetics" | "Utility" | "Bundles";
+  isOneTime?: boolean;
 }

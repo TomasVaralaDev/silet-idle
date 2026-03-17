@@ -4,7 +4,7 @@ import { SKILL_DEFINITIONS } from "../config/skillDefinitions";
 import type { ViewType } from "../types";
 import { formatNumber } from "../utils/formatUtils";
 import { getRequiredXpForLevel } from "../utils/gameUtils";
-import QueuePanel from "./QueuePanel"; // UUSI: Importtaa QueuePanel!
+import QueuePanel from "./QueuePanel";
 
 interface SidebarProps {
   currentView: ViewType;
@@ -141,6 +141,7 @@ export default function Sidebar({
   onOpenQuests,
 }: SidebarProps) {
   const coins = useGameStore((state) => state.coins);
+  const gems = useGameStore((state) => state.gems) || 0; // LISÄTTY GEMS
   const skills = useGameStore((state) => state.skills);
   const username = useGameStore((state) => state.username);
   const avatar = useGameStore((state) => state.avatar);
@@ -253,39 +254,51 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* FRAGMENTS & QUESTS ROW */}
+        {/* FRAGMENTS, GEMS & QUESTS ROW */}
         <div className="flex gap-2">
-          <div className="bg-panel/50 p-3 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden">
-            <div className="flex items-center gap-3 shrink-0">
+          {/* COINS */}
+          <div className="bg-panel/50 p-2 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden">
+            <div className="flex items-center gap-2 shrink-0">
               <img
                 src="/assets/ui/coins.png"
-                className="w-5 h-5 pixelated"
-                alt="Memory"
+                className="w-4 h-4 pixelated"
+                alt="Coins"
               />
-              <span className="text-xs font-bold text-tx-muted uppercase">
-                Coins
-              </span>
             </div>
             <span
-              className="font-mono text-base font-bold text-warning truncate ml-2"
-              title={(coins || 0).toLocaleString()} // KORJATTU: Fallback nollaan jos coins on null/undefined
+              className="font-mono text-sm font-bold text-warning truncate ml-2"
+              title={(coins || 0).toLocaleString()}
             >
               {formatNumber(coins || 0)}
             </span>
           </div>
 
+          {/* GEMS (UUSI) */}
+          <div className="bg-panel/50 p-2 border border-cyan-500/30 flex items-center justify-between flex-1 rounded overflow-hidden shadow-[inset_0_0_10px_rgba(6,182,212,0.1)]">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-sm">💎</span>
+            </div>
+            <span
+              className="font-mono text-sm font-bold text-cyan-400 truncate ml-2"
+              title="Premium Currency"
+            >
+              {formatNumber(gems)}
+            </span>
+          </div>
+
+          {/* QUESTS */}
           <button
             onClick={onOpenQuests}
-            className="bg-panel/50 p-3 border border-border/50 rounded hover:bg-panel-hover transition-colors relative flex items-center justify-center shrink-0 w-12"
+            className="bg-panel/50 p-2 border border-border/50 rounded hover:bg-panel-hover transition-colors relative flex items-center justify-center shrink-0 w-10"
             title="Daily Quests"
           >
             <img
               src="/assets/ui/icon_quest.png"
-              className="w-6 h-6 pixelated"
+              className="w-5 h-5 pixelated"
               alt="Quests"
             />
             {hasCompletableQuests && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-danger rounded-full animate-ping border border-app-base"></span>
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-danger rounded-full animate-ping border border-app-base"></span>
             )}
           </button>
         </div>
@@ -298,6 +311,13 @@ export default function Sidebar({
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             General
           </p>
+          <NavButton
+            view="premium_shop"
+            label="Premium Shop"
+            icon="/assets/ui/icon_star.png"
+            isActive={currentView === "premium_shop"}
+            onClick={setView}
+          />
           <NavButton
             view="inventory"
             label="Storage"
@@ -450,7 +470,6 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* TÄHÄN TULEE JONO (QUEUE)! */}
       <QueuePanel />
 
       {/* FOOTER */}

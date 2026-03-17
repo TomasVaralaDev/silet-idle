@@ -6,9 +6,9 @@ import { woodcuttingResources } from "./woodcutting";
 import { miningResources } from "./mining";
 import { foragingResources } from "./foraging";
 import { alchemyResources } from "./alchemy";
-import { fishingResources } from "./fishing";
-import { farmingResources } from "./farming";
-import { cookingResources } from "./cooking";
+import { fishingResources } from "./fishing"; // turha mutta vielä legacy koodina ei tarvitse sisällyttää
+import { farmingResources } from "./farming"; // turha mutta vielä legacy koodina ei tarvitse sisällyttää
+import { cookingResources } from "./cooking"; // turha mutta vielä legacy koodina ei tarvitse sisällyttää
 
 // Monimutkaiset skillit (alikansiot)
 // Vite/TypeScript osaa hakea automaattisesti index.ts-tiedoston kansion sisältä

@@ -26,7 +26,6 @@ export default function SellForm({ myUid, onComplete }: Props) {
     e.preventDefault();
     if (!selectedId || !selectedItem || isSubmitting) return;
 
-    // Estetään uniikkien itemien myynti backend-kutsun alla
     if (selectedItem.isUnique) {
       emitEvent("error", "Unique items cannot be sold on the market.");
       return;
@@ -82,7 +81,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
       <div className="w-full md:w-80 shrink-0 flex flex-col gap-4">
         <div className="bg-panel/50 border border-border rounded-sm p-5 flex flex-col h-full shadow-2xl backdrop-blur-sm">
           <h3 className="text-[10px] font-black text-accent uppercase tracking-[0.2em] mb-4 border-b border-border/30 pb-3 text-left">
-            Listing Parameters
+            Item info
           </h3>
 
           {selectedItem ? (
@@ -112,7 +111,6 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 </div>
               </div>
 
-              {/* Varoitus uniikista itemistä */}
               {selectedItem.isUnique && (
                 <div className="bg-red-950/30 border border-red-900/50 p-3 rounded-sm text-center">
                   <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">
@@ -200,18 +198,21 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 disabled={isSubmitting || selectedItem.isUnique}
                 className="w-full py-4 rounded-sm font-black text-[11px] uppercase tracking-[0.2em] bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:hover:bg-accent disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Transmitting..." : "Authorize Listing"}
+                {isSubmitting ? "Listing item..." : "Sell Item"}
               </button>
             </form>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4">
-              <div className="w-16 h-16 rounded-full border-2 border-dashed border-border/50 flex items-center justify-center text-2xl opacity-10 grayscale">
-                📦
-              </div>
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-6">
+              {/* KORVATTU: icon_reward suuressa koossa ja ilman taustaa */}
+              <img
+                src="/assets/ui/icon_reward.png"
+                className="w-20 h-20 pixelated opacity-20 grayscale"
+                alt="Awaiting Selection"
+              />
               <p className="text-[10px] text-tx-muted/60 font-black uppercase tracking-widest leading-relaxed">
-                Awaiting Resource Selection
+                Awaiting item selection
                 <br />
-                From Storage Protocols
+                From inventory
               </p>
             </div>
           )}

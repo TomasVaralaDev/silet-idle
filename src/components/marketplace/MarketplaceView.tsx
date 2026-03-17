@@ -180,7 +180,7 @@ export default function MarketplaceView() {
         </div>
 
         {/* TABS & MAILBOX BUTTON */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <div className="flex bg-panel p-1 rounded-sm border border-border h-fit">
             {(["buy", "sell"] as MarketTab[]).map((t) => (
               <button
@@ -205,16 +205,16 @@ export default function MarketplaceView() {
               setTab("mailbox");
               setSelectedItemId(null);
             }}
-            className={`relative h-full px-4 flex items-center justify-center border rounded-sm transition-all ${
-              tab === "mailbox"
-                ? "bg-warning/10 border-warning text-warning"
-                : "bg-panel border-border text-tx-muted hover:border-border-hover hover:text-tx-main"
-            }`}
+            className="relative flex items-center justify-center transition-all group"
             title="Mailbox"
           >
             <img
-              src="/assets/ui/coins.png"
-              className="w-5 h-5 pixelated"
+              src="/assets/ui/icon_mail.png"
+              className={`w-10 h-10 pixelated transition-all ${
+                tab === "mailbox"
+                  ? "brightness-125 scale-110"
+                  : "brightness-50 opacity-60 group-hover:opacity-100 group-hover:brightness-100"
+              }`}
               alt="Mail"
             />
           </button>

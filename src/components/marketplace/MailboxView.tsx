@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'; // Lisätty useCallback
-import { MailboxService } from '../../services/mailboxService';
-import { useGameStore } from '../../store/useGameStore';
-import type { MailMessage } from '../../types';
-import { getItemById } from '../../utils/itemUtils';
+import { useEffect, useState, useCallback } from "react"; // Lisätty useCallback
+import { MailboxService } from "../../services/mailboxService";
+import { useGameStore } from "../../store/useGameStore";
+import type { MailMessage } from "../../types";
+import { getItemById } from "../../utils/itemUtils";
 
 interface Props {
   userId: string;
@@ -22,7 +22,7 @@ export default function MailboxView({ userId }: Props) {
       const msgs = await MailboxService.getMessages(userId);
       setMessages(msgs);
     } catch (error) {
-      console.error('Relay connection failed:', error);
+      console.error("Relay connection failed:", error);
     } finally {
       setLoading(false);
     }
@@ -56,14 +56,14 @@ export default function MailboxView({ userId }: Props) {
       await MailboxService.deleteMessage(userId, msg.id);
       setMessages((prev) => prev.filter((m) => m.id !== msg.id));
     } catch (error) {
-      console.error('Failed to purge message from relay:', error);
+      console.error("Failed to purge message from relay:", error);
     }
   };
 
   if (loading)
     return (
       <div className="p-10 text-center text-tx-muted font-mono animate-pulse tracking-widest uppercase text-xs">
-        Establishing link to Relay...
+        Running to mailbox...
       </div>
     );
 
@@ -72,12 +72,12 @@ export default function MailboxView({ userId }: Props) {
       {messages.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 opacity-50">
           <img
-            src="/assets/ui/icon_mail_empty.png"
+            src="/assets/ui/icon_mail.png"
             className="w-16 h-16 mb-4 pixelated grayscale opacity-20"
             alt="Empty"
           />
           <p className="text-tx-muted font-mono uppercase tracking-widest text-xs">
-            Communications array clear
+            No new mail...
           </p>
         </div>
       ) : (
@@ -130,7 +130,7 @@ export default function MailboxView({ userId }: Props) {
                         )}
                         <span className="font-bold text-accent">
                           {item.amount}x
-                        </span>{' '}
+                        </span>{" "}
                         {itemData?.name || item.itemId}
                       </div>
                     );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useGameStore } from "../store/useGameStore";
 import type { SkillType } from "../types";
 import { getRequiredXpForLevel } from "../utils/gameUtils";
@@ -11,7 +11,7 @@ import { jewelry } from "../data/skills/crafting/jewelry";
 import { tools } from "../data/skills/smithing/tools";
 import { alchemyResources } from "../data/skills/alchemy";
 import { MYSTERY_POUCHES } from "../data/pouches";
-import { WORLD_BOSS_DROPS } from "../data/bossLoot"; // UUSI IMPORT
+import { WORLD_BOSS_DROPS } from "../data/bossLoot";
 
 const THEMES = [
   { id: "theme-neon", label: "Neon (Sci-Fi)" },
@@ -26,7 +26,6 @@ const THEMES = [
 
 export default function DevManager() {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState("theme-neon");
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
 
   const [coinAmount, setCoinAmount] = useState<number>(10000);
@@ -47,11 +46,6 @@ export default function DevManager() {
   // Yhdistetään bossi-aseet perusaseisiin
   const bossUniqueWeapons = Object.values(WORLD_BOSS_DROPS).flat();
   const allWeaponsCombined = [...weapons, ...bossUniqueWeapons];
-
-  useEffect(() => {
-    document.body.classList.remove(...THEMES.map((t) => t.id));
-    document.body.classList.add(currentTheme);
-  }, [currentTheme]);
 
   // --- LOGIIKKA: ITEMIEN LISÄYS ---
   const addItems = (id: string, qty: number) => {
@@ -404,8 +398,15 @@ export default function DevManager() {
               {THEMES.map((theme) => (
                 <button
                   key={theme.id}
-                  onClick={() => setCurrentTheme(theme.id)}
-                  className={`w-full text-left px-2 py-1 uppercase text-[9px] ${currentTheme === theme.id ? "bg-green-500 text-black" : "text-green-700 hover:bg-green-900/10"}`}
+                  onClick={() =>
+                    setState((state) => ({
+                      settings: {
+                        ...state.settings,
+                        theme: theme.id,
+                      },
+                    }))
+                  }
+                  className={`w-full text-left px-2 py-1 uppercase text-[9px] text-green-700 hover:bg-green-900/10`}
                 >
                   &gt; {theme.label}
                 </button>

@@ -10,7 +10,6 @@ const AVAILABLE_AVATARS = [
   { id: 6, src: "/assets/profilepics/profile_pic_6.png", name: "Construct" },
 ];
 
-// KORJATTU: Poistettu 'export' jotta Vite Fast Refresh toimii
 const THEMES = [
   { id: "theme-neon", label: "Neon (Sci-Fi)", color: "bg-cyan-500" },
   { id: "theme-tavern", label: "Tavern", color: "bg-amber-700" },
@@ -25,7 +24,7 @@ const THEMES = [
 interface Props {
   currentUsername: string;
   currentAvatar: string;
-  onSave: (name: string, avatar: string) => void;
+  onSave: (name: string, avatar: string, theme: string) => void;
   onClose: () => void;
 }
 
@@ -36,12 +35,11 @@ export default function UserConfigModal({
   onClose,
 }: Props) {
   const settings = useGameStore((state) => state.settings);
-  const setState = useGameStore((state) => state.setState);
 
   const [name, setName] = useState(currentUsername);
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar);
   const [selectedTheme, setSelectedTheme] = useState(
-    settings.theme || "theme-neon",
+    settings?.theme || "theme-neon",
   );
   const [error, setError] = useState("");
 
@@ -52,9 +50,8 @@ export default function UserConfigModal({
   }, [selectedTheme]);
 
   const handleCancel = () => {
-    // Palautetaan alkuperäinen teema, jos pelaaja peruuttaa
     document.body.classList.remove(...THEMES.map((t) => t.id));
-    document.body.classList.add(settings.theme || "theme-neon");
+    document.body.classList.add(settings?.theme || "theme-neon");
     onClose();
   };
 
@@ -69,12 +66,8 @@ export default function UserConfigModal({
       return;
     }
 
-    // Tallennetaan uusi teema Storeen
-    setState((state) => ({
-      settings: { ...state.settings, theme: selectedTheme },
-    }));
-
-    onSave(name.trim(), selectedAvatar);
+    // Lähetetään kaikki tiedot kerralla App.tsx:lle
+    onSave(name.trim(), selectedAvatar, selectedTheme);
     onClose();
   };
 
@@ -93,7 +86,7 @@ export default function UserConfigModal({
         </h2>
 
         <div className="space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
-          {/* AVATAR SELECTION */}
+          {/* AVATARS */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-3 text-center">
               Neural Interface Appearance
@@ -106,22 +99,14 @@ export default function UserConfigModal({
                   onClick={() => setSelectedAvatar(avatar.src)}
                   className={`
                     relative group rounded-xl overflow-hidden border-2 transition-all duration-200 p-1
-                    ${
-                      selectedAvatar === avatar.src
-                        ? "border-accent bg-accent/20 shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] scale-105"
-                        : "border-border bg-panel-hover hover:border-border-hover hover:bg-panel"
-                    }
+                    ${selectedAvatar === avatar.src ? "border-accent bg-accent/20 shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] scale-105" : "border-border bg-panel-hover hover:border-border-hover hover:bg-panel"}
                   `}
                 >
                   <div className="aspect-square rounded-lg overflow-hidden bg-app-base">
                     <img
                       src={avatar.src}
                       alt={avatar.name}
-                      className={`w-full h-full object-cover pixelated transition-opacity duration-300 ${
-                        selectedAvatar === avatar.src
-                          ? "opacity-100"
-                          : "opacity-60 group-hover:opacity-100"
-                      }`}
+                      className={`w-full h-full object-cover pixelated transition-opacity duration-300 ${selectedAvatar === avatar.src ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
                       onError={(e) => {
                         e.currentTarget.src =
                           "https://ui-avatars.com/api/?name=?&background=0f172a&color=fff";
@@ -136,7 +121,7 @@ export default function UserConfigModal({
             </div>
           </div>
 
-          {/* THEME SELECTION */}
+          {/* THEMES */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-3 text-center">
               System Theme
@@ -149,11 +134,7 @@ export default function UserConfigModal({
                   onClick={() => setSelectedTheme(theme.id)}
                   className={`
                     flex items-center gap-3 p-2 rounded-lg border transition-all
-                    ${
-                      selectedTheme === theme.id
-                        ? "bg-accent/10 border-accent text-tx-main shadow-inner"
-                        : "bg-panel border-border text-tx-muted hover:bg-panel-hover hover:text-tx-main"
-                    }
+                    ${selectedTheme === theme.id ? "bg-accent/10 border-accent text-tx-main shadow-inner" : "bg-panel border-border text-tx-muted hover:bg-panel-hover hover:text-tx-main"}
                   `}
                 >
                   <div
@@ -167,14 +148,14 @@ export default function UserConfigModal({
             </div>
           </div>
 
-          {/* USERNAME INPUT */}
+          {/* NAME */}
           <form
             onSubmit={handleSubmit}
             className="space-y-6 pt-2 border-t border-border/50"
           >
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-2">
-                Designation (Username)
+                Designation
               </label>
               <input
                 type="text"
@@ -183,7 +164,7 @@ export default function UserConfigModal({
                   setName(e.target.value);
                   setError("");
                 }}
-                className="w-full bg-app-base border border-border rounded-lg px-4 py-3 text-tx-main placeholder-tx-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all font-mono text-sm"
+                className="w-full bg-app-base border border-border rounded-lg px-4 py-3 text-tx-main focus:border-accent focus:ring-1 focus:ring-accent/50 outline-none font-mono text-sm"
               />
               {error && (
                 <p className="text-danger text-xs mt-2 font-bold">{error}</p>
@@ -194,13 +175,13 @@ export default function UserConfigModal({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 px-4 py-3 bg-panel-hover hover:bg-panel text-tx-muted font-bold rounded-lg border border-border transition-all uppercase text-xs tracking-wider"
+                className="flex-1 px-4 py-3 bg-panel-hover hover:bg-panel text-tx-muted font-bold rounded-lg border border-border uppercase text-xs"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-[2] px-4 py-3 bg-accent hover:bg-accent-hover text-white font-bold rounded-lg shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] transition-all uppercase text-xs tracking-wider"
+                className="flex-[2] px-4 py-3 bg-accent hover:bg-accent-hover text-white font-bold rounded-lg shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] uppercase text-xs"
               >
                 Save Changes
               </button>

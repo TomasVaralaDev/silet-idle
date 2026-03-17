@@ -71,17 +71,16 @@ export default function App() {
 
   const fullState = useGameStore();
 
-  useGameEngine();
-
   // THEME INITIALIZATION LISÄTTY TÄNNE:
-  const currentTheme = settings?.theme || "theme-neon";
-
   useEffect(() => {
-    // Poistetaan kaikki olemassa olevat teemat ensin
-    document.body.classList.remove(...THEMES);
-    // Lisätään pelaajan valitsema teema
-    document.body.classList.add(currentTheme);
-  }, [currentTheme]);
+    const currentTheme = settings?.theme || "theme-neon";
+    if (!document.body.classList.contains(currentTheme)) {
+      document.body.classList.remove(...THEMES);
+      document.body.classList.add(currentTheme);
+    }
+  }, [settings?.theme]);
+
+  useGameEngine();
 
   if (loadingAuth)
     return (
@@ -103,7 +102,6 @@ export default function App() {
     return (
       <div className="min-h-screen bg-app-base flex items-center justify-center relative">
         <UsernameModal
-          // LISÄTTY: Tyyppimäärittelyt name ja avatarUrl parametreille
           onConfirm={(name: string, avatarUrl: string) => {
             setState({ username: name, avatar: avatarUrl });
             emitEvent(
@@ -128,10 +126,21 @@ export default function App() {
         <UserConfigModal
           currentUsername={username}
           currentAvatar={avatar}
-          // LISÄTTY: Tyyppimäärittelyt name ja avatarUrl parametreille
-          onSave={(name: string, avatarUrl: string) => {
-            setState({ username: name, avatar: avatarUrl });
-            emitEvent("info", `Identity Updated`, "/assets/ui/icon_check.png");
+          // KORJAUS: Vastaanotetaan myös newTheme ja tallennetaan yhtä aikaa
+          onSave={(name: string, avatarUrl: string, newTheme: string) => {
+            setState((state) => ({
+              username: name,
+              avatar: avatarUrl,
+              settings: {
+                ...(state.settings || DEFAULT_STATE.settings),
+                theme: newTheme,
+              },
+            }));
+            emitEvent(
+              "info",
+              `Identity & Theme Updated`,
+              "/assets/ui/icon_check.png",
+            );
           }}
           onClose={() => setShowUserConfig(false)}
         />

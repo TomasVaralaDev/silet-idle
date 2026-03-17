@@ -67,7 +67,7 @@ export type FullStoreState = GameState &
 export const DEFAULT_STATE: GameState = {
   username: "Player",
   avatar: "/assets/avatars/avatar_1.png",
-  unlockedQueueSlots: 2, // UUSI: Oletuksena 2 jono-paikkaa ilmaiseksi
+  unlockedQueueSlots: 2,
   lastTimestamp: Date.now(),
   events: [],
   settings: {
@@ -166,8 +166,14 @@ export const customMerge = (
   return {
     ...currentState,
     ...typedPersisted,
-    // Varmistetaan että vanhoilla tallennuksilla on vähintään 2 slottia
     unlockedQueueSlots: typedPersisted.unlockedQueueSlots ?? 2,
+
+    // LISÄTTY: Varmistetaan, että settings säilyttää Defaultin teemat,
+    // jos ne puuttuvat vanhasta localstorage savesta
+    settings: {
+      ...DEFAULT_STATE.settings,
+      ...(typedPersisted.settings || {}),
+    },
 
     combatStats: {
       ...DEFAULT_STATE.combatStats,
@@ -256,6 +262,23 @@ export const useGameStore = create<FullStoreState>()(
       version: 1,
       merge: (persisted, current) =>
         customMerge(persisted, current as FullStoreState),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.settings?.theme) {
+          const theme = state.settings.theme;
+          const themes = [
+            "theme-neon",
+            "theme-tavern",
+            "theme-abyss",
+            "theme-frost",
+            "theme-arcane",
+            "theme-sakura",
+            "theme-matte",
+            "theme-hc",
+          ];
+          document.body.classList.remove(...themes);
+          document.body.classList.add(theme);
+        }
+      },
       partialize: (state) => {
         const rest = { ...state };
         delete (rest as Partial<FullStoreState>).offlineSummary;

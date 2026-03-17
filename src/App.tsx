@@ -64,7 +64,7 @@ export default function App() {
   if (loadingAuth)
     return (
       <div className="min-h-screen bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
-        Initializing Neural Links...
+        Getting out of bed...
       </div>
     );
 

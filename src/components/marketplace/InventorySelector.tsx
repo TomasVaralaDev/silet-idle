@@ -14,13 +14,17 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
   const availableItems = Object.entries(inventory)
     .map(([id, count]) => ({ id, count, item: getItemById(id) }))
     .filter(({ count, item }) => {
+      // 1. Perustarkistukset: onko item olemassa, onko sitä ja onko se uniikki
       if (!item || count <= 0 || item.isUnique) return false;
-      if (
-        searchQuery &&
-        !item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
+
+      // 2. KORJAUS: Varmistetaan, että item.name on olemassa ennen hakua
+      const itemName = item.name || "";
+      const query = searchQuery.toLowerCase();
+
+      if (searchQuery && !itemName.toLowerCase().includes(query)) {
         return false;
       }
+
       return true;
     });
 

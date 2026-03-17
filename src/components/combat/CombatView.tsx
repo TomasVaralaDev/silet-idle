@@ -69,10 +69,11 @@ export default function CombatView() {
             <div className="w-20 h-20 mb-6 rounded-full border-4 border-danger/20 border-t-danger animate-spin shadow-[0_0_20px_rgb(var(--color-danger)/0.2)]" />
 
             <h2 className="text-2xl font-black text-danger uppercase tracking-[0.3em] mb-2">
-              System Recovery
+              Defeated
             </h2>
             <p className="text-tx-muted text-sm max-w-xs font-medium italic">
-              Severe trauma detected. Auto-repair protocols active.
+              You were defeated in combat. Returning to safety and recovering
+              your strength.
             </p>
 
             <div className="mt-6 font-mono text-3xl font-black text-tx-main bg-danger/10 px-6 py-3 rounded-lg border border-danger/30 shadow-2xl">

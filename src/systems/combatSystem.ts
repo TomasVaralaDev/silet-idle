@@ -370,7 +370,7 @@ export const processCombatTick = (
 
   // --- KUOLEMA ---
   if (pHP <= 0) {
-    addLog("Defeated! Returning to safety. 1min System Recovery...");
+    addLog("Defeated! Returning to safety. 1 min to heal up...");
     return {
       activeAction: null,
       enemy: null,

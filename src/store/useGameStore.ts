@@ -70,7 +70,13 @@ export const DEFAULT_STATE: GameState = {
   unlockedQueueSlots: 2, // UUSI: Oletuksena 2 jono-paikkaa ilmaiseksi
   lastTimestamp: Date.now(),
   events: [],
-  settings: { notifications: true, sound: true, music: true, particles: true },
+  settings: {
+    notifications: true,
+    sound: true,
+    music: true,
+    particles: true,
+    theme: "theme-neon",
+  },
 
   social: {
     friends: [],

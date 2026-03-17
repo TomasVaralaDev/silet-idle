@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import { useGameStore, DEFAULT_STATE } from "./store/useGameStore";
@@ -31,6 +31,18 @@ import Auth from "./components/Auth";
 //DEV MANAGER POISTA PRODIIN
 import DevManager from "./components/DevManager";
 
+// Määritellään teemat tässä, jotta app osaa poistaa ne latauksen yhteydessä
+const THEMES = [
+  "theme-neon",
+  "theme-tavern",
+  "theme-abyss",
+  "theme-frost",
+  "theme-arcane",
+  "theme-sakura",
+  "theme-matte",
+  "theme-hc",
+];
+
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewType>("woodcutting");
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(
@@ -60,6 +72,16 @@ export default function App() {
   const fullState = useGameStore();
 
   useGameEngine();
+
+  // THEME INITIALIZATION LISÄTTY TÄNNE:
+  const currentTheme = settings?.theme || "theme-neon";
+
+  useEffect(() => {
+    // Poistetaan kaikki olemassa olevat teemat ensin
+    document.body.classList.remove(...THEMES);
+    // Lisätään pelaajan valitsema teema
+    document.body.classList.add(currentTheme);
+  }, [currentTheme]);
 
   if (loadingAuth)
     return (

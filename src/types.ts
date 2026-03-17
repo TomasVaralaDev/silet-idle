@@ -79,6 +79,7 @@ export interface GameSettings {
   sound: boolean;
   music: boolean;
   particles: boolean;
+  theme: string;
 }
 
 export interface ActiveAction {

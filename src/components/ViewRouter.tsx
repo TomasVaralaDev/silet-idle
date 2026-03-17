@@ -14,6 +14,7 @@ import {
   GuideView,
   PrivacyPolicyView,
 } from "./meta/MetaViews";
+import WikiView from "./wiki/wikiView";
 
 import type { FullStoreState } from "../store/useGameStore";
 import type { ViewType, SkillType } from "../types";
@@ -41,6 +42,7 @@ export default function ViewRouter({ currentView, state, onSellClick }: Props) {
   if (currentView === "guide") return <GuideView />;
   if (currentView === "faq") return <FaqView />;
   if (currentView === "privacy_policy") return <PrivacyPolicyView />;
+  if (currentView === "wiki") return <WikiView />;
 
   // MILESTONES
   if (currentView === "achievements") {

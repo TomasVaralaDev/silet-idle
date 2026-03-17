@@ -6,6 +6,7 @@ import { ACHIEVEMENTS } from "./achievements";
 import { RUNES_DATA } from "./runes";
 import { SCROLLS_DATA } from "./scrolls";
 import { MYSTERY_POUCHES } from "./pouches"; // 1. UUSI IMPORT
+import { WORLD_BOSS_DROPS } from "./bossLoot";
 import {
   getBaseId,
   getEnchantLevel,
@@ -22,8 +23,12 @@ export {
   ACHIEVEMENTS,
   RUNES_DATA,
   SCROLLS_DATA,
-  MYSTERY_POUCHES, // 2. EXPORT MUKAAN
+  MYSTERY_POUCHES,
+  WORLD_BOSS_DROPS,
 };
+
+// --- APUMUUTTUJA: Litistetään bossi-lootit kerran suorituskyvyn parantamiseksi ---
+const ALL_BOSS_ITEMS = Object.values(WORLD_BOSS_DROPS).flat();
 
 interface ItemSubFactory {
   canHandle: (id: string) => boolean;
@@ -50,6 +55,17 @@ const PouchFactory: ItemSubFactory = {
   create: (id) => {
     const pouch = MYSTERY_POUCHES.find((p) => p.id === id);
     return pouch || {};
+  },
+};
+
+/**
+ * Boss Loot Factory (UUSI)
+ * SRP: Tämä tehdas etsii tavarat WORLD_BOSS_DROPS listasta.
+ */
+const BossLootFactory: ItemSubFactory = {
+  canHandle: (id) => ALL_BOSS_ITEMS.some((item) => item.id === id),
+  create: (id) => {
+    return ALL_BOSS_ITEMS.find((item) => item.id === id) || {};
   },
 };
 
@@ -169,6 +185,7 @@ export const getItemDetails = (id: string): Resource | null => {
   const factories = [
     RuneFactory,
     PouchFactory, // 3. LISÄTTY TEHDAS LISTAAN
+    BossLootFactory, // REKISTERÖITY TÄHÄN!
     KeyFactory,
     EnchantScrollFactory,
     WorldLootFactory,

@@ -413,6 +413,13 @@ export default function Sidebar({
             onClick={setView}
           />
           <NavButton
+            view="wiki"
+            label="System Manual"
+            icon="/assets/ui/icon_wiki.png"
+            isActive={currentView === "wiki"}
+            onClick={setView}
+          />
+          <NavButton
             view="patch_notes"
             label="Patch Notes"
             icon="/assets/ui/icon_patch_notes.png"

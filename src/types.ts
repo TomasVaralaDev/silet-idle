@@ -38,7 +38,8 @@ export type ViewType =
   | "faq"
   | "guide"
   | "privacy_policy"
-  | "leaderboard";
+  | "leaderboard"
+  | "wiki";
 
 export type EquipmentSlot =
   | "head"
@@ -154,6 +155,7 @@ export interface Resource {
   inputs?: Ingredient[];
   slot?: EquipmentSlot;
   isUnique?: boolean;
+  nonEnchantable?: boolean;
   stats?: {
     attack?: number;
     defense?: number;

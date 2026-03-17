@@ -28,6 +28,14 @@ export const createEnchantingSlice: StateCreator<
       emitEvent("error", "Item data not found.");
       return;
     }
+    if (itemDetails.nonEnchantable) {
+      emitEvent(
+        "error",
+        "This Item cannot be enchanted.",
+        "/assets/ui/icon_locked.png",
+      );
+      return;
+    }
 
     const currentLevel = getEnchantLevel(targetItemId);
     if (currentLevel >= MAX_ENCHANT_LEVEL) {

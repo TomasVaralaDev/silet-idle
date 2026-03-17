@@ -3,12 +3,15 @@ import { useGameStore } from "../store/useGameStore";
 import type { SkillType } from "../types";
 import { getRequiredXpForLevel } from "../utils/gameUtils";
 import BattleSimView from "./battleSim/BattleSimView";
+
+// --- DATA IMPORTS ---
 import { weapons } from "../data/skills/crafting/weapons";
 import { armor } from "../data/skills/smithing/armor";
 import { jewelry } from "../data/skills/crafting/jewelry";
 import { tools } from "../data/skills/smithing/tools";
 import { alchemyResources } from "../data/skills/alchemy";
-import { MYSTERY_POUCHES } from "../data/pouches"; // UUSI IMPORT
+import { MYSTERY_POUCHES } from "../data/pouches";
+import { WORLD_BOSS_DROPS } from "../data/bossLoot"; // UUSI IMPORT
 
 const THEMES = [
   { id: "theme-neon", label: "Neon (Sci-Fi)" },
@@ -32,7 +35,7 @@ export default function DevManager() {
 
   const [selectedGear, setSelectedGear] = useState<string>(
     "pouch_mystery_minor",
-  ); // Oletusarvo vaihdettu pussiin
+  );
   const [gearAmount, setGearAmount] = useState<number>(1);
 
   const setState = useGameStore((state) => state.setState);
@@ -40,6 +43,10 @@ export default function DevManager() {
   const currentCoins = useGameStore((state) => state.coins);
 
   const bossKeys = Array.from({ length: 8 }, (_, i) => `bosskey_w${i + 1}`);
+
+  // Yhdistetään bossi-aseet perusaseisiin
+  const bossUniqueWeapons = Object.values(WORLD_BOSS_DROPS).flat();
+  const allWeaponsCombined = [...weapons, ...bossUniqueWeapons];
 
   useEffect(() => {
     document.body.classList.remove(...THEMES.map((t) => t.id));
@@ -55,32 +62,35 @@ export default function DevManager() {
       },
     }));
 
-    // Lisätty MYSTERY_POUCHES hakuun
     const allItems = [
-      ...weapons,
+      ...allWeaponsCombined,
       ...armor,
       ...jewelry,
       ...tools,
       ...alchemyResources,
       ...MYSTERY_POUCHES,
     ];
+
     const foundItem = allItems.find((item) => item.id === id);
     const iconPath = foundItem?.icon || `/assets/items/bosskey/${id}.png`;
 
-    emitEvent("success", `Injected ${qty}x ${id}`, iconPath);
+    emitEvent("success", `Injected ${qty}x ${foundItem?.name || id}`, iconPath);
   };
 
   const addAllGearWithEnchants = () => {
     setState((state) => {
       const newInventory = { ...state.inventory };
-      const allGear = [...weapons, ...armor, ...jewelry, ...tools];
+      const allGear = [...allWeaponsCombined, ...armor, ...jewelry, ...tools];
 
       allGear.forEach((item) => {
         newInventory[item.id] = (newInventory[item.id] || 0) + gearAmount;
-        for (let i = 1; i <= 5; i++) {
-          const enchantedId = `${item.id}_e${i}`;
-          newInventory[enchantedId] =
-            (newInventory[enchantedId] || 0) + gearAmount;
+        // Enchantit vain perusesineille (ei boss-aseille)
+        if (!item.id.includes("boss")) {
+          for (let i = 1; i <= 5; i++) {
+            const enchantedId = `${item.id}_e${i}`;
+            newInventory[enchantedId] =
+              (newInventory[enchantedId] || 0) + gearAmount;
+          }
         }
       });
 
@@ -102,15 +112,13 @@ export default function DevManager() {
       });
       return { inventory: newInventory };
     });
-
     emitEvent(
       "success",
-      "MEDICAL RESUPPLY: 999x of all potions injected!",
+      "MEDICAL RESUPPLY: 999x potions injected!",
       "/assets/items/alchemy/potion_tier8.png",
     );
   };
 
-  // UUSI: Lisää kaikki pussit
   const addAllPouches = () => {
     setState((state) => {
       const newInventory = { ...state.inventory };
@@ -119,10 +127,9 @@ export default function DevManager() {
       });
       return { inventory: newInventory };
     });
-
     emitEvent(
       "success",
-      "LOOT OVERFLOW: 10x of all Mystery Pouches injected!",
+      "LOOT OVERFLOW: 10x Mystery Pouches injected!",
       "/assets/items/pouch_legendary.png",
     );
   };
@@ -139,9 +146,7 @@ export default function DevManager() {
   };
 
   const modifyCoins = (amount: number) => {
-    setState((state) => ({
-      coins: Math.max(0, state.coins + amount),
-    }));
+    setState((state) => ({ coins: Math.max(0, state.coins + amount) }));
     const type = amount > 0 ? "success" : "warning";
     emitEvent(
       type,
@@ -213,13 +218,13 @@ export default function DevManager() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => modifyCoins(coinAmount)}
-                className="bg-green-900/40 border border-green-500/50 text-green-400 py-1 hover:bg-green-500 hover:text-black transition-all font-bold"
+                className="bg-green-900/40 border border-green-500/50 text-green-400 py-1 hover:bg-green-500 hover:text-black transition-all font-bold uppercase"
               >
                 ADD
               </button>
               <button
                 onClick={() => modifyCoins(-coinAmount)}
-                className="bg-red-900/20 border border-red-500/30 text-red-500 py-1 hover:bg-red-500 hover:text-white transition-all font-bold"
+                className="bg-red-900/20 border border-red-500/30 text-red-500 py-1 hover:bg-red-500 hover:text-white transition-all font-bold uppercase"
               >
                 REMOVE
               </button>
@@ -235,9 +240,8 @@ export default function DevManager() {
               <select
                 value={selectedGear}
                 onChange={(e) => setSelectedGear(e.target.value)}
-                className="flex-1 bg-green-950/20 border border-green-900 text-green-400 px-1 py-1.5 focus:outline-none focus:border-green-500 text-[9px] cursor-pointer"
+                className="flex-1 bg-green-950/20 border border-green-900 text-green-400 px-1 py-1.5 focus:outline-none text-[9px] cursor-pointer"
               >
-                {/* UUSI OPTGROUP PUSSUKOILLE */}
                 <optgroup
                   label="MYSTERY POUCHES"
                   className="bg-black text-yellow-500"
@@ -248,10 +252,22 @@ export default function DevManager() {
                     </option>
                   ))}
                 </optgroup>
-                <optgroup label="WEAPONS" className="bg-black text-green-500">
-                  {weapons.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      [Lv.{w.level}] {w.name}
+                <optgroup
+                  label="WEAPONS (INCL. BOSS)"
+                  className="bg-black text-green-500 font-bold"
+                >
+                  {allWeaponsCombined.map((w) => (
+                    <option
+                      key={w.id}
+                      value={w.id}
+                      className={
+                        w.id.includes("boss")
+                          ? "text-purple-400 font-black"
+                          : ""
+                      }
+                    >
+                      {w.id.includes("boss") ? "[UNIQUE] " : `[Lv.${w.level}] `}{" "}
+                      {w.name}
                     </option>
                   ))}
                 </optgroup>
@@ -269,17 +285,10 @@ export default function DevManager() {
                     </option>
                   ))}
                 </optgroup>
-                <optgroup label="TOOLS" className="bg-black text-green-500">
-                  {tools.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      [Lv.{t.level}] {t.name}
-                    </option>
-                  ))}
-                </optgroup>
                 <optgroup label="POTIONS" className="bg-black text-green-500">
                   {alchemyResources.map((p) => (
                     <option key={p.id} value={p.id}>
-                      [Lv.{p.level}] {p.name}
+                      {p.name}
                     </option>
                   ))}
                 </optgroup>
@@ -289,11 +298,11 @@ export default function DevManager() {
                 min="1"
                 value={gearAmount}
                 onChange={(e) => setGearAmount(parseInt(e.target.value) || 1)}
-                className="w-10 bg-green-950/20 border border-green-900 text-green-400 px-1 py-1.5 focus:outline-none focus:border-green-500 text-center text-[9px]"
+                className="w-10 bg-green-950/20 border border-green-900 text-green-400 px-1 py-1.5 text-center text-[9px]"
               />
               <button
                 onClick={() => addItems(selectedGear, gearAmount)}
-                className="bg-green-900/40 border border-green-500/50 text-green-400 px-2 py-1 hover:bg-green-500 hover:text-black transition-all font-bold text-[9px]"
+                className="bg-green-900/40 border border-green-500/50 text-green-400 px-2 py-1 hover:bg-green-500 hover:text-black font-bold text-[9px]"
               >
                 ADD
               </button>
@@ -304,16 +313,15 @@ export default function DevManager() {
                 onClick={addAllPouches}
                 className="border border-yellow-500/50 text-yellow-500 py-1 text-[8px] uppercase font-black hover:bg-yellow-500 hover:text-black transition-all"
               >
-                Inject Pouches (10x)
+                Pouches (10x)
               </button>
               <button
                 onClick={addAllPotions}
                 className="border border-pink-500/50 text-pink-400 py-1 text-[8px] uppercase font-black hover:bg-pink-500 hover:text-black transition-all"
               >
-                Inject Potions (999x)
+                Potions (999x)
               </button>
             </div>
-
             <button
               onClick={addAllGearWithEnchants}
               className="w-full border border-purple-500/50 text-purple-400 py-1 text-[8px] uppercase font-black hover:bg-purple-500 hover:text-black transition-all mb-1"
@@ -322,9 +330,7 @@ export default function DevManager() {
             </button>
           </section>
 
-          {/* PROGRESSION & UI SECTIONS REMAIN UNCHANGED ... */}
-          {/* (Jätin ne koodiin, mutta tässä on tärkeimmät muutokset yllä) */}
-
+          {/* PROGRESSION OVERRIDES */}
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               Progression Overrides
@@ -355,6 +361,7 @@ export default function DevManager() {
             </button>
           </section>
 
+          {/* NEURAL-LINK / SKILLS */}
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               Neural-Link Overwrite
@@ -375,6 +382,7 @@ export default function DevManager() {
             </div>
           </section>
 
+          {/* COMBAT SIMULATOR */}
           <section className="space-y-2 pt-2 border-t border-green-500/30">
             <button
               onClick={() => {
@@ -387,6 +395,7 @@ export default function DevManager() {
             </button>
           </section>
 
+          {/* UI SUBSYSTEM (THEMES) */}
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               UI_Subsystem

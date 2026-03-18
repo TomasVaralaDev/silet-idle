@@ -91,6 +91,11 @@ export const DEFAULT_STATE: GameState = {
     dailyQuests: [],
     lastResetTime: 0,
   },
+  // LISÄÄ TÄMÄ:
+  worldShop: {
+    purchases: {},
+    lastResetTime: 0,
+  },
 
   inventory: {},
   skills: {
@@ -174,7 +179,10 @@ export const customMerge = (
       ...DEFAULT_STATE.settings,
       ...(typedPersisted.settings || {}),
     },
-
+    worldShop: {
+      ...DEFAULT_STATE.worldShop,
+      ...(typedPersisted.worldShop || {}),
+    },
     combatStats: {
       ...DEFAULT_STATE.combatStats,
       ...(typedPersisted.combatStats || {}),

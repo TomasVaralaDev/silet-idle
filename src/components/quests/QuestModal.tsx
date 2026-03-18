@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import QuestList from "./QuestList";
 
@@ -8,14 +7,11 @@ interface QuestModalProps {
 }
 
 export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
+  // Haetaan vain quests-tila. Poistettu checkDailyReset.
   const quests = useGameStore((state) => state.quests);
-  const checkDailyReset = useGameStore((state) => state.checkDailyReset);
 
-  useEffect(() => {
-    if (isOpen) {
-      checkDailyReset();
-    }
-  }, [isOpen, checkDailyReset]);
+  // POISTETTU: useEffect ja checkDailyReset kutsu.
+  // Synkronointi hoidetaan nyt globaalisti pelin latautuessa.
 
   if (!isOpen) return null;
 
@@ -34,7 +30,7 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
               Daily Quests
             </h2>
             <p className="text-tx-muted text-sm mt-1">
-              Complete tasks to earn rewards. Resets daily.
+              Complete tasks to earn rewards. Resets at 00:00 UTC.
             </p>
           </div>
           <button

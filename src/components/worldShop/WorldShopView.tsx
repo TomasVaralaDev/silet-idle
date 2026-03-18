@@ -3,27 +3,24 @@ import { useGameStore } from "../../store/useGameStore";
 import { WORLD_SHOP_DATA } from "../../data/worldShop";
 import { WORLD_INFO } from "../../data/worlds";
 import MarketItem from "./MarketItem";
-import PouchRatesModal from "../modals/PouchRatesModal"; // Muista tuoda modaali
+import PouchRatesModal from "../modals/PouchRatesModal";
 
 export default function WorldShopView() {
   const [selectedWorld, setSelectedWorld] = useState(1);
-  const [isRatesOpen, setIsRatesOpen] = useState(false); // Lisätty tila modaalille
+  const [isRatesOpen, setIsRatesOpen] = useState(false);
 
-  // HAE worldShop STATE
-  const { buyWorldItem, inventory, coins, worldShop, checkDailyReset } =
-    useGameStore();
+  // POISTETTU: checkDailyReset (sitä ei enää ole eikä tarvita tässä)
+  const { buyWorldItem, inventory, coins, worldShop } = useGameStore();
 
   const currentItems = WORLD_SHOP_DATA.filter(
     (i) => i.worldId === selectedWorld,
   );
   const currentWorldInfo = WORLD_INFO[selectedWorld];
 
-  // Tarkistetaan reset joka renderöinnillä
-  checkDailyReset();
+  // POISTETTU: checkDailyReset() kutsu renderöinnistä
 
   return (
     <div className="h-full flex flex-col bg-app-base text-tx-main overflow-hidden font-sans text-left relative">
-      {/* POUCH DROP RATES MODAALI */}
       <PouchRatesModal
         isOpen={isRatesOpen}
         onClose={() => setIsRatesOpen(false)}
@@ -31,9 +28,7 @@ export default function WorldShopView() {
 
       {/* HEADER */}
       <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
-        <div
-          className={`w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0`}
-        >
+        <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
             src="/assets/ui/icon_world_market.png"
             className="w-10 h-10 pixelated object-contain"
@@ -41,15 +36,15 @@ export default function WorldShopView() {
           />
         </div>
         <div className="flex-1">
-          <h1
-            className={`text-3xl font-black uppercase tracking-widest text-accent mb-1`}
-          >
+          <h1 className="text-3xl font-black uppercase tracking-widest text-accent mb-1">
             World Market
           </h1>
           <p className="text-tx-muted text-sm font-medium">
-            Buy items with world currencies.
+            Daily stock refreshes at 00:00 UTC.
           </p>
         </div>
+
+        {/* VINKKI: Tähän voisi myöhemmin lisätä sen ajastimen */}
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -75,16 +70,12 @@ export default function WorldShopView() {
 
                 <div className="relative z-10">
                   <div
-                    className={`text-[10px] font-black tracking-widest ${
-                      isSelected ? "text-accent" : "text-tx-muted/60"
-                    }`}
+                    className={`text-[10px] font-black tracking-widest ${isSelected ? "text-accent" : "text-tx-muted/60"}`}
                   >
                     WORLD {id}
                   </div>
                   <div
-                    className={`font-black uppercase tracking-tighter text-lg ${
-                      isSelected ? "text-tx-main" : "text-tx-muted"
-                    }`}
+                    className={`font-black uppercase tracking-tighter text-lg ${isSelected ? "text-tx-main" : "text-tx-muted"}`}
                   >
                     {info.name}
                   </div>
@@ -100,7 +91,6 @@ export default function WorldShopView() {
 
         {/* OIKEA: TUOTEALUE */}
         <main className="flex-1 relative overflow-hidden">
-          {/* DYNAAMINEN MAAILMAN TAUSTAKUVA */}
           <div className="absolute inset-0 z-0">
             <div
               className="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-105 opacity-40"
@@ -139,9 +129,9 @@ export default function WorldShopView() {
             </div>
           </div>
 
-          {/* KELLUVA KYSYMYSMERKKI-IKONI */}
+          {/* HELP BUTTON */}
           <button
-            onClick={() => setIsRatesOpen(true)} // Avaa modaalin
+            onClick={() => setIsRatesOpen(true)}
             className="absolute bottom-6 right-6 z-30 w-12 h-12 flex items-center justify-center bg-panel/80 hover:bg-accent border border-border hover:border-accent-hover rounded-full transition-all shadow-xl backdrop-blur-sm active:scale-95 group"
             title="View Pouch Drop Rates"
           >

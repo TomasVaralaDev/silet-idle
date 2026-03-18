@@ -424,6 +424,7 @@ export interface GameState {
   events: GameEvent[];
   social: SocialState;
   quests: QuestState;
+  worldShop: WorldShopState;
   queue: QueueItem[];
 }
 

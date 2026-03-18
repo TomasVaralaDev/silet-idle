@@ -10,7 +10,7 @@ import { processQuestProgress } from "../systems/questSystem"; // LISÄTTY: Tuod
 import type { GameState, Resource, SkillType } from "../types";
 
 export const useGameEngine = () => {
-  const { setState, checkDailyReset, emitEvent } = useGameStore();
+  const { setState, emitEvent } = useGameStore();
 
   useEffect(() => {
     const TICK_RATE = 100;
@@ -75,7 +75,6 @@ export const useGameEngine = () => {
               ...newUnlockIds,
             ];
           }
-          checkDailyReset();
         }
 
         let currentAction = state.activeAction;
@@ -285,5 +284,5 @@ export const useGameEngine = () => {
     }, TICK_RATE);
 
     return () => clearInterval(interval);
-  }, [setState, checkDailyReset, emitEvent]);
+  }, [setState, emitEvent]);
 };

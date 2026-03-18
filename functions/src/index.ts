@@ -7,11 +7,9 @@ admin.initializeApp();
 
 // Korvaa sk_test_... omalla avaimellasi
 // Poistettu 'as any' - Stripe SDK tunnistaa version oikein
-const stripe = new Stripe(
-  "sk_test_51TCNYcJhesqfOWsgmTBWfBuFAgt2NP5zoSqHGIy0jFKaB2T7pVqtO7subYtBkn0PZ7GnhTZX3zYsLYpRRM71BTrQ006INeir4I",
-); // Käyttää tilin oletusversiota
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string); // Käyttää tilin oletusversiota
 
-const STRIPE_WEBHOOK_SECRET = "whsec_CZzsQHkpBoxBmtEoxoarxL5VLGv7C1UI";
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 const GEM_PACKS: Record<
   string,

@@ -55,8 +55,8 @@ export default function App() {
 
   // 1. Hookit
   const { user, loadingAuth } = useAuth();
-  const { isDataLoaded, offlineSummary, setOfflineSummary } =
-    useGameInitialization(user);
+  const { isDataLoaded } = useGameInitialization(user);
+  useGameInitialization(user);
   const { saveStatus, handleForceSave } = useGameSync(user, isDataLoaded);
 
   const {
@@ -67,6 +67,8 @@ export default function App() {
     setState,
     sellItem,
     emitEvent,
+    offlineSummary, // LISÄTTY TÄHÄN
+    setOfflineSummary,
   } = useGameStore();
 
   const fullState = useGameStore();

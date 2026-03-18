@@ -1,165 +1,93 @@
 import type { Achievement } from "../types";
 
 export const ACHIEVEMENTS: Achievement[] = [
-  // --- 💰 WEALTH (Rikkaudet) ---
+  // ==========================================
+  // --- 💰 WEALTH & GENERAL (Rikkaus & Yleinen) ---
+  // ==========================================
   {
-    id: "rich_noob",
+    id: "wealth_1",
     category: "wealth",
-    name: "Rich Noob",
+    name: "Pocket Change",
     icon: "/assets/ui/coins.png",
-    description: "Accumulate 1,000 gold pieces.",
+    description: "Accumulate 1,000 Coins.",
     condition: (state) => state.coins >= 1000,
   },
   {
-    id: "fragment_hoarder",
+    id: "wealth_2",
+    category: "wealth",
+    name: "Capitalist",
+    icon: "/assets/ui/coins.png",
+    description: "Accumulate 10,000 Coins.",
+    condition: (state) => state.coins >= 10000,
+  },
+  {
+    id: "wealth_3",
     category: "wealth",
     name: "Data Hoarder",
     icon: "/assets/ui/coins.png",
-    description: "Accumulate 100,000 gold pieces.",
+    description: "Accumulate 100,000 Coins.",
     condition: (state) => state.coins >= 100000,
   },
   {
-    id: "wealth_legend",
+    id: "wealth_4",
+    category: "wealth",
+    name: "Millionaire",
+    icon: "/assets/ui/coins.png",
+    description: "Accumulate 1,000,000 Coins.",
+    condition: (state) => state.coins >= 1000000,
+  },
+  {
+    id: "wealth_5",
     category: "wealth",
     name: "The Gilded King",
     icon: "/assets/ui/coins.png",
-    description: "Accumulate 10,000,000 gold pieces.",
+    description: "Accumulate 10,000,000 Coins.",
     condition: (state) => state.coins >= 10000000,
   },
-
-  // --- 🪓 WOODCUTTING (Puunkaato) ---
   {
-    id: "first_chop",
-    category: "skills",
-    name: "First Chop",
-    icon: "/assets/resources/tree/pine_log.png",
-    description: "Chop your first pine log.",
-    condition: (state) => (state.inventory["pine_log"] || 0) >= 1,
+    id: "gen_hoarder_1",
+    category: "collection",
+    name: "Collector",
+    icon: "/assets/ui/icon_inventory.png",
+    description: "Have 20 unique items in your inventory.",
+    condition: (state) => Object.keys(state.inventory).length >= 20,
   },
   {
-    id: "novice_woodcutter",
-    category: "skills",
-    name: "Novice Woodcutter",
-    icon: "/assets/skills/woodcutting.png",
-    description: "Reach Woodcutting level 10.",
-    condition: (state) => state.skills.woodcutting.level >= 10,
+    id: "gen_hoarder_2",
+    category: "collection",
+    name: "Pack Rat",
+    icon: "/assets/ui/icon_inventory.png",
+    description: "Have 50 unique items in your inventory.",
+    condition: (state) => Object.keys(state.inventory).length >= 50,
   },
   {
-    id: "master_woodcutter",
-    category: "skills",
-    name: "Nature's Bane",
-    icon: "/assets/skills/woodcutting.png",
-    description: "Reach Woodcutting level 99.",
-    condition: (state) => state.skills.woodcutting.level >= 99,
+    id: "gen_queue_master",
+    category: "general",
+    name: "Master Planner",
+    icon: "/assets/ui/icon_clock.png",
+    description: "Unlock 5 Action Queue slots.",
+    condition: (state) => state.unlockedQueueSlots >= 5,
   },
 
-  // --- ⛏️ MINING (Kaivostyö) ---
+  // ==========================================
+  // --- ⚔️ COMBAT & STATS (Taistelu) ---
+  // ==========================================
   {
-    id: "first_ore",
-    category: "skills",
-    name: "First Strike",
-    icon: "/assets/resources/ore/copper_ore.png",
-    description: "Mine your first piece of ore.",
-    condition: (state) => (state.inventory["ore_copper"] || 0) >= 1,
+    id: "combat_gear_up",
+    category: "combat",
+    name: "Fully Geared",
+    icon: "/assets/ui/icon_inventory.png",
+    description: "Equip a Head, Body, Legs, and Weapon simultaneously.",
+    condition: (state) =>
+      !!(
+        state.equipment.head &&
+        state.equipment.body &&
+        state.equipment.legs &&
+        state.equipment.weapon
+      ),
   },
   {
-    id: "novice_miner",
-    category: "skills",
-    name: "Deep Delver",
-    icon: "/assets/skills/mining.png",
-    description: "Reach Mining level 10.",
-    condition: (state) => state.skills.mining.level >= 10,
-  },
-  {
-    id: "master_miner",
-    category: "skills",
-    name: "Obsidian Heart",
-    icon: "/assets/skills/mining.png",
-    description: "Reach Mining level 99.",
-    condition: (state) => state.skills.mining.level >= 99,
-  },
-
-  // --- ⚒️ SMITHING (Sepän työt) ---
-  {
-    id: "first_bar",
-    category: "skills",
-    name: "Smelter",
-    icon: "/assets/skills/smithing.png",
-    description: "Smelt your first metal bar.",
-    condition: (state) => (state.inventory["ore_copper_smelted"] || 0) >= 1,
-  },
-  {
-    id: "novice_smith",
-    category: "skills",
-    name: "Hammer & Anvil",
-    icon: "/assets/skills/smithing.png",
-    description: "Reach Smithing level 10.",
-    condition: (state) => state.skills.smithing.level >= 10,
-  },
-  {
-    id: "master_smith",
-    category: "skills",
-    name: "Divine Anvil",
-    icon: "/assets/skills/smithing.png",
-    description: "Reach Smithing level 99.",
-    condition: (state) => state.skills.smithing.level >= 99,
-  },
-
-  // --- 🧵 CRAFTING (Käsityö) ---
-  {
-    id: "first_craft",
-    category: "skills",
-    name: "Tinkerer",
-    icon: "/assets/skills/crafting.png",
-    description: "Craft your first item.",
-    condition: (state) => state.skills.crafting.level >= 2, // Taso 2 yleensä tarkoittaa että jotain on tehty
-  },
-  {
-    id: "novice_crafter",
-    category: "skills",
-    name: "Master Artisan",
-    icon: "/assets/skills/crafting.png",
-    description: "Reach Crafting level 10.",
-    condition: (state) => state.skills.crafting.level >= 10,
-  },
-  {
-    id: "master_crafter",
-    category: "skills",
-    name: "Grand Architect",
-    icon: "/assets/skills/crafting.png",
-    description: "Reach Crafting level 99.",
-    condition: (state) => state.skills.crafting.level >= 99,
-  },
-
-  // --- ⚗️ ALCHEMY (Alkemian salat) ---
-  {
-    id: "first_potion",
-    category: "skills",
-    name: "Potion Mixer",
-    icon: "/assets/skills/alchemy.png",
-    description: "Brew your first potion.",
-    condition: (state) => state.skills.alchemy.level >= 2,
-  },
-  {
-    id: "novice_alchemist",
-    category: "skills",
-    name: "Philosopher's Heir",
-    icon: "/assets/skills/alchemy.png",
-    description: "Reach Alchemy level 10.",
-    condition: (state) => state.skills.alchemy.level >= 10,
-  },
-  {
-    id: "master_alchemist",
-    category: "skills",
-    name: "Transmutation God",
-    icon: "/assets/skills/alchemy.png",
-    description: "Reach Alchemy level 99.",
-    condition: (state) => state.skills.alchemy.level >= 99,
-  },
-
-  // --- ⚔️ COMBAT (Taistelu ja maailmat) ---
-  {
-    id: "combat_initiate",
+    id: "combat_map_1",
     category: "combat",
     name: "First Blood",
     icon: "/assets/skills/attack.png",
@@ -167,27 +95,303 @@ export const ACHIEVEMENTS: Achievement[] = [
     condition: (state) => state.combatStats.maxMapCompleted >= 1,
   },
   {
-    id: "combat_veteran",
+    id: "combat_map_10",
     category: "combat",
     name: "Zone Stabilizer",
     icon: "/assets/skills/defense.png",
-    description: "Complete 10 combat zones.",
+    description: "Defeat the World 1 Boss (Map 10).",
     condition: (state) => state.combatStats.maxMapCompleted >= 10,
   },
   {
-    id: "combat_elite",
+    id: "combat_map_40",
     category: "combat",
     name: "Realm Hero",
     icon: "/assets/skills/strength.png",
-    description: "Complete 40 combat zones.",
+    description: "Defeat the World 4 Boss (Map 40).",
     condition: (state) => state.combatStats.maxMapCompleted >= 40,
   },
   {
-    id: "combat_god",
+    id: "combat_map_80",
     category: "combat",
     name: "God of War",
-    icon: "/assets/skills/hitpoints.png",
+    icon: "/assets/skills/combat.png",
     description: "Defeat the final challenge (Map 80).",
     condition: (state) => state.combatStats.maxMapCompleted >= 80,
+  },
+  {
+    id: "stat_hp_10",
+    category: "combat",
+    name: "Healthy",
+    icon: "/assets/skills/hitpoints.png",
+    description: "Reach Hitpoints level 10.",
+    condition: (state) => state.skills.hitpoints.level >= 10,
+  },
+  {
+    id: "stat_melee_50",
+    category: "combat",
+    name: "Blademaster",
+    icon: "/assets/skills/melee.png",
+    description: "Reach Melee level 50.",
+    condition: (state) => state.skills.melee.level >= 50,
+  },
+  {
+    id: "stat_ranged_50",
+    category: "combat",
+    name: "Deadeye",
+    icon: "/assets/skills/ranged.png",
+    description: "Reach Ranged level 50.",
+    condition: (state) => state.skills.ranged.level >= 50,
+  },
+  {
+    id: "stat_def_99",
+    category: "combat",
+    name: "Immovable Object",
+    icon: "/assets/skills/defense.png",
+    description: "Reach Defense level 99.",
+    condition: (state) => state.skills.defense.level >= 99,
+  },
+
+  // ==========================================
+  // --- 🪓 WOODCUTTING ---
+  // ==========================================
+  {
+    id: "wc_1",
+    category: "skills",
+    name: "First Chop",
+    icon: "/assets/skills/woodcutting.png",
+    description: "Gain your first Woodcutting experience.",
+    condition: (state) => state.skills.woodcutting.xp > 0,
+  },
+  {
+    id: "wc_10",
+    category: "skills",
+    name: "Novice Lumberjack",
+    icon: "/assets/skills/woodcutting.png",
+    description: "Reach Woodcutting level 10.",
+    condition: (state) => state.skills.woodcutting.level >= 10,
+  },
+  {
+    id: "wc_50",
+    category: "skills",
+    name: "Forest Warden",
+    icon: "/assets/skills/woodcutting.png",
+    description: "Reach Woodcutting level 50.",
+    condition: (state) => state.skills.woodcutting.level >= 50,
+  },
+  {
+    id: "wc_99",
+    category: "skills",
+    name: "Nature's Bane",
+    icon: "/assets/skills/woodcutting.png",
+    description: "Reach Woodcutting level 99.",
+    condition: (state) => state.skills.woodcutting.level >= 99,
+  },
+
+  // ==========================================
+  // --- ⛏️ MINING ---
+  // ==========================================
+  {
+    id: "mine_1",
+    category: "skills",
+    name: "First Strike",
+    icon: "/assets/skills/mining.png",
+    description: "Gain your first Mining experience.",
+    condition: (state) => state.skills.mining.xp > 0,
+  },
+  {
+    id: "mine_10",
+    category: "skills",
+    name: "Deep Delver",
+    icon: "/assets/skills/mining.png",
+    description: "Reach Mining level 10.",
+    condition: (state) => state.skills.mining.level >= 10,
+  },
+  {
+    id: "mine_50",
+    category: "skills",
+    name: "Expert Prospector",
+    icon: "/assets/skills/mining.png",
+    description: "Reach Mining level 50.",
+    condition: (state) => state.skills.mining.level >= 50,
+  },
+  {
+    id: "mine_99",
+    category: "skills",
+    name: "Obsidian Heart",
+    icon: "/assets/skills/mining.png",
+    description: "Reach Mining level 99.",
+    condition: (state) => state.skills.mining.level >= 99,
+  },
+
+  // ==========================================
+  // --- 🌿 FORAGING ---
+  // ==========================================
+  {
+    id: "forage_1",
+    category: "skills",
+    name: "First Leaf",
+    icon: "/assets/skills/foraging.png",
+    description: "Gain your first Foraging experience.",
+    condition: (state) => state.skills.foraging.xp > 0,
+  },
+  {
+    id: "forage_10",
+    category: "skills",
+    name: "Novice Gatherer",
+    icon: "/assets/skills/foraging.png",
+    description: "Reach Foraging level 10.",
+    condition: (state) => state.skills.foraging.level >= 10,
+  },
+  {
+    id: "forage_50",
+    category: "skills",
+    name: "Botanist",
+    icon: "/assets/skills/foraging.png",
+    description: "Reach Foraging level 50.",
+    condition: (state) => state.skills.foraging.level >= 50,
+  },
+  {
+    id: "forage_99",
+    category: "skills",
+    name: "Child of the Earth",
+    icon: "/assets/skills/foraging.png",
+    description: "Reach Foraging level 99.",
+    condition: (state) => state.skills.foraging.level >= 99,
+  },
+
+  // ==========================================
+  // --- 🎣 FISHING ---
+  // ==========================================
+  {
+    id: "fish_1",
+    category: "skills",
+    name: "First Catch",
+    icon: "/assets/skills/fishing.png",
+    description: "Gain your first Fishing experience.",
+    condition: (state) => state.skills.fishing.xp > 0,
+  },
+  {
+    id: "fish_50",
+    category: "skills",
+    name: "Expert Angler",
+    icon: "/assets/skills/fishing.png",
+    description: "Reach Fishing level 50.",
+    condition: (state) => state.skills.fishing.level >= 50,
+  },
+  {
+    id: "fish_99",
+    category: "skills",
+    name: "Master of the Depths",
+    icon: "/assets/skills/fishing.png",
+    description: "Reach Fishing level 99.",
+    condition: (state) => state.skills.fishing.level >= 99,
+  },
+
+  // ==========================================
+  // --- ⚒️ SMITHING ---
+  // ==========================================
+  {
+    id: "smith_1",
+    category: "skills",
+    name: "Smelter",
+    icon: "/assets/skills/smithing.png",
+    description: "Gain your first Smithing experience.",
+    condition: (state) => state.skills.smithing.xp > 0,
+  },
+  {
+    id: "smith_10",
+    category: "skills",
+    name: "Hammer & Anvil",
+    icon: "/assets/skills/smithing.png",
+    description: "Reach Smithing level 10.",
+    condition: (state) => state.skills.smithing.level >= 10,
+  },
+  {
+    id: "smith_50",
+    category: "skills",
+    name: "Iron Lord",
+    icon: "/assets/skills/smithing.png",
+    description: "Reach Smithing level 50.",
+    condition: (state) => state.skills.smithing.level >= 50,
+  },
+  {
+    id: "smith_99",
+    category: "skills",
+    name: "Divine Anvil",
+    icon: "/assets/skills/smithing.png",
+    description: "Reach Smithing level 99.",
+    condition: (state) => state.skills.smithing.level >= 99,
+  },
+
+  // ==========================================
+  // --- 🧵 CRAFTING ---
+  // ==========================================
+  {
+    id: "craft_1",
+    category: "skills",
+    name: "Tinkerer",
+    icon: "/assets/skills/crafting.png",
+    description: "Gain your first Crafting experience.",
+    condition: (state) => state.skills.crafting.xp > 0,
+  },
+  {
+    id: "craft_10",
+    category: "skills",
+    name: "Novice Artisan",
+    icon: "/assets/skills/crafting.png",
+    description: "Reach Crafting level 10.",
+    condition: (state) => state.skills.crafting.level >= 10,
+  },
+  {
+    id: "craft_50",
+    category: "skills",
+    name: "Master Jeweler",
+    icon: "/assets/skills/crafting.png",
+    description: "Reach Crafting level 50.",
+    condition: (state) => state.skills.crafting.level >= 50,
+  },
+  {
+    id: "craft_99",
+    category: "skills",
+    name: "Grand Architect",
+    icon: "/assets/skills/crafting.png",
+    description: "Reach Crafting level 99.",
+    condition: (state) => state.skills.crafting.level >= 99,
+  },
+
+  // ==========================================
+  // --- ⚗️ ALCHEMY ---
+  // ==========================================
+  {
+    id: "alch_1",
+    category: "skills",
+    name: "Potion Mixer",
+    icon: "/assets/skills/alchemy.png",
+    description: "Gain your first Alchemy experience.",
+    condition: (state) => state.skills.alchemy.xp > 0,
+  },
+  {
+    id: "alch_10",
+    category: "skills",
+    name: "Philosopher's Heir",
+    icon: "/assets/skills/alchemy.png",
+    description: "Reach Alchemy level 10.",
+    condition: (state) => state.skills.alchemy.level >= 10,
+  },
+  {
+    id: "alch_50",
+    category: "skills",
+    name: "Mad Scientist",
+    icon: "/assets/skills/alchemy.png",
+    description: "Reach Alchemy level 50.",
+    condition: (state) => state.skills.alchemy.level >= 50,
+  },
+  {
+    id: "alch_99",
+    category: "skills",
+    name: "Transmutation God",
+    icon: "/assets/skills/alchemy.png",
+    description: "Reach Alchemy level 99.",
+    condition: (state) => state.skills.alchemy.level >= 99,
   },
 ];

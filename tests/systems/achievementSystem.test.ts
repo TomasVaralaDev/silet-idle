@@ -31,6 +31,7 @@ describe("AchievementSystem: Trigger Logic", () => {
         sound: true,
         music: true,
         particles: true,
+        theme: "theme-neon",
       },
       inventory: {},
       skills: defaultSkills,
@@ -50,6 +51,8 @@ describe("AchievementSystem: Trigger Logic", () => {
       scavenger: { activeExpeditions: [], unlockedSlots: 1 },
       activeAction: null,
       coins: 0,
+      gems: 0,
+      unlockedQueueSlots: 2,
       upgrades: [],
       unlockedAchievements: [],
       combatStats: {
@@ -77,32 +80,35 @@ describe("AchievementSystem: Trigger Logic", () => {
         unreadMessages: {},
       },
       quests: { dailyQuests: [], lastResetTime: 0 },
+      queue: [],
       ...overrides,
     } as GameState;
   };
 
-  it("should detect a wealth achievement (Rich Noob)", () => {
+  it("should detect a wealth achievement (Pocket Change)", () => {
     const state = getMockState({ coins: 1500 });
     const newAchievements = checkNewAchievements(state);
 
-    expect(newAchievements).toContain("rich_noob");
-    expect(newAchievements).not.toContain("fragment_hoarder");
+    expect(newAchievements).toContain("wealth_1");
+    // Ei pitäisi vielä saada Data Hoarder (100k) saavutusta
+    expect(newAchievements).not.toContain("wealth_3");
   });
 
-  it("should detect an inventory-based achievement (First Chop)", () => {
-    // KORJATTU: Datassa ID on 'first_chop', ei 'first_log'
-    const state = getMockState({ inventory: { pine_log: 1 } });
+  it("should detect an XP-based achievement (First Chop)", () => {
+    // KORJATTU: First chop katsoo nyt Woodcutting XP:tä, ei logeja!
+    const state = getMockState();
+    state.skills.woodcutting.xp = 15;
+
     const newAchievements = checkNewAchievements(state);
-
-    expect(newAchievements).toContain("first_chop");
+    expect(newAchievements).toContain("wc_1");
   });
 
-  it("should detect a skill-level achievement (Novice Woodcutter)", () => {
+  it("should detect a skill-level achievement (Novice Lumberjack)", () => {
     const state = getMockState();
     state.skills.woodcutting.level = 10;
 
     const newAchievements = checkNewAchievements(state);
-    expect(newAchievements).toContain("novice_woodcutter");
+    expect(newAchievements).toContain("wc_10");
   });
 
   it("should detect combat progress (First Blood)", () => {
@@ -110,31 +116,32 @@ describe("AchievementSystem: Trigger Logic", () => {
     state.combatStats.maxMapCompleted = 1;
 
     const newAchievements = checkNewAchievements(state);
-    expect(newAchievements).toContain("combat_initiate");
+    expect(newAchievements).toContain("combat_map_1");
   });
 
   it("should NOT return achievements that are already unlocked", () => {
     const state = getMockState({
       coins: 2000,
-      unlockedAchievements: ["rich_noob"],
+      unlockedAchievements: ["wealth_1"], // wealth_1 on jo avattu
     });
 
     const newAchievements = checkNewAchievements(state);
 
-    expect(newAchievements).not.toContain("rich_noob");
+    expect(newAchievements).not.toContain("wealth_1");
   });
 
   it("should detect multiple achievements at once", () => {
     const state = getMockState({
       coins: 1000,
-      inventory: { pine_log: 1 },
     });
+    state.skills.woodcutting.xp = 25; // Antaa wc_1 saavutuksen
 
     const newAchievements = checkNewAchievements(state);
 
-    expect(newAchievements).toContain("rich_noob");
-    // KORJATTU: 'first_chop' vastaamaan dataa
-    expect(newAchievements).toContain("first_chop");
-    expect(newAchievements.length).toBe(2);
+    expect(newAchievements).toContain("wealth_1");
+    expect(newAchievements).toContain("wc_1");
+
+    // Tarkistaa, että tuli vähintään kaksi (voi tulla enemmänkin riippuen muiden skillien oletustiloista, mutta nämä 2 pitää löytyä)
+    expect(newAchievements.length).toBeGreaterThanOrEqual(2);
   });
 });

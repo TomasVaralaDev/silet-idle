@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchase Successful</title>
+    <style>
+      body {
+        background: #0f172a;
+        color: #f8fafc;
+        font-family: sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        text-align: center;
+      }
+      .card {
+        background: #1e293b;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        border: 1px solid #334155;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+      h1 {
+        color: #22d3ee;
+      }
+      button {
+        background: #0891b2;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>💎 Purchase Successful!</h1>
+      <p>Your gems are being delivered. You can now safely close this tab.</p>
+      <button onclick="window.close()">Close Window</button>
+    </div>
+    <script>
+      // Yritetään sulkea ikkuna automaattisesti 3 sekunnin kuluttua
+      setTimeout(() => {
+        window.close();
+      }, 3000);
+    </script>
+  </body>
+</html>

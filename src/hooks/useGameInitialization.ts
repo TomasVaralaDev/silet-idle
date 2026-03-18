@@ -9,11 +9,7 @@ import type { User } from "firebase/auth";
 
 export const useGameInitialization = (user: User | null) => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-
-  // Haetaan molemmat synkronointifunktiot storesta
-  const { setState, syncWorldShopWithServer, syncQuestsWithServer } =
-    useGameStore();
-
+  const { setState, syncWorldShopWithServer } = useGameStore();
   useEffect(() => {
     const initializeGame = async () => {
       console.log(
@@ -32,7 +28,6 @@ export const useGameInitialization = (user: User | null) => {
           getDoc(globalDocRef),
         ]);
 
-        // Haetaan palvelimen asettama globaali reset-aika
         const serverResetTime = globalSnap.exists()
           ? globalSnap.data().lastWorldShopReset
           : 0;
@@ -43,7 +38,6 @@ export const useGameInitialization = (user: User | null) => {
           console.log("[INIT] Pelaajan tallennus löytyi.");
           const rawSavedData = userSnap.data() as GameState;
 
-          // Varmistetaan, että settings-objekti on ehjä
           const savedData = {
             ...rawSavedData,
             settings: {
@@ -52,25 +46,24 @@ export const useGameInitialization = (user: User | null) => {
             },
           };
 
-          // 1. Asetetaan perustila storeen
+          // 1. Asetetaan tila storeen
           setState(savedData);
           console.log("[INIT] Tila asetettu storeen.");
 
-          // 2. Kutsutaan palvelinsynkronointeja (Kauppa ja Tehtävät)
-          console.log(
-            "[INIT] Synkronoidaan kauppa ja tehtävät palvelimen aikaan...",
-          );
-          syncWorldShopWithServer(serverResetTime);
-          syncQuestsWithServer(serverResetTime); // LISÄTTY: Quest-reset
+          // 2. Kutsutaan reset-tarkistusta
+          console.log("[INIT] Kutsutaan syncWorldShopWithServer...");
+          syncWorldShopWithServer(serverResetTime); // Uusi nimi täällä
 
-          // 3. Lasketaan offline-edistyminen
+          // 3. Offline progress
           const lastSave = savedData.lastTimestamp || Date.now();
           const now = Date.now();
           const elapsedSeconds = Math.floor((now - lastSave) / 1000);
 
           if (elapsedSeconds > 60) {
             console.log(
-              `[INIT] Lasketaan offline-progress: ${elapsedSeconds} sekuntia.`,
+              "[INIT] Lasketaan offline-progress:",
+              elapsedSeconds,
+              "sekuntia.",
             );
             const { updatedState, summary } = calculateOfflineProgress(
               useGameStore.getState(),
@@ -80,14 +73,9 @@ export const useGameInitialization = (user: User | null) => {
             useGameStore.getState().setOfflineSummary(summary);
           }
         } else {
-          // Uusi pelaaja: luodaan dokumentti default-tiedoilla
           console.log("[INIT] Pelaajalla ei tallennusta. Luodaan uusi.");
           await setDoc(userDocRef, DEFAULT_STATE);
           setState(DEFAULT_STATE);
-
-          // Uudelle pelaajalle asetetaan heti voimassa oleva reset-aika
-          syncWorldShopWithServer(serverResetTime);
-          syncQuestsWithServer(serverResetTime);
         }
       } catch (error) {
         console.error("[INIT] VIRHE alustuksessa:", error);
@@ -98,9 +86,6 @@ export const useGameInitialization = (user: User | null) => {
     };
 
     initializeGame();
-
-    // Lisätty syncQuestsWithServer riippuvuuksiin
-  }, [user, setState, syncWorldShopWithServer, syncQuestsWithServer]);
-
+  }, [user, setState, syncWorldShopWithServer]); // Muista päivittää myös riippuvuus
   return { isDataLoaded };
 };

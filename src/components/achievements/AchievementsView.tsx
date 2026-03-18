@@ -46,10 +46,10 @@ export default function AchievementsView({
           <h1
             className={`text-3xl font-black uppercase tracking-widest text-warning mb-1`}
           >
-            Milestones
+            Achievements
           </h1>
           <p className="text-tx-muted text-sm font-medium">
-            System synchronization and operational records.
+            All your achievements in one place. Keep unlocking new milestones!
           </p>
         </div>
         <div className="text-right">

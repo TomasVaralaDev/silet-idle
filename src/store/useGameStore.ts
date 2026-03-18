@@ -30,7 +30,10 @@ import {
 } from "./slices/enchantingSlice";
 import { createSocialSlice, type SocialSlice } from "./slices/socialSlice";
 import { createQuestSlice, type QuestSlice } from "./slices/questSlice";
-
+import {
+  createPremiumShopSlice,
+  type PremiumShopSlice,
+} from "./slices/premiumShopSlice";
 import type { OfflineSummary } from "../systems/offlineSystem";
 
 interface RewardModalState {
@@ -47,6 +50,7 @@ export type FullStoreState = GameState &
   WorldShopSlice &
   EnchantingSlice &
   SocialSlice &
+  PremiumShopSlice &
   QuestSlice & {
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
@@ -225,6 +229,7 @@ export const useGameStore = create<FullStoreState>()(
       ...createEnchantingSlice(set, get, ...args),
       ...createSocialSlice(set, get, ...args),
       ...createQuestSlice(set, get, ...args),
+      ...createPremiumShopSlice(set, get, ...args),
 
       emitEvent: (type, message, icon) =>
         set((state) => {
@@ -291,6 +296,8 @@ export const useGameStore = create<FullStoreState>()(
         const rest = { ...state };
         delete (rest as Partial<FullStoreState>).offlineSummary;
         delete (rest as Partial<FullStoreState>).rewardModal;
+        delete (rest as Partial<FullStoreState>).gems;
+        delete (rest as Partial<FullStoreState>).upgrades;
         return rest;
       },
     },

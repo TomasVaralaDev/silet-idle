@@ -22,22 +22,30 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
   const theme = getRarityStyle(item.rarity);
 
   // === LEVEL CAP LOGIIKKA UI:ta varten ===
+  // Oletuksena armorit, kilvet, sormukset (ring) ja muut menevät Smithingiin
   let requiredSkillName = "Smithing";
   let playerSkillLevel = skills.smithing?.level || 1;
   let meetsRequirement = true;
 
   if (item.level && item.level > 1) {
-    if (item.combatStyle === "ranged") {
+    // 1. ASEET JA KAULAKORUT (Necklace) -> CRAFTING
+    if (
+      item.slot === "weapon" ||
+      item.category === "weapon" ||
+      item.slot === "necklace"
+    ) {
       requiredSkillName = "Crafting";
       playerSkillLevel = skills.crafting?.level || 1;
-    } else if (item.combatStyle === "magic") {
+    }
+    // 2. POTIONIT / RUOKA -> ALCHEMY
+    else if (item.slot === "food" || item.healing) {
       requiredSkillName = "Alchemy";
       playerSkillLevel = skills.alchemy?.level || 1;
     }
-
-    if (item.slot === "food" || item.healing) {
-      requiredSkillName = "Alchemy";
-      playerSkillLevel = skills.alchemy?.level || 1;
+    // 3. KAIKKI MUUT (Head, Body, Legs, Shield, Ring yms) -> SMITHING
+    else {
+      requiredSkillName = "Smithing";
+      playerSkillLevel = skills.smithing?.level || 1;
     }
 
     meetsRequirement = playerSkillLevel >= item.level;

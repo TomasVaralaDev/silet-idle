@@ -9,11 +9,17 @@ interface Props {
   onClose: () => void;
   onSell: () => void;
   onEquip?: () => void;
+  isMobile?: boolean; // UUSI PROP
 }
 
-export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
+export default function ItemDetails({
+  item,
+  onClose,
+  onSell,
+  onEquip,
+  isMobile = false,
+}: Props) {
   const skills = useGameStore((state) => state.skills);
-  // Haetaan openPouch-metodi storesta
   const openPouch = useGameStore((state) => state.openPouch);
 
   const isEquippable = !!item.slot;
@@ -21,14 +27,11 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
   const currentlyEquipped = getEquippedItem(item.slot);
   const theme = getRarityStyle(item.rarity);
 
-  // === LEVEL CAP LOGIIKKA UI:ta varten ===
-  // Oletuksena armorit, kilvet, sormukset (ring) ja muut menevät Smithingiin
   let requiredSkillName = "Smithing";
   let playerSkillLevel = skills.smithing?.level || 1;
   let meetsRequirement = true;
 
   if (item.level && item.level > 1) {
-    // 1. ASEET JA KAULAKORUT (Necklace) -> CRAFTING
     if (
       item.slot === "weapon" ||
       item.category === "weapon" ||
@@ -36,42 +39,33 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
     ) {
       requiredSkillName = "Crafting";
       playerSkillLevel = skills.crafting?.level || 1;
-    }
-    // 2. POTIONIT / RUOKA -> ALCHEMY
-    else if (item.slot === "food" || item.healing) {
+    } else if (item.slot === "food" || item.healing) {
       requiredSkillName = "Alchemy";
       playerSkillLevel = skills.alchemy?.level || 1;
-    }
-    // 3. KAIKKI MUUT (Head, Body, Legs, Shield, Ring yms) -> SMITHING
-    else {
+    } else {
       requiredSkillName = "Smithing";
       playerSkillLevel = skills.smithing?.level || 1;
     }
-
     meetsRequirement = playerSkillLevel >= item.level;
   }
 
   return (
     <div
       className={`
-      w-full bg-panel border rounded-xl overflow-hidden flex flex-col relative 
-      animate-in slide-in-from-top-4 fade-in duration-300 shadow-xl shrink-0
-      ${theme.border} border-opacity-50
+      w-full bg-panel flex flex-col relative shrink-0 shadow-2xl
+      ${isMobile ? "rounded-t-2xl border-none" : `border rounded-xl ${theme.border} border-opacity-50 animate-in slide-in-from-top-4 fade-in duration-300`}
     `}
     >
-      <div className="p-4 flex gap-4 relative">
+      <div className="p-4 flex gap-4 relative border-b border-border/50">
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-tx-muted hover:text-tx-main transition-colors text-xs p-2 z-20"
+          className="absolute top-2 right-2 bg-app-base text-tx-muted hover:text-[#E43636] border border-border hover:border-[#E43636]/50 rounded-full w-6 h-6 flex items-center justify-center transition-colors text-xs z-20"
         >
           ✕
         </button>
 
         <div
-          className={`
-          w-16 h-16 shrink-0 rounded-lg border ${theme.border} ${theme.lightBg} 
-          flex items-center justify-center relative overflow-hidden shadow-lg ${theme.glow}
-        `}
+          className={`w-16 h-16 shrink-0 rounded-lg border ${theme.border} ${theme.lightBg} flex items-center justify-center relative overflow-hidden shadow-lg ${theme.glow}`}
         >
           <div
             className={`absolute inset-0 ${theme.lightBg} blur-md opacity-50`}
@@ -83,7 +77,7 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
           />
         </div>
 
-        <div className="flex flex-col justify-center min-w-0 pr-4">
+        <div className="flex flex-col justify-center min-w-0 pr-6">
           <h3
             className={`font-bold text-base leading-tight truncate ${theme.text}`}
           >
@@ -93,7 +87,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
             <span className={theme.text}>{item.rarity}</span>{" "}
             {item.category || "Item"}
           </p>
-
           <div className="flex items-center gap-2 mt-2">
             <span className="text-[10px] bg-app-base px-2 py-0.5 rounded text-tx-muted border border-border">
               x{item.count}
@@ -106,21 +99,21 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
         </div>
       </div>
 
-      <div className="px-4 pb-4 space-y-3">
-        <p className="text-xs text-tx-muted italic leading-relaxed border-l-2 border-border pl-3">
+      <div className="px-4 py-3 space-y-3">
+        <p className="text-xs text-tx-muted italic leading-relaxed border-l-2 border-[#E43636]/50 pl-3 bg-app-base/30 py-1">
           "{item.description || "A mysterious item with no description."}"
         </p>
 
         {!meetsRequirement && (
-          <div className="bg-danger/10 border border-danger/30 rounded p-2 text-center mt-2">
-            <p className="text-[10px] font-bold text-danger uppercase tracking-wider">
+          <div className="bg-[#E43636]/10 border border-[#E43636]/30 rounded p-2 text-center mt-2">
+            <p className="text-[10px] font-bold text-[#E43636] uppercase tracking-wider">
               Requires Lv. {item.level} {requiredSkillName} to equip
             </p>
           </div>
         )}
 
         {(item.stats || item.healing) && (
-          <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="grid grid-cols-2 gap-2 mt-2 bg-app-base/50 p-2 rounded-lg border border-border/50">
             {(item.stats?.attack || currentlyEquipped?.stats?.attack) && (
               <StatComparison
                 label="Attack"
@@ -154,7 +147,6 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
                 isMultiplier={true}
               />
             )}
-
             {(item.stats?.defense || currentlyEquipped?.stats?.defense) && (
               <StatComparison
                 label="Defense"
@@ -178,7 +170,7 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
             )}
 
             {item.healing && (
-              <div className="bg-app-base px-3 py-2 rounded border border-border flex justify-between items-center text-xs col-span-2">
+              <div className="bg-success/10 px-3 py-2 rounded border border-success/30 flex justify-between items-center text-xs col-span-2">
                 <span className="text-success font-bold uppercase text-[10px]">
                   Restores HP
                 </span>
@@ -192,19 +184,16 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
       </div>
 
       <div
-        className={`grid ${
-          isEquippable || isPouch ? "grid-cols-2" : "grid-cols-1"
-        } border-t border-border divide-x divide-border`}
+        className={`grid ${isEquippable || isPouch ? "grid-cols-2" : "grid-cols-1"} border-t border-border divide-x divide-border bg-app-base/50`}
       >
         <button
           onClick={onSell}
-          className="py-3 text-xs font-bold uppercase tracking-wider text-danger hover:bg-danger/10 transition-colors flex items-center justify-center gap-2 group"
+          className="py-4 text-xs font-black uppercase tracking-widest text-[#E43636] hover:bg-[#E43636]/10 transition-colors flex items-center justify-center gap-2 group"
         >
-          <span className="group-hover:scale-110 transition-transform">💰</span>{" "}
+          <span className="group-hover:scale-125 transition-transform">💰</span>{" "}
           Sell
         </button>
 
-        {/* NÄYTETÄÄN EQUIP-PAINIKE */}
         {isEquippable && (
           <button
             onClick={() => {
@@ -213,26 +202,25 @@ export default function ItemDetails({ item, onClose, onSell, onEquip }: Props) {
               }
             }}
             disabled={!meetsRequirement}
-            className={`py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
+            className={`py-4 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-colors ${
               meetsRequirement
-                ? "text-tx-main hover:bg-panel-hover bg-panel-hover/50"
-                : "text-tx-muted/50 bg-app-base cursor-not-allowed opacity-50"
+                ? "text-tx-main hover:bg-success/20 hover:text-success"
+                : "text-tx-muted/30 cursor-not-allowed"
             }`}
           >
-            Equip <span className="text-tx-muted">→</span>
+            Equip <span className="opacity-50">→</span>
           </button>
         )}
 
-        {/* NÄYTETÄÄN OPEN POUCH -PAINIKE */}
         {isPouch && (
           <button
             onClick={() => {
               openPouch(item.id);
               onClose();
             }}
-            className="py-3 text-xs font-bold uppercase tracking-wider text-accent bg-accent/10 hover:bg-accent/20 transition-colors flex items-center justify-center gap-2"
+            className="py-4 text-xs font-black uppercase tracking-widest text-accent bg-accent/5 hover:bg-accent/20 transition-colors flex items-center justify-center gap-2"
           >
-            Open Pouch
+            Open
           </button>
         )}
       </div>

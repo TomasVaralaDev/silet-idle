@@ -15,9 +15,8 @@ export default function GemsModal({
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      {/* PÄÄIKKUNA: RPG-malli yhtenäistetyllä headerilla */}
+      {/* PÄÄIKKUNA */}
       <div className="bg-panel border-2 border-border rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] max-w-4xl w-full flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* HEADER: Yhtenäistetty Milestones-tyyliin */}
         {/* HEADER: Sama tyyli kuin PremiumShopViewissa */}
         <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 shrink-0 text-left">
           <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
@@ -32,7 +31,7 @@ export default function GemsModal({
             <h1 className="text-3xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover">
               Treasury
             </h1>
-            <p className="text-tx-muted text-sm font-medium">
+            <p className="text-tx-muted text-sm font-medium uppercase tracking-wider opacity-70">
               Exchange mortal currency for mystical gemstones.
             </p>
           </div>
@@ -45,7 +44,7 @@ export default function GemsModal({
           </button>
         </div>
 
-        {/* PROGRESS DECORATION: Kultainen viiva yhtenäistämiseen */}
+        {/* PROGRESS DECORATION */}
         <div className="h-1 bg-panel w-full shrink-0">
           <div className="h-full bg-accent shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] w-full opacity-50"></div>
         </div>
@@ -72,16 +71,19 @@ export default function GemsModal({
                   {pack.gems.toLocaleString()}
                 </div>
 
-                {/* Koristekulmat (RPG Style) */}
+                {/* Koristekulmat */}
                 <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-border/30"></div>
                 <div className="absolute bottom-2 right-2 w-2 h-2 border-b border-r border-border/30"></div>
               </div>
 
-              <h3 className="text-lg font-bold text-tx-main mb-1 uppercase tracking-tight italic">
+              {/* PAKETIN NIMI - Poistettu italic */}
+              <h3 className="text-lg font-bold text-tx-main mb-1 uppercase tracking-tight">
                 {pack.name}
               </h3>
-              <p className="text-[11px] text-tx-muted mb-6 flex-1 italic leading-relaxed opacity-80">
-                "{pack.description}"
+
+              {/* KUVAUS - Poistettu italic ja lainausmerkit */}
+              <p className="text-[11px] text-tx-muted mb-6 flex-1 leading-relaxed opacity-80 font-medium">
+                {pack.description}
               </p>
 
               {/* HINTALAPPU */}

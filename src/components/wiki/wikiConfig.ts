@@ -7,7 +7,7 @@ import TreasuresArticle from "./articles/TreasuresArticle";
 import ExpeditionsArticle from "./articles/ExpeditionsArticle";
 import QuestsArticle from "./articles/QuestsArticle";
 import EconomyArticle from "./articles/EconomyArticle";
-import AutomationArticle from "./articles/AutomationArticle"; // UUSI
+import AutomationArticle from "./articles/AutomationArticle";
 
 export type WikiTabId =
   | "basics"
@@ -19,7 +19,7 @@ export type WikiTabId =
   | "expeditions"
   | "quests"
   | "economy"
-  | "automation"; // UUSI
+  | "automation";
 
 export interface WikiTabDef {
   id: WikiTabId;
@@ -43,7 +43,7 @@ export const WIKI_TABS: WikiTabDef[] = [
     icon: "/assets/ui/icon_clock.png",
     desc: "Offline & Queue",
     component: AutomationArticle,
-  }, // LISÄTTY TÄHÄN
+  },
   {
     id: "combat",
     label: "Art of War",

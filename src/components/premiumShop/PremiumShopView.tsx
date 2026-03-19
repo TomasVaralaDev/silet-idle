@@ -117,7 +117,7 @@ export default function PremiumShopView() {
         onClose={() => setSuccessData((prev) => ({ ...prev, isOpen: false }))}
       />
 
-      {/* HEADER: RPG TEEMA - Yhtenäistetty muiden ikkunoiden kanssa */}
+      {/* HEADER: Yhtenäistetty tyyli ja gradientti-otsikko */}
       <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
         <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
@@ -128,7 +128,8 @@ export default function PremiumShopView() {
         </div>
 
         <div className="flex-1">
-          <h1 className="text-3xl font-black uppercase tracking-widest text-accent mb-1">
+          {/* Suora otsikko hohtavalla gradientilla */}
+          <h1 className="text-3xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover mb-1">
             Premium Store
           </h1>
           <p className="text-tx-muted text-sm font-medium">
@@ -162,7 +163,7 @@ export default function PremiumShopView() {
         </div>
       </div>
 
-      {/* PROGRESS BAR - Koristeellinen viiva headerin alla */}
+      {/* PROGRESS BAR */}
       <div className="h-1 bg-panel w-full shrink-0 overflow-hidden">
         <div
           className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase ? "animate-shimmer" : ""}`}
@@ -171,7 +172,7 @@ export default function PremiumShopView() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* SIDEBAR: RPG TEEMA */}
+        {/* SIDEBAR */}
         <aside className="w-64 border-r border-border overflow-y-auto bg-panel/20 z-10 custom-scrollbar">
           <div className="p-4 space-y-1">
             <div className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4 px-4 opacity-50">
@@ -210,23 +211,26 @@ export default function PremiumShopView() {
                   }`}
                 >
                   <div className="h-40 bg-base/50 flex items-center justify-center relative p-4 border-b border-border/30">
+                    {/* POISTETTU: rotate ja scale hover-animaatiot */}
                     <img
                       src={item.icon}
                       alt={item.name}
-                      className={`w-20 h-20 pixelated drop-shadow-2xl transition-transform duration-500 ${!isOwned && "group-hover:scale-110 group-hover:rotate-3"}`}
+                      className="w-20 h-20 pixelated drop-shadow-2xl"
                     />
                     {item.isOneTime && (
-                      <span className="absolute top-3 right-3 bg-warning/20 text-[9px] font-black text-warning uppercase px-2 py-1 rounded border border-warning/30 italic">
+                      /* MUUTETTU: Poistettu 'italic' - teksti on nyt suorassa */
+                      <span className="absolute top-3 right-3 bg-warning/20 text-[9px] font-black text-warning uppercase px-2 py-1 rounded border border-warning/30">
                         Unique Artifact
                       </span>
                     )}
                   </div>
 
                   <div className="p-5 flex-1 flex flex-col">
-                    <h3 className="text-lg font-bold text-tx-main mb-1 uppercase italic">
+                    {/* MUUTETTU: Poistettu 'italic' otsikosta ja kuvauksesta */}
+                    <h3 className="text-lg font-bold text-tx-main mb-1 uppercase tracking-tight">
                       {item.name}
                     </h3>
-                    <p className="text-[11px] text-tx-muted mb-6 flex-1 italic opacity-80 leading-snug font-medium">
+                    <p className="text-[11px] text-tx-muted mb-6 flex-1 opacity-80 leading-snug font-medium">
                       {item.description}
                     </p>
 

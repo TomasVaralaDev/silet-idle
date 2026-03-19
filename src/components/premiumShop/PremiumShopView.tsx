@@ -4,8 +4,6 @@ import { PREMIUM_SHOP_ITEMS } from "../../data/premiumShop";
 import type { PremiumShopItem } from "../../types";
 import GemsModal from "../modals/GemsModal";
 import PurchaseSuccessModal from "../modals/PurchaseSuccessModal";
-
-// LISÄTTY IMPORTIT TÄSMÄHAKUA VARTEN
 import { auth, db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -104,7 +102,7 @@ export default function PremiumShopView() {
       : PREMIUM_SHOP_ITEMS.filter((item) => item.category === activeCategory);
 
   return (
-    <div className="h-full flex flex-col bg-base text-tx-main overflow-hidden font-sans text-left relative">
+    <div className="h-full flex flex-col bg-app-base text-tx-main overflow-hidden font-sans text-left relative">
       <GemsModal
         isOpen={isGemsModalOpen}
         onClose={() => setIsGemsModalOpen(false)}
@@ -117,48 +115,45 @@ export default function PremiumShopView() {
         onClose={() => setSuccessData((prev) => ({ ...prev, isOpen: false }))}
       />
 
-      {/* HEADER: Yhtenäistetty tyyli ja gradientti-otsikko */}
-      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
-        <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
-          <img
-            src="assets/ui/icon_gem.png"
-            className="w-10 h-10 pixelated object-contain"
-            alt="Premium Store"
-          />
-        </div>
-
-        <div className="flex-1">
-          {/* Suora otsikko hohtavalla gradientilla */}
-          <h1 className="text-3xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover mb-1">
-            Premium Store
-          </h1>
-          <p className="text-tx-muted text-sm font-medium">
-            {isWaitingForPurchase ? (
-              <span className="animate-pulse italic">
-                Consulting the royal treasury for your transaction...
-              </span>
-            ) : (
-              "Acquire mystical artifacts and divine essence."
-            )}
-          </p>
-        </div>
-
-        <div className="text-right flex flex-col items-end gap-1">
-          <div className="flex items-center gap-3 bg-base/50 px-4 py-1 rounded-lg border border-border/50 shadow-inner">
+      {/* HEADER: Skaalattu mobiiliin */}
+      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex flex-col sm:flex-row items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
             <img
               src="assets/ui/icon_gem.png"
-              className="w-5 h-5 pixelated"
+              className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
+              alt="Premium Store"
+            />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-xl md:text-3xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover">
+              Premium Store
+            </h1>
+            <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block">
+              {isWaitingForPurchase
+                ? "Consulting the royal treasury..."
+                : "Acquire mystical artifacts and divine essence."}
+            </p>
+          </div>
+        </div>
+
+        {/* GEM BALANCE - Erityisen tärkeä mobiilissa */}
+        <div className="w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 bg-app-base/40 sm:bg-transparent p-2 sm:p-0 rounded-lg border border-border/30 sm:border-none">
+          <div className="flex items-center gap-2 bg-panel px-3 py-1 rounded-lg border border-border shadow-inner">
+            <img
+              src="assets/ui/icon_gem.png"
+              className="w-4 h-4 md:w-5 md:h-5 pixelated"
               alt="gem"
             />
-            <div className="text-2xl font-black text-tx-main uppercase tracking-tighter">
+            <div className="text-lg md:text-2xl font-black text-tx-main uppercase tracking-tighter">
               {gems.toLocaleString()}
             </div>
           </div>
           <button
             onClick={() => setIsGemsModalOpen(true)}
-            className="text-[10px] font-mono text-accent hover:text-white mt-1 uppercase border-b border-accent/30 hover:border-accent transition-colors"
+            className="text-[10px] font-mono text-accent hover:text-tx-main uppercase border-b border-accent/30 transition-all px-1 py-0.5"
           >
-            + Purchase Gems
+            + Get More
           </button>
         </div>
       </div>
@@ -166,23 +161,23 @@ export default function PremiumShopView() {
       {/* PROGRESS BAR */}
       <div className="h-1 bg-panel w-full shrink-0 overflow-hidden">
         <div
-          className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase ? "animate-shimmer" : ""}`}
+          className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase ? "animate-pulse" : ""}`}
           style={{ width: isWaitingForPurchase ? "100%" : "0%" }}
         ></div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* SIDEBAR */}
-        <aside className="w-64 border-r border-border overflow-y-auto bg-panel/20 z-10 custom-scrollbar">
-          <div className="p-4 space-y-1">
-            <div className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4 px-4 opacity-50">
+      <div className="flex flex-1 flex-col md:flex-row overflow-hidden">
+        {/* KATEGORIAT: Mobiilissa vaakasuora, työpöydällä pystysuora sivupalkki */}
+        <div className="md:w-64 border-b md:border-b-0 md:border-r border-border bg-panel/20 z-10 shrink-0">
+          <div className="flex md:flex-col overflow-x-auto md:overflow-y-auto custom-scrollbar p-2 md:p-4 gap-1 snap-x">
+            <div className="hidden md:block text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4 px-4 opacity-50">
               Categories
             </div>
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`w-full text-left px-4 py-3 rounded-lg font-bold uppercase tracking-wider transition-all border ${
+                className={`snap-start shrink-0 md:w-full text-left px-4 py-2 md:py-3 rounded-lg font-bold uppercase tracking-wider transition-all border whitespace-nowrap text-xs md:text-sm ${
                   activeCategory === cat
                     ? "bg-accent/10 text-accent border-accent/30 shadow-inner"
                     : "text-tx-muted hover:bg-panel-hover hover:text-tx-main border-transparent"
@@ -192,11 +187,11 @@ export default function PremiumShopView() {
               </button>
             ))}
           </div>
-        </aside>
+        </div>
 
-        {/* MAIN CONTENT */}
-        <main className="flex-1 overflow-y-auto p-8 custom-scrollbar relative bg-base/30">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto relative z-10">
+        {/* TUOTTEET: Mobiilissa 2 saraketta */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative bg-app-base/30 pb-24 md:pb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6 max-w-7xl mx-auto relative z-10">
             {filteredItems.map((item) => {
               const isOwned =
                 item.isOneTime && (upgrades || []).includes(item.id);
@@ -206,50 +201,47 @@ export default function PremiumShopView() {
                   key={item.id}
                   className={`bg-panel border-2 rounded-xl overflow-hidden flex flex-col group transition-all shadow-md ${
                     isOwned
-                      ? "opacity-50 border-border/20"
+                      ? "opacity-50 border-border/20 grayscale-[0.5]"
                       : "border-border hover:border-accent/40 hover:shadow-xl"
                   }`}
                 >
-                  <div className="h-40 bg-base/50 flex items-center justify-center relative p-4 border-b border-border/30">
-                    {/* POISTETTU: rotate ja scale hover-animaatiot */}
+                  <div className="h-24 md:h-40 bg-app-base/50 flex items-center justify-center relative p-2 md:p-4 border-b border-border/30">
                     <img
                       src={item.icon}
+                      className="w-12 h-12 md:w-20 md:h-20 pixelated drop-shadow-2xl group-hover:scale-110 transition-transform"
                       alt={item.name}
-                      className="w-20 h-20 pixelated drop-shadow-2xl"
                     />
                     {item.isOneTime && (
-                      /* MUUTETTU: Poistettu 'italic' - teksti on nyt suorassa */
-                      <span className="absolute top-3 right-3 bg-warning/20 text-[9px] font-black text-warning uppercase px-2 py-1 rounded border border-warning/30">
-                        Unique Artifact
+                      <span className="absolute top-2 right-2 bg-warning/20 text-[7px] md:text-[9px] font-black text-warning uppercase px-1.5 py-0.5 rounded border border-warning/30">
+                        Unique
                       </span>
                     )}
                   </div>
 
-                  <div className="p-5 flex-1 flex flex-col">
-                    {/* MUUTETTU: Poistettu 'italic' otsikosta ja kuvauksesta */}
-                    <h3 className="text-lg font-bold text-tx-main mb-1 uppercase tracking-tight">
+                  <div className="p-3 md:p-5 flex-1 flex flex-col">
+                    <h3 className="text-xs md:text-lg font-bold text-tx-main mb-1 uppercase tracking-tight line-clamp-1">
                       {item.name}
                     </h3>
-                    <p className="text-[11px] text-tx-muted mb-6 flex-1 opacity-80 leading-snug font-medium">
+                    <p className="text-[9px] md:text-[11px] text-tx-muted mb-4 md:mb-6 flex-1 opacity-80 leading-tight md:leading-snug font-medium line-clamp-2 md:line-clamp-none">
                       {item.description}
                     </p>
 
                     <button
                       disabled={isOwned}
                       onClick={() => handleBuy(item)}
-                      className={`w-full py-3 rounded-lg flex items-center justify-center gap-3 transition-all font-black border uppercase tracking-widest ${
+                      className={`w-full py-2 md:py-3 rounded-lg flex items-center justify-center gap-1.5 md:gap-3 transition-all font-black border uppercase tracking-widest text-[10px] md:text-xs ${
                         isOwned
-                          ? "bg-base text-tx-muted cursor-not-allowed border-transparent"
-                          : "bg-panel-hover hover:bg-accent hover:text-white border-border hover:border-accent"
+                          ? "bg-app-base text-tx-muted cursor-not-allowed border-transparent"
+                          : "bg-panel-hover hover:bg-accent hover:text-app-base border-border hover:border-accent"
                       }`}
                     >
                       {isOwned ? (
-                        "ACQUIRED"
+                        "OWNED"
                       ) : (
                         <>
                           <img
                             src="assets/ui/icon_gem.png"
-                            className="w-4 h-4 pixelated"
+                            className="w-3 h-3 md:w-4 md:h-4 pixelated"
                             alt="gem"
                           />
                           <span

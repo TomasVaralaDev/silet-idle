@@ -1,6 +1,6 @@
 import type { Resource } from "../../../types";
 
-export const weapons: Resource[] = [
+const allWeapons: Resource[] = [
   // --- SWORDS --- (Keskitason nopeus, tasainen vahinko)
   {
     id: "weapon_sword_bronze",
@@ -545,3 +545,6 @@ export const weapons: Resource[] = [
     isUnique: false,
   },
 ];
+
+// LISÄTTY: Exportataan weapons niin, että kaikki 'staff' kategoriassa olevat esineet suodatetaan pois
+export const weapons = allWeapons.filter((w) => w.category !== "staff");

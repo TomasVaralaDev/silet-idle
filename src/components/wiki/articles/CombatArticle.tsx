@@ -9,7 +9,8 @@ export default function CombatArticle() {
         <h3 className="text-sm font-bold text-warning uppercase tracking-[0.2em] mb-4">
           Weapon Archetypes
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Muutettu md:grid-cols-3 -> md:grid-cols-2 koska sauvat on poistettu */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* SWORD */}
           <div className="bg-panel border border-border p-4 rounded-xl flex flex-col items-center text-center">
             <img
@@ -35,19 +36,6 @@ export default function CombatArticle() {
             <p className="text-[10px] text-tx-muted mt-2">
               Favors high attack speed and critical strikes. Scales with Ranged
               skill.
-            </p>
-          </div>
-
-          {/* STAFF - COMING SOON */}
-          <div className="bg-panel/20 border border-border/30 p-4 rounded-xl flex flex-col items-center text-center opacity-40 grayscale">
-            <div className="w-12 h-12 bg-app-base rounded-full flex items-center justify-center mb-3 border border-dashed border-border">
-              <span className="text-xl">✨</span>
-            </div>
-            <h4 className="text-tx-muted font-black uppercase text-xs">
-              Staff
-            </h4>
-            <p className="text-[10px] text-tx-muted mt-2 uppercase font-bold tracking-tighter">
-              Coming Soon
             </p>
           </div>
         </div>
@@ -118,7 +106,8 @@ export default function CombatArticle() {
             name="Defense"
             desc="Improves the efficiency of all equipped armor."
           />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-4">
+          {/* Muutettu md:grid-cols-3 -> md:grid-cols-2 koska magia on poistettu */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
             <div className="bg-panel p-3 border border-border rounded-lg">
               <span className="text-[10px] font-black text-accent uppercase">
                 Melee
@@ -135,19 +124,11 @@ export default function CombatArticle() {
                 Mastery of bows and precision strikes.
               </p>
             </div>
-            <div className="bg-panel p-3 border border-border rounded-lg opacity-50">
-              <span className="text-[10px] font-black text-purple-400 uppercase">
-                Magic
-              </span>
-              <p className="text-[9px] text-tx-muted mt-1">
-                Locked - Awaiting arcane update.
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 4: SURVIVAL & DEFEAT (UUSI OSO) */}
+      {/* SECTION 4: SURVIVAL & DEFEAT */}
       <section>
         <h3 className="text-sm font-bold text-danger uppercase tracking-[0.2em] mb-4 border-l-4 border-danger pl-4">
           Survival & Defeat

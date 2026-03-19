@@ -137,14 +137,4 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     bgColor: "bg-emerald-900",
     description: "Long-distance projectile mastery.",
   },
-  {
-    id: "magic",
-    label: "Magic Sys",
-    sidebarLabel: "Magic",
-    icon: "/assets/skills/magic.png",
-    category: "combat",
-    color: "text-blue-400",
-    bgColor: "bg-blue-900",
-    description: "Manipulation of arcane energies.",
-  },
 ];

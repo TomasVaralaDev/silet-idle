@@ -38,7 +38,6 @@ const SKILL_CATEGORIES: Record<
     },
     { id: "swords", label: "Swords", filter: (r) => r.combatStyle === "melee" },
     { id: "bows", label: "Bows", filter: (r) => r.combatStyle === "ranged" },
-    { id: "staffs", label: "Staffs", filter: (r) => r.combatStyle === "magic" },
     {
       id: "necklace",
       label: "Necklaces",

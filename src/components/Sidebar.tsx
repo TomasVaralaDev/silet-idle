@@ -141,7 +141,7 @@ export default function Sidebar({
   onOpenQuests,
 }: SidebarProps) {
   const coins = useGameStore((state) => state.coins);
-  const gems = useGameStore((state) => state.gems) || 0; // LISÄTTY GEMS
+  // Gems on edelleen storessa, mutta emme hae sitä enää Sidebariin
   const skills = useGameStore((state) => state.skills);
   const username = useGameStore((state) => state.username);
   const avatar = useGameStore((state) => state.avatar);
@@ -254,9 +254,9 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* FRAGMENTS, GEMS & QUESTS ROW */}
+        {/* FRAGMENTS & QUESTS ROW (Muokattu: Gemit poistettu) */}
         <div className="flex gap-2">
-          {/* COINS */}
+          {/* COINS - Nyt flex-1 jotta täyttää enemmän tilaa */}
           <div className="bg-panel/50 p-2 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden">
             <div className="flex items-center gap-2 shrink-0">
               <img
@@ -273,23 +273,10 @@ export default function Sidebar({
             </span>
           </div>
 
-          {/* GEMS (UUSI) */}
-          <div className="bg-panel/50 p-2 border border-cyan-500/30 flex items-center justify-between flex-1 rounded overflow-hidden shadow-[inset_0_0_10px_rgba(6,182,212,0.1)]">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-sm">💎</span>
-            </div>
-            <span
-              className="font-mono text-sm font-bold text-cyan-400 truncate ml-2"
-              title="Premium Currency"
-            >
-              {formatNumber(gems)}
-            </span>
-          </div>
-
-          {/* QUESTS */}
+          {/* QUESTS - Levennetty hieman koska tilaa vapautui */}
           <button
             onClick={onOpenQuests}
-            className="bg-panel/50 p-2 border border-border/50 rounded hover:bg-panel-hover transition-colors relative flex items-center justify-center shrink-0 w-10"
+            className="bg-panel/50 p-2 border border-border/50 rounded hover:bg-panel-hover transition-colors relative flex items-center justify-center shrink-0 w-12"
             title="Daily Quests"
           >
             <img
@@ -304,9 +291,9 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* NAVIGATION */}
+      {/* NAVIGATION - Pysyy samana */}
       <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10">
-        {/* LOHKO 1: GENERAL */}
+        {/* ... NavButtons pysyvät samoina kuin aiemmin ... */}
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             General
@@ -362,7 +349,6 @@ export default function Sidebar({
           />
         </div>
 
-        {/* LOHKO 2: SKILLS */}
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             Skills
@@ -391,7 +377,6 @@ export default function Sidebar({
           ))}
         </div>
 
-        {/* LOHKO 3: COMBAT */}
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             Combat
@@ -420,7 +405,6 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* LOHKO 4: SYSTEM INFORMATION */}
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             System Information

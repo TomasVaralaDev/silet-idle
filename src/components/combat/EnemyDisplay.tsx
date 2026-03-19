@@ -1,76 +1,72 @@
-import { useGameStore } from '../../store/useGameStore';
+import { useGameStore } from "../../store/useGameStore";
 
 export default function EnemyDisplay() {
   const { enemy, combatStats } = useGameStore();
 
-  // Jos vihollista ei ole ladattu tai respawn on käynnissä
   if (!enemy || combatStats.respawnTimer > 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-slate-900/50 rounded-xl border border-slate-800 p-8 relative overflow-hidden">
-        {/* Animaatio raita */}
-        <div className="absolute inset-0 bg-slate-900/80 z-10 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin"></div>
-            <span className="text-slate-400 font-mono text-sm tracking-widest uppercase animate-pulse">
-              Searching for target...
+      <div className="h-full flex flex-col items-center justify-center bg-panel/20 rounded-2xl border border-border/50 p-8 relative overflow-hidden">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-2 border-border/20 border-t-accent rounded-full animate-spin"></div>
+          <span className="text-tx-muted font-mono text-[10px] tracking-[0.3em] uppercase animate-pulse">
+            Scanning Area...
+          </span>
+          {combatStats.respawnTimer > 0 && (
+            <span className="text-[10px] font-mono text-accent font-bold">
+              {(combatStats.respawnTimer / 1000).toFixed(1)}s
             </span>
-            {combatStats.respawnTimer > 0 && (
-              <span className="text-xs text-slate-600">
-                {(combatStats.respawnTimer / 1000).toFixed(1)}s
-              </span>
-            )}
-          </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // Lasketaan HP-prosentti turvallisesti
-  const hpPercent = Math.max(0, Math.min(100, (combatStats.enemyCurrentHp / enemy.maxHp) * 100));
+  const hpPercent = Math.max(
+    0,
+    Math.min(100, (combatStats.enemyCurrentHp / enemy.maxHp) * 100),
+  );
 
   return (
-    <div className="h-full flex flex-col bg-slate-900/50 rounded-xl border border-slate-800 p-4 relative overflow-hidden">
-      
-      {/* Vihollisen tiedot */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4">
-        {/* Kuva */}
+    <div className="h-full flex flex-col bg-panel/30 rounded-2xl border border-border p-4 md:p-6 relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center gap-3 md:gap-5">
         <div className="relative group">
-          <div className="w-32 h-32 bg-slate-950 rounded-lg border-2 border-red-900/30 flex items-center justify-center shadow-lg overflow-hidden">
-             {enemy.icon ? (
-               <img src={enemy.icon} alt={enemy.name} className="w-full h-full object-cover pixelated hover:scale-110 transition-transform duration-300" />
-             ) : (
-               <span className="text-4xl">💀</span>
-             )}
+          <div className="w-24 h-24 md:w-40 md:h-40 bg-app-base rounded-2xl border-2 border-border flex items-center justify-center shadow-2xl overflow-hidden">
+            {enemy.icon ? (
+              <img
+                src={enemy.icon}
+                alt={enemy.name}
+                className="w-full h-full object-contain pixelated hover:scale-110 transition-transform duration-500"
+              />
+            ) : (
+              <span className="text-5xl">💀</span>
+            )}
           </div>
-          {/* Level Badge */}
-          <div className="absolute -bottom-3 -right-3 bg-slate-800 border border-slate-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-            Lvl {enemy.level}
+          <div className="absolute -top-2 -right-2 bg-danger text-white text-[10px] font-black px-2 py-1 rounded-lg border border-white/20 shadow-lg">
+            LVL {enemy.level}
           </div>
         </div>
 
-        {/* Nimi */}
         <div className="text-center">
-          <h2 className="text-xl font-black text-red-400 uppercase tracking-wide">
+          <h2 className="text-lg md:text-2xl font-black text-tx-main uppercase tracking-wider">
             {enemy.name}
           </h2>
-          <div className="text-slate-500 text-xs mt-1 font-mono">
-            XP: <span className="text-emerald-400">{enemy.xpReward}</span>
+          <div className="text-tx-muted text-[9px] md:text-[10px] mt-1 font-black uppercase tracking-widest">
+            Yield: <span className="text-success">{enemy.xpReward} XP</span>
           </div>
         </div>
       </div>
 
-      {/* HP Palkki */}
       <div className="mt-4 w-full">
-        <div className="flex justify-between text-xs font-bold mb-1 px-1">
-          <span className="text-slate-400">HP</span>
-          <span className="text-slate-300">
-            {Math.ceil(combatStats.enemyCurrentHp)} / {enemy.maxHp}
+        <div className="flex justify-between text-[10px] font-black mb-1.5 px-1 uppercase tracking-widest text-tx-muted">
+          <span>Status</span>
+          <span className="text-tx-main font-mono">
+            {Math.ceil(combatStats.enemyCurrentHp)}{" "}
+            <span className="opacity-30">/</span> {enemy.maxHp}
           </span>
         </div>
-        <div className="h-4 bg-slate-950 rounded-full overflow-hidden border border-slate-800 relative">
-          {/* Taustapalkki (punainen hehku) */}
-          <div 
-            className="h-full bg-red-600 transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(220,38,38,0.5)]"
+        <div className="h-3 md:h-5 bg-app-base rounded-full overflow-hidden border border-border relative shadow-inner">
+          <div
+            className="h-full bg-danger transition-all duration-300 ease-out shadow-[0_0_15px_rgba(var(--color-danger)/0.5)]"
             style={{ width: `${hpPercent}%` }}
           />
         </div>

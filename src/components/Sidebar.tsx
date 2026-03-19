@@ -18,8 +18,6 @@ interface SidebarProps {
   onOpenQuests: () => void;
 }
 
-// --- HELPER COMPONENTS ---
-
 interface NavButtonProps {
   view: ViewType;
   icon: string;
@@ -52,9 +50,7 @@ function NavButton({
       <div className="flex items-center gap-3">
         <img
           src={icon}
-          className={`w-5 h-5 pixelated transition-transform group-hover:scale-110 ${
-            isActive ? "brightness-125" : "opacity-70 group-hover:opacity-100"
-          }`}
+          className={`w-5 h-5 pixelated transition-transform group-hover:scale-110 ${isActive ? "brightness-125" : "opacity-70 group-hover:opacity-100"}`}
           alt=""
         />
         <span className="text-xs font-bold uppercase tracking-wide">
@@ -63,9 +59,7 @@ function NavButton({
       </div>
       {level !== undefined && (
         <span
-          className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-            isActive ? "bg-accent/10 text-accent" : "bg-panel text-tx-muted/80"
-          }`}
+          className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isActive ? "bg-accent/10 text-accent" : "bg-panel text-tx-muted/80"}`}
         >
           Lv.{level}
         </span>
@@ -127,8 +121,6 @@ const StatRow = ({
   );
 };
 
-// --- MAIN COMPONENT ---
-
 export default function Sidebar({
   currentView,
   setView,
@@ -141,7 +133,6 @@ export default function Sidebar({
   onOpenQuests,
 }: SidebarProps) {
   const coins = useGameStore((state) => state.coins);
-  // Gems on edelleen storessa, mutta emme hae sitä enää Sidebariin
   const skills = useGameStore((state) => state.skills);
   const username = useGameStore((state) => state.username);
   const avatar = useGameStore((state) => state.avatar);
@@ -178,17 +169,15 @@ export default function Sidebar({
     (acc, s) => acc + s.level,
     0,
   );
-
   const hasCompletableQuests = quests.dailyQuests.some(
     (q) => q.isCompleted && !q.isClaimed,
   );
 
   return (
-    <nav className="w-full md:w-72 bg-app-base border-r border-border/50 flex-shrink-0 flex flex-col h-screen z-10 overflow-hidden relative font-sans">
-      {/* HEADER */}
+    <nav className="w-full max-w-[300px] md:max-w-none bg-app-base border-r border-border/50 flex-shrink-0 flex flex-col h-full z-10 shadow-2xl md:shadow-none">
       <div className="p-5 border-b border-border/50 bg-app-base relative z-20">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex flex-col text-left">
+          <div className="hidden md:flex flex-col text-left">
             <h1 className="text-2xl font-bold text-tx-main tracking-widest uppercase flex flex-col leading-none">
               Time<span className="text-accent text-3xl">Ring</span>
             </h1>
@@ -197,20 +186,23 @@ export default function Sidebar({
             </span>
           </div>
 
-          <div className="relative" ref={menuRef}>
+          <div
+            className="relative w-full md:w-auto flex justify-between md:justify-end"
+            ref={menuRef}
+          >
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-3 hover:bg-panel p-2 rounded border border-border transition-all"
+              className="flex items-center gap-3 hover:bg-panel p-2 rounded border border-border transition-all w-full justify-between md:w-auto md:justify-start"
             >
-              <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold text-tx-main truncate max-w-[100px]">
+              <div className="text-left md:text-right flex-1 md:flex-none">
+                <div className="text-xs font-bold text-tx-main truncate max-w-[150px] md:max-w-[100px]">
                   {username || "Restorer"}
                 </div>
                 <div className="text-[10px] text-accent font-mono">
                   Level: {totalLevel}
                 </div>
               </div>
-              <div className="w-10 h-10 bg-panel rounded border border-border-hover flex items-center justify-center relative overflow-hidden text-left">
+              <div className="w-10 h-10 bg-panel rounded border border-border-hover flex items-center justify-center relative overflow-hidden shrink-0">
                 <img
                   src={avatar || "/assets/ui/icon_user_avatar.png"}
                   alt="User"
@@ -223,7 +215,7 @@ export default function Sidebar({
               </div>
             </button>
             {isProfileOpen && (
-              <div className="absolute top-full right-0 mt-2 w-64 bg-panel border border-border-hover rounded-xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute top-full left-0 md:left-auto md:right-0 mt-2 w-full md:w-64 bg-panel border border-border-hover rounded-xl shadow-2xl z-[100] p-2 animate-in fade-in zoom-in-95 duration-100">
                 <button
                   onClick={() => {
                     setIsProfileOpen(false);
@@ -254,9 +246,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* FRAGMENTS & QUESTS ROW (Muokattu: Gemit poistettu) */}
         <div className="flex gap-2">
-          {/* COINS - Nyt flex-1 jotta täyttää enemmän tilaa */}
           <div className="bg-panel/50 p-2 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden">
             <div className="flex items-center gap-2 shrink-0">
               <img
@@ -272,8 +262,6 @@ export default function Sidebar({
               {formatNumber(coins || 0)}
             </span>
           </div>
-
-          {/* QUESTS - Levennetty hieman koska tilaa vapautui */}
           <button
             onClick={onOpenQuests}
             className="bg-panel/50 p-2 border border-border/50 rounded hover:bg-panel-hover transition-colors relative flex items-center justify-center shrink-0 w-12"
@@ -291,9 +279,8 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* NAVIGATION - Pysyy samana */}
-      <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10">
-        {/* ... NavButtons pysyvät samoina kuin aiemmin ... */}
+      <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10 pb-32 md:pb-4">
+        {/* TÄHÄN TULEVAT KAIKKI NAV-BUTTON LOHKOT (General, Skills, Combat, System Info) - Ne säilyvät ennallaan mutteivat enää kovakoodattuina */}
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             General
@@ -360,7 +347,6 @@ export default function Sidebar({
             isActive={currentView === "scavenger"}
             onClick={setView}
           />
-
           {SKILL_DEFINITIONS.filter(
             (def) =>
               def.category === "gathering" || def.category === "production",
@@ -456,13 +442,12 @@ export default function Sidebar({
 
       <QueuePanel />
 
-      {/* FOOTER */}
       <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20">
         <button
           onClick={onStopAction}
           className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase"
         >
-          Stop
+          Stop Action
         </button>
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -474,11 +459,7 @@ export default function Sidebar({
           <button
             onClick={handleForceSaveClick}
             disabled={saveCooldown > 0}
-            className={`py-2 text-[10px] font-bold border rounded-sm uppercase ${
-              saveCooldown > 0
-                ? "text-tx-muted/60 border-border cursor-not-allowed"
-                : "text-success border-success/20 hover:bg-success/10"
-            }`}
+            className={`py-2 text-[10px] font-bold border rounded-sm uppercase ${saveCooldown > 0 ? "text-tx-muted/60 border-border cursor-not-allowed" : "text-success border-success/20 hover:bg-success/10"}`}
           >
             {saveCooldown > 0 ? `${saveCooldown}s` : "Save"}
           </button>

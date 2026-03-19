@@ -54,7 +54,7 @@ export default function SkillView({ skill }: SkillViewProps) {
     setState,
     equipment,
     addToQueue,
-    cancelResourceFromQueue, // UUSI FUNKTIO TUOTU TÄNNE
+    cancelResourceFromQueue,
     queue,
     unlockedQueueSlots,
   } = useGameStore();
@@ -120,7 +120,7 @@ export default function SkillView({ skill }: SkillViewProps) {
     } else {
       setState({
         activeAction: { skill, resourceId, progress: 0, targetTime: interval },
-        queue: [], // Nollaa muut jonot jos aloitetaan uusi normaali loputon loop
+        queue: [],
       });
     }
   };
@@ -130,31 +130,32 @@ export default function SkillView({ skill }: SkillViewProps) {
 
   return (
     <div className="h-full flex flex-col bg-app-base text-tx-main relative">
-      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm">
+      {/* HEADER - Skaalattu mobiiliin (pienemmät paddigit ja fontit) */}
+      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-3 md:gap-6 sticky top-0 z-20 backdrop-blur-sm">
         <div
-          className={`w-16 h-16 rounded-xl flex items-center justify-center ${definition.bgColor} shadow-lg shrink-0`}
+          className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center ${definition.bgColor} shadow-lg shrink-0`}
         >
           <img
             src={definition.icon}
-            className="w-10 h-10 pixelated"
+            className="w-8 h-8 md:w-10 md:h-10 pixelated"
             alt={definition.sidebarLabel}
           />
         </div>
         <div className="flex-1 text-left">
           <h1
-            className={`text-3xl font-bold uppercase tracking-widest ${definition.color} mb-1`}
+            className={`text-xl md:text-3xl font-bold uppercase tracking-widest ${definition.color} mb-0.5 md:mb-1`}
           >
             {definition.sidebarLabel}
           </h1>
-          <p className="text-tx-muted text-sm font-medium">
+          <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block">
             {definition.description}
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-black text-tx-main">
+        <div className="text-right shrink-0">
+          <div className="text-lg md:text-2xl font-black text-tx-main">
             Level {currentLevel}
           </div>
-          <div className="text-xs font-mono text-tx-muted mt-1">
+          <div className="text-[9px] md:text-xs font-mono text-tx-muted mt-0.5 md:mt-1">
             {isMaxLevel ? (
               <span className="text-success font-bold">MAX LEVEL</span>
             ) : (
@@ -171,22 +172,34 @@ export default function SkillView({ skill }: SkillViewProps) {
         ></div>
       </div>
 
-      <div className="px-6 pt-4 flex items-center justify-between gap-4 border-b border-border/20 pb-2">
-        <div className="flex gap-2 overflow-x-auto custom-scrollbar">
+      {/* FILTERIT JA NAPIT - Pinoituu mobiilissa allekkain */}
+      <div className="px-4 md:px-6 pt-3 md:pt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-border/20 pb-3">
+        {/* TABS - Scrollaa sivuttain mobiilissa */}
+        <div className="flex gap-2 overflow-x-auto custom-scrollbar w-full pb-1 snap-x">
           {categories?.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeCategory === cat.id ? "bg-tx-main text-app-base" : "bg-panel text-tx-muted hover:bg-panel-hover hover:text-tx-main"}`}
+              className={`snap-start shrink-0 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                activeCategory === cat.id
+                  ? "bg-tx-main text-app-base shadow-sm"
+                  : "bg-panel text-tx-muted hover:bg-panel-hover hover:text-tx-main border border-border"
+              }`}
             >
               {cat.label}
             </button>
           ))}
         </div>
+
+        {/* TOGGLE BUTTON - Venyy koko leveyteen mobiilissa */}
         {["smithing", "crafting", "alchemy"].includes(skill) && (
           <button
             onClick={() => setShowAffordableOnly(!showAffordableOnly)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all shrink-0 ${showAffordableOnly ? "bg-success/20 border-success text-success shadow-[0_0_10px_rgba(var(--color-success)/0.2)]" : "bg-panel border-border text-tx-muted hover:text-tx-main"}`}
+            className={`w-full md:w-auto flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all shrink-0 ${
+              showAffordableOnly
+                ? "bg-success/20 border-success text-success shadow-[0_0_10px_rgba(var(--color-success)/0.2)]"
+                : "bg-panel border-border text-tx-muted hover:text-tx-main"
+            }`}
           >
             <span className={showAffordableOnly ? "animate-pulse" : ""}>
               🛠️
@@ -196,8 +209,9 @@ export default function SkillView({ skill }: SkillViewProps) {
         )}
       </div>
 
-      <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* ESINERUUDUKKO - Skaalattu mobiiliin sm:grid-cols-2 */}
+      <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredResources.map((resource) => {
             const isUnlocked = currentLevel >= (resource.level || 1);
             const isActive = activeAction?.resourceId === resource.id;
@@ -226,7 +240,15 @@ export default function SkillView({ skill }: SkillViewProps) {
             return (
               <div
                 key={resource.id}
-                className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col h-full group ${isActive ? `bg-panel border-accent shadow-[0_0_20px_rgb(var(--color-accent)/0.2)] scale-[1.02] z-10` : !isUnlocked ? "bg-app-base border-panel opacity-50 grayscale" : !canAfford && queueCount === 0 ? "bg-panel/60 border-border/50 opacity-90" : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel"}`}
+                className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 flex flex-col h-full group ${
+                  isActive
+                    ? `bg-panel border-accent shadow-[0_0_20px_rgb(var(--color-accent)/0.2)] scale-[1.02] z-10`
+                    : !isUnlocked
+                      ? "bg-app-base border-panel opacity-50 grayscale"
+                      : !canAfford && queueCount === 0
+                        ? "bg-panel/60 border-border/50 opacity-90"
+                        : "bg-panel/40 border-border hover:border-border-hover hover:bg-panel"
+                }`}
               >
                 <div className="flex items-start justify-between mb-4 w-full relative">
                   <div
@@ -255,7 +277,9 @@ export default function SkillView({ skill }: SkillViewProps) {
                     ) : (
                       <img
                         src={resource.icon}
-                        className={`w-10 h-10 pixelated transition-transform duration-500 ${isActive ? "scale-110 rotate-3" : ""}`}
+                        className={`w-10 h-10 pixelated transition-transform duration-500 ${
+                          isActive ? "scale-110 rotate-3" : ""
+                        }`}
                         alt={resource.name}
                       />
                     )}
@@ -282,7 +306,9 @@ export default function SkillView({ skill }: SkillViewProps) {
 
                 <div className="mb-4 flex-1">
                   <h3
-                    className={`font-bold text-sm ${isUnlocked ? "text-tx-main" : "text-tx-muted/60"}`}
+                    className={`font-bold text-sm ${
+                      isUnlocked ? "text-tx-main" : "text-tx-muted/60"
+                    }`}
                   >
                     {resource.name}
                   </h3>
@@ -293,7 +319,11 @@ export default function SkillView({ skill }: SkillViewProps) {
 
                 {resource.inputs && (
                   <div
-                    className={`mb-3 p-2 rounded border shadow-inner transition-colors ${canAfford ? "bg-panel/60 border-accent/20" : "bg-warning/5 border-warning/20"}`}
+                    className={`mb-3 p-2 rounded border shadow-inner transition-colors ${
+                      canAfford
+                        ? "bg-panel/60 border-accent/20"
+                        : "bg-warning/5 border-warning/20"
+                    }`}
                   >
                     <div className="flex flex-wrap gap-2">
                       {resource.inputs.map((input) => {
@@ -303,7 +333,11 @@ export default function SkillView({ skill }: SkillViewProps) {
                         return (
                           <div
                             key={input.id}
-                            className={`text-xs flex items-center gap-1.5 px-2 py-1 rounded-md bg-app-base/80 border ${hasEnough ? "border-success/30 text-success" : "border-danger/30 text-danger"}`}
+                            className={`text-xs flex items-center gap-1.5 px-2 py-1 rounded-md bg-app-base/80 border ${
+                              hasEnough
+                                ? "border-success/30 text-success"
+                                : "border-danger/30 text-danger"
+                            }`}
                             title={item?.name || "Unknown Material"}
                           >
                             <img
@@ -324,7 +358,6 @@ export default function SkillView({ skill }: SkillViewProps) {
                 {isUnlocked && (
                   <div className="mt-auto pt-3 border-t border-border/50 w-full">
                     <div className="flex gap-2 mb-3">
-                      {/* MUUTETTU NAPIN LOGIIKKAA TÄSSÄ */}
                       {queueCount > 0 ? (
                         <button
                           onClick={() => cancelResourceFromQueue(resource.id)}
@@ -341,7 +374,11 @@ export default function SkillView({ skill }: SkillViewProps) {
                             )
                           }
                           disabled={isDisabled}
-                          className={`flex-1 py-1.5 rounded text-xs font-black transition-all ${isActive ? "bg-danger text-white hover:bg-danger/80" : "bg-accent/20 text-accent hover:bg-accent hover:text-app-base border border-accent/30"}`}
+                          className={`flex-1 py-1.5 rounded text-xs font-black transition-all ${
+                            isActive
+                              ? "bg-danger text-white hover:bg-danger/80"
+                              : "bg-accent/20 text-accent hover:bg-accent hover:text-app-base border border-accent/30"
+                          }`}
                         >
                           {isActive ? "STOP" : "START"}
                         </button>
@@ -350,7 +387,11 @@ export default function SkillView({ skill }: SkillViewProps) {
                       <button
                         onClick={() => setSelectedForQueue(resource)}
                         disabled={!isUnlocked || isQueueFull}
-                        className={`px-3 py-1.5 rounded text-xs font-black border transition-all flex items-center justify-center gap-1.5 ${isQueueFull ? "bg-panel border-danger/30 text-danger/50 cursor-not-allowed" : "bg-panel border-border hover:bg-panel-hover text-tx-main"}`}
+                        className={`px-3 py-1.5 rounded text-xs font-black border transition-all flex items-center justify-center gap-1.5 ${
+                          isQueueFull
+                            ? "bg-panel border-danger/30 text-danger/50 cursor-not-allowed"
+                            : "bg-panel border-border hover:bg-panel-hover text-tx-main"
+                        }`}
                         title={isQueueFull ? "Queue Full!" : "Add to Queue"}
                       >
                         {isQueueFull ? (
@@ -370,19 +411,29 @@ export default function SkillView({ skill }: SkillViewProps) {
 
                     <div className="flex justify-between items-center text-[10px] mb-1">
                       <span
-                        className={`font-bold ${globalXpMultiplier > 1 ? "text-success" : "text-tx-muted"}`}
+                        className={`font-bold ${
+                          globalXpMultiplier > 1
+                            ? "text-success"
+                            : "text-tx-muted"
+                        }`}
                       >
                         +{effectiveXp.toFixed(1)} XP
                       </span>
                       <span
-                        className={`font-bold ${globalSpeedMultiplier > 1 ? "text-success" : "text-tx-muted"}`}
+                        className={`font-bold ${
+                          globalSpeedMultiplier > 1
+                            ? "text-success"
+                            : "text-tx-muted"
+                        }`}
                       >
                         {(effectiveInterval / 1000).toFixed(1)}s
                       </span>
                     </div>
                     <div className="w-full h-1 bg-app-base rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${isActive ? definition.bgColor : "bg-transparent"} transition-all duration-100 ease-linear`}
+                        className={`h-full ${
+                          isActive ? definition.bgColor : "bg-transparent"
+                        } transition-all duration-100 ease-linear`}
                         style={{ width: `${progress}%` }}
                       />
                     </div>

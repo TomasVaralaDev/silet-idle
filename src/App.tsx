@@ -2,22 +2,17 @@ import { useState, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import { useGameStore, DEFAULT_STATE } from "./store/useGameStore";
-import ItemTooltip from "./components/tooltips/ItemTooltip"; // CUSTOM HOOKS
+import ItemTooltip from "./components/tooltips/ItemTooltip";
 import { useAuth } from "./hooks/useAuth";
 import { useGameInitialization } from "./hooks/useGameInitialization";
 import { useGameSync } from "./hooks/useGameSync";
 import { useGameEngine } from "./hooks/useGameEngine";
 
-// TYPES & DATA
 import type { ViewType, GameSettings } from "./types";
-
-// COMPONENTS
 import SocialOverlay from "./components/social/SocialOverlay";
 import Sidebar from "./components/Sidebar";
 import ViewRouter from "./components/ViewRouter";
 import NotificationManager from "./components/NotificationManager";
-
-// MODALS (Siirretty uuteen kansioon)
 import OfflineSummaryModal from "./components/modals/OfflineSummaryModal";
 import SellModal from "./components/modals/SellModal";
 import UsernameModal from "./components/modals/UsernameModal";
@@ -25,13 +20,11 @@ import SettingsModal from "./components/modals/SettingsModal";
 import RewardModal from "./components/modals/RewardModal";
 import UserConfigModal from "./components/modals/UserConfigModal";
 import QuestModal from "./components/quests/QuestModal";
-
 import Auth from "./components/Auth";
-
-//DEV MANAGER POISTA PRODIIN
 import DevManager from "./components/DevManager";
 
-// Määritellään teemat tässä, jotta app osaa poistaa ne latauksen yhteydessä
+import { Menu, X } from "lucide-react";
+
 const THEMES = [
   "theme-neon",
   "theme-tavern",
@@ -48,15 +41,13 @@ export default function App() {
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(
     null,
   );
-
   const [showSettings, setShowSettings] = useState(false);
   const [showUserConfig, setShowUserConfig] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // 1. Hookit
   const { user, loadingAuth } = useAuth();
   const { isDataLoaded } = useGameInitialization(user);
-  useGameInitialization(user);
   const { saveStatus, handleForceSave } = useGameSync(user, isDataLoaded);
 
   const {
@@ -67,13 +58,12 @@ export default function App() {
     setState,
     sellItem,
     emitEvent,
-    offlineSummary, // LISÄTTY TÄHÄN
+    offlineSummary,
     setOfflineSummary,
   } = useGameStore();
 
   const fullState = useGameStore();
 
-  // THEME INITIALIZATION LISÄTTY TÄNNE:
   useEffect(() => {
     const currentTheme = settings?.theme || "theme-neon";
     if (!document.body.classList.contains(currentTheme)) {
@@ -90,9 +80,7 @@ export default function App() {
         Getting out of bed...
       </div>
     );
-
   if (!user) return <Auth />;
-
   if (!isDataLoaded)
     return (
       <div className="min-h-screen bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
@@ -128,7 +116,6 @@ export default function App() {
         <UserConfigModal
           currentUsername={username}
           currentAvatar={avatar}
-          // KORJAUS: Vastaanotetaan myös newTheme ja tallennetaan yhtä aikaa
           onSave={(name: string, avatarUrl: string, newTheme: string) => {
             setState((state) => ({
               username: name,
@@ -155,22 +142,51 @@ export default function App() {
         />
       )}
 
-      <Sidebar
-        currentView={currentView}
-        setView={setCurrentView}
-        onReset={() =>
-          confirm("Reset all progress?") && setState(DEFAULT_STATE)
-        }
-        onLogout={() => signOut(auth)}
-        onStopAction={() => setState({ activeAction: null })}
-        onForceSave={handleForceSave}
-        onOpenSettings={() => setShowSettings(true)}
-        onOpenUserConfig={() => setShowUserConfig(true)}
-        onOpenQuests={() => setShowQuests(true)}
-      />
+      {/* --- MOBIILI HEADER --- */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-border/50 bg-panel/90 backdrop-blur-md z-50 sticky top-0">
+        <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-1">
+          Time<span className="text-accent">Ring</span>
+        </h1>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 rounded bg-panel hover:bg-panel-hover border border-border transition-colors"
+        >
+          {isMobileMenuOpen ? (
+            <X size={20} className="text-accent" />
+          ) : (
+            <Menu size={20} className="text-accent" />
+          )}
+        </button>
+      </div>
 
-      <main className="flex-1 bg-app-base relative overflow-y-auto h-screen custom-scrollbar">
-        <div className="fixed top-4 right-6 z-50 pointer-events-none uppercase font-black text-[10px] tracking-tighter text-right">
+      {/* --- SIDEBAR WRAPPER --- */}
+      <div
+        className={`
+        fixed inset-0 top-[65px] md:top-0 z-[60] bg-black/80 md:bg-transparent md:relative md:flex md:w-72 md:translate-x-0 transition-transform duration-300 ease-in-out backdrop-blur-sm md:backdrop-blur-none
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+      >
+        <Sidebar
+          currentView={currentView}
+          setView={(v) => {
+            setCurrentView(v);
+            setIsMobileMenuOpen(false);
+          }}
+          onReset={() =>
+            confirm("Reset all progress?") && setState(DEFAULT_STATE)
+          }
+          onLogout={() => signOut(auth)}
+          onStopAction={() => setState({ activeAction: null })}
+          onForceSave={handleForceSave}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenUserConfig={() => setShowUserConfig(true)}
+          onOpenQuests={() => setShowQuests(true)}
+        />
+      </div>
+
+      {/* --- CONTENT AREA --- */}
+      <main className="flex-1 bg-app-base relative overflow-y-auto custom-scrollbar h-[calc(100vh-65px)] md:h-screen">
+        <div className="fixed top-4 right-6 z-[40] pointer-events-none uppercase font-black text-[10px] tracking-tighter text-right hidden md:block">
           {saveStatus === "saving" && (
             <span className="text-tx-muted animate-pulse">Syncing...</span>
           )}
@@ -205,7 +221,6 @@ export default function App() {
           onClose={() => setSelectedItemForSale(null)}
           onSell={sellItem}
         />
-
         <ViewRouter
           currentView={currentView}
           state={fullState}

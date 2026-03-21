@@ -63,4 +63,25 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
       items: { wood: 500, mystic_key: 5 },
     },
   },
+  // Lisää PREMIUM_SHOP_ITEMS listaan:
+  {
+    id: "bundle_legendary_runes",
+    name: "Master Artisan's Rune Bundle",
+    description:
+      "A divine collection of every Legendary Speed Rune. Become the ultimate master of all gathering and crafting skills instantly.",
+    priceGems: 800,
+    icon: "/assets/items/runes/rune_7.png", // Käytetään hienointa riimun ikonia paketin kuvana
+    category: "Bundles",
+    isOneTime: true,
+    rewards: {
+      items: {
+        rune_mining_speed_legendary: 1,
+        rune_woodcutting_speed_legendary: 1,
+        rune_foraging_speed_legendary: 1,
+        rune_smithing_speed_legendary: 1,
+        rune_crafting_speed_legendary: 1,
+        rune_alchemy_speed_legendary: 1,
+      },
+    },
+  },
 ];

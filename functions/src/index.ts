@@ -53,6 +53,17 @@ const PREMIUM_BUNDLES: Record<string, PremiumBundleConfig> = {
     priceGems: 500,
     items: { cosmetic_crown: 1 },
   },
+  bundle_legendary_runes: {
+    priceGems: 800, // Aseta hinta esim. 3000 gemiä (Legendary-arvon mukaan)
+    items: {
+      rune_mining_speed_legendary: 1,
+      rune_woodcutting_speed_legendary: 1,
+      rune_foraging_speed_legendary: 1,
+      rune_smithing_speed_legendary: 1,
+      rune_crafting_speed_legendary: 1,
+      rune_alchemy_speed_legendary: 1,
+    },
+  },
 };
 
 export const createStripeCheckout = onCall(async (request) => {

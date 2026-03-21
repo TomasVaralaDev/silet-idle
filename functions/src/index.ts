@@ -18,9 +18,12 @@ const GEM_PACKS: Record<
   gems_2500: { gems: 2500, priceEur: 20, name: "Gem Vault" },
 };
 
+const MAX_EXPEDITION_SLOTS = 10;
+
 // Kaupan sisältö ja hinnasto palvelimella (Turvallisuuden takia)
 interface PremiumBundleConfig {
   priceGems: number;
+  isOneTime?: boolean; // LISÄTTY
   rewardGems?: number; // Palautettavat gemit oston jälkeen
   stats?: {
     expeditionSlotsIncrement?: number; // Lisää tilaa nykyiseen
@@ -41,9 +44,9 @@ const PREMIUM_BUNDLES: Record<string, PremiumBundleConfig> = {
     items: { scroll_enchant_4: 15 },
   },
   bundle_explorer_pack: {
-    priceGems: 1500,
+    priceGems: 200,
+    isOneTime: false,
     stats: { expeditionSlotsIncrement: 1 },
-    items: { wood: 500, mystic_key: 5 },
   },
   utility_bag_slot: {
     priceGems: 250,
@@ -149,13 +152,28 @@ export const purchasePremiumBundle = onCall(async (request) => {
       const userData = userDoc.data() || {};
       const currentGems = userData.gems || 0;
       const upgrades = userData.upgrades || [];
-
+      const currentExpeditionSlots = userData.scavenger?.unlockedSlots || 1;
       // Tarkistukset
       if (currentGems < bundle.priceGems) {
         throw new HttpsError("failed-precondition", "Not enough gems.");
       }
-      if (upgrades.includes(bundleId)) {
-        throw new HttpsError("already-exists", "Bundle already purchased.");
+      if (bundle.isOneTime && upgrades.includes(bundleId)) {
+        throw new HttpsError(
+          "already-exists",
+          "This bundle is limited to one purchase.",
+        );
+      }
+      // 2. Kapasiteettitarkistus (Expedition Slots)
+      if (bundle.stats?.expeditionSlotsIncrement) {
+        if (
+          currentExpeditionSlots + bundle.stats.expeditionSlotsIncrement >
+          MAX_EXPEDITION_SLOTS
+        ) {
+          throw new HttpsError(
+            "out-of-range",
+            `Purchase failed. Max expedition slots is ${MAX_EXPEDITION_SLOTS}.`,
+          );
+        }
       }
 
       // Kootaan päivitykset (Tyyppivarmistettu)

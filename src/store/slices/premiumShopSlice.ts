@@ -16,19 +16,22 @@ export const createPremiumShopSlice: StateCreator<
 > = (set, get) => ({
   /**
    * OSTAMINEN TIMANTEILLA (CLOUD FUNCTION)
-   * Kutsuu Firebase backendia, joka vähentää timantit ja lisää palkinnot (itemit, statsit).
+   * Kutsuu Firebase backendia, joka vähentää timantit ja lisää palkinnot.
+   * Tukee sekä kertaluonteisia (Unique) että toistuvia ostoksia.
    */
   buyPremiumItem: async (item: PremiumShopItem) => {
     const { gems, upgrades, emitEvent } = get();
 
+    // 1. Tarkistetaan onko pelaajalla varaa
     if (gems < item.priceGems) {
       emitEvent("error", "Not enough Gems!", "/assets/ui/icon_gem.png");
-      return false; // Palautetaan false virheen sattuessa
+      return false;
     }
 
+    // 2. Tarkistetaan "Unique" status
     if (item.isOneTime && upgrades.includes(item.id)) {
       emitEvent("warning", "Already owned!", item.icon);
-      return false; // Palautetaan false, jos tuote on jo omistettu
+      return false;
     }
 
     try {
@@ -40,23 +43,21 @@ export const createPremiumShopSlice: StateCreator<
         { success: boolean; message: string }
       >(functions, "purchasePremiumBundle");
 
-      // 1. Odotetaan serverin vahvistusta
       const result = await purchaseBundle({ bundleId: item.id });
 
       if (result.data.success) {
         emitEvent("success", `Acquired: ${item.name}`, item.icon);
 
-        // 2. Päivitetään Zustand-store HETI onnistumisen jälkeen
+        // Päivitetään Zustand-store HETI onnistumisen jälkeen
         set((state) => {
-          // Lasketaan uusi saldo (Hinta miinustetaan, rewardGems lisätään)
           const newGems =
             state.gems - item.priceGems + (item.rewards?.rewardGems || 0);
 
-          const newUpgrades = item.isOneTime
-            ? [...state.upgrades, item.id]
-            : state.upgrades;
+          const newUpgrades =
+            item.isOneTime && !state.upgrades.includes(item.id)
+              ? [...state.upgrades, item.id]
+              : state.upgrades;
 
-          // Lisätään tavarat lokaaliin inventoryyn
           const newInventory = { ...state.inventory };
           if (item.rewards?.items) {
             for (const [itemId, amount] of Object.entries(item.rewards.items)) {
@@ -64,7 +65,6 @@ export const createPremiumShopSlice: StateCreator<
             }
           }
 
-          // Lisätään statsit lokaaliin tilaan (esim. expeditionSlotsIncrement)
           const newScavenger = { ...state.scavenger };
           if (item.rewards?.stats?.expeditionSlotsIncrement) {
             newScavenger.unlockedSlots =
@@ -72,7 +72,6 @@ export const createPremiumShopSlice: StateCreator<
               item.rewards.stats.expeditionSlotsIncrement;
           }
 
-          // Asetetaan jonopaikat suoraan tiettyyn arvoon (queueSlotsSet)
           let newQueueSlots = state.unlockedQueueSlots;
           if (item.rewards?.stats?.queueSlotsSet) {
             newQueueSlots = item.rewards.stats.queueSlotsSet;
@@ -83,34 +82,31 @@ export const createPremiumShopSlice: StateCreator<
             upgrades: newUpgrades,
             inventory: newInventory,
             scavenger: newScavenger,
-            unlockedQueueSlots: newQueueSlots, // Päivitetään päätilaan
-          };
+            unlockedQueueSlots: newQueueSlots,
+          } as Partial<FullStoreState>;
         });
 
-        return true; // Palautetaan true, jotta UI osaa avata modaalin!
+        return true;
       }
 
-      return false; // Jos backend palautti success: false
+      return false;
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Transaction failed.";
       console.error("[PREMIUM SHOP] Purchase error:", error);
       emitEvent("error", message, "/assets/ui/icon_warning.png");
-
-      return false; // Palautetaan false catch-lohkossa
+      return false;
     }
   },
 
   /**
    * TIMANTTIEN OSTAMINEN (STRIPE)
-   * Kutsuu Firebase Cloud Functionia ja avaa maksun uuteen välilehteen.
    */
   startGemsPurchase: async (packId: string) => {
     const { emitEvent } = get();
 
-    const isSteam =
-      typeof (window as unknown as Record<string, unknown>).SteamApi !==
-      "undefined";
+    // KORJATTU: Tarkistetaan SteamApi ilman 'any'-valitusta
+    const isSteam = typeof window !== "undefined" && "SteamApi" in window;
 
     if (isSteam) {
       emitEvent("info", `Initiating Steam Purchase for ${packId}...`);
@@ -132,7 +128,6 @@ export const createPremiumShopSlice: StateCreator<
         const checkoutUrl = result.data.url;
 
         if (checkoutUrl) {
-          console.log("[STRIPE] Opening checkout in new tab:", checkoutUrl);
           window.open(checkoutUrl, "_blank");
           emitEvent(
             "info",
@@ -144,10 +139,7 @@ export const createPremiumShopSlice: StateCreator<
         }
       } catch (error: unknown) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Payment initialization failed.";
-
+          error instanceof Error ? error.message : "Payment failed.";
         console.error("[STRIPE] Error:", error);
         emitEvent("error", message, "/assets/ui/icon_warning.png");
       }

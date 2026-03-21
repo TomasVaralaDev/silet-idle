@@ -53,14 +53,13 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
   {
     id: "bundle_explorer_pack",
     name: "Explorer's Starter Pack",
-    description: "Grants +1 Expedition Slot, 500 Wood, and 5 Mystical Keys.",
-    priceGems: 1500,
-    icon: "/assets/ui/icon_bundle_explorer.png", // Muista lisätä tämä kuva assets-kansioon
+    description: "Grants +1 Expedition Slot.",
+    priceGems: 200,
+    icon: "/assets/skills/scavenging.png", // Muista lisätä tämä kuva assets-kansioon
     category: "Bundles",
-    isOneTime: true,
+    isOneTime: false,
     rewards: {
       stats: { expeditionSlotsIncrement: 1 },
-      items: { wood: 500, mystic_key: 5 },
     },
   },
   // Lisää PREMIUM_SHOP_ITEMS listaan:

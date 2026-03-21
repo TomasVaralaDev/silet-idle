@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { PREMIUM_SHOP_ITEMS } from "../../data/premiumShop";
-import type { PremiumShopItem } from "../../types";
+import type { PremiumShopItem, RewardEntry } from "../../types"; // LISÄTTY RewardEntry
 import GemsModal from "../modals/GemsModal";
 import PurchaseSuccessModal from "../modals/PurchaseSuccessModal";
 import { auth, db } from "../../firebase";
@@ -15,11 +15,14 @@ export default function PremiumShopView() {
     startGemsPurchase,
     upgrades,
     emitEvent,
+    openRewardModal, // LISÄTTY Modaalin avaus
   } = useGameStore();
 
   const [activeCategory, setActiveCategory] = useState("All");
   const [isGemsModalOpen, setIsGemsModalOpen] = useState(false);
   const [isWaitingForPurchase, setIsWaitingForPurchase] = useState(false);
+
+  const [purchasingItem, setPurchasingItem] = useState<string | null>(null);
 
   const [successData, setSuccessData] = useState<{
     isOpen: boolean;
@@ -43,11 +46,14 @@ export default function PremiumShopView() {
 
       if (userSnap.exists()) {
         const data = userSnap.data();
-        if (data.gems > prevGemsRef.current) {
-          setState({
+
+        if (data.gems !== prevGemsRef.current) {
+          setState((state) => ({
             gems: data.gems,
-            upgrades: data.upgrades,
-          });
+            upgrades: data.upgrades || state.upgrades,
+            inventory: data.inventory || state.inventory,
+            scavenger: data.scavenger || state.scavenger,
+          }));
           return true;
         }
       }
@@ -84,10 +90,61 @@ export default function PremiumShopView() {
     };
   }, [gems, isWaitingForPurchase, emitEvent, setState]);
 
-  const handleBuy = (item: PremiumShopItem) => {
-    buyPremiumItem(item);
-  };
+  // PÄIVITETTY: Käsittelee oston ja avaa modaalin
+  const handleBuy = async (item: PremiumShopItem) => {
+    if (purchasingItem) return;
 
+    if (gems < item.priceGems) {
+      emitEvent("error", "Not enough gems!", "💎");
+      return;
+    }
+
+    setPurchasingItem(item.id);
+
+    try {
+      // Odotetaan tietoa onnistuiko osto
+      const success = await buyPremiumItem(item);
+
+      // Jos osto onnistui ja paketissa on palkintoja, avataan modaali
+      if (success && item.rewards) {
+        const rewardsList: RewardEntry[] = [];
+
+        // POISTETTU 'type' -kenttä jokaisesta pushista
+        if (item.rewards.rewardGems) {
+          rewardsList.push({
+            itemId: "gems",
+            amount: item.rewards.rewardGems,
+          });
+        }
+
+        if (item.rewards.items) {
+          Object.entries(item.rewards.items).forEach(([itemId, amount]) => {
+            rewardsList.push({ itemId, amount });
+          });
+        }
+
+        if (item.rewards.stats?.expeditionSlotsIncrement) {
+          rewardsList.push({
+            itemId: "Expedition Slots",
+            amount: item.rewards.stats.expeditionSlotsIncrement,
+          });
+        }
+
+        if (item.rewards.stats?.queueSlotsSet) {
+          rewardsList.push({
+            itemId: "Queue Slots",
+            amount: item.rewards.stats.queueSlotsSet,
+          });
+        }
+
+        openRewardModal(`Unlocked: ${item.name}`, rewardsList);
+      }
+    } catch (e) {
+      console.error("Purchase error in UI:", e);
+    } finally {
+      setPurchasingItem(null);
+    }
+  };
   const handleGemsSelect = (packId: string) => {
     setIsWaitingForPurchase(true);
     startGemsPurchase(packId);
@@ -115,8 +172,9 @@ export default function PremiumShopView() {
         onClose={() => setSuccessData((prev) => ({ ...prev, isOpen: false }))}
       />
 
-      {/* HEADER: Skaalattu mobiiliin */}
-      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex flex-col sm:flex-row items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+      {/* HEADER: PÄIVITETTY asettelu -> justify-between, gemit oikealle */}
+      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex flex-col sm:flex-row items-center justify-between gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+        {/* VASEN PUOLI: Otsikko ja Kuva */}
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
             <img
@@ -125,20 +183,20 @@ export default function PremiumShopView() {
               alt="Premium Store"
             />
           </div>
-          <div className="flex-1">
+          <div>
             <h1 className="text-xl md:text-3xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover">
-              Premium Store
+              Treasury
             </h1>
-            <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block">
-              {isWaitingForPurchase
+            <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block uppercase tracking-wider opacity-70">
+              {isWaitingForPurchase || purchasingItem
                 ? "Consulting the royal treasury..."
                 : "Acquire mystical artifacts and divine essence."}
             </p>
           </div>
         </div>
 
-        {/* GEM BALANCE - Erityisen tärkeä mobiilissa */}
-        <div className="w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 bg-app-base/40 sm:bg-transparent p-2 sm:p-0 rounded-lg border border-border/30 sm:border-none">
+        {/* OIKEA PUOLI: Gem Balance (Pysyy tiukasti oikeassa reunassa 'justify-between' ansiosta) */}
+        <div className="w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 bg-app-base/40 sm:bg-transparent p-2 sm:p-0 rounded-lg border border-border/30 sm:border-none ml-auto">
           <div className="flex items-center gap-2 bg-panel px-3 py-1 rounded-lg border border-border shadow-inner">
             <img
               src="assets/ui/icon_gem.png"
@@ -151,7 +209,7 @@ export default function PremiumShopView() {
           </div>
           <button
             onClick={() => setIsGemsModalOpen(true)}
-            className="text-[10px] font-mono text-accent hover:text-tx-main uppercase border-b border-accent/30 transition-all px-1 py-0.5"
+            className="text-[10px] font-mono font-bold text-accent hover:text-tx-main uppercase tracking-widest border-b border-accent/30 transition-all px-1 py-0.5"
           >
             + Get More
           </button>
@@ -161,13 +219,15 @@ export default function PremiumShopView() {
       {/* PROGRESS BAR */}
       <div className="h-1 bg-panel w-full shrink-0 overflow-hidden">
         <div
-          className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase ? "animate-pulse" : ""}`}
-          style={{ width: isWaitingForPurchase ? "100%" : "0%" }}
+          className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase || purchasingItem ? "animate-pulse" : ""}`}
+          style={{
+            width: isWaitingForPurchase || purchasingItem ? "100%" : "0%",
+          }}
         ></div>
       </div>
 
       <div className="flex flex-1 flex-col md:flex-row overflow-hidden">
-        {/* KATEGORIAT: Mobiilissa vaakasuora, työpöydällä pystysuora sivupalkki */}
+        {/* KATEGORIAT */}
         <div className="md:w-64 border-b md:border-b-0 md:border-r border-border bg-panel/20 z-10 shrink-0">
           <div className="flex md:flex-col overflow-x-auto md:overflow-y-auto custom-scrollbar p-2 md:p-4 gap-1 snap-x">
             <div className="hidden md:block text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4 px-4 opacity-50">
@@ -189,12 +249,13 @@ export default function PremiumShopView() {
           </div>
         </div>
 
-        {/* TUOTTEET: Mobiilissa 2 saraketta */}
+        {/* TUOTTEET */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative bg-app-base/30 pb-24 md:pb-8">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6 max-w-7xl mx-auto relative z-10">
             {filteredItems.map((item) => {
               const isOwned =
                 item.isOneTime && (upgrades || []).includes(item.id);
+              const isPurchasingThis = purchasingItem === item.id;
 
               return (
                 <div
@@ -202,13 +263,15 @@ export default function PremiumShopView() {
                   className={`bg-panel border-2 rounded-xl overflow-hidden flex flex-col group transition-all shadow-md ${
                     isOwned
                       ? "opacity-50 border-border/20 grayscale-[0.5]"
-                      : "border-border hover:border-accent/40 hover:shadow-xl"
+                      : isPurchasingThis
+                        ? "border-accent/50 opacity-80 animate-pulse"
+                        : "border-border hover:border-accent/40 hover:shadow-xl"
                   }`}
                 >
                   <div className="h-24 md:h-40 bg-app-base/50 flex items-center justify-center relative p-2 md:p-4 border-b border-border/30">
                     <img
                       src={item.icon}
-                      className="w-12 h-12 md:w-20 md:h-20 pixelated drop-shadow-2xl group-hover:scale-110 transition-transform"
+                      className="w-12 h-12 md:w-20 md:h-20 pixelated drop-shadow-2xl transition-transform"
                       alt={item.name}
                     />
                     {item.isOneTime && (
@@ -227,16 +290,20 @@ export default function PremiumShopView() {
                     </p>
 
                     <button
-                      disabled={isOwned}
+                      disabled={isOwned || !!purchasingItem}
                       onClick={() => handleBuy(item)}
                       className={`w-full py-2 md:py-3 rounded-lg flex items-center justify-center gap-1.5 md:gap-3 transition-all font-black border uppercase tracking-widest text-[10px] md:text-xs ${
                         isOwned
                           ? "bg-app-base text-tx-muted cursor-not-allowed border-transparent"
-                          : "bg-panel-hover hover:bg-accent hover:text-app-base border-border hover:border-accent"
+                          : isPurchasingThis
+                            ? "bg-accent/20 text-accent border-accent/50 cursor-wait"
+                            : "bg-panel-hover hover:bg-accent hover:text-white border-border hover:border-accent shadow-inner"
                       }`}
                     >
                       {isOwned ? (
                         "OWNED"
+                      ) : isPurchasingThis ? (
+                        "PROCESSING..."
                       ) : (
                         <>
                           <img

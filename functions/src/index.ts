@@ -5,11 +5,9 @@ import Stripe from "stripe";
 
 admin.initializeApp();
 
-// Korvaa sk_test_... omalla avaimellasi
-// Poistettu 'as any' - Stripe SDK tunnistaa version oikein
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string); // Käyttää tilin oletusversiota
-
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
+// HUOM: Globaalit Stripe-alustukset on poistettu tästä.
+// Ne on siirretty funktioiden sisään (Lazy Initialization),
+// jotta deploy ei kaadu puuttuviin ympäristömuuttujiin.
 
 const GEM_PACKS: Record<
   string,
@@ -20,10 +18,50 @@ const GEM_PACKS: Record<
   gems_2500: { gems: 2500, priceEur: 20, name: "Gem Vault" },
 };
 
+// Kaupan sisältö ja hinnasto palvelimella (Turvallisuuden takia)
+interface PremiumBundleConfig {
+  priceGems: number;
+  rewardGems?: number; // Palautettavat gemit oston jälkeen
+  stats?: {
+    expeditionSlotsIncrement?: number; // Lisää tilaa nykyiseen
+    queueSlotsSet?: number; // Asettaa tarkan määrän
+    inventorySlots?: number; // Lisää tilaa nykyiseen
+  };
+  items?: Record<string, number>;
+}
+
+const PREMIUM_BUNDLES: Record<string, PremiumBundleConfig> = {
+  bundle_starter: {
+    priceGems: 800,
+    rewardGems: 800, // Palauttaa heti rahat takaisin!
+    stats: {
+      expeditionSlotsIncrement: 2, // Antaa 2 lisäpaikkaa
+      queueSlotsSet: 5, // Asettaa jonopaikat tasan viiteen
+    },
+    items: { scroll_enchant_4: 15 },
+  },
+  bundle_explorer_pack: {
+    priceGems: 1500,
+    stats: { expeditionSlotsIncrement: 1 },
+    items: { wood: 500, mystic_key: 5 },
+  },
+  utility_bag_slot: {
+    priceGems: 250,
+    stats: { inventorySlots: 20 },
+  },
+  cosmetic_crown: {
+    priceGems: 500,
+    items: { cosmetic_crown: 1 },
+  },
+};
+
 export const createStripeCheckout = onCall(async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "You must be logged in.");
   }
+
+  // Alustetaan Stripe vasta kun funktiota oikeasti kutsutaan
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
   const { packId } = request.data;
   const pack = GEM_PACKS[packId];
@@ -54,7 +92,7 @@ export const createStripeCheckout = onCall(async (request) => {
         gemAmount: pack.gems.toString(),
         packId: packId,
       },
-      // PÄIVITETTY: Ohjataan staattisiin sivuille pelin sijaan
+      // Ohjataan staattisiin sivuille pelin sijaan
       success_url: "http://localhost:5173/success.html",
       cancel_url: "http://localhost:5173/cancel.html",
 
@@ -71,18 +109,109 @@ export const createStripeCheckout = onCall(async (request) => {
   }
 });
 
+// Turvallinen osto-funktio timanteille
+export const purchasePremiumBundle = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be logged in.");
+  }
+
+  const uid = request.auth.uid;
+  const { bundleId } = request.data;
+  const bundle = PREMIUM_BUNDLES[bundleId];
+
+  if (!bundle) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Bundle not found in server config.",
+    );
+  }
+
+  const userRef = admin.firestore().collection("users").doc(uid);
+
+  try {
+    await admin.firestore().runTransaction(async (transaction) => {
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) {
+        throw new HttpsError("not-found", "User missing.");
+      }
+
+      const userData = userDoc.data() || {};
+      const currentGems = userData.gems || 0;
+      const upgrades = userData.upgrades || [];
+
+      // Tarkistukset
+      if (currentGems < bundle.priceGems) {
+        throw new HttpsError("failed-precondition", "Not enough gems.");
+      }
+      if (upgrades.includes(bundleId)) {
+        throw new HttpsError("already-exists", "Bundle already purchased.");
+      }
+
+      // Kootaan päivitykset (Tyyppivarmistettu)
+      // Lasketaan uusi gem-saldo ottamalla huomioon sekä hinta että mahdolliset palautus-gemit
+      const updates: Record<string, number | admin.firestore.FieldValue> = {
+        gems: currentGems - bundle.priceGems + (bundle.rewardGems || 0),
+        upgrades: admin.firestore.FieldValue.arrayUnion(bundleId),
+      };
+
+      // 1. Statsit
+      if (bundle.stats?.expeditionSlotsIncrement) {
+        updates["scavenger.unlockedSlots"] =
+          admin.firestore.FieldValue.increment(
+            bundle.stats.expeditionSlotsIncrement,
+          );
+      }
+
+      // HUOM: Asetetaan suoraan tarkka arvo (esim. 5), ei käytetä incrementtiä
+      if (bundle.stats?.queueSlotsSet) {
+        updates["unlockedQueueSlots"] = bundle.stats.queueSlotsSet;
+      }
+
+      if (bundle.stats?.inventorySlots) {
+        updates["maxInventorySlots"] = admin.firestore.FieldValue.increment(
+          bundle.stats.inventorySlots,
+        );
+      }
+
+      // 2. Itemit ja valuutat
+      if (bundle.items) {
+        for (const [itemId, amount] of Object.entries(bundle.items)) {
+          if (itemId === "coins") {
+            // Jos coins on tallennettu juuritasolle:
+            updates["coins"] = admin.firestore.FieldValue.increment(
+              Number(amount),
+            );
+          } else {
+            // Normaalit tavarat inventoryyn
+            updates[`inventory.${itemId}`] =
+              admin.firestore.FieldValue.increment(Number(amount));
+          }
+        }
+      }
+
+      transaction.update(userRef, updates);
+    });
+
+    return { success: true, message: "Purchase successful!" };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Transaction failed.";
+    console.error("Purchase Error:", message);
+    throw new HttpsError("internal", message);
+  }
+});
+
 export const stripeWebhook = onRequest({ cors: true }, async (req, res) => {
+  // Alustetaan Stripe vasta täällä
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
+
   const sig = req.headers["stripe-signature"] as string;
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig,
-      STRIPE_WEBHOOK_SECRET,
-    );
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
   } catch (err: unknown) {
-    // Korjattu: Käytetään tyyppivarmistusta 'any' sijaan
     const message =
       err instanceof Error ? err.message : "Webhook signature failed";
     console.error("Webhook Signature Error:", message);

@@ -476,7 +476,16 @@ export interface LeaderboardEntry {
   rank?: number;
 }
 
-// --- PREMIUM SHOP ---
+export interface PremiumShopRewards {
+  rewardGems?: number;
+  stats?: {
+    expeditionSlotsIncrement?: number;
+    queueSlotsSet?: number;
+    inventorySlots?: number;
+  };
+  items?: Record<string, number>;
+}
+
 export interface PremiumShopItem {
   id: string;
   name: string;
@@ -485,4 +494,5 @@ export interface PremiumShopItem {
   icon: string;
   category: "Boosts" | "Cosmetics" | "Utility" | "Bundles";
   isOneTime?: boolean;
+  rewards?: PremiumShopRewards; // LISÄTTY
 }

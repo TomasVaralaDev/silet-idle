@@ -8,6 +8,8 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     priceGems: 100,
     icon: "/assets/items/book_blue.png",
     category: "Boosts",
+    // Boostien logiikka käsitellään usein erillisen buff-järjestelmän kautta,
+    // joten niille ei välttämättä tarvita tässä rewards-objektia.
   },
   {
     id: "utility_bag_slot",
@@ -17,6 +19,9 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     icon: "/assets/ui/icon_inventory.png",
     category: "Utility",
     isOneTime: true,
+    rewards: {
+      stats: { inventorySlots: 20 },
+    },
   },
   {
     id: "cosmetic_crown",
@@ -26,13 +31,36 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     icon: "/assets/items/armor/armor_head_gold.png",
     category: "Cosmetics",
     isOneTime: true,
+    rewards: {
+      items: { cosmetic_crown: 1 },
+    },
   },
   {
     id: "bundle_starter",
     name: "Starter Bundle",
-    description: "Includes 5x T1 Scrolls, 1000 Coins, and a 1h XP Boost.",
-    priceGems: 50,
-    icon: "/assets/ui/icon_quest.png",
+    description:
+      "Requires 800 Gems to unlock. Refunds 800 Gems instantly! Grants +2 Expedition Slots, unlocks all 5 Queue Slots, and 15x T4 Enchant Scrolls.",
+    priceGems: 800,
+    icon: "/assets/ui/icon_bundle_starter.png",
     category: "Bundles",
+    isOneTime: true,
+    rewards: {
+      rewardGems: 800,
+      stats: { expeditionSlotsIncrement: 2, queueSlotsSet: 5 },
+      items: { scroll_enchant_4: 15 },
+    },
+  },
+  {
+    id: "bundle_explorer_pack",
+    name: "Explorer's Starter Pack",
+    description: "Grants +1 Expedition Slot, 500 Wood, and 5 Mystical Keys.",
+    priceGems: 1500,
+    icon: "/assets/ui/icon_bundle_explorer.png", // Muista lisätä tämä kuva assets-kansioon
+    category: "Bundles",
+    isOneTime: true,
+    rewards: {
+      stats: { expeditionSlotsIncrement: 1 },
+      items: { wood: 500, mystic_key: 5 },
+    },
   },
 ];

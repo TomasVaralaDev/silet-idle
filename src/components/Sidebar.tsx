@@ -39,7 +39,7 @@ function NavButton({
     <button
       onClick={() => onClick(view)}
       className={`
-        w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group mb-1
+        w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group mb-1 shrink-0
         ${
           isActive
             ? "bg-accent/20 text-accent border border-accent/30 shadow-[0_0_10px_rgb(var(--color-accent)/0.2)]"
@@ -90,7 +90,7 @@ const StatRow = ({
 
   return (
     <div
-      className="py-2 group cursor-help"
+      className="py-2 group cursor-help shrink-0"
       title={`${Math.floor(xp)} / ${nextLevelXp} XP`}
     >
       <div className="flex items-center justify-between text-xs mb-1.5 font-mono">
@@ -174,8 +174,9 @@ export default function Sidebar({
   );
 
   return (
-    <nav className="w-full max-w-[300px] md:max-w-none bg-app-base border-r border-border/50 flex-shrink-0 flex flex-col h-full z-10 shadow-2xl md:shadow-none">
-      <div className="p-5 border-b border-border/50 bg-app-base relative z-20">
+    <nav className="w-full max-w-[300px] md:max-w-none bg-app-base border-r border-border/50 flex-shrink-0 flex flex-col h-full z-10 shadow-2xl md:shadow-none overflow-hidden">
+      {/* HEADER AREA - Kiinteä korkeus */}
+      <div className="p-5 border-b border-border/50 bg-app-base relative z-20 shrink-0">
         <div className="flex justify-between items-center mb-4">
           <div className="hidden md:flex flex-col text-left">
             <h1 className="text-2xl font-bold text-tx-main tracking-widest uppercase flex flex-col leading-none">
@@ -246,8 +247,8 @@ export default function Sidebar({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <div className="bg-panel/50 p-2 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden">
+        <div className="flex gap-2 shrink-0">
+          <div className="bg-panel/50 p-2 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden shrink-0">
             <div className="flex items-center gap-2 shrink-0">
               <img
                 src="/assets/ui/coins.png"
@@ -279,8 +280,8 @@ export default function Sidebar({
         </div>
       </div>
 
-      <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10 pb-32 md:pb-4">
-        {/* TÄHÄN TULEVAT KAIKKI NAV-BUTTON LOHKOT (General, Skills, Combat, System Info) - Ne säilyvät ennallaan mutteivat enää kovakoodattuina */}
+      {/* SCROLLABLE NAVIGATION AREA - Vain tämä rullaa */}
+      <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10 pb-32 md:pb-4 min-h-0">
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             General
@@ -442,24 +443,25 @@ export default function Sidebar({
 
       <QueuePanel />
 
-      <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20">
+      {/* FOOTER AREA - Kiinteä pohjassa */}
+      <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20 shrink-0">
         <button
           onClick={onStopAction}
-          className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase"
+          className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase shrink-0"
         >
           Stop Action
         </button>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 shrink-0">
           <button
             onClick={onReset}
-            className="py-2 text-[10px] font-bold text-danger border border-danger/20 hover:bg-danger/10 rounded-sm uppercase"
+            className="py-2 text-[10px] font-bold text-danger border border-danger/20 hover:bg-danger/10 rounded-sm uppercase shrink-0"
           >
             Reset
           </button>
           <button
             onClick={handleForceSaveClick}
             disabled={saveCooldown > 0}
-            className={`py-2 text-[10px] font-bold border rounded-sm uppercase ${saveCooldown > 0 ? "text-tx-muted/60 border-border cursor-not-allowed" : "text-success border-success/20 hover:bg-success/10"}`}
+            className={`py-2 text-[10px] font-bold border rounded-sm uppercase shrink-0 ${saveCooldown > 0 ? "text-tx-muted/60 border-border cursor-not-allowed" : "text-success border-success/20 hover:bg-success/10"}`}
           >
             {saveCooldown > 0 ? `${saveCooldown}s` : "Save"}
           </button>

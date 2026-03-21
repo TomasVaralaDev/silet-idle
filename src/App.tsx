@@ -76,21 +76,21 @@ export default function App() {
 
   if (loadingAuth)
     return (
-      <div className="min-h-screen bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
+      <div className="min-h-[100dvh] bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
         Getting out of bed...
       </div>
     );
   if (!user) return <Auth />;
   if (!isDataLoaded)
     return (
-      <div className="min-h-screen bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
+      <div className="min-h-[100dvh] bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
         Syncing Save Data...
       </div>
     );
 
   if (!username || username === "Player") {
     return (
-      <div className="min-h-screen bg-app-base flex items-center justify-center relative">
+      <div className="min-h-[100dvh] bg-app-base flex items-center justify-center relative">
         <UsernameModal
           onConfirm={(name: string, avatarUrl: string) => {
             setState({ username: name, avatar: avatarUrl });
@@ -107,7 +107,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-app-base text-tx-main font-sans flex flex-col md:flex-row overflow-hidden relative">
+    // LISÄTTY: h-[100dvh] kahlitsee korkeuden mobiiliselaimissa ja overflow-hidden estää koko sivun rullauksen
+    <div className="h-[100dvh] w-full bg-app-base text-tx-main font-sans flex flex-col md:flex-row overflow-hidden relative">
       <NotificationManager />
       <RewardModal />
       <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
@@ -143,7 +144,7 @@ export default function App() {
       )}
 
       {/* --- MOBIILI HEADER --- */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-border/50 bg-panel/90 backdrop-blur-md z-50 sticky top-0">
+      <div className="md:hidden flex shrink-0 items-center justify-between p-4 border-b border-border/50 bg-panel/90 backdrop-blur-md z-50">
         <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-1">
           Time<span className="text-accent">Ring</span>
         </h1>
@@ -185,7 +186,7 @@ export default function App() {
       </div>
 
       {/* --- CONTENT AREA --- */}
-      <main className="flex-1 bg-app-base relative overflow-y-auto custom-scrollbar h-[calc(100vh-65px)] md:h-screen">
+      <main className="flex-1 bg-app-base relative overflow-y-auto custom-scrollbar h-full min-h-0">
         <div className="fixed top-4 right-6 z-[40] pointer-events-none uppercase font-black text-[10px] tracking-tighter text-right hidden md:block">
           {saveStatus === "saving" && (
             <span className="text-tx-muted animate-pulse">Syncing...</span>

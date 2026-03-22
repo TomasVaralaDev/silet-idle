@@ -13,11 +13,16 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
 
   const availableItems = Object.entries(inventory)
     .map(([id, count]) => ({ id, count, item: getItemById(id) }))
-    .filter(({ count, item }) => {
-      // 1. Perustarkistukset: onko item olemassa, onko sitä ja onko se uniikki
-      if (!item || count <= 0 || item.isUnique) return false;
+    .filter((entry) => {
+      const { count, item } = entry;
 
-      // 2. KORJAUS: Varmistetaan, että item.name on olemassa ennen hakua
+      // 1. TIUKKA TARKISTUS: Jos itemiä ei ole datassa tai se on poistettu, se ei näy listalla
+      if (!item) return false;
+
+      // 2. LOGIIKKA: Vain esineet joita on varastossa ja jotka eivät ole uniikkeja
+      if (count <= 0 || item.isUnique) return false;
+
+      // 3. HAKUSUODATUS
       const itemName = item.name || "";
       const query = searchQuery.toLowerCase();
 
@@ -26,10 +31,13 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
       }
 
       return true;
-    });
+    })
+    // Tyyppiturvallisuuden vuoksi kerrotaan koodille, että tästä eteenpäin item on aina olemassa
+    // (Poistaa tarpeen käyttää item! huutomerkkejä myöhemmin)
+    .map((entry) => ({ ...entry, item: entry.item! }));
 
   return (
-    <div className="flex flex-col h-full bg-app-base/50 rounded-lg border border-border overflow-hidden shadow-inner">
+    <div className="flex flex-col h-full bg-app-base/50 rounded-sm border border-border overflow-hidden shadow-inner">
       {/* Search Input */}
       <div className="p-3 bg-panel/30 border-b border-border">
         <div className="relative">
@@ -41,7 +49,6 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
             className="w-full bg-app-base border border-border/50 rounded-sm px-3 py-2 pl-8 text-xs text-tx-main focus:outline-none focus:border-accent transition-colors font-mono placeholder:text-tx-muted/50"
           />
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-tx-muted/50 flex items-center justify-center">
-            {/* SVG Suurennuslasi */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -82,7 +89,7 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
               }`}
             >
               <img
-                src={item!.icon}
+                src={item.icon}
                 className={`w-8 h-8 pixelated transition-all duration-300 ${
                   isSelected
                     ? "brightness-125 scale-110"
@@ -93,13 +100,13 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
               <div className="flex flex-col items-start flex-1 min-w-0 overflow-hidden text-left">
                 <span
                   className={`text-xs font-bold truncate w-full ${
-                    item!.color || "text-tx-main"
+                    item.color || "text-tx-main"
                   }`}
                 >
-                  {item!.name}
+                  {item.name}
                 </span>
                 <span className="text-[9px] text-tx-muted/60 uppercase font-mono tracking-tighter">
-                  {item!.rarity}
+                  {item.rarity}
                 </span>
               </div>
               <div className="w-20 text-right shrink-0">
@@ -118,7 +125,6 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
         {/* Empty States */}
         {availableItems.length === 0 && (
           <div className="py-20 flex flex-col items-center justify-center text-center space-y-3">
-            {/* SVG Tyhjä laatikko / Arkisto */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"

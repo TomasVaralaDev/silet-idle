@@ -181,10 +181,10 @@ export default function SkillView({ skill }: SkillViewProps) {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`snap-start shrink-0 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`snap-start shrink-0 px-4 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
                 activeCategory === cat.id
-                  ? "bg-tx-main text-app-base shadow-sm"
-                  : "bg-panel text-tx-muted hover:bg-panel-hover hover:text-tx-main border border-border"
+                  ? "border-accent text-accent bg-accent/10"
+                  : "bg-panel text-tx-muted hover:bg-panel-hover hover:text-tx-main border-border"
               }`}
             >
               {cat.label}
@@ -196,15 +196,12 @@ export default function SkillView({ skill }: SkillViewProps) {
         {["smithing", "crafting", "alchemy"].includes(skill) && (
           <button
             onClick={() => setShowAffordableOnly(!showAffordableOnly)}
-            className={`w-full md:w-auto flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-[10px] font-black uppercase tracking-tighter transition-all shrink-0 ${
+            className={`w-full md:w-auto flex items-center justify-center gap-2 px-3 py-1.5 rounded-sm border text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${
               showAffordableOnly
-                ? "bg-success/20 border-success text-success shadow-[0_0_10px_rgba(var(--color-success)/0.2)]"
+                ? "bg-success/10 border-success text-success"
                 : "bg-panel border-border text-tx-muted hover:text-tx-main"
             }`}
           >
-            <span className={showAffordableOnly ? "animate-pulse" : ""}>
-              🛠️
-            </span>
             {showAffordableOnly ? "Showing Affordable" : "Show All Unlocked"}
           </button>
         )}

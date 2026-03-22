@@ -384,6 +384,7 @@ export const processCombatTick = (
         combatLog: currentLog,
         cooldownUntil: Date.now() + 60000,
         damagePopUps: [],
+        cooldownReason: "death", // LISÄTTY: Tieto UI:ta varten
       },
       equippedFood: newEquippedFood,
       inventory: cleanInventory(newInventory),

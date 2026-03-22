@@ -5,11 +5,9 @@ interface Props {
   onChange: (val: number) => void;
 }
 
-// Määritellään sallitut askeleet: 1min (testi), 10min, 30min, 1h, ... 12h
 const TIME_STEPS = [1, 10, 30, 60, 120, 240, 360, 480, 720];
 
 export default function DurationSlider({ value, onChange }: Props) {
-  // Etsitään lähin indeksi sliderille
   const sliderIndex = useMemo(() => {
     return TIME_STEPS.indexOf(value) !== -1 ? TIME_STEPS.indexOf(value) : 0;
   }, [value]);
@@ -22,16 +20,16 @@ export default function DurationSlider({ value, onChange }: Props) {
   const formatTime = (minutes: number) => {
     if (minutes < 60) return `${minutes} min`;
     const hours = minutes / 60;
-    return `${hours} hour${hours > 1 ? "s" : ""}`;
+    return `${hours} hr${hours > 1 ? "s" : ""}`;
   };
 
   return (
-    <div className="bg-panel p-4 rounded-lg border border-border">
-      <div className="flex justify-between mb-2">
-        <span className="text-xs uppercase text-tx-muted font-bold">
+    <div className="bg-app-base border border-border rounded-sm p-3">
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-[9px] uppercase text-tx-muted font-bold tracking-widest">
           Duration
         </span>
-        <span className="text-sm font-bold text-success">
+        <span className="text-[10px] font-black uppercase tracking-widest text-success bg-success/10 px-2 py-0.5 rounded-sm border border-success/20">
           {formatTime(value)}
         </span>
       </div>
@@ -43,10 +41,10 @@ export default function DurationSlider({ value, onChange }: Props) {
         step="1"
         value={sliderIndex}
         onChange={handleChange}
-        className="w-full h-2 bg-border-hover rounded-lg appearance-none cursor-pointer accent-success"
+        className="w-full h-1 bg-border rounded-none appearance-none cursor-pointer accent-success outline-none"
       />
 
-      <div className="flex justify-between mt-2 text-[10px] text-tx-muted/60 font-mono">
+      <div className="flex justify-between mt-2 text-[9px] text-tx-muted/60 font-mono font-bold">
         <span>1m</span>
         <span>12h</span>
       </div>

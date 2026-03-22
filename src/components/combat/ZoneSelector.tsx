@@ -26,7 +26,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
       <div className="p-4 border-b border-border flex items-center justify-between bg-panel/90 shadow-sm z-10">
         <div className="flex flex-col text-left">
           <span className="text-[10px] font-black uppercase tracking-widest text-success">
-            Maps
+            Zones
           </span>
           <span className="text-[9px] text-tx-muted font-mono">
             World {selectedWorldId}

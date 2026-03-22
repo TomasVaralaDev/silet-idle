@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useGameStore } from "../../store/useGameStore"; // Päivitetty
-import { COMBAT_DATA } from "../../data"; // Päivitetty
-import WorldSelector from "./WorldSelector"; // Päivitetty (samassa kansiossa)
-import BattleArena from "./BattleArena"; // Päivitetty
-import ZoneSelector from "./ZoneSelector"; // Päivitetty
-import CombatLog from "./CombatLog"; // Päivitetty
-import FoodSelector from "./FoodSelector"; // Päivitetty
-import { formatRemainingTime } from "../../utils/formatUtils"; // Päivitetty
+import { useGameStore } from "../../store/useGameStore";
+import { COMBAT_DATA } from "../../data";
+import WorldSelector from "./WorldSelector";
+import BattleArena from "./BattleArena";
+import ZoneSelector from "./ZoneSelector";
+import CombatLog from "./CombatLog";
+import FoodSelector from "./FoodSelector";
+import { formatRemainingTime } from "../../utils/formatUtils";
 
 export default function CombatView() {
   const combatStats = useGameStore((s) => s.combatStats);
@@ -28,8 +28,13 @@ export default function CombatView() {
   }, [combatStats.cooldownUntil, now]);
 
   const rawDiff = combatStats.cooldownUntil - now;
-  const cooldownLeft = rawDiff > 0 ? Math.min(rawDiff, 60000) : 0;
+  // HUOM: Poistettu 60000 ms maksimirajoitus, jotta 30s näkyy oikein eikä hyppää,
+  // jos rawDiff on jotain muuta. Max on nyt rawDiff.
+  const cooldownLeft = rawDiff > 0 ? rawDiff : 0;
   const isRecovering = cooldownLeft > 0;
+
+  // UUSI: Haetaan rangaistuksen syy storesta
+  const isRetreat = combatStats.cooldownReason === "retreat";
 
   const currentMap = combatStats.currentMapId
     ? COMBAT_DATA.find((m) => m.id === combatStats.currentMapId)
@@ -63,20 +68,42 @@ export default function CombatView() {
 
       {/* CENTER: BATTLE ZONE */}
       <div className="flex-1 flex flex-col min-w-0 h-full relative">
-        {/* RECOVERY OVERLAY */}
+        {/* RECOVERY OVERLAY - DYNAMISOITU VETÄYTYMISTÄ VARTEN */}
         {isRecovering && !combatStats.currentMapId && (
           <div className="absolute inset-0 z-[40] bg-app-base/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
-            <div className="w-20 h-20 mb-6 rounded-full border-4 border-danger/20 border-t-danger animate-spin shadow-[0_0_20px_rgb(var(--color-danger)/0.2)]" />
+            {/* Spinnerin väri muuttuu syyn mukaan */}
+            <div
+              className={`w-20 h-20 mb-6 rounded-full border-4 animate-spin shadow-lg ${
+                isRetreat
+                  ? "border-warning/20 border-t-warning shadow-warning/20"
+                  : "border-danger/20 border-t-danger shadow-danger/20"
+              }`}
+            />
 
-            <h2 className="text-2xl font-black text-danger uppercase tracking-[0.3em] mb-2">
-              Defeated
+            {/* Otsikko muuttuu syyn mukaan */}
+            <h2
+              className={`text-2xl font-black uppercase tracking-[0.3em] mb-2 ${
+                isRetreat ? "text-warning" : "text-danger"
+              }`}
+            >
+              {isRetreat ? "Tactical Retreat" : "Defeated"}
             </h2>
+
+            {/* Teksti muuttuu syyn mukaan */}
             <p className="text-tx-muted text-sm max-w-xs font-medium italic">
-              You were defeated in combat. Returning to safety and recovering
-              your strength.
+              {isRetreat
+                ? "Falling back to regroup and catch your breath. Prepare for the next encounter."
+                : "You were defeated in combat. Returning to safety and recovering your strength."}
             </p>
 
-            <div className="mt-6 font-mono text-3xl font-black text-tx-main bg-danger/10 px-6 py-3 rounded-lg border border-danger/30 shadow-2xl">
+            {/* Laatikon väri muuttuu syyn mukaan */}
+            <div
+              className={`mt-6 font-mono text-3xl font-black text-tx-main px-6 py-3 rounded-lg border shadow-2xl ${
+                isRetreat
+                  ? "bg-warning/10 border-warning/30"
+                  : "bg-danger/10 border-danger/30"
+              }`}
+            >
               {formatRemainingTime(cooldownLeft)}
             </div>
           </div>

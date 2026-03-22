@@ -15,22 +15,18 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
   }));
 
   return (
-    <div className="h-full flex flex-col bg-panel">
-      {/* Työpöydällä näkyvä header, mobiilissa piilossa (säästää tilaa) */}
-      <div className="hidden md:block p-4 border-b border-border bg-app-base/50">
-        <h3 className="text-xs font-black uppercase text-tx-muted tracking-wider">
-          Select World
+    <div className="h-full flex flex-col">
+      <div className="hidden md:block p-5 border-b border-border/50 bg-panel/20">
+        <h3 className="text-[10px] font-black uppercase text-tx-muted tracking-[0.2em]">
+          Available Worlds
         </h3>
-        <p className="text-[10px] text-tx-muted/70 mt-1">
-          Unlock worlds by defeating the boss.
-        </p>
       </div>
 
-      {/* LISTAUS: Mobiilissa rivi (overflow-x-auto), Työpöydällä pino (overflow-y-auto) */}
-      <div className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-hidden md:overflow-y-auto custom-scrollbar p-3 gap-3 snap-x">
+      <div className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-hidden md:overflow-y-auto custom-scrollbar p-4 gap-3">
         {worlds.map((world) => {
           const requiredMapCompleted = (world.id - 1) * 10;
           const isLocked = combatStats.maxMapCompleted < requiredMapCompleted;
+          const isSelected = selectedWorldId === world.id;
 
           return (
             <button
@@ -38,49 +34,38 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
               onClick={() => !isLocked && onSelect(world.id)}
               disabled={isLocked}
               className={`
-                snap-start shrink-0 w-48 md:w-full text-left rounded-lg overflow-hidden border transition-all relative group flex flex-col
+                shrink-0 w-48 md:w-full text-left rounded-sm overflow-hidden border transition-all flex flex-col md:flex-row h-24 md:h-20
                 ${
-                  selectedWorldId === world.id
-                    ? "border-success ring-1 ring-success/50 shadow-lg shadow-success/20 scale-[1.02] md:scale-100 z-10"
+                  isSelected
+                    ? "border-success bg-success/5"
                     : isLocked
-                      ? "border-border opacity-50 cursor-not-allowed grayscale"
-                      : "border-border hover:border-border-hover hover:bg-panel-hover"
+                      ? "border-border/40 opacity-50 cursor-not-allowed bg-app-base"
+                      : "border-border hover:border-success/50 hover:bg-panel/40 bg-panel/20"
                 }
               `}
             >
-              {/* Taustakuva */}
-              <div className="h-16 md:h-24 bg-app-base relative shrink-0">
+              {/* Kuva */}
+              <div className="h-10 md:h-full w-full md:w-20 bg-app-base relative shrink-0 border-b md:border-b-0 md:border-r border-border/50">
                 <img
                   src={world.image}
                   alt={world.name}
-                  className={`
-                    w-full h-full object-cover transition-all duration-500 
-                    ${selectedWorldId === world.id ? "opacity-100" : "opacity-50"}
-                    ${!isLocked && "group-hover:grayscale-0 group-hover:opacity-80"}
-                  `}
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-60"} ${isLocked && "grayscale"}`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-panel via-transparent to-transparent"></div>
-
-                {/* World Badge */}
-                <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-black/80 backdrop-blur-sm px-1.5 md:px-2 py-0.5 rounded text-[9px] md:text-[10px] font-mono font-bold text-white border border-white/10 shadow-sm">
+                <div className="absolute top-1 left-1 bg-app-base/80 backdrop-blur-sm px-1.5 py-0.5 rounded-sm text-[8px] font-mono font-bold text-tx-main border border-border">
                   W{world.id}
                 </div>
-
-                {/* LOCK OVERLAY */}
                 {isLocked && (
-                  <div className="absolute inset-0 bg-panel/60 backdrop-blur-[1px] flex flex-col items-center justify-center text-tx-muted">
-                    <span className="text-lg md:text-2xl drop-shadow-md">
-                      🔒
-                    </span>
+                  <div className="absolute inset-0 bg-panel/80 flex items-center justify-center">
+                    <span className="text-sm">🔒</span>
                   </div>
                 )}
               </div>
 
               {/* Info */}
-              <div className="p-2 md:p-3 bg-panel flex-1 flex flex-col justify-center">
+              <div className="p-2 md:p-3 flex-1 flex flex-col justify-center min-w-0">
                 <div
-                  className={`font-bold text-xs md:text-sm truncate ${
-                    selectedWorldId === world.id
+                  className={`font-black text-[10px] md:text-xs uppercase tracking-tight truncate ${
+                    isSelected
                       ? "text-success"
                       : isLocked
                         ? "text-tx-muted"
@@ -90,20 +75,15 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
                   {world.name}
                 </div>
                 {isLocked ? (
-                  <p className="text-[8px] md:text-[9px] text-danger font-bold mt-0.5 tracking-wider uppercase">
-                    Unlocks at Zone {(world.id - 1) * 10 + 1}
-                  </p>
+                  <div className="text-[8px] text-danger font-mono mt-1">
+                    Req: Zone {(world.id - 1) * 10 + 1}
+                  </div>
                 ) : (
-                  <p className="text-[9px] md:text-[10px] text-tx-muted line-clamp-1 md:line-clamp-2 leading-snug mt-0.5">
+                  <div className="text-[9px] text-tx-muted truncate mt-0.5 font-medium">
                     {world.description}
-                  </p>
+                  </div>
                 )}
               </div>
-
-              {/* Selected Indicator Border */}
-              {selectedWorldId === world.id && (
-                <div className="absolute inset-0 border-2 border-success rounded-lg pointer-events-none"></div>
-              )}
             </button>
           );
         })}

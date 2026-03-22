@@ -19,7 +19,7 @@ export default function AchievementsView({
   );
 
   const categories: { id: AchievementCategory | "all"; label: string }[] = [
-    { id: "all", label: "All Systems" },
+    { id: "all", label: "All" },
     { id: "general", label: "General" },
     { id: "skills", label: "Skills" },
     { id: "combat", label: "Combat" },
@@ -70,23 +70,23 @@ export default function AchievementsView({
         ></div>
       </div>
 
-      {/* TABS */}
-      <div className="px-6 pt-4 flex gap-2 overflow-x-auto custom-scrollbar pb-2 shrink-0">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border
-              ${
+      {/* TABS (Marketplace-tyyli) */}
+      <div className="p-5 border-b border-border/30 bg-panel/20 shrink-0">
+        <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-4 py-1.5 rounded-sm text-[9px] font-bold uppercase border transition-all shrink-0 ${
                 activeCategory === cat.id
-                  ? "bg-warning/20 border-warning text-warning shadow-[0_0_10px_rgb(var(--color-warning)/0.2)]"
-                  : "bg-panel border-border text-tx-muted hover:text-tx-main hover:border-border-hover"
-              }
-            `}
-          >
-            {cat.label}
-          </button>
-        ))}
+                  ? "border-warning text-warning bg-warning/10"
+                  : "border-border text-tx-muted hover:border-border-hover"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* MAIN CONTENT */}
@@ -110,7 +110,7 @@ export default function AchievementsView({
           <div className="flex flex-col items-center justify-center py-20 text-tx-muted/40">
             <span className="text-4xl mb-4 opacity-30">📡</span>
             <p className="text-xs font-mono uppercase tracking-widest">
-              No records found for this system.
+              No records found for this category.
             </p>
           </div>
         )}

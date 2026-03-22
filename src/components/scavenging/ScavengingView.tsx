@@ -30,109 +30,132 @@ export default function ScavengingView() {
   return (
     <div className="h-full w-full flex flex-col bg-app-base text-tx-main font-sans overflow-hidden text-left">
       {/* HEADER */}
-      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-3 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
-        <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-success/20 border border-success/30 shadow-lg shrink-0">
+      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+        <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-success/20 border border-success/30 shadow-lg shrink-0">
           <img
             src="/assets/skills/scavenging.png"
-            className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
+            className="w-10 h-10 pixelated object-contain"
             alt="Scavenging"
           />
         </div>
         <div className="flex-1">
-          <h1 className="text-xl md:text-3xl font-black uppercase tracking-widest text-success mb-0.5 md:mb-1">
+          <h1 className="text-3xl font-black uppercase tracking-widest text-success mb-1">
             Expeditions
           </h1>
-          <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block">
-            Dispatch brave scouts to recover lost relics and treasures from
-            surrounding worlds.
+          <p className="text-tx-muted text-sm font-medium">
+            Dispatch brave scouts to recover lost relics and treasures.
           </p>
+        </div>
+        <div className="text-right hidden sm:block">
+          <div className="text-2xl font-black text-tx-main uppercase tracking-tighter">
+            {scavenger.activeExpeditions.length} / {scavenger.unlockedSlots}
+          </div>
+          <div className="text-xs font-mono text-tx-muted mt-1 uppercase">
+            Active Parties
+          </div>
         </div>
       </div>
 
       <div className="h-1 bg-panel w-full shrink-0">
-        <div
-          className="h-full bg-success transition-all duration-300 shadow-[0_0_10px_rgb(var(--color-success)/0.5)]"
-          style={{ width: `100%` }}
-        ></div>
+        <div className="h-full bg-success w-full opacity-80"></div>
       </div>
 
-      {/* MAIN CONTENT AREA - Pinoituu mobiilissa */}
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-        {/* WORLD SELECTOR (MOBILE: Ylhäällä vaakasuorana, DESKTOP: Oikealla pystysuorana) */}
-        <div className="w-full md:w-80 flex-shrink-0 bg-panel border-b md:border-b-0 md:border-l border-border md:order-2">
+      {/* MAIN CONTENT AREA */}
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-app-base/30">
+        {/* WORLD SELECTOR */}
+        <div className="w-full md:w-[350px] flex-shrink-0 bg-panel/30 border-b md:border-b-0 md:border-r border-border/50 flex flex-col">
           <LocationSelector
             selectedWorldId={selectedWorldId}
             onSelect={setSelectedWorldId}
           />
         </div>
 
-        {/* LEFT/BOTTOM: Configuration & Active */}
-        <div className="flex-1 flex flex-col p-4 md:p-6 min-w-0 overflow-y-auto custom-scrollbar md:order-1">
+        {/* OIKEA PUOLI: Config & Active */}
+        <div className="flex-1 flex flex-col p-6 min-w-0 overflow-y-auto custom-scrollbar">
           {/* CONFIGURE NEW */}
-          <div className="bg-panel/30 border border-border rounded-xl p-4 md:p-5 mb-6 md:mb-8">
-            <h2 className="text-xs md:text-sm font-black text-tx-main mb-4 flex items-center gap-2 uppercase tracking-tight">
-              Prepare New Expedition
+          <div className="bg-panel/40 border border-border rounded-sm p-5 mb-8 flex flex-col gap-5">
+            <h2 className="text-xs font-black text-tx-muted uppercase tracking-[0.2em] border-b border-border/50 pb-2">
+              Prepare Expedition
             </h2>
 
-            <div className="space-y-4 md:space-y-6">
-              <div className="bg-app-base border border-border rounded-lg p-3 md:p-4 flex items-center justify-between">
-                <div>
-                  <div className="text-[9px] md:text-[10px] uppercase text-tx-muted font-black tracking-widest">
-                    Target World
+            <div className="flex flex-col xl:flex-row gap-5">
+              {/* UUSI: Kohde Info Maailman kuvalla */}
+              <div
+                className={`relative border border-border rounded-sm flex-1 flex flex-col justify-center overflow-hidden transition-all duration-300 ${selectedWorld ? "h-32 xl:h-auto" : "bg-app-base p-4"}`}
+              >
+                {selectedWorld && (
+                  <>
+                    {/* Taustakuva */}
+                    <img
+                      src={selectedWorld.image}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover opacity-20 transition-opacity duration-500"
+                    />
+                    {/* Tumma overlay luettavuutta varten */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-app-base via-app-base/80 to-transparent"></div>
+                  </>
+                )}
+
+                {/* Tekstisisältö */}
+                <div
+                  className={`relative z-10 ${selectedWorld ? "p-4 mt-auto" : ""}`}
+                >
+                  <div className="text-[9px] uppercase text-tx-muted font-bold tracking-widest mb-1">
+                    Target Destination
                   </div>
                   <div
-                    className={`text-base md:text-lg font-bold ${
-                      selectedWorld ? "text-accent" : "text-tx-muted/60"
+                    className={`text-lg font-black uppercase tracking-tight ${
+                      selectedWorld
+                        ? "text-success drop-shadow-[0_2px_3px_rgba(0,0,0,0.8)]"
+                        : "text-tx-muted/40"
                     }`}
                   >
-                    {selectedWorld
-                      ? selectedWorld.name
-                      : "Choose Destination →"}
+                    {selectedWorld ? selectedWorld.name : "Awaiting Orders..."}
                   </div>
-                </div>
-                {selectedWorld && (
-                  <div className="text-right">
-                    <div className="text-[10px] font-mono text-tx-muted uppercase bg-panel px-2 py-1 rounded">
+                  {selectedWorld && (
+                    <div className="text-[10px] font-mono text-tx-muted mt-2 inline-block bg-black/50 px-2 py-0.5 rounded-sm border border-border/50">
                       WORLD {selectedWorldId}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
-              <DurationSlider value={duration} onChange={setDuration} />
+              {/* Slider & Nappi */}
+              <div className="flex-1 flex flex-col gap-3 justify-end">
+                <DurationSlider value={duration} onChange={setDuration} />
 
-              <button
-                onClick={() =>
-                  canStart &&
-                  selectedWorldId &&
-                  startExpedition(selectedWorldId, duration)
-                }
-                disabled={!canStart}
-                className={`
-                  w-full py-3 md:py-4 rounded-lg font-black uppercase tracking-widest text-xs md:text-sm transition-all
-                  ${
-                    canStart
-                      ? "bg-success hover:bg-success/80 text-white shadow-lg shadow-success/20"
-                      : "bg-panel-hover text-tx-muted/60 cursor-not-allowed opacity-50 border border-border/50"
+                <button
+                  onClick={() =>
+                    canStart &&
+                    selectedWorldId &&
+                    startExpedition(selectedWorldId, duration)
                   }
-                `}
-              >
-                {isSlotsFull
-                  ? "Parties Full"
-                  : !selectedWorldId
-                    ? "Pick a World"
-                    : isSelectedWorldLocked
-                      ? "World Locked"
-                      : "Begin Expedition"}
-              </button>
+                  disabled={!canStart}
+                  className={`
+                    w-full py-3 rounded-sm font-black uppercase tracking-widest text-xs transition-all border
+                    ${
+                      canStart
+                        ? "bg-success/10 border-success text-success hover:bg-success hover:text-white"
+                        : "bg-panel border-border text-tx-muted/40 cursor-not-allowed"
+                    }
+                  `}
+                >
+                  {isSlotsFull
+                    ? "Parties Full"
+                    : !selectedWorldId
+                      ? "Select Destination"
+                      : isSelectedWorldLocked
+                        ? "Sector Locked"
+                        : "Deploy Scouts"}
+                </button>
+              </div>
             </div>
           </div>
 
           {/* ACTIVE EXPEDITIONS */}
-          <div>
-            <h2 className="text-[10px] font-black uppercase text-tx-muted mb-3 tracking-[0.2em] px-1">
-              Active Scouting Parties ({scavenger.activeExpeditions.length}/
-              {scavenger.unlockedSlots})
+          <div className="flex flex-col flex-1">
+            <h2 className="text-[10px] font-black uppercase text-tx-muted mb-4 tracking-[0.2em] border-b border-border/50 pb-2">
+              Active Scouting Parties
             </h2>
             <ActiveExpeditions />
           </div>

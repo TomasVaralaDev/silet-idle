@@ -81,6 +81,7 @@ export const createCombatSlice: StateCreator<
         currentStats.hp > 0
           ? currentStats.hp
           : get().skills.hitpoints.level * 10,
+      cooldownReason: null, // Nollataan syy aina kun uusi taistelu alkaa
     };
 
     set({
@@ -126,7 +127,7 @@ export const createCombatSlice: StateCreator<
     }
   },
 
-  // RETREAT: Pysäytetään taistelu ja asetetaan 1min cooldown
+  // RETREAT: Pysäytetään taistelu ja asetetaan VETÄYTYMIS-rangaistus
   stopCombat: () =>
     set({
       activeAction: null,
@@ -138,7 +139,8 @@ export const createCombatSlice: StateCreator<
         respawnTimer: 0,
         playerAttackTimer: 0,
         enemyAttackTimer: 0,
-        cooldownUntil: Date.now() + 60000, // 60 sekunnin rangaistus
+        cooldownUntil: Date.now() + 30000, // 30 sekunnin rangaistus vetäytymisestä
+        cooldownReason: "retreat", // LISÄTTY: Tieto vetäytymisestä UI:ta varten
       },
     }),
 

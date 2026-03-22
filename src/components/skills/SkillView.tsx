@@ -166,8 +166,9 @@ export default function SkillView({ skill }: SkillViewProps) {
       </div>
 
       <div className="h-1 bg-panel w-full shrink-0">
+        {/* Poistettu: shadow-[0_0_10px_currentColor] */}
         <div
-          className={`h-full ${definition.bgColor} transition-all duration-300 shadow-[0_0_10px_currentColor]`}
+          className={`h-full ${definition.bgColor} transition-all duration-300`}
           style={{ width: `${progressPercent}%` }}
         ></div>
       </div>

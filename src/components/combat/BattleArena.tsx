@@ -161,9 +161,9 @@ export default function BattleArena({
         <div className="flex flex-col items-center gap-3 relative group w-32">
           {renderPopUps("player")}
 
-          <div className="w-32 h-2.5 bg-panel/80 rounded border border-border shadow-lg overflow-hidden mb-1 relative">
+          <div className="w-32 h-2.5 bg-panel/80 rounded border border-border overflow-hidden mb-1 relative">
             <div
-              className="h-full bg-success transition-all duration-300 shadow-[0_0_10px_rgb(var(--color-success)/0.5)]"
+              className="h-full bg-success transition-all duration-300"
               style={{ width: `${playerHpPercent}%` }}
             />
           </div>
@@ -172,10 +172,11 @@ export default function BattleArena({
           </div>
 
           <div className="w-24 h-24 relative flex items-center justify-center">
+            {/* HOHTO POISTETTU PELAAJALTA */}
             <img
               src={avatar || "/assets/ui/icon_user_avatar.png"}
               alt="Player"
-              className={`w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-success)/0.4)] transform scale-x-[-1] transition-transform ${playerFlash ? "animate-flash-red" : ""}`}
+              className={`w-20 h-20 object-contain pixelated transform scale-x-[-1] transition-transform ${playerFlash ? "animate-flash-red" : ""}`}
               onError={(e) =>
                 (e.currentTarget.src =
                   "https://ui-avatars.com/api/?name=P&background=0f172a")
@@ -208,9 +209,9 @@ export default function BattleArena({
 
           {enemy ? (
             <div className="flex flex-col items-center animate-in fade-in duration-500 w-full">
-              <div className="w-32 h-2.5 bg-panel/80 rounded border border-border shadow-lg overflow-hidden mb-1 relative">
+              <div className="w-32 h-2.5 bg-panel/80 rounded border border-border overflow-hidden mb-1 relative">
                 <div
-                  className="h-full bg-danger transition-all duration-150 shadow-[0_0_10px_rgb(var(--color-danger)/0.5)]"
+                  className="h-full bg-danger transition-all duration-150"
                   style={{ width: `${enemyHpPercent}%` }}
                 />
               </div>
@@ -220,10 +221,11 @@ export default function BattleArena({
 
               <div className="w-24 h-24 relative flex items-center justify-center">
                 <div className={enemyFlash ? "animate-flash-white" : ""}>
+                  {/* HOHTO POISTETTU VIHOLLISELTA */}
                   {enemy.icon ? (
                     <img
                       src={enemy.icon}
-                      className="w-20 h-20 object-contain pixelated drop-shadow-[0_0_15px_rgb(var(--color-danger)/0.4)]"
+                      className="w-20 h-20 object-contain pixelated"
                       alt={enemy.name}
                     />
                   ) : (

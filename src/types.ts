@@ -122,6 +122,7 @@ export interface CombatState {
   enemyAttackTimer: number; // UUSI: Vihollisen oma ajastin (ms)
   cooldownUntil: number;
   damagePopUps: DamagePopUp[];
+  cooldownReason?: "death" | "retreat" | null; // UUSI: Tieto rangaistuksen syystä
 }
 
 export interface CalculatedStats {

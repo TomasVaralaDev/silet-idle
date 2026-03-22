@@ -101,7 +101,7 @@ export default function StatsPanel() {
       <div className="p-4 border-b border-border bg-app-base/30 flex justify-between items-center">
         <div>
           <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em]">
-            Combat Readiness
+            Combat Stats
           </h3>
           <div className="text-[9px] text-accent uppercase font-bold mt-0.5">
             Style: {playerCombatStats.style}
@@ -111,7 +111,8 @@ export default function StatsPanel() {
           <div className="text-[9px] font-bold text-tx-muted uppercase mb-1">
             Combat Power
           </div>
-          <div className="text-xl font-black text-warning leading-none drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">
+          {/* Poistettu: drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] */}
+          <div className="text-xl font-black text-warning leading-none">
             {formatNumber(playerCombatStats.combatPower)}
           </div>
         </div>
@@ -175,13 +176,11 @@ export default function StatsPanel() {
             />
           </div>
         </section>
-
         {/* AUTO-RECOVERY SECTION */}
         <section className="bg-app-base/40 rounded-xl p-3 border border-border/50">
           <div className="flex justify-between items-center mb-3">
-            <h4 className="text-[9px] font-black text-tx-muted uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>{" "}
-              Auto-Recovery
+            <h4 className="text-[9px] font-black text-tx-muted uppercase tracking-widest">
+              Auto-Heal
             </h4>
             <span className="text-[10px] font-mono font-bold text-success">
               {combatSettings.autoEatThreshold}% HP

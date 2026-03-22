@@ -11,7 +11,7 @@ export default function AchievementCard({ achievement, isUnlocked }: Props) {
       className={`p-5 rounded-xl border flex items-center gap-5 transition-all duration-300 relative overflow-hidden
         ${
           isUnlocked
-            ? "bg-panel border-warning/40 shadow-[0_0_20px_rgb(var(--color-warning)/0.1)]"
+            ? "bg-panel border-warning/40" // POISTETTU: shadow-[0_0_20px_rgb(var(--color-warning)/0.1)]
             : "bg-panel/50 border-border opacity-60 grayscale"
         }`}
     >
@@ -29,7 +29,7 @@ export default function AchievementCard({ achievement, isUnlocked }: Props) {
           alt=""
           className={`w-12 h-12 pixelated transition-transform duration-500 ${
             isUnlocked
-              ? "drop-shadow-[0_0_8px_rgb(var(--color-warning)/0.5)] scale-110"
+              ? "scale-110" // POISTETTU: drop-shadow-[0_0_8px_rgb(var(--color-warning)/0.5)]
               : "opacity-50"
           }`}
         />
@@ -65,10 +65,7 @@ export default function AchievementCard({ achievement, isUnlocked }: Props) {
         </div>
       </div>
 
-      {/* Subtle Background Glow for Unlocked Cards */}
-      {isUnlocked && (
-        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-warning/5 blur-3xl rounded-full pointer-events-none" />
-      )}
+      {/* POISTETTU KOKONAAN: Subtle Background Glow for Unlocked Cards -div */}
     </div>
   );
 }

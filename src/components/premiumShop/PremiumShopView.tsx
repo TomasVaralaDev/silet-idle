@@ -191,20 +191,20 @@ export default function PremiumShopView() {
       />
 
       {/* HEADER */}
-      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex flex-col sm:flex-row items-center justify-between gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
+      <div className="p-6 border-b border-border/50 bg-panel/50 flex flex-col sm:flex-row items-center justify-between gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+        <div className="flex items-center gap-6 w-full sm:w-auto">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
             <img
               src="assets/ui/icon_gem.png"
-              className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
+              className="w-10 h-10 pixelated object-contain"
               alt="Premium Store"
             />
           </div>
           <div>
-            <h1 className="text-xl md:text-3xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover">
+            <h1 className="text-3xl font-black uppercase tracking-widest text-accent mb-1">
               Treasury
             </h1>
-            <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block uppercase tracking-wider opacity-70">
+            <p className="text-tx-muted text-sm font-medium hidden sm:block">
               {isWaitingForPurchase || purchasingItem
                 ? "Consulting the royal treasury..."
                 : "Acquire mystical artifacts and divine essence."}
@@ -232,6 +232,7 @@ export default function PremiumShopView() {
         </div>
       </div>
 
+      {/* PROGRESS BAR - LATAUS */}
       <div className="h-1 bg-panel w-full shrink-0 overflow-hidden">
         <div
           className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase || purchasingItem ? "animate-pulse" : ""}`}

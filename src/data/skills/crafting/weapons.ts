@@ -129,40 +129,45 @@ const allWeapons: Resource[] = [
     isUnique: false,
   },
   {
-    id: "weapon_sword_eternium",
-    name: "Eternium Sword",
+    id: "weapon_sword_starfallalloy",
+    name: "Starfall Sword",
     rarity: "common",
-    level: 85,
-    xpReward: 20000,
-    interval: 13000,
-    value: 2500,
-    icon: "/assets/items/weapons/weapon_sword_eternium.png",
-    color: "text-red-500",
-    description: "Blade out of time.",
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 20000, // LASKETTU 50k -> 20k
+    interval: 13000, // NOPEUTETTU
+    value: 2500, // LASKETTU 5000 -> 2500
+    icon: "/assets/items/weapons/weapon_sword_starfallalloy.png",
+    color: "text-indigo-400",
+    description: "Cosmic destruction.",
     inputs: [
-      { id: "ore_eternium_smelted", count: 1500 },
-      { id: "bloodwood_plank", count: 400 },
+      { id: "ore_starfallalloy_smelted", count: 1500 }, // MÄÄRÄ LASKETTU
+      { id: "bloodwood_plank", count: 400 }, // PÄIVITETTY Bloodwoodiin (Tier 7 puu)
     ],
     slot: "weapon",
-    stats: { attack: 800, attackSpeed: 2000, critChance: 0.2, critMulti: 2.2 },
+    stats: {
+      attack: 800,
+      attackSpeed: 2000,
+      critChance: 0.2,
+      critMulti: 2.2,
+    }, // STATIT VAIHDETTU
     category: "sword",
     combatStyle: "melee",
     isUnique: false,
   },
   {
-    id: "weapon_sword_starfallalloy",
-    name: "Starfall Sword",
+    id: "weapon_sword_eternium",
+    name: "Eternium Sword",
     rarity: "common",
-    level: 99,
-    xpReward: 50000,
-    interval: 16000,
-    value: 5000,
-    icon: "/assets/items/weapons/weapon_sword_starfallalloy.png",
-    color: "text-indigo-400",
-    description: "Cosmic destruction.",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 50000, // NOSTETTU 20k -> 50k
+    interval: 16000, // HIDASTETTU
+    value: 5000, // NOSTETTU 2500 -> 5000
+    icon: "/assets/items/weapons/weapon_sword_eternium.png",
+    color: "text-red-500",
+    description: "Blade out of time.",
     inputs: [
-      { id: "ore_starfallalloy_smelted", count: 4000 },
-      { id: "heartwood_plank", count: 1000 },
+      { id: "ore_eternium_smelted", count: 4000 }, // MÄÄRÄ NOSTETTU
+      { id: "heartwood_plank", count: 1000 }, // PÄIVITETTY Heartwoodiin (Tier 8 puu)
     ],
     slot: "weapon",
     stats: {
@@ -170,7 +175,7 @@ const allWeapons: Resource[] = [
       attackSpeed: 2400,
       critChance: 0.25,
       critMulti: 2.5,
-    },
+    }, // STATIT VAIHDETTU
     category: "sword",
     combatStyle: "melee",
     isUnique: false,
@@ -328,40 +333,45 @@ const allWeapons: Resource[] = [
     isUnique: false,
   },
   {
-    id: "bow_eternium",
-    name: "Eternium Bow",
-    rarity: "common",
-    level: 85,
-    xpReward: 20000,
-    interval: 7500,
-    value: 6000,
-    icon: "/assets/items/bows/bow_eternium.png",
-    color: "text-red-500",
-    description: "Fires arrows at supersonic speeds.",
-    inputs: [
-      { id: "bloodwood_plank", count: 1500 },
-      { id: "ore_eternium_smelted", count: 400 },
-    ],
-    slot: "weapon",
-    combatStyle: "ranged",
-    stats: { attack: 650, attackSpeed: 2500, critChance: 0.3, critMulti: 3.0 },
-    category: "bow",
-    isUnique: false,
-  },
-  {
     id: "bow_starfall",
     name: "Starfall Bow",
     rarity: "common",
-    level: 99,
-    xpReward: 50000,
-    interval: 10000,
-    value: 15000,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 20000, // LASKETTU 50k -> 20k
+    interval: 7500, // NOPEUTETTU
+    value: 6000, // LASKETTU 15000 -> 6000
     icon: "/assets/items/bows/bow_starfall.png",
     color: "text-indigo-400",
     description: "Forged from starlight itself.",
     inputs: [
-      { id: "heartwood_plank", count: 4000 },
-      { id: "ore_starfallalloy_smelted", count: 1000 },
+      { id: "bloodwood_plank", count: 1500 }, // PÄIVITETTY Bloodwoodiin (Tier 7) ja määrä laskettu
+      { id: "ore_starfallalloy_smelted", count: 400 }, // Määrä laskettu
+    ],
+    slot: "weapon",
+    combatStyle: "ranged",
+    stats: {
+      attack: 650,
+      attackSpeed: 2500,
+      critChance: 0.3,
+      critMulti: 3.0,
+    }, // STATIT VAIHDETTU
+    category: "bow",
+    isUnique: false,
+  },
+  {
+    id: "bow_eternium",
+    name: "Eternium Bow",
+    rarity: "common",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 50000, // NOSTETTU 20k -> 50k
+    interval: 10000, // HIDASTETTU (Vaativampi valmistus)
+    value: 15000, // NOSTETTU 6000 -> 15000
+    icon: "/assets/items/bows/bow_eternium.png",
+    color: "text-red-500",
+    description: "Fires arrows at supersonic speeds.",
+    inputs: [
+      { id: "heartwood_plank", count: 4000 }, // PÄIVITETTY Heartwoodiin (Tier 8) ja määrä nostettu
+      { id: "ore_eternium_smelted", count: 1000 }, // Määrä nostettu
     ],
     slot: "weapon",
     combatStyle: "ranged",
@@ -370,7 +380,7 @@ const allWeapons: Resource[] = [
       attackSpeed: 3000,
       critChance: 0.35,
       critMulti: 3.5,
-    },
+    }, // STATIT VAIHDETTU (End-game tehot)
     category: "bow",
     isUnique: false,
   },

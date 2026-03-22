@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { saveGameData } from "../services/gameService";
-import { updateLeaderboardEntry } from "../services/leaderboardService"; // LISÄTTY
+import { updateLeaderboardEntry } from "../services/leaderboardService";
+import { calculateTotalLevel } from "../utils/gameUtils"; // LISÄTTY: Tuodaan laskentatyökalu
 import type { User } from "firebase/auth";
 import type { GameState } from "../types";
 
@@ -19,6 +20,9 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
     setSaveStatus("saving");
     const now = Date.now();
 
+    // LISÄTTY: Lasketaan Total Level nykyisistä skilleistä
+    const currentTotalLevel = calculateTotalLevel(currentStateSnapshot.skills);
+
     // Päivitetään aikaleima storeen
     setState((prev: GameState) => ({ ...prev, lastTimestamp: now }));
 
@@ -27,7 +31,7 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
       setState: _ss,
       emitEvent: _ee,
       clearEvent: _ce,
-      updateQuestProgress: _uqp, // Varmista että poistat kaikki funktiot
+      updateQuestProgress: _uqp,
       ...dataToSave
     } = currentStateSnapshot;
 
@@ -45,6 +49,7 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
           currentStateSnapshot.username,
           currentStateSnapshot.avatar || "/assets/ui/icon_user_avatar.png",
           currentStateSnapshot.combatStats.maxMapCompleted,
+          currentTotalLevel, // LISÄTTY: Nyt tallennetaan myös kokonaistaso!
         ),
       ]);
 

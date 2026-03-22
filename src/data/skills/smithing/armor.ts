@@ -92,33 +92,33 @@ export const armor: Resource[] = [
     isUnique: false,
   },
   {
-    id: "armor_eternium_helm",
-    name: "Eternium Helm",
-    category: "helmet",
-    rarity: "common",
-    level: 85,
-    xpReward: 18000,
-    interval: 14000,
-    value: 2500,
-    icon: "/assets/items/armor/armor_head_eternium.png",
-    slot: "head",
-    stats: { defense: 40, hpBonus: 100 },
-    inputs: [{ id: "ore_eternium_smelted", count: 1500 }],
-    isUnique: false,
-  },
-  {
     id: "armor_starfall_helm",
     name: "Starfall Helm",
     category: "helmet",
     rarity: "common",
-    level: 99,
-    xpReward: 50000,
-    interval: 20000,
-    value: 5000,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 18000, // LASKETTU 50k -> 18k
+    interval: 14000,
+    value: 2500, // LASKETTU 5000 -> 2500
     icon: "/assets/items/armor/armor_head_starfallalloy.png",
     slot: "head",
-    stats: { defense: 60, hpBonus: 150 },
-    inputs: [{ id: "ore_starfallalloy_smelted", count: 4000 }],
+    stats: { defense: 40, hpBonus: 100 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_starfallalloy_smelted", count: 1500 }], // MÄÄRÄ LASKETTU
+    isUnique: false,
+  },
+  {
+    id: "armor_eternium_helm",
+    name: "Eternium Helm",
+    category: "helmet",
+    rarity: "common",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 50000, // NOSTETTU 18k -> 50k
+    interval: 20000, // HIDASTETTU
+    value: 5000, // NOSTETTU 2500 -> 5000
+    icon: "/assets/items/armor/armor_head_eternium.png",
+    slot: "head",
+    stats: { defense: 60, hpBonus: 150 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_eternium_smelted", count: 4000 }], // MÄÄRÄ NOSTETTU
     isUnique: false,
   },
 
@@ -214,33 +214,33 @@ export const armor: Resource[] = [
     isUnique: false,
   },
   {
-    id: "armor_eternium_body",
-    name: "Eternium Chestplate",
-    category: "chestplate",
-    rarity: "common",
-    level: 85,
-    xpReward: 35000,
-    interval: 18000,
-    value: 6000,
-    icon: "/assets/items/armor/armor_chest_eternium.png",
-    slot: "body",
-    stats: { defense: 1200, hpBonus: 2500 },
-    inputs: [{ id: "ore_eternium_smelted", count: 3000 }],
-    isUnique: false,
-  },
-  {
     id: "armor_starfall_body",
     name: "Starfall Chestplate",
     category: "chestplate",
     rarity: "common",
-    level: 99,
-    xpReward: 100000,
-    interval: 25000,
-    value: 12000,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 35000, // LASKETTU 100k -> 35k
+    interval: 18000,
+    value: 6000, // LASKETTU 12k -> 6k
     icon: "/assets/items/armor/armor_chest_starfallalloy.png",
     slot: "body",
-    stats: { defense: 3500, hpBonus: 8000 },
-    inputs: [{ id: "ore_starfallalloy_smelted", count: 8000 }],
+    stats: { defense: 1200, hpBonus: 2500 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_starfallalloy_smelted", count: 3000 }], // MATERIAALIMÄÄRÄ LASKETTU
+    isUnique: false,
+  },
+  {
+    id: "armor_eternium_body",
+    name: "Eternium Chestplate",
+    category: "chestplate",
+    rarity: "common",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 100000, // NOSTETTU 35k -> 100k
+    interval: 25000, // HIDASTETTU (Arvokkaampi takoa)
+    value: 12000, // NOSTETTU 6k -> 12k
+    icon: "/assets/items/armor/armor_chest_eternium.png",
+    slot: "body",
+    stats: { defense: 3500, hpBonus: 8000 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_eternium_smelted", count: 8000 }], // MATERIAALIMÄÄRÄ NOSTETTU
     isUnique: false,
   },
 
@@ -336,33 +336,33 @@ export const armor: Resource[] = [
     isUnique: false,
   },
   {
-    id: "armor_eternium_legs",
-    name: "Eternium Greaves",
-    category: "legs",
-    rarity: "common",
-    level: 85,
-    xpReward: 25000,
-    interval: 16000,
-    value: 4000,
-    icon: "/assets/items/armor/armor_legs_eternium.png",
-    slot: "legs",
-    stats: { defense: 750, hpBonus: 1600 },
-    inputs: [{ id: "ore_eternium_smelted", count: 2200 }],
-    isUnique: false,
-  },
-  {
     id: "armor_starfall_legs",
     name: "Starfall Greaves",
     category: "legs",
     rarity: "common",
-    level: 99,
-    xpReward: 75000,
-    interval: 22000,
-    value: 8000,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 25000, // LASKETTU 75k -> 25k
+    interval: 16000,
+    value: 4000, // LASKETTU 8k -> 4k
     icon: "/assets/items/armor/armor_legs_starfallalloy.png",
     slot: "legs",
-    stats: { defense: 2200, hpBonus: 5000 },
-    inputs: [{ id: "ore_starfallalloy_smelted", count: 6000 }],
+    stats: { defense: 750, hpBonus: 1600 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_starfallalloy_smelted", count: 2200 }], // MÄÄRÄ LASKETTU
+    isUnique: false,
+  },
+  {
+    id: "armor_eternium_legs",
+    name: "Eternium Greaves",
+    category: "legs",
+    rarity: "common",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 75000, // NOSTETTU 25k -> 75k
+    interval: 22000,
+    value: 8000, // NOSTETTU 4k -> 8k
+    icon: "/assets/items/armor/armor_legs_eternium.png",
+    slot: "legs",
+    stats: { defense: 2200, hpBonus: 5000 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_eternium_smelted", count: 6000 }], // MÄÄRÄ NOSTETTU
     isUnique: false,
   },
 ];

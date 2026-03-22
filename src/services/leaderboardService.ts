@@ -16,12 +16,13 @@ import type { LeaderboardEntry } from "../types";
 const db = getFirestore();
 
 /**
- * Hakee TOP 50 pelaajaa korkeimman suoritetun kartan mukaan.
+ * Hakee TOP 50 pelaajaa KORKEIMMAN KOKONAISTASON (Total Level) mukaan.
  */
-export const getTopPlayersByMap = async (): Promise<LeaderboardEntry[]> => {
+export const getTopPlayersByLevel = async (): Promise<LeaderboardEntry[]> => {
   try {
     const lbRef = collection(db, "leaderboard");
-    const q = query(lbRef, orderBy("maxMapCompleted", "desc"), limit(50));
+    // Vaihdettu orderBy maxMapCompleted -> totalLevel
+    const q = query(lbRef, orderBy("totalLevel", "desc"), limit(50));
 
     const querySnapshot = await getDocs(q);
 
@@ -43,8 +44,7 @@ export const getTopPlayersByMap = async (): Promise<LeaderboardEntry[]> => {
 };
 
 /**
- * Hakee nykyisen pelaajan sijoitustiedot kaikista rekisteröityneistä pelaajista.
- * SRP: Tämä funktio vastaa vain yksittäisen sijoituksen laskemisesta.
+ * Hakee nykyisen pelaajan sijoitustiedot Total Levelin perusteella.
  */
 export const getMyRankData = async (
   uid: string,
@@ -56,14 +56,13 @@ export const getMyRankData = async (
     if (!myDoc.exists()) return null;
     const myData = myDoc.data();
 
-    // Lasketaan sijoitus: kuinka monella pelaajalla on korkeampi maxMapCompleted
+    // Lasketaan sijoitus: kuinka monella pelaajalla on korkeampi totalLevel
     const lbRef = collection(db, "leaderboard");
     const qCount = query(
       lbRef,
-      where("maxMapCompleted", ">", myData.maxMapCompleted),
+      where("totalLevel", ">", myData.totalLevel || 0),
     );
 
-    // getCountFromServer on optimoitu kutsu, joka palauttaa vain numeron (halpa ja nopea)
     const snapshot = await getCountFromServer(qCount);
     const higherRankedCount = snapshot.data().count;
 
@@ -82,13 +81,14 @@ export const getMyRankData = async (
 };
 
 /**
- * Päivittää pelaajan tiedot leaderboard-kokoelmaan.
+ * PÄIVITETTY: Tallentaa nyt myös totalLevel-tiedon Firebaseen.
  */
 export const updateLeaderboardEntry = async (
   uid: string,
   username: string,
   avatar: string,
   maxMapCompleted: number,
+  totalLevel: number, // LISÄTTY
 ) => {
   try {
     const lbRef = doc(db, "leaderboard", uid);
@@ -98,6 +98,7 @@ export const updateLeaderboardEntry = async (
         username,
         avatar,
         maxMapCompleted,
+        totalLevel, // LISÄTTY
         lastUpdated: Date.now(),
       },
       { merge: true },

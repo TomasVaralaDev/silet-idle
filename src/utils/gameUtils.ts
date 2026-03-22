@@ -59,7 +59,21 @@ export const calculateXpGain = (
     xp: Math.max(0, totalXp),
   };
 };
+/**
+ * Laskee pelaajan kokonaistason (Account Level) summaamalla kaikkien taitojen tasot.
+ * @param skills Pelaajan skills-objekti
+ * @returns Kokonaistaso numerona
+ */
+export const calculateTotalLevel = (
+  skills: Record<string, { level: number }>,
+): number => {
+  if (!skills) return 0;
 
+  return Object.values(skills).reduce(
+    (acc, skill) => acc + (skill?.level || 1),
+    0,
+  );
+};
 /**
  * Optimoitu Speed Multiplier.
  */

@@ -3,7 +3,7 @@ import { useGameStore } from "../store/useGameStore";
 import { SKILL_DEFINITIONS } from "../config/skillDefinitions";
 import type { ViewType } from "../types";
 import { formatNumber } from "../utils/formatUtils";
-import { getRequiredXpForLevel } from "../utils/gameUtils";
+import { getRequiredXpForLevel, calculateTotalLevel } from "../utils/gameUtils";
 import QueuePanel from "./QueuePanel";
 
 interface SidebarProps {
@@ -164,11 +164,7 @@ export default function Sidebar({
       setSaveCooldown(60);
     }
   };
-
-  const totalLevel = (Object.values(skills) as { level: number }[]).reduce(
-    (acc, s) => acc + s.level,
-    0,
-  );
+  const totalLevel = calculateTotalLevel(skills);
   const hasCompletableQuests = quests.dailyQuests.some(
     (q) => q.isCompleted && !q.isClaimed,
   );
@@ -287,13 +283,6 @@ export default function Sidebar({
             General
           </p>
           <NavButton
-            view="premium_shop"
-            label="Premium Shop"
-            icon="/assets/ui/icon_star.png"
-            isActive={currentView === "premium_shop"}
-            onClick={setView}
-          />
-          <NavButton
             view="inventory"
             label="Storage"
             icon="/assets/ui/icon_inventory.png"
@@ -309,16 +298,16 @@ export default function Sidebar({
           />
           <NavButton
             view="achievements"
-            label="Milestones"
+            label="Achievements"
             icon="/assets/ui/icon_achievements.png"
             isActive={currentView === "achievements"}
             onClick={setView}
           />
           <NavButton
-            view="worldmarket"
-            label="World Vendors"
-            icon="/assets/ui/icon_market.png"
-            isActive={currentView === "worldmarket"}
+            view="premium_shop"
+            label="Premium Shop"
+            icon="/assets/ui/icon_gem.png"
+            isActive={currentView === "premium_shop"}
             onClick={setView}
           />
           <NavButton
@@ -370,9 +359,16 @@ export default function Sidebar({
           </p>
           <NavButton
             view="combat"
-            label="Maps"
+            label="Worlds"
             icon="/assets/skills/combat.png"
             isActive={currentView === "combat"}
+            onClick={setView}
+          />
+          <NavButton
+            view="worldmarket"
+            label="World Vendors"
+            icon="/assets/ui/icon_market.png" // Voit harkita tämän ikonin vaihtamista johonkin combat-tyylisempään myöhemmin
+            isActive={currentView === "worldmarket"}
             onClick={setView}
           />
           <div className="bg-panel/30 p-3 border border-border/50 mt-4 rounded space-y-1">

@@ -70,42 +70,42 @@ export const jewelry: Resource[] = [
     isUnique: false,
   },
   {
-    id: "necklace_eternium",
-    name: "Eternium Necklace",
-    rarity: "common",
-    level: 85,
-    xpReward: 5000,
-    interval: 12000,
-    value: 3000,
-    icon: "/assets/items/necklace/necklace_eternium.png",
-    color: "text-red-500",
-    description: "Timeless eternium charm.",
-    inputs: [
-      { id: "ore_eternium_smelted", count: 350 },
-      { id: "ore_emerald_smelted", count: 5 },
-    ],
-    slot: "necklace",
-    stats: { attack: 150, defense: 150 },
-    category: "necklace",
-    isUnique: false,
-  },
-  {
     id: "necklace_starfallalloy",
     name: "Starfall Necklace",
     rarity: "common",
-    level: 99,
-    xpReward: 12000,
-    interval: 15000,
-    value: 6000,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 5000, // LASKETTU 12k -> 5k
+    interval: 12000, // NOPEUTETTU
+    value: 3000, // LASKETTU 6k -> 3k
     icon: "/assets/items/necklace/necklace_starfallalloy.png",
     color: "text-indigo-400",
     description: "Cosmic starfall relic.",
     inputs: [
-      { id: "ore_starfallalloy_smelted", count: 1200 },
-      { id: "ore_emerald_smelted", count: 15 },
+      { id: "ore_starfallalloy_smelted", count: 350 }, // MÄÄRÄ LASKETTU
+      { id: "ore_emerald_smelted", count: 5 }, // SMALDI-MÄÄRÄ LASKETTU
     ],
     slot: "necklace",
-    stats: { attack: 350, defense: 350 },
+    stats: { attack: 150, defense: 150 }, // STATIT VAIHDETTU
+    category: "necklace",
+    isUnique: false,
+  },
+  {
+    id: "necklace_eternium",
+    name: "Eternium Necklace",
+    rarity: "common",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 12000, // NOSTETTU 5k -> 12k
+    interval: 15000, // HIDASTETTU
+    value: 6000, // NOSTETTU 3k -> 6k
+    icon: "/assets/items/necklace/necklace_eternium.png",
+    color: "text-red-500",
+    description: "Timeless eternium charm.",
+    inputs: [
+      { id: "ore_eternium_smelted", count: 1200 }, // MÄÄRÄ NOSTETTU
+      { id: "ore_emerald_smelted", count: 15 }, // SMALDI-MÄÄRÄ NOSTETTU
+    ],
+    slot: "necklace",
+    stats: { attack: 350, defense: 350 }, // STATIT VAIHDETTU
     category: "necklace",
     isUnique: false,
   },

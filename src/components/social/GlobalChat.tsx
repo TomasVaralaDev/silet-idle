@@ -4,9 +4,10 @@ import {
   sendGlobalMessage,
   subscribeToGlobalChat,
 } from "../../services/socialServices";
+import { calculateTotalLevel } from "../../utils/gameUtils";
 
 export default function GlobalChat({ myUid }: { myUid: string }) {
-  const { social, setGlobalMessages, username } = useGameStore();
+  const { social, setGlobalMessages, username, skills } = useGameStore();
   const [input, setInput] = useState("");
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
 
@@ -17,6 +18,8 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
   const messages = useMemo(() => {
     return social?.globalMessages || [];
   }, [social?.globalMessages]);
+
+  const totalLevel = calculateTotalLevel(skills);
 
   // KUUNTELIJA
   useEffect(() => {
@@ -51,7 +54,10 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
     e.preventDefault();
     if (!input.trim() || cooldownRemaining > 0) return;
     try {
-      await sendGlobalMessage(myUid, username, input);
+      // Tallennetaan edelleen muodossa "[Lv.142] Username" tietokantaan
+      const displayName = `[Lv.${totalLevel}] ${username}`;
+
+      await sendGlobalMessage(myUid, displayName, input);
       setInput("");
       setCooldownRemaining(10);
     } catch (err) {
@@ -77,6 +83,19 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
                 minute: "2-digit",
               });
 
+              // PARSITAAN TASO JA NIMI ERIKSEEN
+              const rawName = msg.senderUsername || "Unknown";
+              const match = rawName.match(/^(\[Lv\.\d+\])\s+(.*)$/);
+
+              let levelTag = "";
+              let cleanName = rawName;
+
+              // Jos regex löytää tason (eli kyseessä on uusi viesti)
+              if (match) {
+                levelTag = match[1]; // esim. "[Lv.142]"
+                cleanName = match[2]; // esim. "Restorer"
+              }
+
               return (
                 <div
                   key={msg.id}
@@ -85,12 +104,22 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
                   <span className="text-[10px] text-tx-muted font-mono mt-0.5 shrink-0 opacity-50">
                     [{timestamp}]
                   </span>
-                  <div className="text-sm leading-relaxed">
+
+                  <div className="text-sm leading-relaxed flex items-baseline flex-wrap">
+                    {/* Taso näytetään omana himmeämpänä merkkinään */}
+                    {levelTag && (
+                      <span className="text-[10px] font-mono text-tx-muted/70 bg-panel/40 px-1 py-0.5 rounded border border-border/30 mr-1.5 shrink-0">
+                        {levelTag}
+                      </span>
+                    )}
+
+                    {/* Nimi näkyy omana kirkkaana elementtinään */}
                     <span
-                      className={`font-bold mr-1.5 uppercase tracking-tight ${isMe ? "text-accent" : "text-warning"}`}
+                      className={`font-bold mr-1.5 uppercase tracking-tight shrink-0 ${isMe ? "text-accent" : "text-warning"}`}
                     >
-                      {msg.senderUsername}:
+                      {cleanName}:
                     </span>
+
                     <span className="text-tx-main break-words font-medium">
                       {msg.text}
                     </span>

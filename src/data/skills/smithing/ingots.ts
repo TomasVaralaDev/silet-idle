@@ -92,33 +92,33 @@ export const ingots: Resource[] = [
     isUnique: false,
   },
   {
-    id: "ore_eternium_smelted",
-    name: "Eternium Ingot",
-    category: "ingot",
-    rarity: "legendary",
-    level: 85,
-    xpReward: 100,
-    interval: 8000,
-    value: 600,
-    icon: "/assets/resources/ore/ore_eternium_smelted.png",
-    color: "text-red-500",
-    description: "Temporal alloy ingot.",
-    inputs: [{ id: "ore_eternium", count: 1 }],
-    isUnique: false,
-  },
-  {
     id: "ore_starfallalloy_smelted",
     name: "Starfall Ingot",
     category: "ingot",
     rarity: "legendary",
-    level: 99,
-    xpReward: 150,
-    interval: 10000,
-    value: 1500,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 100, // LASKETTU 150 -> 100
+    interval: 8000, // NOPEUTETTU 10s -> 8s
+    value: 600, // LASKETTU 1500 -> 600
     icon: "/assets/resources/ore/ore_starfallalloy_smelted.png",
     color: "text-indigo-400",
     description: "Cosmic alloy ingot.",
     inputs: [{ id: "ore_starfallalloy", count: 1 }],
+    isUnique: false,
+  },
+  {
+    id: "ore_eternium_smelted",
+    name: "Eternium Ingot",
+    category: "ingot",
+    rarity: "legendary",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 150, // NOSTETTU 100 -> 150
+    interval: 10000, // HIDASTETTU 8s -> 10s
+    value: 1500, // NOSTETTU 600 -> 1500
+    icon: "/assets/resources/ore/ore_eternium_smelted.png",
+    color: "text-red-500",
+    description: "Temporal alloy ingot.",
+    inputs: [{ id: "ore_eternium", count: 1 }],
     isUnique: false,
   },
 ];

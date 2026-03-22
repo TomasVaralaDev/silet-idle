@@ -73,37 +73,37 @@ export const tools: Resource[] = [
     isUnique: false,
   },
   {
-    id: "ring_eternium",
-    name: "Eternium Ring",
-    category: "ring",
-    rarity: "common",
-    level: 85,
-    xpReward: 4500,
-    interval: 12000,
-    value: 2500,
-    icon: "/assets/items/ring/ring_eternium.png",
-    color: "text-red-500",
-    description: "A ring pulsing with eternal power.",
-    slot: "ring",
-    stats: { attack: 100, defense: 100 },
-    inputs: [{ id: "ore_eternium_smelted", count: 300 }],
-    isUnique: false,
-  },
-  {
     id: "ring_starfallalloy",
     name: "Starfall Ring",
     category: "ring",
     rarity: "common",
-    level: 99,
-    xpReward: 10000,
-    interval: 15000,
-    value: 5000,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 4500, // LASKETTU 10000 -> 4500
+    interval: 12000, // NOPEUTETTU
+    value: 2500, // LASKETTU 5000 -> 2500
     icon: "/assets/items/ring/ring_starfallalloy.png",
     color: "text-indigo-400",
     description: "Forged from the core of a fallen star.",
     slot: "ring",
-    stats: { attack: 250, defense: 250 },
-    inputs: [{ id: "ore_starfallalloy_smelted", count: 1000 }],
+    stats: { attack: 100, defense: 100 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_starfallalloy_smelted", count: 300 }], // MÄÄRÄ LASKETTU
+    isUnique: false,
+  },
+  {
+    id: "ring_eternium",
+    name: "Eternium Ring",
+    category: "ring",
+    rarity: "common",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 10000, // NOSTETTU 4500 -> 10000
+    interval: 15000, // HIDASTETTU
+    value: 5000, // NOSTETTU 2500 -> 5000
+    icon: "/assets/items/ring/ring_eternium.png",
+    color: "text-red-500",
+    description: "A ring pulsing with eternal power.",
+    slot: "ring",
+    stats: { attack: 250, defense: 250 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_eternium_smelted", count: 1000 }], // MÄÄRÄ NOSTETTU
     isUnique: false,
   },
 
@@ -213,37 +213,37 @@ export const tools: Resource[] = [
     isUnique: false,
   },
   {
-    id: "shield_eternium",
-    name: "Eternium Shield",
-    category: "shield",
-    rarity: "common",
-    level: 85,
-    xpReward: 6000,
-    interval: 13000,
-    value: 6000,
-    icon: "/assets/items/shields/shield_eternium.png",
-    color: "text-red-500",
-    description: "An ancient shield that deflects destruction.",
-    slot: "shield",
-    stats: { defense: 1100 },
-    inputs: [{ id: "ore_eternium_smelted", count: 450 }],
-    isUnique: false,
-  },
-  {
     id: "shield_starfall",
     name: "Starfall Shield",
     category: "shield",
     rarity: "common",
-    level: 99,
-    xpReward: 45000,
-    interval: 18000,
-    value: 15000,
+    level: 85, // LASKETTU 99 -> 85
+    xpReward: 6000, // LASKETTU 45000 -> 6000
+    interval: 13000, // NOPEUTETTU
+    value: 6000, // LASKETTU 15000 -> 6000
     icon: "/assets/items/shields/shield_starfall.png",
     color: "text-indigo-400",
     description: "An impenetrable cosmic barrier.",
     slot: "shield",
-    stats: { defense: 2500 },
-    inputs: [{ id: "ore_starfallalloy_smelted", count: 3500 }],
+    stats: { defense: 1100 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_starfallalloy_smelted", count: 450 }], // MÄÄRÄ LASKETTU
+    isUnique: false,
+  },
+  {
+    id: "shield_eternium",
+    name: "Eternium Shield",
+    category: "shield",
+    rarity: "common",
+    level: 99, // NOSTETTU 85 -> 99
+    xpReward: 45000, // NOSTETTU 6000 -> 45000
+    interval: 18000, // HIDASTETTU
+    value: 15000, // NOSTETTU 6000 -> 15000
+    icon: "/assets/items/shields/shield_eternium.png",
+    color: "text-red-500",
+    description: "An ancient shield that deflects destruction.",
+    slot: "shield",
+    stats: { defense: 2500 }, // STATIT VAIHDETTU
+    inputs: [{ id: "ore_eternium_smelted", count: 3500 }], // MÄÄRÄ NOSTETTU
     isUnique: false,
   },
 ];

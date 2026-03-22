@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { getItemById } from "../../utils/itemUtils";
 import { createListing } from "../../services/marketService";
@@ -19,11 +19,22 @@ export default function SellForm({ myUid, onComplete }: Props) {
   const [price, setPrice] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Haetaan itemin tiedot turvallisesti
   const selectedItem = selectedId ? getItemById(selectedId) : null;
   const maxAmount = selectedId ? inventory[selectedId] || 0 : 0;
 
+  // TURVAMEKANISMI: Jos valittu ID ei enää vastaa mitään itemiä pelidatassa,
+  // nollataan valinta automaattisesti, jotta sivu ei kaadu.
+  useEffect(() => {
+    if (selectedId && !selectedItem) {
+      setSelectedId(null);
+      emitEvent("error", "Selected item data is missing or corrupted.");
+    }
+  }, [selectedId, selectedItem, emitEvent]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Varmistetaan, että item on olemassa ennen kuin jatketaan
     if (!selectedId || !selectedItem || isSubmitting) return;
 
     if (selectedItem.isUnique) {
@@ -84,7 +95,8 @@ export default function SellForm({ myUid, onComplete }: Props) {
             Item info
           </h3>
 
-          {selectedItem ? (
+          {/* Renderöidään lomake vain jos item on oikeasti löydetty */}
+          {selectedId && selectedItem ? (
             <form
               onSubmit={handleSubmit}
               noValidate
@@ -203,7 +215,6 @@ export default function SellForm({ myUid, onComplete }: Props) {
             </form>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-6">
-              {/* KORVATTU: icon_reward suuressa koossa ja ilman taustaa */}
               <img
                 src="/assets/ui/icon_reward.png"
                 className="w-20 h-20 pixelated opacity-20 grayscale"

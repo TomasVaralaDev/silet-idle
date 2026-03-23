@@ -1,3 +1,5 @@
+import React from "react";
+import IndexArticle from "./articles/IndexArticle";
 import BasicsArticle from "./articles/BasicsArticle";
 import CombatArticle from "./articles/CombatArticle";
 import EquipmentArticle from "./articles/EquipmentArticle";
@@ -10,26 +12,35 @@ import EconomyArticle from "./articles/EconomyArticle";
 import AutomationArticle from "./articles/AutomationArticle";
 
 export type WikiTabId =
+  | "index"
   | "basics"
-  | "combat"
+  | "automation"
   | "equipment"
+  | "combat"
   | "enchanting"
-  | "vendors"
-  | "treasures"
   | "expeditions"
   | "quests"
+  | "vendors"
   | "economy"
-  | "automation";
+  | "treasures";
 
 export interface WikiTabDef {
   id: WikiTabId;
   label: string;
   icon: string;
   desc: string;
-  component: React.FC;
+  component: React.FC<{ setActiveTab: (id: WikiTabId) => void }>;
 }
 
+// JÄRJESTETTY PROGRESSION MUKAAN:
 export const WIKI_TABS: WikiTabDef[] = [
+  {
+    id: "index",
+    label: "Index",
+    icon: "/assets/ui/icon_guide.png",
+    desc: "Table of Contents",
+    component: IndexArticle,
+  },
   {
     id: "basics",
     label: "Hero's Path",
@@ -45,13 +56,6 @@ export const WIKI_TABS: WikiTabDef[] = [
     component: AutomationArticle,
   },
   {
-    id: "combat",
-    label: "Art of War",
-    icon: "/assets/skills/combat.png",
-    desc: "Combat & Tactics",
-    component: CombatArticle,
-  },
-  {
     id: "equipment",
     label: "The Armory",
     icon: "/assets/ui/icon_inventory.png",
@@ -59,25 +63,18 @@ export const WIKI_TABS: WikiTabDef[] = [
     component: EquipmentArticle,
   },
   {
+    id: "combat",
+    label: "Art of War",
+    icon: "/assets/skills/combat.png",
+    desc: "Combat & Tactics",
+    component: CombatArticle,
+  },
+  {
     id: "enchanting",
     label: "The Forge",
     icon: "/assets/ui/icon_enchanting.png",
     desc: "Magical Augmentation",
     component: EnchantingArticle,
-  },
-  {
-    id: "vendors",
-    label: "World Vendors",
-    icon: "/assets/ui/icon_market.png",
-    desc: "Regional Trade Hubs",
-    component: VendorsArticle,
-  },
-  {
-    id: "treasures",
-    label: "Spoils of War",
-    icon: "/assets/ui/icon_quest.png",
-    desc: "Drops & Rarities",
-    component: TreasuresArticle,
   },
   {
     id: "expeditions",
@@ -94,10 +91,24 @@ export const WIKI_TABS: WikiTabDef[] = [
     component: QuestsArticle,
   },
   {
+    id: "vendors",
+    label: "World Vendors",
+    icon: "/assets/ui/icon_market.png",
+    desc: "Regional Trade Hubs",
+    component: VendorsArticle,
+  },
+  {
     id: "economy",
     label: "Economy",
     icon: "/assets/ui/coins.png",
     desc: "Markets & Trade",
     component: EconomyArticle,
+  },
+  {
+    id: "treasures",
+    label: "Spoils of War",
+    icon: "/assets/ui/icon_quest.png",
+    desc: "Drops & Rarities",
+    component: TreasuresArticle,
   },
 ];

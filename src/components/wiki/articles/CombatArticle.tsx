@@ -1,189 +1,152 @@
+import { ShieldAlert, Crosshair, HeartPulse, Zap } from "lucide-react";
+
 export default function CombatArticle() {
   return (
-    <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-10 text-left">
-      {/* SECTION 1: WEAPON ARCHETYPES */}
-      <section>
-        <h2 className="text-4xl font-black text-tx-main uppercase tracking-tighter mb-6">
-          Art of War
+    <div className="animate-in fade-in slide-in-from-right-8 duration-500 space-y-12 text-left relative z-10">
+      {/* HEADER */}
+      <header className="border-b-2 border-accent/30 pb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-accent font-mono text-sm tracking-widest">
+            CHAPTER 02
+          </span>
+        </div>
+        <h2 className="text-3xl md:text-5xl font-black text-tx-main uppercase tracking-tighter drop-shadow-md">
+          The Art of War
         </h2>
-        <h3 className="text-sm font-bold text-warning uppercase tracking-[0.2em] mb-4">
+        <p className="text-tx-muted text-sm md:text-base leading-relaxed mt-4 max-w-2xl">
+          Combat is an automated, turn-based exchange of blows. However, victory
+          is decided long before the first strike—in the preparation of your
+          gear and the honing of your skills.
+        </p>
+      </header>
+
+      {/* WEAPON ARCHETYPES */}
+      <section>
+        <h3 className="text-xl md:text-2xl font-black text-tx-main uppercase tracking-widest mb-6 flex items-center gap-3">
+          <Crosshair className="text-accent" size={24} />
           Weapon Archetypes
         </h3>
-        {/* Muutettu md:grid-cols-3 -> md:grid-cols-2 koska sauvat on poistettu */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* SWORD */}
-          <div className="bg-panel border border-border p-4 rounded-xl flex flex-col items-center text-center">
-            <img
-              src="/assets/items/weapons/weapon_sword_iron.png"
-              className="w-12 h-12 pixelated mb-3"
-              alt="Melee"
-            />
-            <h4 className="text-tx-main font-black uppercase text-xs">Sword</h4>
-            <p className="text-[10px] text-tx-muted mt-2">
-              Specializes in raw physical power and scales with your Melee
-              skill.
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          <div className="bg-panel border-2 border-border hover:border-tx-main transition-all p-6 rounded-2xl flex flex-col items-center text-center group shadow-md">
+            <div className="w-16 h-16 rounded-full bg-app-base border border-border flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <img
+                src="/assets/items/weapons/weapon_sword_iron.png"
+                className="w-10 h-10 pixelated"
+                alt="Melee"
+              />
+            </div>
+            <h4 className="text-tx-main font-black uppercase text-sm md:text-base tracking-widest mb-2">
+              Melee / Swords
+            </h4>
+            <p className="text-xs text-tx-muted leading-relaxed">
+              Specializes in raw physical power. Highly reliable damage that
+              scales exclusively with your <strong>Melee</strong> skill.
             </p>
           </div>
 
-          {/* BOW */}
-          <div className="bg-panel border border-border p-4 rounded-xl flex flex-col items-center text-center">
-            <img
-              src="/assets/items/bows/bow_iron.png"
-              className="w-12 h-12 pixelated mb-3"
-              alt="Ranged"
-            />
-            <h4 className="text-tx-main font-black uppercase text-xs">Bow</h4>
-            <p className="text-[10px] text-tx-muted mt-2">
-              Favors high attack speed and critical strikes. Scales with Ranged
-              skill.
+          <div className="bg-panel border-2 border-border hover:border-success transition-all p-6 rounded-2xl flex flex-col items-center text-center group shadow-md">
+            <div className="w-16 h-16 rounded-full bg-app-base border border-border flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <img
+                src="/assets/items/bows/bow_iron.png"
+                className="w-10 h-10 pixelated"
+                alt="Ranged"
+              />
+            </div>
+            <h4 className="text-success font-black uppercase text-sm md:text-base tracking-widest mb-2">
+              Ranged / Bows
+            </h4>
+            <p className="text-xs text-tx-muted leading-relaxed">
+              Favors extreme attack speed and critical strikes. Highly lethal
+              but unpredictable. Scales with your <strong>Ranged</strong> skill.
             </p>
           </div>
         </div>
       </section>
 
-      {/* SECTION 2: EQUIPMENT ATTRIBUTES */}
-      <section>
-        <h3 className="text-sm font-bold text-warning uppercase tracking-[0.2em] mb-4">
-          Equipment Attributes
+      {/* KEY STATS */}
+      <section className="bg-panel/50 border border-border/50 rounded-3xl p-6 md:p-8 shadow-inner">
+        <h3 className="text-xl font-black text-tx-main uppercase tracking-widest mb-6 border-b border-border/50 pb-4">
+          Understanding Attributes
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-panel/30 p-6 rounded-2xl border border-border/50">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
           <StatDetail
+            icon={<Zap className="text-warning" size={16} />}
             label="Attack"
-            desc="Raw damage dealt per successful hit."
+            desc="Raw damage dealt per successful hit. The foundation of your DPS."
           />
           <StatDetail
+            icon={<ShieldAlert className="text-accent" size={16} />}
             label="Defense"
-            desc="Reduces incoming damage from hostile sources."
+            desc="Directly mitigates incoming damage. Crucial for long expeditions."
           />
           <StatDetail
+            icon={<Zap className="text-tx-main" size={16} />}
             label="Attack Speed"
-            desc="The delay (ms) between strikes. Lower is faster."
+            desc="Measured in seconds. Lower is faster. Bows naturally excel here."
           />
           <StatDetail
-            label="Crit Chance"
-            desc="Percentage chance to deal a Critical Strike."
-          />
-          <StatDetail
-            label="Crit Multi"
-            desc="Multiplier applied to critical damage (Base: 1.5x)."
-          />
-          <StatDetail
-            label="Strength"
-            desc="Bonus physical power affecting melee effectiveness."
-          />
-          <StatDetail
+            icon={<HeartPulse className="text-danger" size={16} />}
             label="HP Bonus"
-            desc="Increases your maximum life point capacity."
+            desc="Added flat Health Points from armor pieces like chestplates and helmets."
           />
         </div>
       </section>
 
-      {/* SECTION 3: HERO SKILLS */}
+      {/* DEATH PENALTY */}
       <section>
-        <h3 className="text-sm font-bold text-warning uppercase tracking-[0.2em] mb-4">
-          Combat Proficiency
-        </h3>
-        <p className="text-xs text-tx-muted mb-6 leading-relaxed">
-          Engaging in battle grants experience in several internal systems.
-          Raising these levels is the only way to master higher-tier gear and
-          survive late-game zones.
-        </p>
-
-        <div className="space-y-2">
-          <SkillRow
-            name="Combat"
-            desc="Overall combat capability and power level."
-          />
-          <SkillRow
-            name="Hitpoints"
-            desc="Directly increases your Maximum Health."
-          />
-          <SkillRow
-            name="Attack"
-            desc="Increases your chance to land successful hits."
-          />
-          <SkillRow
-            name="Defense"
-            desc="Improves the efficiency of all equipped armor."
-          />
-          {/* Muutettu md:grid-cols-3 -> md:grid-cols-2 koska magia on poistettu */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
-            <div className="bg-panel p-3 border border-border rounded-lg">
-              <span className="text-[10px] font-black text-accent uppercase">
-                Melee
-              </span>
-              <p className="text-[9px] text-tx-muted mt-1">
-                Mastery of blades and physical force.
-              </p>
-            </div>
-            <div className="bg-panel p-3 border border-border rounded-lg">
-              <span className="text-[10px] font-black text-success uppercase">
-                Ranged
-              </span>
-              <p className="text-[9px] text-tx-muted mt-1">
-                Mastery of bows and precision strikes.
-              </p>
-            </div>
+        <div className="bg-danger/10 border-2 border-danger/30 rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-[0_0_30px_rgba(var(--color-danger)/0.1)]">
+          <div className="absolute -right-10 -top-10 opacity-10">
+            <ShieldAlert size={200} className="text-danger" />
           </div>
-        </div>
-      </section>
-
-      {/* SECTION 4: SURVIVAL & DEFEAT */}
-      <section>
-        <h3 className="text-sm font-bold text-danger uppercase tracking-[0.2em] mb-4 border-l-4 border-danger pl-4">
-          Survival & Defeat
-        </h3>
-        <p className="text-xs text-tx-muted mb-6 leading-relaxed">
-          The worlds outside the safe zones are unforgiving. Knowing when to
-          fight and when to flee is a vital skill.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 bg-danger/5 border border-danger/20 rounded-xl">
-            <h4 className="text-danger font-black text-[10px] uppercase mb-3 tracking-widest flex items-center gap-2">
-              <span>☠️</span> Death Penalty
-            </h4>
-            <p className="text-xs text-tx-muted leading-relaxed">
-              If your HP reaches zero, you are defeated. You will be forcefully
-              removed from combat and placed on a{" "}
-              <strong>Respawn Cooldown</strong>. During this time, you cannot
-              fight, and your active combat progress for that map is halted.
-            </p>
-          </div>
-
-          <div className="p-5 bg-warning/5 border border-warning/20 rounded-xl">
-            <h4 className="text-warning font-black text-[10px] uppercase mb-3 tracking-widest flex items-center gap-2">
-              <span>🏃</span> Retreating
-            </h4>
-            <p className="text-xs text-tx-muted leading-relaxed">
-              You can manually click the <strong>Stop/Retreat</strong> button to
-              flee a losing battle. However, fleeing still triggers a brief{" "}
-              <strong>Retreat Cooldown</strong> before you can re-engage with
-              the enemy. Use Auto-Eat to survive longer!
-            </p>
-          </div>
+          <h3 className="text-lg md:text-xl font-black text-danger uppercase tracking-[0.2em] mb-4 relative z-10 flex items-center gap-3">
+            <span className="animate-pulse">⚠️</span> Survival Protocol
+          </h3>
+          <p className="text-sm text-tx-main/80 leading-relaxed mb-4 relative z-10 font-medium">
+            If your HP reaches zero, you will be forcefully evacuated from the
+            Combat Zone.
+          </p>
+          <ul className="space-y-3 relative z-10">
+            <li className="flex items-center gap-3 text-xs text-tx-muted bg-black/40 p-3 rounded-lg border border-danger/20">
+              <span className="text-danger font-black">01</span> You will incur
+              a <strong>60-second Cooldown</strong> preventing combat entry.
+            </li>
+            <li className="flex items-center gap-3 text-xs text-tx-muted bg-black/40 p-3 rounded-lg border border-danger/20">
+              <span className="text-danger font-black">02</span> Active combat
+              progress for that map is halted instantly.
+            </li>
+            <li className="flex items-center gap-3 text-xs text-tx-muted bg-black/40 p-3 rounded-lg border border-warning/30">
+              <span className="text-warning font-black">TIP</span> Keep your{" "}
+              <strong>Auto-Eat</strong> threshold high and stock up on food!
+            </li>
+          </ul>
         </div>
       </section>
     </div>
   );
 }
 
-function StatDetail({ label, desc }: { label: string; desc: string }) {
+// Apukomponentti attribuuttien listaukseen
+function StatDetail({
+  label,
+  desc,
+  icon,
+}: {
+  label: string;
+  desc: string;
+  icon: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-1 border-b border-border/30 pb-2">
-      <span className="text-[10px] font-black text-tx-main uppercase tracking-wider">
-        {label}
-      </span>
-      <span className="text-[10px] text-tx-muted leading-tight">{desc}</span>
-    </div>
-  );
-}
-
-function SkillRow({ name, desc }: { name: string; desc: string }) {
-  return (
-    <div className="flex items-center justify-between p-3 bg-panel border border-border rounded-xl">
-      <span className="text-xs font-black uppercase text-tx-main">{name}</span>
-      <span className="text-[10px] text-tx-muted italic">{desc}</span>
+    <div className="flex gap-4 items-start group">
+      <div className="bg-app-base p-2 rounded-lg border border-border group-hover:border-tx-main/50 transition-colors shrink-0 shadow-sm mt-1">
+        {icon}
+      </div>
+      <div>
+        <h4 className="text-sm font-black text-tx-main uppercase tracking-wider mb-1">
+          {label}
+        </h4>
+        <p className="text-xs text-tx-muted leading-relaxed">{desc}</p>
+      </div>
     </div>
   );
 }

@@ -1,11 +1,6 @@
 import { useGameStore } from "../../store/useGameStore";
 import { getItemDetails } from "../../data";
-
-interface ConsumableItem {
-  healing?: number;
-  category?: string;
-  slot?: string;
-}
+import type { Resource } from "../../types";
 
 export default function FoodSelector() {
   const inventory = useGameStore((state) => state.inventory);
@@ -20,21 +15,29 @@ export default function FoodSelector() {
   const isGlobalCooldown = foodTimer > 0;
   const cooldownProgress = Math.max(
     0,
-    Math.min(100, ((10000 - foodTimer) / 10000) * 100)
+    Math.min(100, ((10000 - foodTimer) / 10000) * 100),
   );
 
-  const foodItems = Object.entries(inventory).filter(([id]) => {
-    const details = getItemDetails(id);
-    const item = details as unknown as ConsumableItem;
-    return (
-      (item?.healing || 0) > 0 ||
-      details?.category === "potion" ||
-      details?.slot === "food"
-    );
-  });
+  // Hae kaikki ruoat ja potionit inventaariosta
+  const foodItems = Object.entries(inventory)
+    .filter(([id, count]) => {
+      if (count <= 0) return false;
+      const details = getItemDetails(id) as Resource | undefined;
+      return (
+        (details?.healing || 0) > 0 ||
+        details?.category === "potion" ||
+        details?.slot === "food"
+      );
+    })
+    // Järjestetään niin, että parhaiten parantavat ovat ensin
+    .sort(([idA], [idB]) => {
+      const a = getItemDetails(idA) as Resource | undefined;
+      const b = getItemDetails(idB) as Resource | undefined;
+      return (b?.healing || 0) - (a?.healing || 0);
+    });
 
   const activeFoodDetails = equippedFood
-    ? getItemDetails(equippedFood.itemId)
+    ? (getItemDetails(equippedFood.itemId) as Resource | undefined)
     : null;
 
   const handleSettingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,133 +50,124 @@ export default function FoodSelector() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* ACTIVE FOOD & SETTINGS (Yläpalkki) */}
-      <div className="flex items-center gap-3 bg-panel/50 p-2 rounded-lg border border-border relative overflow-hidden text-left">
-        {/* COOLDOWN SWIPE AKTIIVISELLE RUOALLE */}
-        {isGlobalCooldown && activeFoodDetails && (
-          <>
-            <div className="absolute inset-0 bg-panel/40 z-0" />
-            <div
-              className="absolute inset-0 bg-app-base/60 z-10 transition-transform duration-100 ease-linear"
-              style={{
-                transform: `translateX(${cooldownProgress}%)`,
-                width: "100%",
-              }}
-            />
-            <div
-              className="absolute inset-0 w-1 bg-success shadow-[0_0_10px_rgb(var(--color-success)/0.5)] z-20 transition-transform duration-100 ease-linear"
-              style={{ transform: `translateX(${cooldownProgress}%)` }}
-            />
-          </>
-        )}
-
-        <div
-          className={`w-12 h-12 bg-app-base border rounded flex items-center justify-center relative shrink-0 z-30 transition-all ${
-            isGlobalCooldown
-              ? "grayscale opacity-50 border-border"
-              : "border-success/50"
-          }`}
-        >
-          {activeFoodDetails ? (
-            <img
-              src={activeFoodDetails.icon}
-              className="w-8 h-8 pixelated object-contain"
-              alt={activeFoodDetails.name}
-            />
-          ) : (
-            <div className="w-2 h-2 rounded-full bg-panel-hover"></div>
-          )}
-          {equippedFood && (
-            <span className="absolute -top-2 -right-2 bg-success text-white text-[9px] font-black px-1.5 py-0.5 rounded border border-black/20 shadow-sm">
-              {equippedFood.count}
-            </span>
-          )}
+    <div className="flex flex-col h-full bg-app-base overflow-hidden">
+      {/* 1. AUTO-EAT THRESHOLD (Slider siirretty ylös, tiiviimpi asettelu) */}
+      <div className="bg-panel border-b border-border/50 p-3 shrink-0">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-tx-muted flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            Auto-Eat Threshold
+          </span>
+          <span className="text-[10px] font-mono font-bold text-success bg-success/10 px-2 py-0.5 rounded border border-success/20 shadow-sm">
+            {combatSettings.autoEatThreshold}% HP
+          </span>
         </div>
 
-        <div className="flex-1 min-w-0 z-30 pr-2">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[9px] text-tx-muted font-black uppercase tracking-widest">
-              {isGlobalCooldown
-                ? `Recharging: ${(foodTimer / 1000).toFixed(1)}s`
-                : "Auto-Eat Threshold"}
-            </span>
-            <span className="text-[9px] text-success font-black">
-              {combatSettings.autoEatThreshold}% HP
-            </span>
-          </div>
+        {/* Slider */}
+        <div className="relative w-full h-1.5 bg-app-base rounded-full border border-border/50">
+          <div
+            className="absolute left-0 top-0 bottom-0 bg-success/30 rounded-full"
+            style={{ width: `${combatSettings.autoEatThreshold}%` }}
+          />
           <input
             type="range"
             min="0"
             max="100"
             value={combatSettings.autoEatThreshold}
             onChange={handleSettingChange}
-            className="w-full h-1 bg-panel-hover rounded-lg appearance-none cursor-pointer accent-success transition-all"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          {/* Custom kahva (visuaalinen kikka sliderille) */}
+          <div
+            className="absolute top-1/2 -mt-2 -ml-2 w-4 h-4 bg-panel border-2 border-success rounded-full shadow-[0_0_5px_rgb(var(--color-success)/0.5)] pointer-events-none"
+            style={{ left: `${combatSettings.autoEatThreshold}%` }}
           />
         </div>
       </div>
 
-      {/* INVENTORY GRID (Vaihtoehdot) */}
-      <div className="overflow-y-auto custom-scrollbar max-h-[150px]">
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-          {foodItems.map(([id, count]) => {
-            const item = getItemDetails(id);
-            const isEquipped = equippedFood?.itemId === id;
-
-            return (
+      {/* 2. INVENTORY GRID & ACTIVE ITEM */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-3">
+        {foodItems.length === 0 && !equippedFood ? (
+          <div className="h-full flex flex-col items-center justify-center text-tx-muted opacity-50">
+            <span className="text-2xl mb-2">🍽️</span>
+            <span className="text-[10px] uppercase font-bold tracking-widest">
+              No consumables
+            </span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            {/* AKTIIVINEN ESINE (Aina ensimmäisenä) */}
+            {equippedFood && activeFoodDetails && (
               <button
-                key={id}
-                onClick={() => equipItem(id)}
                 disabled={isGlobalCooldown}
-                className={`
-                            aspect-square bg-panel border rounded flex flex-col items-center justify-center relative group transition-all overflow-hidden
-                            ${
-                              isEquipped
-                                ? "border-success ring-1 ring-success/20"
-                                : "border-border hover:border-border-hover"
-                            }
-                            ${
-                              isGlobalCooldown
-                                ? "cursor-not-allowed"
-                                : "cursor-pointer"
-                            }
-                        `}
-                title={`${item?.name} (Heals ${item?.healing || 0} HP)`}
+                className="aspect-square bg-success/5 border border-success ring-1 ring-success/30 rounded-xl flex flex-col items-center justify-center relative group transition-all shadow-[0_0_15px_rgba(var(--color-success)/0.15)] col-start-1"
+                title={`Unequip ${activeFoodDetails.name}`}
+                // Voit lisätä unequip-logiikan halutessasi, tällä hetkellä klikkaus tekee saman equipItem
+                onClick={() => equipItem(equippedFood.itemId)}
               >
-                {/* COOLDOWN SWIPE PIENILLE IKONEILLE */}
+                {/* Cooldown overlay active itemille */}
                 {isGlobalCooldown && (
                   <div
-                    className="absolute inset-0 bg-app-base/80 z-10 transition-transform duration-100 ease-linear"
+                    className="absolute inset-0 bg-app-base/80 z-10 transition-transform duration-100 ease-linear rounded-xl origin-left"
                     style={{
-                      transform: `translateX(${cooldownProgress}%)`,
-                      width: "100%",
+                      transform: `scaleX(${cooldownProgress / 100})`,
                     }}
                   />
                 )}
 
-                {item?.icon && (
-                  <img
-                    src={item.icon}
-                    className={`w-6 h-6 pixelated object-contain z-20 transition-all ${
-                      isGlobalCooldown
-                        ? "grayscale opacity-30"
-                        : "group-hover:scale-110"
-                    }`}
-                    alt={item.name}
-                  />
-                )}
+                <img
+                  src={activeFoodDetails.icon}
+                  className={`w-8 h-8 pixelated object-contain z-20 transition-transform ${isGlobalCooldown ? "opacity-50" : "group-hover:scale-110"}`}
+                  alt={activeFoodDetails.name}
+                />
 
-                <span className="absolute bottom-0 right-1 text-[9px] text-tx-muted bg-app-base/80 px-1 rounded z-30 font-mono">
-                  {count as number}
+                <span className="absolute top-1 left-1 bg-success text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow z-30">
+                  ACTIVE
                 </span>
 
-                {(item?.healing || 0) > 0 && !isGlobalCooldown && (
-                  <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-success/50 z-30 shadow-[0_0_5px_rgb(var(--color-success)/0.5)]"></div>
-                )}
+                <span className="absolute bottom-1 right-1 text-[9px] font-mono text-tx-main bg-panel/90 px-1.5 py-0.5 rounded border border-border z-30 shadow-sm">
+                  {equippedFood.count}
+                </span>
               </button>
-            );
-          })}
-        </div>
+            )}
+
+            {/* MUUT ESINEET */}
+            {foodItems.map(([id, count]) => {
+              if (id === equippedFood?.itemId) return null; // Älä näytä aktiivista uudestaan
+              const item = getItemDetails(id) as Resource | undefined;
+              if (!item) return null;
+
+              return (
+                <button
+                  key={id}
+                  onClick={() => equipItem(id)}
+                  disabled={isGlobalCooldown}
+                  className={`
+                    aspect-square rounded-xl flex flex-col items-center justify-center relative group transition-all overflow-hidden border
+                    ${isGlobalCooldown ? "cursor-not-allowed bg-app-base border-border/50 opacity-60" : "bg-panel border-border hover:border-tx-main/50 hover:bg-panel-hover shadow-sm"}
+                  `}
+                  title={`${item.name}\nHeals: ${item.healing || 0} HP`}
+                >
+                  <img
+                    src={item.icon}
+                    className="w-7 h-7 pixelated object-contain z-20 transition-transform group-hover:scale-110"
+                    alt={item.name}
+                  />
+
+                  {/* Määrä */}
+                  <span className="absolute bottom-1 right-1 text-[9px] font-mono text-tx-muted group-hover:text-tx-main bg-app-base/90 px-1 rounded z-30">
+                    {count as number}
+                  </span>
+
+                  {/* Pieni indikaattori jos parantaa */}
+                  {(item.healing || 0) > 0 && (
+                    <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-success/60 z-30 shadow-[0_0_5px_rgb(var(--color-success)/0.4)]" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

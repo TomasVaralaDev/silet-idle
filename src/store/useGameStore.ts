@@ -138,6 +138,7 @@ export const DEFAULT_STATE: GameState = {
   coins: 0,
   gems: 0,
   upgrades: [],
+  premiumPurchases: {},
   unlockedAchievements: [],
   combatStats: {
     hp: 110,
@@ -176,6 +177,7 @@ export const customMerge = (
     ...currentState,
     ...typedPersisted,
     unlockedQueueSlots: typedPersisted.unlockedQueueSlots ?? 2,
+    premiumPurchases: typedPersisted.premiumPurchases || {}, // 3. LISÄÄ TÄMÄ
 
     // LISÄTTY: Varmistetaan, että settings säilyttää Defaultin teemat,
     // jos ne puuttuvat vanhasta localstorage savesta

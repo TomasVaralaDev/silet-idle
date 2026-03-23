@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import type { PremiumShopItem } from "../../types";
 import { getItemById } from "../../utils/itemUtils";
-import { useTooltipStore } from "../../store/useToolTipStore"; // LISÄTTY
+import { useTooltipStore } from "../../store/useToolTipStore";
+import { useGameStore } from "../../store/useGameStore";
 
 interface BundlePreviewModalProps {
   isOpen: boolean;
@@ -20,9 +21,9 @@ export default function BundlePreviewModal({
   userGems,
   isProcessing,
 }: BundlePreviewModalProps) {
-  const { showTooltip, hideTooltip } = useTooltipStore(); // LISÄTTY
+  const { showTooltip, hideTooltip } = useTooltipStore();
+  const { premiumPurchases, upgrades } = useGameStore();
 
-  // LISÄTTY: Varmistetaan, että tooltip katoaa aina, kun modaali suljetaan tai unmountataan
   useEffect(() => {
     if (!isOpen) {
       hideTooltip();
@@ -32,7 +33,14 @@ export default function BundlePreviewModal({
 
   if (!isOpen || !item) return null;
 
+  const purchaseCount = (premiumPurchases && premiumPurchases[item.id]) || 0;
+  const isMaxedOut =
+    item.maxPurchases !== undefined && purchaseCount >= item.maxPurchases;
+  const isOwned = item.isOneTime && (upgrades || []).includes(item.id);
+
   const canAfford = userGems >= item.priceGems;
+  const isPurchaseDisabled =
+    !canAfford || isProcessing || isMaxedOut || isOwned;
 
   const getIconForReward = (key: string) => {
     if (key === "gems") return "assets/ui/icon_gem.png";
@@ -84,6 +92,24 @@ export default function BundlePreviewModal({
           <p className="text-tx-muted text-xs text-center mt-2 max-w-[80%] z-10 font-medium">
             {item.description}
           </p>
+
+          {/* Rajoituksen näyttäminen kuvan alla - Päivitetty pyynnöstä */}
+          <div className="mt-4 z-10 w-full max-w-[80%] flex justify-center">
+            {item.isOneTime ? (
+              // Poistettu tausta, reunat, paddingit ja sykkivä pallo
+              <div className="text-[10px] md:text-xs font-bold text-warning uppercase tracking-wider text-center w-full">
+                One-Time Purchase
+              </div>
+            ) : item.maxPurchases !== undefined ? (
+              // Poistettu tausta, reunat, paddingit ja pallo. Pidetty asettelu (justify-between)
+              <div className="text-[10px] md:text-xs font-bold text-info uppercase tracking-wider flex items-center justify-between w-full">
+                <span>Stock Available</span>
+                <span className="text-white text-sm">
+                  {item.maxPurchases - purchaseCount} / {item.maxPurchases}
+                </span>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {/* SISÄLTÖ / PALKINNOT */}
@@ -154,7 +180,7 @@ export default function BundlePreviewModal({
               </div>
             )}
 
-            {/* Tavarat - LISÄTTY TOOLTIP EVENTIT */}
+            {/* Tavarat */}
             {item.rewards?.items &&
               Object.entries(item.rewards.items).map(([itemId, amount]) => (
                 <div
@@ -188,18 +214,24 @@ export default function BundlePreviewModal({
         {/* ALATUNNISTE / OSTONAPPI */}
         <div className="p-4 border-t border-border/50 bg-app-base/80">
           <button
-            disabled={!canAfford || isProcessing}
+            disabled={isPurchaseDisabled}
             onClick={() => handleConfirm(item)}
             className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 transition-all font-black text-sm uppercase tracking-widest border-2 ${
               isProcessing
                 ? "bg-accent/20 text-accent border-accent/50 cursor-wait"
-                : canAfford
-                  ? "bg-accent hover:bg-accent-hover text-white border-accent/50 shadow-[0_0_15px_rgba(var(--color-accent),0.4)]"
-                  : "bg-panel border-danger/30 text-danger cursor-not-allowed opacity-70"
+                : isOwned || isMaxedOut
+                  ? "bg-panel border-border/30 text-tx-muted cursor-not-allowed opacity-70"
+                  : canAfford
+                    ? "bg-accent hover:bg-accent-hover text-white border-accent/50 shadow-[0_0_15px_rgba(var(--color-accent),0.4)]"
+                    : "bg-panel border-danger/30 text-danger cursor-not-allowed opacity-70"
             }`}
           >
             {isProcessing ? (
               "PROCESSING..."
+            ) : isOwned ? (
+              "ALREADY OWNED"
+            ) : isMaxedOut ? (
+              "SOLD OUT"
             ) : (
               <>
                 <span>Confirm Purchase</span>
@@ -214,9 +246,16 @@ export default function BundlePreviewModal({
               </>
             )}
           </button>
-          {!canAfford && !isProcessing && (
+
+          {/* VIRHEILMOITUKSET NAPIN ALLA */}
+          {!canAfford && !isProcessing && !isMaxedOut && !isOwned && (
             <p className="text-center text-danger text-[10px] mt-2 font-bold uppercase tracking-wider">
               Not enough gems
+            </p>
+          )}
+          {isMaxedOut && !isProcessing && (
+            <p className="text-center text-info text-[10px] mt-2 font-bold uppercase tracking-wider">
+              Maximum purchase limit reached
             </p>
           )}
         </div>

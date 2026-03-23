@@ -418,6 +418,7 @@ export interface GameState {
   coins: number;
   gems: number;
   upgrades: string[];
+  premiumPurchases: Record<string, number>;
   unlockedAchievements: string[];
   combatStats: CombatState;
   enemy: Enemy | null;
@@ -495,5 +496,6 @@ export interface PremiumShopItem {
   icon: string;
   category: "Boosts" | "Cosmetics" | "Utility" | "Bundles";
   isOneTime?: boolean;
+  maxPurchases?: number; // LISÄTTY
   rewards?: PremiumShopRewards; // LISÄTTY
 }

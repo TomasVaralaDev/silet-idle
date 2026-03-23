@@ -20,7 +20,7 @@ export const createPremiumShopSlice: StateCreator<
    * Tukee sekä kertaluonteisia (Unique) että toistuvia ostoksia.
    */
   buyPremiumItem: async (item: PremiumShopItem) => {
-    const { gems, upgrades, emitEvent } = get();
+    const { gems, upgrades, premiumPurchases, emitEvent } = get();
 
     // 1. Tarkistetaan onko pelaajalla varaa
     if (gems < item.priceGems) {
@@ -31,6 +31,11 @@ export const createPremiumShopSlice: StateCreator<
     // 2. Tarkistetaan "Unique" status
     if (item.isOneTime && upgrades.includes(item.id)) {
       emitEvent("warning", "Already owned!", item.icon);
+      return false;
+    }
+    const currentPurchases = premiumPurchases?.[item.id] || 0;
+    if (item.maxPurchases && currentPurchases >= item.maxPurchases) {
+      emitEvent("warning", "Maximum purchase limit reached!", item.icon);
       return false;
     }
 
@@ -77,12 +82,19 @@ export const createPremiumShopSlice: StateCreator<
             newQueueSlots = item.rewards.stats.queueSlotsSet;
           }
 
+          const newPremiumPurchases = { ...(state.premiumPurchases || {}) };
+          if (item.maxPurchases) {
+            newPremiumPurchases[item.id] =
+              (newPremiumPurchases[item.id] || 0) + 1;
+          }
+
           return {
             gems: newGems,
             upgrades: newUpgrades,
             inventory: newInventory,
             scavenger: newScavenger,
             unlockedQueueSlots: newQueueSlots,
+            premiumPurchases: newPremiumPurchases, // LISÄTTY
           } as Partial<FullStoreState>;
         });
 

@@ -4,7 +4,8 @@ import { PREMIUM_SHOP_ITEMS } from "../../data/premiumShop";
 import type { PremiumShopItem, RewardEntry } from "../../types";
 import GemsModal from "../modals/GemsModal";
 import PurchaseSuccessModal from "../modals/PurchaseSuccessModal";
-import BundlePreviewModal from "../modals/BundlePreviewModal"; // LISÄTTY
+import BundlePreviewModal from "../modals/BundlePreviewModal";
+import PremiumItemCard from "./PremiumItemCard"; // TUODAAN UUSI KOMPONENTTI
 import { auth, db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -15,6 +16,7 @@ export default function PremiumShopView() {
     buyPremiumItem,
     startGemsPurchase,
     upgrades,
+    premiumPurchases, // LISÄTTY STORESTA!
     emitEvent,
     openRewardModal,
   } = useGameStore();
@@ -24,7 +26,6 @@ export default function PremiumShopView() {
   const [isWaitingForPurchase, setIsWaitingForPurchase] = useState(false);
   const [purchasingItem, setPurchasingItem] = useState<string | null>(null);
 
-  // UUDET TILAT MODAALILLE
   const [selectedBundle, setSelectedBundle] = useState<PremiumShopItem | null>(
     null,
   );
@@ -58,6 +59,7 @@ export default function PremiumShopView() {
             upgrades: data.upgrades || state.upgrades,
             inventory: data.inventory || state.inventory,
             scavenger: data.scavenger || state.scavenger,
+            premiumPurchases: data.premiumPurchases || state.premiumPurchases, // Varmistetaan että myös tämä päivittyy serveriltä!
           }));
           return true;
         }
@@ -95,7 +97,6 @@ export default function PremiumShopView() {
     };
   }, [gems, isWaitingForPurchase, emitEvent, setState]);
 
-  // Käsittelee oston VASTA KUN käyttäjä vahvistaa sen modaalista
   const handleConfirmPurchase = async (item: PremiumShopItem) => {
     if (purchasingItem) return;
 
@@ -110,7 +111,6 @@ export default function PremiumShopView() {
       const success = await buyPremiumItem(item);
 
       if (success) {
-        // Suljetaan esikatselumodaali ensin
         setSelectedBundle(null);
 
         if (item.rewards) {
@@ -180,7 +180,6 @@ export default function PremiumShopView() {
         onClose={() => setSuccessData((prev) => ({ ...prev, isOpen: false }))}
       />
 
-      {/* LISÄTTY: Uusi Bundle Preview Modal */}
       <BundlePreviewModal
         isOpen={!!selectedBundle}
         item={selectedBundle}
@@ -232,7 +231,7 @@ export default function PremiumShopView() {
         </div>
       </div>
 
-      {/* PROGRESS BAR - LATAUS */}
+      {/* PROGRESS BAR */}
       <div className="h-1 bg-panel w-full shrink-0 overflow-hidden">
         <div
           className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase || purchasingItem ? "animate-pulse" : ""}`}
@@ -266,77 +265,22 @@ export default function PremiumShopView() {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative bg-app-base/30 pb-24 md:pb-8">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6 max-w-7xl mx-auto relative z-10">
-            {filteredItems.map((item) => {
-              const isOwned =
-                item.isOneTime && (upgrades || []).includes(item.id);
-
-              // KORJAUS: Nyt kortin nappia painamalla AVAAMME modaalin, emme osta suoraan.
-              return (
-                <div
-                  key={item.id}
-                  className={`bg-panel border-2 rounded-xl overflow-hidden flex flex-col group transition-all shadow-md ${
-                    isOwned
-                      ? "opacity-50 border-border/20 grayscale-[0.5]"
-                      : "border-border hover:border-accent/40 hover:shadow-xl cursor-pointer"
-                  }`}
-                  onClick={() =>
-                    !isOwned && !purchasingItem && setSelectedBundle(item)
-                  }
-                >
-                  <div className="h-24 md:h-40 bg-app-base/50 flex items-center justify-center relative p-2 md:p-4 border-b border-border/30">
-                    <img
-                      src={item.icon}
-                      className={`w-12 h-12 md:w-20 md:h-20 pixelated drop-shadow-2xl transition-transform ${!isOwned && "group-hover:scale-110"}`}
-                      alt={item.name}
-                    />
-                    {item.isOneTime && (
-                      <span className="absolute top-2 right-2 bg-warning/20 text-[7px] md:text-[9px] font-black text-warning uppercase px-1.5 py-0.5 rounded border border-warning/30">
-                        Unique
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-3 md:p-5 flex-1 flex flex-col pointer-events-none">
-                    <h3 className="text-xs md:text-lg font-bold text-tx-main mb-1 uppercase tracking-tight line-clamp-1">
-                      {item.name}
-                    </h3>
-                    <p className="text-[9px] md:text-[11px] text-tx-muted mb-4 md:mb-6 flex-1 opacity-80 leading-tight md:leading-snug font-medium line-clamp-2 md:line-clamp-none">
-                      {item.description}
-                    </p>
-
-                    <button
-                      disabled={isOwned || !!purchasingItem}
-                      className={`w-full py-2 md:py-3 rounded-lg flex items-center justify-center gap-1.5 md:gap-3 transition-all font-black border uppercase tracking-widest text-[10px] md:text-xs pointer-events-auto ${
-                        isOwned
-                          ? "bg-app-base text-tx-muted cursor-not-allowed border-transparent"
-                          : "bg-panel-hover group-hover:bg-accent group-hover:text-white border-border group-hover:border-accent shadow-inner"
-                      }`}
-                    >
-                      {isOwned ? (
-                        "OWNED"
-                      ) : (
-                        <>
-                          <img
-                            src="assets/ui/icon_gem.png"
-                            className="w-3 h-3 md:w-4 md:h-4 pixelated"
-                            alt="gem"
-                          />
-                          <span
-                            className={
-                              gems >= item.priceGems
-                                ? "text-inherit"
-                                : "text-danger"
-                            }
-                          >
-                            {item.priceGems}
-                          </span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            {/* KÄYTETÄÄN UUTTA KOMPONENTTIA */}
+            {filteredItems.map((item) => (
+              <PremiumItemCard
+                key={item.id}
+                item={item}
+                gems={gems}
+                isOwned={
+                  item.isOneTime ? (upgrades || []).includes(item.id) : false
+                }
+                isPurchasing={!!purchasingItem}
+                purchaseCount={
+                  (premiumPurchases && premiumPurchases[item.id]) || 0
+                }
+                onClick={(selectedItem) => setSelectedBundle(selectedItem)}
+              />
+            ))}
           </div>
         </main>
       </div>

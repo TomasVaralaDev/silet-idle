@@ -18,13 +18,14 @@ const GEM_PACKS: Record<
   gems_2500: { gems: 2500, priceEur: 20, name: "Gem Vault" },
 };
 
-const MAX_EXPEDITION_SLOTS = 10;
+//const MAX_EXPEDITION_SLOTS = 12; Legacy
 
 // Kaupan sisältö ja hinnasto palvelimella (Turvallisuuden takia)
 interface PremiumBundleConfig {
   priceGems: number;
   isOneTime?: boolean; // LISÄTTY
   rewardGems?: number; // Palautettavat gemit oston jälkeen
+  maxPurchases?: number; // LISÄTTY: Maksimiostomäärä (vain toistuville tuotteille)
   stats?: {
     expeditionSlotsIncrement?: number; // Lisää tilaa nykyiseen
     queueSlotsSet?: number; // Asettaa tarkan määrän
@@ -45,6 +46,7 @@ const PREMIUM_BUNDLES: Record<string, PremiumBundleConfig> = {
   },
   bundle_explorer_pack: {
     priceGems: 200,
+    maxPurchases: 10,
     isOneTime: false,
     stats: { expeditionSlotsIncrement: 1 },
   },
@@ -144,7 +146,8 @@ export const purchasePremiumBundle = onCall(async (request) => {
       const userData = userDoc.data() || {};
       const currentGems = userData.gems || 0;
       const upgrades = userData.upgrades || [];
-      const currentExpeditionSlots = userData.scavenger?.unlockedSlots || 1;
+      const premiumPurchases = userData.premiumPurchases || {};
+
       // Tarkistukset
       if (currentGems < bundle.priceGems) {
         throw new HttpsError("failed-precondition", "Not enough gems.");
@@ -155,25 +158,31 @@ export const purchasePremiumBundle = onCall(async (request) => {
           "This bundle is limited to one purchase.",
         );
       }
-      // 2. Kapasiteettitarkistus (Expedition Slots)
-      if (bundle.stats?.expeditionSlotsIncrement) {
-        if (
-          currentExpeditionSlots + bundle.stats.expeditionSlotsIncrement >
-          MAX_EXPEDITION_SLOTS
-        ) {
-          throw new HttpsError(
-            "out-of-range",
-            `Purchase failed. Max expedition slots is ${MAX_EXPEDITION_SLOTS}.`,
-          );
-        }
+
+      // UUSI: Maksimiostomäärän tarkistus palvelimella
+      const currentPurchaseCount = premiumPurchases[bundleId] || 0;
+      if (bundle.maxPurchases && currentPurchaseCount >= bundle.maxPurchases) {
+        throw new HttpsError(
+          "out-of-range",
+          `Purchase limit reached. Max ${bundle.maxPurchases} allowed.`,
+        );
       }
 
-      // Kootaan päivitykset (Tyyppivarmistettu)
-      // Lasketaan uusi gem-saldo ottamalla huomioon sekä hinta että mahdolliset palautus-gemit
+      // POISTETTU: Kapasiteettitarkistus (Expedition Slots), koska rajoitus on nyt tuotekohtainen maxPurchases.
+
+      // Kootaan päivitykset
       const updates: Record<string, number | admin.firestore.FieldValue> = {
         gems: currentGems - bundle.priceGems + (bundle.rewardGems || 0),
-        upgrades: admin.firestore.FieldValue.arrayUnion(bundleId),
       };
+
+      if (bundle.isOneTime) {
+        updates.upgrades = admin.firestore.FieldValue.arrayUnion(bundleId);
+      }
+
+      if (bundle.maxPurchases) {
+        updates[`premiumPurchases.${bundleId}`] =
+          admin.firestore.FieldValue.increment(1);
+      }
 
       // 1. Statsit
       if (bundle.stats?.expeditionSlotsIncrement) {
@@ -183,7 +192,6 @@ export const purchasePremiumBundle = onCall(async (request) => {
           );
       }
 
-      // HUOM: Asetetaan suoraan tarkka arvo (esim. 5), ei käytetä incrementtiä
       if (bundle.stats?.queueSlotsSet) {
         updates["unlockedQueueSlots"] = bundle.stats.queueSlotsSet;
       }
@@ -198,12 +206,10 @@ export const purchasePremiumBundle = onCall(async (request) => {
       if (bundle.items) {
         for (const [itemId, amount] of Object.entries(bundle.items)) {
           if (itemId === "coins") {
-            // Jos coins on tallennettu juuritasolle:
             updates["coins"] = admin.firestore.FieldValue.increment(
               Number(amount),
             );
           } else {
-            // Normaalit tavarat inventoryyn
             updates[`inventory.${itemId}`] =
               admin.firestore.FieldValue.increment(Number(amount));
           }

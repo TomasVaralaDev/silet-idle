@@ -24,6 +24,7 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     icon: "/assets/skills/scavenging.png", // Muista lisätä tämä kuva assets-kansioon
     category: "Bundles",
     isOneTime: false,
+    maxPurchases: 10,
     rewards: {
       stats: { expeditionSlotsIncrement: 1 },
     },

@@ -36,7 +36,7 @@ interface PremiumBundleConfig {
 const PREMIUM_BUNDLES: Record<string, PremiumBundleConfig> = {
   bundle_starter: {
     priceGems: 800,
-    rewardGems: 800, // Palauttaa heti rahat takaisin!
+    rewardGems: 400, // Palauttaa heti rahat takaisin!
     stats: {
       expeditionSlotsIncrement: 2, // Antaa 2 lisäpaikkaa
       queueSlotsSet: 5, // Asettaa jonopaikat tasan viiteen
@@ -48,16 +48,8 @@ const PREMIUM_BUNDLES: Record<string, PremiumBundleConfig> = {
     isOneTime: false,
     stats: { expeditionSlotsIncrement: 1 },
   },
-  utility_bag_slot: {
-    priceGems: 250,
-    stats: { inventorySlots: 20 },
-  },
-  cosmetic_crown: {
-    priceGems: 500,
-    items: { cosmetic_crown: 1 },
-  },
   bundle_legendary_runes: {
-    priceGems: 800, // Aseta hinta esim. 3000 gemiä (Legendary-arvon mukaan)
+    priceGems: 400, // Aseta hinta esim. 3000 gemiä (Legendary-arvon mukaan)
     items: {
       rune_mining_speed_legendary: 1,
       rune_woodcutting_speed_legendary: 1,

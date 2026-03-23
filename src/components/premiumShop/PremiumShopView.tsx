@@ -202,12 +202,12 @@ export default function PremiumShopView() {
           </div>
           <div>
             <h1 className="text-3xl font-black uppercase tracking-widest text-accent mb-1">
-              Treasury
+              Gem Store
             </h1>
             <p className="text-tx-muted text-sm font-medium hidden sm:block">
               {isWaitingForPurchase || purchasingItem
-                ? "Consulting the royal treasury..."
-                : "Acquire mystical artifacts and divine essence."}
+                ? "Waiting on purchase..."
+                : "Acquire Legendary Upgrades."}
             </p>
           </div>
         </div>

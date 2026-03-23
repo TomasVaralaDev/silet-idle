@@ -41,7 +41,8 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     category: "gathering",
     color: "text-blue-400",
     bgColor: "bg-blue-900",
-    description: "Catch aquatic lifeforms.",
+    description:
+      "Every RPG has fishing they said. Catch fish and other aquatic resources.",
   },
   {
     id: "foraging",

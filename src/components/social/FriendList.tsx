@@ -8,8 +8,13 @@ import {
 } from "../../services/socialServices";
 
 export default function FriendList({ myUid }: { myUid: string }) {
-  const { social, setActiveChat, setIncomingRequests, setOutgoingRequests } =
-    useGameStore();
+  const {
+    social,
+    setActiveChat,
+    setIncomingRequests,
+    setOutgoingRequests,
+    addFriendLocally,
+  } = useGameStore();
 
   const friends = social?.friends || [];
   const incoming = social?.incomingRequests || [];
@@ -24,10 +29,10 @@ export default function FriendList({ myUid }: { myUid: string }) {
       myUid,
       (inc) => setIncomingRequests(inc),
       (out) => setOutgoingRequests(out),
+      (newFriend) => addFriendLocally(newFriend), // LISÄTTY TÄMÄ
     );
     return () => unsub();
-  }, [myUid, setIncomingRequests, setOutgoingRequests]);
-
+  }, [myUid, setIncomingRequests, setOutgoingRequests, addFriendLocally]);
   const handleSendRequest = async () => {
     if (!addInput) return;
     setStatus("Sending...");
@@ -147,7 +152,21 @@ export default function FriendList({ myUid }: { myUid: string }) {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => acceptFriendRequest(myUid, req)}
+                    onClick={async () => {
+                      try {
+                        // 1. Päivitetään Firebase
+                        await acceptFriendRequest(myUid, req);
+
+                        // 2. Päivitetään paikallinen store heti, jotta useGameSync ei ylikirjoita tyhjällä
+                        addFriendLocally({
+                          uid: req.fromUid,
+                          username: req.fromUsername,
+                          addedAt: Date.now(),
+                        });
+                      } catch (err) {
+                        console.error("Failed to accept:", err);
+                      }
+                    }}
                     className="flex-1 bg-success text-app-base hover:opacity-90 text-xs py-1 rounded font-bold transition-all"
                   >
                     Accept

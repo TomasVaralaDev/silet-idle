@@ -5,13 +5,13 @@ import {
   arrayUnion,
   collection,
   addDoc,
-  query as firestoreQuery, // Nimetään uusiksi konfliktien välttämiseksi
+  query as firestoreQuery,
   where,
   onSnapshot,
   serverTimestamp as firestoreTimestamp,
   deleteDoc,
 } from "firebase/firestore";
-// UUDET RTDB IMPORTIT:
+
 import {
   ref,
   push,
@@ -23,7 +23,7 @@ import {
   off,
 } from "firebase/database";
 
-import { db, rtdb } from "../firebase"; // TUODAAN RTDB
+import { db, rtdb } from "../firebase";
 import type {
   Friend,
   ChatMessage,
@@ -34,7 +34,6 @@ import type {
 // ==========================================
 // --- KAVEREIDEN HALLINTA (FIRESTORE) ---
 // ==========================================
-// TÄMÄ OSA PYSYY TÄYSIN SAMANA!
 
 export const sendFriendRequest = async (
   myUid: string,
@@ -66,7 +65,11 @@ export const acceptFriendRequest = async (
       addedAt: Date.now(),
     };
     const myRef = doc(db, "users", myUid);
+
+    // Päivitetään oma kaverilista Firebasessa
     await updateDoc(myRef, { "social.friends": arrayUnion(newFriend) });
+
+    // Merkataan pyyntö hyväksytyksi, jotta vastapuoli voi viimeistellä sen
     const reqRef = doc(db, "friend_requests", request.id);
     await updateDoc(reqRef, { status: "accepted" });
   } catch (error) {
@@ -89,6 +92,7 @@ export const finalizeFriendship = async (
     const targetName = targetSnap.exists()
       ? targetSnap.data().username
       : "Unknown";
+
     const newFriend: Friend = {
       uid: request.toUid,
       username: targetName,
@@ -96,23 +100,36 @@ export const finalizeFriendship = async (
     };
 
     const myRef = doc(db, "users", myUid);
+
+    // Lisätään kaveri omaan dokumenttiin
     await updateDoc(myRef, { "social.friends": arrayUnion(newFriend) });
+
+    // Poistetaan pyyntö, kun se on käsitelty molemmin puolin
     await deleteDoc(doc(db, "friend_requests", request.id));
+
+    return newFriend;
   } catch (error) {
     console.error("Error finalizing friendship:", error);
+    return null;
   }
 };
 
+/**
+ * Kuuntelee kaveripyyntöjä.
+ * onFriendAdded on kriittinen: se päivittää storen heti kun vastapuoli hyväksyy pyynnön.
+ */
 export const subscribeToFriendRequests = (
   myUid: string,
   onIncoming: (reqs: FriendRequest[]) => void,
   onOutgoing: (reqs: FriendRequest[]) => void,
+  onFriendAdded: (friend: Friend) => void, // UUSI CALLBACK
 ) => {
   const incomingQ = firestoreQuery(
     collection(db, "friend_requests"),
     where("toUid", "==", myUid),
     where("status", "==", "pending"),
   );
+
   const unsubIncoming = onSnapshot(incomingQ, (snap) => {
     onIncoming(
       snap.docs.map((d) => ({ id: d.id, ...d.data() }) as FriendRequest),
@@ -123,13 +140,24 @@ export const subscribeToFriendRequests = (
     collection(db, "friend_requests"),
     where("fromUid", "==", myUid),
   );
-  const unsubOutgoing = onSnapshot(outgoingQ, (snap) => {
+
+  const unsubOutgoing = onSnapshot(outgoingQ, async (snap) => {
     const reqs = snap.docs.map(
       (d) => ({ id: d.id, ...d.data() }) as FriendRequest,
     );
-    reqs.forEach((req) => {
-      if (req.status === "accepted") finalizeFriendship(myUid, req);
-    });
+
+    for (const req of reqs) {
+      if (req.status === "accepted") {
+        // Viimeistellään kaveruus Firebasessa ja poistetaan pyyntö
+        const newFriend = await finalizeFriendship(myUid, req);
+
+        // Päivitetään paikallinen store VÄLITTÖMÄSTI, jotta automaattitallennus ei poista kaveria
+        if (newFriend) {
+          onFriendAdded(newFriend);
+        }
+      }
+    }
+
     onOutgoing(reqs.filter((r) => r.status === "pending"));
   });
 
@@ -152,15 +180,12 @@ export const sendMessage = async (
 ) => {
   if (!text.trim()) return;
   const chatId = getChatId(senderUid, receiverUid);
-
-  // RTDB: Luodaan viite oikeaan polkuun
   const messagesRef = ref(rtdb, `chats/${chatId}/messages`);
 
-  // RTDB: push() luo uuden uniikin ID:n ja tallentaa datan
   await push(messagesRef, {
     senderId: senderUid,
     text: text.trim(),
-    timestamp: rtdbTimestamp(), // RTDB:n oma aikaleima
+    timestamp: rtdbTimestamp(),
   });
 };
 
@@ -171,24 +196,19 @@ export const subscribeToChat = (
 ) => {
   const chatId = getChatId(uid1, uid2);
   const messagesRef = ref(rtdb, `chats/${chatId}/messages`);
-
-  // Rajoitetaan hakemaan esim. viimeiset 100 viestiä
   const q = rtdbQuery(messagesRef, orderByChild("timestamp"), limitToLast(100));
 
-  // RTDB: onValue kuuntelee muutoksia livenä
   onValue(q, (snapshot) => {
     const messages: ChatMessage[] = [];
     snapshot.forEach((childSnapshot) => {
-      const data = childSnapshot.val();
       messages.push({
         id: childSnapshot.key as string,
-        ...data,
+        ...childSnapshot.val(),
       });
     });
     callback(messages);
   });
 
-  // Palautetaan unsubscriber-funktio, joka irrottaa kuuntelijan
   return () => off(messagesRef);
 };
 
@@ -200,11 +220,14 @@ export const sendGlobalMessage = async (
   uid: string,
   username: string,
   text: string,
+  channel: "global" | "beginner" = "global",
 ) => {
   if (!text.trim()) return;
 
-  const globalRef = ref(rtdb, "global_chat");
-  await push(globalRef, {
+  const path = channel === "beginner" ? "beginner_chat" : "global_chat";
+  const chatRef = ref(rtdb, path);
+
+  await push(chatRef, {
     senderUid: uid,
     senderUsername: username,
     text: text.trim(),
@@ -213,27 +236,23 @@ export const sendGlobalMessage = async (
 };
 
 export const subscribeToGlobalChat = (
+  channel: "global" | "beginner",
   callback: (msgs: GlobalChatMessage[]) => void,
 ) => {
-  const globalRef = ref(rtdb, "global_chat");
-
-  // Haetaan viimeiset 50 viestiä ajan mukaan järjestettynä
-  const q = rtdbQuery(globalRef, orderByChild("timestamp"), limitToLast(50));
+  const path = channel === "beginner" ? "beginner_chat" : "global_chat";
+  const chatRef = ref(rtdb, path);
+  const q = rtdbQuery(chatRef, orderByChild("timestamp"), limitToLast(50));
 
   onValue(q, (snapshot) => {
     const messages: GlobalChatMessage[] = [];
     snapshot.forEach((childSnapshot) => {
-      const data = childSnapshot.val();
       messages.push({
         id: childSnapshot.key as string,
-        ...data,
+        ...childSnapshot.val(),
       });
     });
-
-    // RTDB palauttaa vanhimmasta uusimpaan (normaali luku).
-    // Komponenttisi odottaa niitä samassa järjestyksessä, jotta scrollaus menee alas.
     callback(messages);
   });
 
-  return () => off(globalRef);
+  return () => off(chatRef);
 };

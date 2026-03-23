@@ -305,7 +305,7 @@ export default function Sidebar({
           />
           <NavButton
             view="premium_shop"
-            label="Premium Shop"
+            label="Gem Store"
             icon="/assets/ui/icon_gem.png"
             isActive={currentView === "premium_shop"}
             onClick={setView}
@@ -390,7 +390,7 @@ export default function Sidebar({
 
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
-            System Information
+            Extra
           </p>
           <NavButton
             view="announcements"

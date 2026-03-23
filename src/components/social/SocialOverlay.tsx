@@ -59,13 +59,12 @@ export default function SocialOverlay() {
         </button>
       )}
 
-      {/* OIKEAN REUNAN PANEELI (LÄPINÄKYVÄ + BLUR) */}
+      {/* OIKEAN REUNAN PANEELI */}
       <div
         style={{
           width: isOpen ? `${width}px` : "0px",
           borderLeftWidth: isOpen ? "1px" : "0px",
         }}
-        // MUUTOS: bg-app-base -> bg-app-base/80 backdrop-blur-md
         className="fixed top-0 right-0 h-screen z-50 bg-app-base/80 backdrop-blur-md border-border/50 flex flex-col shadow-[-10px_0_30px_rgba(0,0,0,0.6)] transition-[width] duration-300 ease-in-out"
       >
         {/* RESIZE-KAHVA */}
@@ -79,17 +78,14 @@ export default function SocialOverlay() {
         {/* PANEELIN SISÄLTÖ */}
         {isOpen && (
           <div className="flex flex-col h-full w-full min-w-[280px] animate-in fade-in duration-500">
-            {/* HEADER & TABS (LÄPINÄKYVÄMPI) */}
-            {/* MUUTOS: bg-panel -> bg-panel/60 */}
+            {/* HEADER & TABS */}
             <div className="bg-panel/60 border-b border-border/50 flex flex-col shrink-0">
               <div className="p-3 flex justify-between items-center bg-app-base/30">
                 <h3 className="font-bold text-tx-main text-sm uppercase tracking-widest truncate mr-2">
                   {activeChatId ? "Secure Channel" : "Social Hub"}
                 </h3>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[10px] text-tx-muted font-mono bg-panel/50 px-2 py-1 rounded border border-border/50 hidden sm:block">
-                    ID: {user.uid.slice(0, 6)}
-                  </span>
+                  {/* ID SPAN POISTETTU TÄSTÄ */}
                   <button
                     onClick={() => setIsOpen(false)}
                     className="text-tx-muted hover:text-danger hover:bg-danger/10 w-6 h-6 rounded flex items-center justify-center transition-colors"

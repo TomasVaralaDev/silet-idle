@@ -260,34 +260,6 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 
   // ==========================================
-  // --- 🎣 FISHING ---
-  // ==========================================
-  {
-    id: "fish_1",
-    category: "skills",
-    name: "First Catch",
-    icon: "/assets/skills/fishing.png",
-    description: "Gain your first Fishing experience.",
-    condition: (state) => state.skills.fishing.xp > 0,
-  },
-  {
-    id: "fish_50",
-    category: "skills",
-    name: "Expert Angler",
-    icon: "/assets/skills/fishing.png",
-    description: "Reach Fishing level 50.",
-    condition: (state) => state.skills.fishing.level >= 50,
-  },
-  {
-    id: "fish_99",
-    category: "skills",
-    name: "Master of the Depths",
-    icon: "/assets/skills/fishing.png",
-    description: "Reach Fishing level 99.",
-    condition: (state) => state.skills.fishing.level >= 99,
-  },
-
-  // ==========================================
   // --- ⚒️ SMITHING ---
   // ==========================================
   {
@@ -393,5 +365,34 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/alchemy.png",
     description: "Reach Alchemy level 99.",
     condition: (state) => state.skills.alchemy.level >= 99,
+  },
+  // ==========================================
+  // --- 🎣 FISHING (Kalastus) ---
+  // ==========================================
+  {
+    id: "fish_10",
+    category: "skills",
+    name: "Wet Socks",
+    icon: "/assets/skills/fishing.png",
+    description:
+      "Gain your first Fishing experience. Your journey into pointlessness begins.",
+    condition: (state) => state.skills.fishing.level > 10,
+  },
+  {
+    id: "fish_50",
+    category: "skills",
+    name: "Half Way To Nowhere",
+    icon: "/assets/skills/fishing.png",
+    description: "Reach Fishing level 50. You are now half-way to nowhere.",
+    condition: (state) => state.skills.fishing.level >= 50,
+  },
+  {
+    id: "fish_99",
+    category: "skills",
+    name: "Professional Time-Waster",
+    icon: "/assets/skills/fishing.png",
+    description:
+      "Reach Fishing level 99. You've conquered the art of doing nothing usefull. Congratulations!",
+    condition: (state) => state.skills.fishing.level >= 99,
   },
 ];

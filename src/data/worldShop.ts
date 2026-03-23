@@ -32,8 +32,8 @@ const WORLD_ORE_CONFIG = [
   { worldId: 4, oreId: "ore_mithril", matName: "frostreach" },
   { worldId: 5, oreId: "ore_adamantite", matName: "duskwood" },
   { worldId: 6, oreId: "ore_emerald", matName: "stormcoast" },
-  { worldId: 7, oreId: "ore_eternium", matName: "voidexpanse" },
-  { worldId: 8, oreId: "ore_starfallalloy", matName: "eternalnexus" },
+  { worldId: 7, oreId: "ore_starfallalloy", matName: "voidexpanse" },
+  { worldId: 8, oreId: "ore_eternium", matName: "eternalnexus" },
 ];
 
 // --- 3. PUSSUKOIDEN ASETUKSET ---

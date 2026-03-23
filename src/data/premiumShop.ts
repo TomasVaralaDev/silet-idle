@@ -7,7 +7,7 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     description:
       "Requires 800 Gems to unlock. Refunds 400 Gems instantly! Grants +2 Expedition Slots, unlocks all 5 Queue Slots, and 15x T4 Enchant Scrolls.",
     priceGems: 800,
-    icon: "/assets/ui/icon_bundle_starter.png",
+    icon: "/assets/ui/icon_inventory.png",
     category: "Bundles",
     isOneTime: true,
     rewards: {
@@ -22,7 +22,7 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     description: "Grants +1 Expedition Slot.",
     priceGems: 200,
     icon: "/assets/skills/scavenging.png", // Muista lisätä tämä kuva assets-kansioon
-    category: "Bundles",
+    category: "Utility",
     isOneTime: false,
     maxPurchases: 10,
     rewards: {
@@ -31,7 +31,7 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
   },
   {
     id: "bundle_legendary_runes",
-    name: "Master Artisan's Rune Bundle",
+    name: "Legendary Rune Bundle",
     description:
       "A divine collection of every Legendary Speed Rune. Become the ultimate master of all gathering and crafting skills instantly.",
     priceGems: 800,
@@ -55,7 +55,7 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     description:
       "Increases your Maximum Offline Progress Time by +2 Hours. (Base is 12 Hours)",
     priceGems: 300,
-    icon: "/assets/items/rune_1.png", // Muista lisätä tai vaihtaa tämä kuva
+    icon: "/assets/items/timeCrystal.png", // Muista lisätä tai vaihtaa tämä kuva
     category: "Utility",
     maxPurchases: 6,
     isOneTime: false,

@@ -61,6 +61,7 @@ export const POUCH_LOOT_TABLES: Record<string, WeightedDrop[]> = {
     { itemId: "rune_smithing_xp_major", weight: 3, amount: [1, 1] },
     { itemId: "rune_alchemy_speed_major", weight: 2, amount: [1, 1] },
     { itemId: "rune_crafting_speed_major", weight: 2, amount: [1, 1] },
+    { itemId: "rune_mining_speed_legendary", weight: 1, amount: [1, 1] },
   ],
 
   pouch_mystery_legendary: [

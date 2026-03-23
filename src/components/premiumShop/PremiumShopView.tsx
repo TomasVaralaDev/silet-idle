@@ -142,6 +142,12 @@ export default function PremiumShopView() {
               amount: item.rewards.stats.queueSlotsSet,
             });
           }
+          if (item.rewards.stats?.offlineHoursIncrement) {
+            rewardsList.push({
+              itemId: "Offline Time", // Tämä on se teksti, joka tulostuu modaaliin
+              amount: item.rewards.stats.offlineHoursIncrement,
+            });
+          }
 
           openRewardModal(`Unlocked: ${item.name}`, rewardsList);
         }

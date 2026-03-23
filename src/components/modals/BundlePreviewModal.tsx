@@ -93,15 +93,12 @@ export default function BundlePreviewModal({
             {item.description}
           </p>
 
-          {/* Rajoituksen näyttäminen kuvan alla - Päivitetty pyynnöstä */}
           <div className="mt-4 z-10 w-full max-w-[80%] flex justify-center">
             {item.isOneTime ? (
-              // Poistettu tausta, reunat, paddingit ja sykkivä pallo
               <div className="text-[10px] md:text-xs font-bold text-warning uppercase tracking-wider text-center w-full">
                 One-Time Purchase
               </div>
             ) : item.maxPurchases !== undefined ? (
-              // Poistettu tausta, reunat, paddingit ja pallo. Pidetty asettelu (justify-between)
               <div className="text-[10px] md:text-xs font-bold text-info uppercase tracking-wider flex items-center justify-between w-full">
                 <span>Stock Available</span>
                 <span className="text-white text-sm">
@@ -132,6 +129,28 @@ export default function BundlePreviewModal({
                 </div>
                 <span className="font-black text-accent">
                   +{item.rewards.rewardGems}
+                </span>
+              </div>
+            )}
+
+            {/* UUSI: Offline Time Stats - KÄYTETÄÄN icon_time.png */}
+            {item.rewards?.stats?.offlineHoursIncrement && (
+              <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
+                <div className="flex items-center gap-3">
+                  <img
+                    src="assets/ui/icon_time.png"
+                    className="w-6 h-6 pixelated"
+                    alt="Offline Time"
+                    onError={(e) =>
+                      (e.currentTarget.src = "assets/ui/icon_upgrade.png")
+                    }
+                  />
+                  <span className="font-bold text-tx-main">
+                    Max Offline Time
+                  </span>
+                </div>
+                <span className="font-black text-warning">
+                  +{item.rewards.stats.offlineHoursIncrement} Hours
                 </span>
               </div>
             )}

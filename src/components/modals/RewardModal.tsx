@@ -1,12 +1,10 @@
 import { useGameStore } from "../../store/useGameStore";
-import { useTooltipStore } from "../../store/useToolTipStore"; // 1. TUONTI
+import { useTooltipStore } from "../../store/useToolTipStore";
 import { getItemDetails } from "../../data";
 import { getRarityStyle } from "../../utils/rarity";
 
 export default function RewardModal() {
   const { rewardModal, closeRewardModal } = useGameStore();
-
-  // 2. TOOLTIP OHJAIMET
   const showTooltip = useTooltipStore((s) => s.showTooltip);
   const hideTooltip = useTooltipStore((s) => s.hideTooltip);
 
@@ -17,7 +15,6 @@ export default function RewardModal() {
 
   if (!isOpen) return null;
 
-  // Varmistetaan, että tooltip katoaa, kun modal suljetaan
   const handleClose = () => {
     hideTooltip();
     closeRewardModal();
@@ -50,12 +47,12 @@ export default function RewardModal() {
         <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-3">
           {rewards.map((reward, index) => {
             const item = getItemDetails(reward.itemId);
+            // Jos itemiä ei ole, käytetään neutraalia tyyliä
             const rarityTheme = getRarityStyle(item?.rarity || "common");
 
             return (
               <div
                 key={`${reward.itemId}-${index}`}
-                // 3. HOVER LOGIIKKA RIVIIN
                 onMouseEnter={(e) =>
                   showTooltip(reward.itemId, e.clientX, e.clientY)
                 }
@@ -63,31 +60,38 @@ export default function RewardModal() {
                   showTooltip(reward.itemId, e.clientX, e.clientY)
                 }
                 onMouseLeave={hideTooltip}
-                className={`flex items-center gap-4 p-3 rounded-xl border transition-all hover:scale-[1.02] cursor-help ${rarityTheme.border} ${rarityTheme.lightBg} bg-opacity-10`}
+                className={`flex items-center gap-4 p-3 rounded-xl border transition-all hover:scale-[1.02] cursor-help ${
+                  item
+                    ? `${rarityTheme.border} ${rarityTheme.lightBg} bg-opacity-10`
+                    : "border-border bg-app-base/30"
+                }`}
               >
-                <div
-                  className={`w-12 h-12 bg-app-base rounded-lg border ${rarityTheme.border} flex items-center justify-center shrink-0 relative overflow-hidden`}
-                >
-                  {item?.icon ? (
+                {/* NÄYTETÄÄN IKONI VAIN JOS SE ON OLEMASSA */}
+                {item?.icon && (
+                  <div
+                    className={`w-12 h-12 bg-app-base rounded-lg border ${rarityTheme.border} flex items-center justify-center shrink-0 relative overflow-hidden`}
+                  >
                     <img
                       src={item.icon}
                       alt={item.name}
                       className="w-8 h-8 object-contain pixelated relative z-10"
                     />
-                  ) : (
-                    <span className="text-2xl relative z-10">📦</span>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="flex-1 min-w-0">
                   <div
-                    className={`text-sm font-bold truncate ${rarityTheme.text}`}
+                    className={`text-sm font-bold truncate ${item ? rarityTheme.text : "text-tx-main"}`}
                   >
                     {item?.name || reward.itemId}
                   </div>
-                  <div className="text-[10px] opacity-70 uppercase font-bold tracking-wider text-tx-muted">
-                    {item?.rarity || "Common"} {item?.category || "Item"}
-                  </div>
+
+                  {/* NÄYTETÄÄN RARITY-RIVI VAIN JOS ITEM LÖYTYY */}
+                  {item && (
+                    <div className="text-[10px] opacity-70 uppercase font-bold tracking-wider text-tx-muted">
+                      {item.rarity} {item.category}
+                    </div>
+                  )}
                 </div>
 
                 <div className="text-lg font-mono font-black text-tx-main">

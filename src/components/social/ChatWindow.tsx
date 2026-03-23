@@ -17,11 +17,9 @@ export default function ChatWindow({ myUid, friendUid }: Props) {
   const friendName =
     social.friends.find((f) => f.uid === friendUid)?.username || "Friend";
 
-  // 1. Tilaa viestit (Subscribe)
   useEffect(() => {
     const unsubscribe = subscribeToChat(myUid, friendUid, (msgs) => {
       setMessages(msgs);
-      // Scrollaa alas kun uusi viesti tulee
       setTimeout(
         () => dummyScrollRef.current?.scrollIntoView({ behavior: "smooth" }),
         100,
@@ -38,9 +36,9 @@ export default function ChatWindow({ myUid, friendUid }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-transparent border-l border-border/50 text-left font-sans">
-      {/* Chat Header (Back button) */}
-      <div className="bg-panel/50 p-3 flex items-center gap-3 border-b border-border/50 backdrop-blur-sm">
+    <div className="flex flex-col h-full bg-transparent border-l border-border/50 text-left font-sans overflow-hidden">
+      {/* Chat Header */}
+      <div className="bg-panel/50 p-3 flex items-center gap-3 border-b border-border/50 backdrop-blur-sm shrink-0">
         <button
           onClick={() => setActiveChat(null)}
           className="text-tx-muted hover:text-accent px-2 transition-colors text-lg"
@@ -62,11 +60,10 @@ export default function ChatWindow({ myUid, friendUid }: Props) {
               className={`flex ${isMe ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] px-3 py-2 rounded border text-sm shadow-sm ${
+                className={`max-w-[85%] px-3 py-2 rounded border text-sm shadow-sm break-words whitespace-pre-wrap ${
                   isMe
                     ? "bg-accent/10 border-accent/30 text-accent rounded-tr-none"
-                    : // MUUTOS 2: bg-panel -> bg-panel/50 (Kaverin viestikupla kuultaa läpi)
-                      "bg-panel/50 border-border/50 text-tx-main rounded-tl-none"
+                    : "bg-panel/50 border-border/50 text-tx-main rounded-tl-none"
                 }`}
               >
                 {msg.text}
@@ -77,29 +74,30 @@ export default function ChatWindow({ myUid, friendUid }: Props) {
         <div ref={dummyScrollRef} />
       </div>
 
-      {/* Input Area */}
+      {/* Input Area - MUOKATTU TÄSMÄÄMÄÄN GLOBAL CHATTIIN */}
       <form
         onSubmit={handleSend}
-        className="p-3 border-t border-border/50 bg-panel/20 flex gap-2"
+        className="p-3 border-t border-border/50 bg-panel/20 shrink-0"
       >
-        {/* MUUTOS 3: bg-app-base -> bg-app-base/50 ja border-border -> border-border/50 */}
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="TYPE MESSAGE..."
-          className="flex-1 bg-app-base/50 border border-border/50 rounded px-3 py-2 text-tx-main text-xs font-bold tracking-wider focus:outline-none focus:border-accent/50 transition-colors uppercase placeholder:text-tx-muted/20"
-        />
-        <button
-          type="submit"
-          disabled={!input.trim()}
-          className={`px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition-all ${
-            input.trim()
-              ? "bg-accent text-slate-950 hover:bg-accent-hover shadow-lg shadow-accent/20"
-              : "bg-panel/50 text-tx-muted/40 border border-border/50 cursor-not-allowed"
-          }`}
-        >
-          Send
-        </button>
+        <div className="relative flex items-center">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="TYPE MESSAGE..."
+            className="w-full bg-app-base/50 border border-border/50 rounded-sm px-3 py-2 pr-16 text-tx-main text-xs font-bold tracking-wider focus:outline-none focus:border-accent/50 transition-all placeholder:text-tx-muted/20"
+          />
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            className={`absolute right-3 font-black px-3 py-1 rounded text-xs transition-all tracking-widest ${
+              input.trim()
+                ? "text-accent hover:text-accent-hover"
+                : "text-tx-muted/40 cursor-not-allowed"
+            }`}
+          >
+            SEND
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -135,6 +135,28 @@ WORLD_POUCH_CONFIG.forEach(({ worldId, pouchId, matName }) => {
   }
 });
 
+// D. Generoidaan Bossi-avaimet (Boss Keys) - UUSI OSIO
+WORLD_SHOP_CONFIG.forEach(({ worldId, matName }) => {
+  const bossKeyId = `bosskey_w${worldId}`;
+
+  // Hinnan skaalaus: W1 = 10k, W8 = 80k. Materiaalit W1 = 250, W8 = 2000.
+  const coinCost = 10000 * worldId;
+  const matAmount = 250 * worldId;
+
+  DYNAMIC_SHOP_ITEMS.push({
+    id: `shop_w${worldId}_bosskey`,
+    name: `World ${worldId} Boss Key`,
+    description: "Provides access to the regional boss. Rare and heavy.",
+    icon: `/assets/items/bosskey/${bossKeyId}.png`,
+    costCoins: coinCost,
+    costMaterials: [{ itemId: `${matName}_basic`, amount: matAmount }],
+    worldId: worldId,
+    resultItemId: bossKeyId,
+    resultAmount: 1,
+    dailyLimit: 1, // Vain 1 kpl päivässä
+  });
+});
+
 // --- 4. EXPORT ---
 export const WORLD_SHOP_DATA: WorldShopItem[] = DYNAMIC_SHOP_ITEMS.sort(
   (a, b) => a.worldId - b.worldId || a.costCoins - b.costCoins,

@@ -54,9 +54,15 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
                 <div className="absolute top-1 left-1 bg-app-base/80 backdrop-blur-sm px-1.5 py-0.5 rounded-sm text-[8px] font-mono font-bold text-tx-main border border-border">
                   W{world.id}
                 </div>
+
                 {isLocked && (
-                  <div className="absolute inset-0 bg-panel/80 flex items-center justify-center">
-                    <span className="text-sm">🔒</span>
+                  <div className="absolute inset-0 bg-panel/80 flex items-center justify-center backdrop-blur-[1px]">
+                    <img
+                      src="/assets/ui/icon_locked.png"
+                      alt="Locked"
+                      /* KORJAUS: Lisätty 'grayscale' luokka alle */
+                      className="w-6 h-6 object-contain rendering-pixelated opacity-80 grayscale"
+                    />
                   </div>
                 )}
               </div>
@@ -75,8 +81,8 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
                   {world.name}
                 </div>
                 {isLocked ? (
-                  <div className="text-[8px] text-danger font-mono mt-1">
-                    Req: Zone {(world.id - 1) * 10 + 1}
+                  <div className="text-[8px] text-danger font-mono mt-1 uppercase tracking-tighter">
+                    LOCKED: Complete Zone {(world.id - 1) * 10}
                   </div>
                 ) : (
                   <div className="text-[9px] text-tx-muted truncate mt-0.5 font-medium">

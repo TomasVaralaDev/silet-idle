@@ -27,9 +27,10 @@ interface PremiumBundleConfig {
   rewardGems?: number; // Palautettavat gemit oston jälkeen
   maxPurchases?: number; // LISÄTTY: Maksimiostomäärä (vain toistuville tuotteille)
   stats?: {
-    expeditionSlotsIncrement?: number; // Lisää tilaa nykyiseen
-    queueSlotsSet?: number; // Asettaa tarkan määrän
-    inventorySlots?: number; // Lisää tilaa nykyiseen
+    expeditionSlotsIncrement?: number;
+    queueSlotsSet?: number;
+    inventorySlots?: number;
+    offlineHoursIncrement?: number;
   };
   items?: Record<string, number>;
 }
@@ -60,6 +61,12 @@ const PREMIUM_BUNDLES: Record<string, PremiumBundleConfig> = {
       rune_crafting_speed_legendary: 1,
       rune_alchemy_speed_legendary: 1,
     },
+  },
+  bundle_offline_time: {
+    priceGems: 300,
+    maxPurchases: 6, // Esim. voi ostaa 6 kertaa (jolloin max aika = 12h + 12h = 24h)
+    isOneTime: false,
+    stats: { offlineHoursIncrement: 2 }, // +2 tuntia kerrallaan
   },
 };
 
@@ -183,8 +190,15 @@ export const purchasePremiumBundle = onCall(async (request) => {
         updates[`premiumPurchases.${bundleId}`] =
           admin.firestore.FieldValue.increment(1);
       }
+      // 1. Statsit offline
+      if (bundle.stats?.offlineHoursIncrement) {
+        updates["maxOfflineHoursIncrement"] =
+          admin.firestore.FieldValue.increment(
+            bundle.stats.offlineHoursIncrement,
+          );
+      }
 
-      // 1. Statsit
+      // 1. Statsit expidition
       if (bundle.stats?.expeditionSlotsIncrement) {
         updates["scavenger.unlockedSlots"] =
           admin.firestore.FieldValue.increment(

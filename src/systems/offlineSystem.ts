@@ -13,7 +13,12 @@ export const calculateOfflineProgress = (
   initialState: GameState,
   elapsedSeconds: number,
 ): { updatedState: GameState; summary: OfflineSummary } => {
-  const maxSeconds = 43200; // 12h katto
+  // --- UUSI LASKENTA: Offline aikaraja ---
+  const baseOfflineHours = 12; // Perusaika on 12 tuntia
+  const extraOfflineHours = initialState.maxOfflineHoursIncrement || 0; // Luetaan ostettu lisäaika statesta
+  const maxSeconds = (baseOfflineHours + extraOfflineHours) * 3600; // Muutetaan tunnit sekunneiksi
+
+  // Rajoitetaan pelaajan poissaoloaika maksimiaikaan
   let remainingSeconds = Math.min(elapsedSeconds, maxSeconds);
   const simulatedSeconds = remainingSeconds;
 

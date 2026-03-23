@@ -82,6 +82,12 @@ export const createPremiumShopSlice: StateCreator<
             newQueueSlots = item.rewards.stats.queueSlotsSet;
           }
 
+          let newOfflineHoursIncrement = state.maxOfflineHoursIncrement || 0;
+          if (item.rewards?.stats?.offlineHoursIncrement) {
+            newOfflineHoursIncrement +=
+              item.rewards.stats.offlineHoursIncrement;
+          }
+
           const newPremiumPurchases = { ...(state.premiumPurchases || {}) };
           if (item.maxPurchases) {
             newPremiumPurchases[item.id] =
@@ -94,7 +100,8 @@ export const createPremiumShopSlice: StateCreator<
             inventory: newInventory,
             scavenger: newScavenger,
             unlockedQueueSlots: newQueueSlots,
-            premiumPurchases: newPremiumPurchases, // LISÄTTY
+            premiumPurchases: newPremiumPurchases,
+            maxOfflineHoursIncrement: newOfflineHoursIncrement,
           } as Partial<FullStoreState>;
         });
 

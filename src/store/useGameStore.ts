@@ -139,6 +139,7 @@ export const DEFAULT_STATE: GameState = {
   gems: 0,
   upgrades: [],
   premiumPurchases: {},
+  maxOfflineHoursIncrement: 0, // LISÄTTY
   unlockedAchievements: [],
   combatStats: {
     hp: 110,
@@ -178,7 +179,7 @@ export const customMerge = (
     ...typedPersisted,
     unlockedQueueSlots: typedPersisted.unlockedQueueSlots ?? 2,
     premiumPurchases: typedPersisted.premiumPurchases || {}, // 3. LISÄÄ TÄMÄ
-
+    maxOfflineHoursIncrement: typedPersisted.maxOfflineHoursIncrement || 0, // LISÄTTY
     // LISÄTTY: Varmistetaan, että settings säilyttää Defaultin teemat,
     // jos ne puuttuvat vanhasta localstorage savesta
     settings: {

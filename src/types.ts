@@ -419,6 +419,7 @@ export interface GameState {
   gems: number;
   upgrades: string[];
   premiumPurchases: Record<string, number>;
+  maxOfflineHoursIncrement?: number;
   unlockedAchievements: string[];
   combatStats: CombatState;
   enemy: Enemy | null;
@@ -484,6 +485,7 @@ export interface PremiumShopRewards {
     expeditionSlotsIncrement?: number;
     queueSlotsSet?: number;
     inventorySlots?: number;
+    offlineHoursIncrement?: number; // LISÄTTY TÄNNE
   };
   items?: Record<string, number>;
 }

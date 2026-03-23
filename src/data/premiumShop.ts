@@ -29,7 +29,6 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
       stats: { expeditionSlotsIncrement: 1 },
     },
   },
-  // Lisää PREMIUM_SHOP_ITEMS listaan:
   {
     id: "bundle_legendary_runes",
     name: "Master Artisan's Rune Bundle",
@@ -48,6 +47,20 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
         rune_crafting_speed_legendary: 1,
         rune_alchemy_speed_legendary: 1,
       },
+    },
+  },
+  {
+    id: "bundle_offline_time",
+    name: "Time Crystal",
+    description:
+      "Increases your Maximum Offline Progress Time by +2 Hours. (Base is 12 Hours)",
+    priceGems: 300,
+    icon: "/assets/items/rune_1.png", // Muista lisätä tai vaihtaa tämä kuva
+    category: "Utility",
+    maxPurchases: 6,
+    isOneTime: false,
+    rewards: {
+      stats: { offlineHoursIncrement: 2 },
     },
   },
 ];

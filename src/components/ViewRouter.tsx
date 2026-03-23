@@ -7,15 +7,15 @@ import AchievementsView from "./achievements/AchievementsView";
 import WorldShopView from "./worldShop/WorldShopView";
 import MarketplaceView from "./marketplace/MarketplaceView";
 import LeaderboardView from "./leaderboard/LeaderboardView";
-import PremiumShopView from "./premiumShop/PremiumShopView"; // LISÄTTY IMPORT
+import PremiumShopView from "./premiumShop/PremiumShopView";
 import {
   AnnouncementsView,
   PatchNotesView,
   FaqView,
-  GuideView,
   PrivacyPolicyView,
 } from "./meta/MetaViews";
 import WikiView from "./wiki/wikiView";
+import GuideView from "./guide/GuideView"; // LISÄTTY UUSI GUIDE
 
 import type { FullStoreState } from "../store/useGameStore";
 import type { ViewType, SkillType } from "../types";
@@ -36,12 +36,12 @@ export default function ViewRouter({ currentView, state, onSellClick }: Props) {
   if (currentView === "enchanting") return <EnchantingView />;
   if (currentView === "worldmarket") return <WorldShopView />;
   if (currentView === "marketplace") return <MarketplaceView />;
-  if (currentView === "premium_shop") return <PremiumShopView />; // LISÄTTY REITITYS
+  if (currentView === "premium_shop") return <PremiumShopView />;
 
   // META SYSTEMS
   if (currentView === "announcements") return <AnnouncementsView />;
   if (currentView === "patch_notes") return <PatchNotesView />;
-  if (currentView === "guide") return <GuideView />;
+  if (currentView === "guide") return <GuideView />; // PÄIVITETTY REITITYS
   if (currentView === "faq") return <FaqView />;
   if (currentView === "privacy_policy") return <PrivacyPolicyView />;
   if (currentView === "wiki") return <WikiView />;

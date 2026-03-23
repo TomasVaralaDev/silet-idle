@@ -2,7 +2,6 @@ import {
   ANNOUNCEMENTS,
   PATCH_NOTES,
   FAQ_DATA,
-  GUIDE_DATA,
   PRIVACY_POLICY_TEXT,
 } from "../../data/metaData";
 
@@ -14,7 +13,7 @@ const MetaContainer = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="p-6 md:p-10 max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+  <div className="p-6 md:p-10 max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
     <h2 className="text-3xl font-black uppercase tracking-[0.2em] text-tx-main border-b-2 border-accent pb-4 flex justify-between items-center">
       {title}
       <span className="w-2 h-2 bg-accent animate-pulse"></span>
@@ -53,7 +52,7 @@ export const PatchNotesView = () => (
         className="bg-panel/20 border border-border/50 p-6 rounded-xl relative overflow-hidden group hover:border-accent/30 transition-colors"
       >
         {patch.isMajor && (
-          <div className="absolute top-0 right-0 bg-accent text-black text-[9px] font-black px-3 py-1 uppercase tracking-tighter">
+          <div className="absolute top-0 right-0 bg-accent text-app-base text-[9px] font-black px-3 py-1 uppercase tracking-tighter">
             Major Update
           </div>
         )}
@@ -90,36 +89,6 @@ export const FaqView = () => (
         </div>
       </div>
     ))}
-  </MetaContainer>
-);
-
-// --- GUIDE ---
-export const GuideView = () => (
-  <MetaContainer title="Field Manual">
-    <div className="grid gap-6">
-      {GUIDE_DATA.map((section) => (
-        <div
-          key={section.title}
-          className="flex gap-6 items-start p-4 bg-panel/10 rounded-xl border border-border/20"
-        >
-          {section.icon && (
-            <img
-              src={section.icon}
-              className="w-12 h-12 pixelated shrink-0 brightness-110"
-              alt=""
-            />
-          )}
-          <div className="space-y-2">
-            <h3 className="text-lg font-bold text-tx-main uppercase tracking-tight italic">
-              {section.title}
-            </h3>
-            <p className="text-sm text-tx-muted leading-relaxed">
-              {section.content}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
   </MetaContainer>
 );
 

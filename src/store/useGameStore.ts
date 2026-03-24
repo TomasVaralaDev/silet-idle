@@ -9,8 +9,7 @@ import type {
   SkillType,
 } from "../types";
 
-import { ACHIEVEMENTS } from "../data/achievements";
-import { calculateXpGain } from "../utils/gameUtils";
+// Poistettu import: ACHIEVEMENTS, calculateXpGain (Nyt ne ovat Slicessä)
 
 // Slices
 import {
@@ -37,6 +36,12 @@ import {
   createPremiumShopSlice,
   type PremiumShopSlice,
 } from "./slices/premiumShopSlice";
+// LISÄTTY: Uusi achievement slice
+import {
+  createAchievementSlice,
+  type AchievementSlice,
+} from "./slices/achievementSlice";
+
 import type { OfflineSummary } from "../systems/offlineSystem";
 
 interface RewardModalState {
@@ -45,6 +50,7 @@ interface RewardModalState {
   rewards: RewardEntry[];
 }
 
+// LISÄTTY: AchievementSlice lisätty listaan
 export type FullStoreState = GameState &
   InventorySlice &
   SkillSlice &
@@ -54,7 +60,8 @@ export type FullStoreState = GameState &
   EnchantingSlice &
   SocialSlice &
   PremiumShopSlice &
-  QuestSlice & {
+  QuestSlice &
+  AchievementSlice & {
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
     rewardModal: RewardModalState;
@@ -69,7 +76,8 @@ export type FullStoreState = GameState &
     setOfflineSummary: (summary: OfflineSummary | null) => void;
     openRewardModal: (title: string, rewards: RewardEntry[]) => void;
     closeRewardModal: () => void;
-    claimAchievement: (id: string) => void;
+    // HUOM: claimAchievement puuttuu tästä tarkoituksella,
+    // se on nyt AchievementSlice-määrittelyssä!
   };
 
 export const DEFAULT_STATE: GameState = {
@@ -145,8 +153,12 @@ export const DEFAULT_STATE: GameState = {
   upgrades: [],
   premiumPurchases: {},
   maxOfflineHoursIncrement: 0,
+
+  // HUOM! Näiden pitää edelleen olla DEFAULT_STATE:ssä (koska ne tallennetaan persistillä),
+  // mutta logiikka on Slicessä.
   unlockedAchievements: [],
   claimedAchievements: [],
+
   combatStats: {
     hp: 110,
     currentMapId: null,
@@ -186,8 +198,11 @@ export const customMerge = (
     unlockedQueueSlots: typedPersisted.unlockedQueueSlots ?? 2,
     premiumPurchases: typedPersisted.premiumPurchases || {},
     maxOfflineHoursIncrement: typedPersisted.maxOfflineHoursIncrement || 0,
+
+    // Säilytetään merge
     unlockedAchievements: typedPersisted.unlockedAchievements || [],
     claimedAchievements: typedPersisted.claimedAchievements || [],
+
     settings: {
       ...DEFAULT_STATE.settings,
       ...(typedPersisted.settings || {}),
@@ -244,96 +259,11 @@ export const useGameStore = create<FullStoreState>()(
       ...createQuestSlice(set, get, ...args),
       ...createPremiumShopSlice(set, get, ...args),
 
-      claimAchievement: (id: string) => {
-        const state = get();
+      // LISÄTTY: Kytketään Achievement Slice osaksi päästorea
+      ...createAchievementSlice(set, get, ...args),
 
-        if (state.claimedAchievements.includes(id)) return;
-        if (!state.unlockedAchievements.includes(id)) return;
-
-        const achievement = ACHIEVEMENTS.find((a) => a.id === id);
-        if (!achievement) return;
-
-        const rewards = achievement.rewards;
-        const updates: Partial<FullStoreState> = {
-          claimedAchievements: [...state.claimedAchievements, id],
-        };
-
-        if (rewards?.coins) {
-          updates.coins = state.coins + rewards.coins;
-        }
-
-        if (rewards?.items && rewards.items.length > 0) {
-          updates.inventory = { ...state.inventory };
-          rewards.items.forEach((item: { itemId: string; amount: number }) => {
-            updates.inventory![item.itemId] =
-              (updates.inventory![item.itemId] || 0) + item.amount;
-          });
-        }
-
-        // --- KORJATTU XP LOGIIKKA (Ei enää overflow-bugia) ---
-        if (rewards?.xpMap) {
-          updates.skills = { ...state.skills };
-          Object.entries(rewards.xpMap).forEach(([skillStr, xpAmount]) => {
-            const skill = skillStr as SkillType;
-            const amount = xpAmount as number;
-
-            if (updates.skills![skill]) {
-              const currentLevel = updates.skills![skill].level;
-              const currentXp = updates.skills![skill].xp;
-
-              // Lasketaan uusi level ja yli jäävä xp oikein gameUtilsin avulla
-              const { level: newLevel, xp: newXp } = calculateXpGain(
-                currentLevel,
-                currentXp,
-                amount,
-              );
-
-              updates.skills![skill] = {
-                ...updates.skills![skill],
-                level: newLevel,
-                xp: newXp,
-              };
-
-              // Valinnainen: Heitetään "Level Up" pop-up, jos taso nousi saavutuksen takia!
-              if (newLevel > currentLevel) {
-                get().emitEvent(
-                  "levelUp",
-                  `${skill.toUpperCase()} reached level ${newLevel}!`,
-                  "/assets/ui/icon_star.png",
-                );
-              }
-            }
-          });
-        }
-        // ---------------------------------------------------
-
-        set(updates);
-
-        get().emitEvent(
-          "success",
-          `Claimed reward for: ${achievement.name}`,
-          "/assets/ui/icon_achievements.png",
-        );
-
-        if (rewards && (rewards.coins || rewards.items || rewards.xpMap)) {
-          const displayRewards: RewardEntry[] = [];
-          if (rewards.coins)
-            displayRewards.push({ itemId: "coins", amount: rewards.coins });
-          if (rewards.items) displayRewards.push(...rewards.items);
-          if (rewards.xpMap) {
-            Object.entries(rewards.xpMap).forEach(([skill, xp]) => {
-              displayRewards.push({
-                itemId: `${skill}_xp`,
-                amount: xp as number,
-              });
-            });
-          }
-          get().openRewardModal(
-            `Achievement: ${achievement.name}`,
-            displayRewards,
-          );
-        }
-      },
+      // HUOM! Pitkä claimAchievement() logiikka on nyt poistettu täältä
+      // ja se hoituu automaattisesti yllä olevan Slicen kautta.
 
       emitEvent: (type, message, icon) =>
         set((state) => {

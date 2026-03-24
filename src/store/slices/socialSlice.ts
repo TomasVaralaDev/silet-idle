@@ -1,11 +1,11 @@
-import type { StateCreator } from 'zustand';
+import type { StateCreator } from "zustand";
 import type {
   GameState,
   SocialState,
   Friend,
   FriendRequest,
   GlobalChatMessage,
-} from '../../types';
+} from "../../types";
 
 export interface SocialSlice {
   social: SocialState;
@@ -30,6 +30,7 @@ export const createSocialSlice: StateCreator<
     globalMessages: [], // ALUSTUS
     activeChatFriendId: null,
     unreadMessages: {},
+    unlockedChatColors: ["default"],
   },
   setFriends: (friends) =>
     set((state) => ({ social: { ...state.social, friends } })),

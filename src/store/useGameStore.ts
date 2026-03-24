@@ -9,8 +9,8 @@ import type {
   SkillType,
 } from "../types";
 
-// LISÄTTY: Tarvitaan palkintojen tarkistamiseen
 import { ACHIEVEMENTS } from "../data/achievements";
+import { calculateXpGain } from "../utils/gameUtils";
 
 // Slices
 import {
@@ -69,7 +69,7 @@ export type FullStoreState = GameState &
     setOfflineSummary: (summary: OfflineSummary | null) => void;
     openRewardModal: (title: string, rewards: RewardEntry[]) => void;
     closeRewardModal: () => void;
-    claimAchievement: (id: string) => void; // LISÄTTY: Funktio palkintojen hakuun
+    claimAchievement: (id: string) => void;
   };
 
 export const DEFAULT_STATE: GameState = {
@@ -84,7 +84,7 @@ export const DEFAULT_STATE: GameState = {
     music: true,
     particles: true,
     theme: "theme-neon",
-    chatColor: "default", // Oletusväri
+    chatColor: "default",
   },
 
   social: {
@@ -94,7 +94,7 @@ export const DEFAULT_STATE: GameState = {
     globalMessages: [],
     activeChatFriendId: null,
     unreadMessages: {},
-    unlockedChatColors: ["default"], // Pelaajalla on aina oletusväri auki
+    unlockedChatColors: ["default"],
   },
 
   quests: {
@@ -146,7 +146,7 @@ export const DEFAULT_STATE: GameState = {
   premiumPurchases: {},
   maxOfflineHoursIncrement: 0,
   unlockedAchievements: [],
-  claimedAchievements: [], // LISÄTTY: Uusi taulukko haetuille palkinnoille
+  claimedAchievements: [],
   combatStats: {
     hp: 110,
     currentMapId: null,
@@ -187,7 +187,7 @@ export const customMerge = (
     premiumPurchases: typedPersisted.premiumPurchases || {},
     maxOfflineHoursIncrement: typedPersisted.maxOfflineHoursIncrement || 0,
     unlockedAchievements: typedPersisted.unlockedAchievements || [],
-    claimedAchievements: typedPersisted.claimedAchievements || [], // LISÄTTY MERGE
+    claimedAchievements: typedPersisted.claimedAchievements || [],
     settings: {
       ...DEFAULT_STATE.settings,
       ...(typedPersisted.settings || {}),
@@ -244,11 +244,9 @@ export const useGameStore = create<FullStoreState>()(
       ...createQuestSlice(set, get, ...args),
       ...createPremiumShopSlice(set, get, ...args),
 
-      // --- UUSI LISÄYS: CLAIM ACHIEVEMENT LOGIIKKA ---
       claimAchievement: (id: string) => {
         const state = get();
 
-        // Estetään uudelleenhaku ja varmistetaan että on ylipäätään ansaittu
         if (state.claimedAchievements.includes(id)) return;
         if (!state.unlockedAchievements.includes(id)) return;
 
@@ -260,35 +258,57 @@ export const useGameStore = create<FullStoreState>()(
           claimedAchievements: [...state.claimedAchievements, id],
         };
 
-        // Käsittele kolikot
         if (rewards?.coins) {
           updates.coins = state.coins + rewards.coins;
         }
 
-        // Käsittele esineet
         if (rewards?.items && rewards.items.length > 0) {
           updates.inventory = { ...state.inventory };
-          rewards.items.forEach((item) => {
+          rewards.items.forEach((item: { itemId: string; amount: number }) => {
             updates.inventory![item.itemId] =
               (updates.inventory![item.itemId] || 0) + item.amount;
           });
         }
 
-        // Käsittele XP (Vaatii hieman enemmän logiikkaa, koska levelUp voi triggeröityä,
-        // mutta yksinkertaisimmillaan vain lisätään XP tässä vaiheessa)
+        // --- KORJATTU XP LOGIIKKA (Ei enää overflow-bugia) ---
         if (rewards?.xpMap) {
           updates.skills = { ...state.skills };
           Object.entries(rewards.xpMap).forEach(([skillStr, xpAmount]) => {
             const skill = skillStr as SkillType;
+            const amount = xpAmount as number;
+
             if (updates.skills![skill]) {
-              updates.skills![skill].xp += xpAmount;
+              const currentLevel = updates.skills![skill].level;
+              const currentXp = updates.skills![skill].xp;
+
+              // Lasketaan uusi level ja yli jäävä xp oikein gameUtilsin avulla
+              const { level: newLevel, xp: newXp } = calculateXpGain(
+                currentLevel,
+                currentXp,
+                amount,
+              );
+
+              updates.skills![skill] = {
+                ...updates.skills![skill],
+                level: newLevel,
+                xp: newXp,
+              };
+
+              // Valinnainen: Heitetään "Level Up" pop-up, jos taso nousi saavutuksen takia!
+              if (newLevel > currentLevel) {
+                get().emitEvent(
+                  "levelUp",
+                  `${skill.toUpperCase()} reached level ${newLevel}!`,
+                  "/assets/ui/icon_star.png",
+                );
+              }
             }
           });
         }
+        // ---------------------------------------------------
 
         set(updates);
 
-        // Pistä ilmoitus näkyviin ja aukaise palkintomodaali
         get().emitEvent(
           "success",
           `Claimed reward for: ${achievement.name}`,
@@ -301,9 +321,11 @@ export const useGameStore = create<FullStoreState>()(
             displayRewards.push({ itemId: "coins", amount: rewards.coins });
           if (rewards.items) displayRewards.push(...rewards.items);
           if (rewards.xpMap) {
-            // Konvertoidaan xpMap esineformaattiin vain visuaalisesti RewardModalin vuoksi
             Object.entries(rewards.xpMap).forEach(([skill, xp]) => {
-              displayRewards.push({ itemId: `${skill}_xp`, amount: xp });
+              displayRewards.push({
+                itemId: `${skill}_xp`,
+                amount: xp as number,
+              });
             });
           }
           get().openRewardModal(
@@ -312,7 +334,6 @@ export const useGameStore = create<FullStoreState>()(
           );
         }
       },
-      // ------------------------------------------------
 
       emitEvent: (type, message, icon) =>
         set((state) => {

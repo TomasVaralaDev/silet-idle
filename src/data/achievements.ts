@@ -11,6 +11,10 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/ui/coins.png",
     description: "Accumulate 1,000 Coins.",
     condition: (state) => state.coins >= 1000,
+    rewards: {
+      coins: 500, // Pieni rahapalkkio
+      items: [{ itemId: "potion_tier1", amount: 5 }], // Muutama pottu seikkailuun
+    },
   },
   {
     id: "wealth_2",
@@ -19,6 +23,10 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/ui/coins.png",
     description: "Accumulate 10,000 Coins.",
     condition: (state) => state.coins >= 10000,
+    rewards: {
+      coins: 5000,
+      xpMap: { crafting: 500 }, // Antaa Crafting XP:tä
+    },
   },
   {
     id: "wealth_3",
@@ -85,6 +93,9 @@ export const ACHIEVEMENTS: Achievement[] = [
         state.equipment.legs &&
         state.equipment.weapon
       ),
+    rewards: {
+      items: [{ itemId: "red_potion", amount: 10 }],
+    },
   },
   {
     id: "combat_map_1",
@@ -93,6 +104,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/attack.png",
     description: "Complete the first combat map.",
     condition: (state) => state.combatStats.maxMapCompleted >= 1,
+    rewards: {
+      xpMap: { attack: 100, melee: 100, defense: 100 }, // Tässä on virhe!
+    },
   },
   {
     id: "combat_map_10",

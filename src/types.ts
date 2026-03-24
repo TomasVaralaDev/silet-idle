@@ -227,6 +227,12 @@ export interface ShopItem {
   requires?: string;
 }
 
+export interface AchievementReward {
+  coins?: number;
+  xpMap?: Partial<Record<SkillType, number>>;
+  items?: { itemId: string; amount: number }[];
+}
+
 export interface Achievement {
   id: string;
   name: string;
@@ -234,6 +240,7 @@ export interface Achievement {
   icon: string;
   description: string;
   condition: (state: GameState) => boolean;
+  rewards?: AchievementReward;
 }
 
 // --- EXPEDITIONS (Scavenger) ---
@@ -424,6 +431,7 @@ export interface GameState {
   premiumPurchases: Record<string, number>;
   maxOfflineHoursIncrement?: number;
   unlockedAchievements: string[];
+  claimedAchievements: string[];
   combatStats: CombatState;
   enemy: Enemy | null;
   lastTimestamp: number;

@@ -220,6 +220,7 @@ export const sendGlobalMessage = async (
   uid: string,
   username: string,
   text: string,
+  chatColor: string, // UUSI PARAMETRI
   channel: "global" | "beginner" = "global",
 ) => {
   if (!text.trim()) return;
@@ -230,6 +231,7 @@ export const sendGlobalMessage = async (
   await push(chatRef, {
     senderUid: uid,
     senderUsername: username,
+    senderColor: chatColor, // Tallennetaan väri-ID viestiin
     text: text.trim(),
     timestamp: rtdbTimestamp(),
   });

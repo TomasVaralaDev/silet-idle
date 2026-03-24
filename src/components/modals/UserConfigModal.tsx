@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
+import { CHAT_COLORS } from "../../data/chatColors"; // Tuodaan väridata
 
 const AVAILABLE_AVATARS = [
   { id: 1, src: "/assets/profilepics/profile_pic_1.png", name: "Standard" },
@@ -24,7 +25,13 @@ const THEMES = [
 interface Props {
   currentUsername: string;
   currentAvatar: string;
-  onSave: (name: string, avatar: string, theme: string) => void;
+  // Päivitetty onSave ottamaan vastaan myös chatColor
+  onSave: (
+    name: string,
+    avatar: string,
+    theme: string,
+    chatColor: string,
+  ) => void;
   onClose: () => void;
 }
 
@@ -35,11 +42,15 @@ export default function UserConfigModal({
   onClose,
 }: Props) {
   const settings = useGameStore((state) => state.settings);
+  const social = useGameStore((state) => state.social); // Haetaan unlocked värit
 
   const [name, setName] = useState(currentUsername);
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar);
   const [selectedTheme, setSelectedTheme] = useState(
     settings?.theme || "theme-neon",
+  );
+  const [selectedChatColor, setSelectedChatColor] = useState(
+    settings?.chatColor || "default",
   );
   const [error, setError] = useState("");
 
@@ -66,8 +77,8 @@ export default function UserConfigModal({
       return;
     }
 
-    // Lähetetään kaikki tiedot kerralla App.tsx:lle
-    onSave(name.trim(), selectedAvatar, selectedTheme);
+    // Nyt tallennetaan myös valittu väri
+    onSave(name.trim(), selectedAvatar, selectedTheme, selectedChatColor);
     onClose();
   };
 
@@ -86,10 +97,29 @@ export default function UserConfigModal({
         </h2>
 
         <div className="space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+          {/* Nimen esikatselu chatissa */}
+          <div className="p-3 bg-app-base/50 rounded-xl border border-border/50 text-center">
+            <p className="text-[9px] uppercase font-black text-tx-muted mb-1 tracking-widest">
+              Chat Preview
+            </p>
+            <p className="text-sm font-bold uppercase tracking-tight">
+              <span
+                style={
+                  CHAT_COLORS.find((c) => c.id === selectedChatColor)?.style
+                }
+              >
+                {name || "Hero"}:
+              </span>
+              <span className="text-tx-main ml-2 font-medium normal-case">
+                Greetings, traveler!
+              </span>
+            </p>
+          </div>
+
           {/* AVATARS */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-3 text-center">
-              Neural Interface Appearance
+              Portrait Appearance
             </label>
             <div className="grid grid-cols-3 gap-3">
               {AVAILABLE_AVATARS.map((avatar) => (
@@ -106,25 +136,60 @@ export default function UserConfigModal({
                     <img
                       src={avatar.src}
                       alt={avatar.name}
-                      className={`w-full h-full object-cover pixelated transition-opacity duration-300 ${selectedAvatar === avatar.src ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "https://ui-avatars.com/api/?name=?&background=0f172a&color=fff";
-                      }}
+                      className="w-full h-full object-cover pixelated"
                     />
                   </div>
-                  {selectedAvatar === avatar.src && (
-                    <div className="absolute inset-0 border-2 border-accent/50 rounded-xl pointer-events-none animate-pulse"></div>
-                  )}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* THEMES */}
+          {/* CHAT COLORS (Uusi osio) */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-3 text-center">
-              System Theme
+              Tavern Name Color
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {CHAT_COLORS.map((color) => {
+                const isUnlocked =
+                  social?.unlockedChatColors?.includes(color.id) ||
+                  color.id === "default";
+
+                return (
+                  <button
+                    key={color.id}
+                    type="button"
+                    disabled={!isUnlocked}
+                    onClick={() => setSelectedChatColor(color.id)}
+                    className={`
+                      flex items-center gap-2 p-2 rounded-lg border transition-all
+                      ${selectedChatColor === color.id ? "bg-accent/10 border-accent shadow-inner" : "bg-panel border-border"}
+                      ${!isUnlocked ? "opacity-30 grayscale cursor-not-allowed" : "hover:bg-panel-hover"}
+                    `}
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full border border-black/20"
+                      style={color.style}
+                    ></div>
+                    <span
+                      className="text-[9px] font-black uppercase tracking-widest truncate"
+                      style={color.style}
+                    >
+                      {color.name}
+                    </span>
+                    {!isUnlocked && (
+                      <span className="ml-auto text-[8px]">🔒</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* THEMES */}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-wider text-tx-muted mb-3 text-center">
+              System Interface
             </label>
             <div className="grid grid-cols-2 gap-2">
               {THEMES.map((theme) => (
@@ -138,7 +203,7 @@ export default function UserConfigModal({
                   `}
                 >
                   <div
-                    className={`w-4 h-4 rounded-full shadow-sm ${theme.color} border border-black/50`}
+                    className={`w-3 h-3 rounded-full ${theme.color} border border-black/50`}
                   ></div>
                   <span className="text-[10px] font-bold uppercase tracking-wider">
                     {theme.label}
@@ -148,14 +213,14 @@ export default function UserConfigModal({
             </div>
           </div>
 
-          {/* NAME */}
+          {/* NAME & SAVE */}
           <form
             onSubmit={handleSubmit}
             className="space-y-6 pt-2 border-t border-border/50"
           >
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-2">
-                Designation
+              <label className="block text-[10px] font-black uppercase tracking-wider text-tx-muted mb-2">
+                Character Designation
               </label>
               <input
                 type="text"
@@ -164,7 +229,7 @@ export default function UserConfigModal({
                   setName(e.target.value);
                   setError("");
                 }}
-                className="w-full bg-app-base border border-border rounded-lg px-4 py-3 text-tx-main focus:border-accent focus:ring-1 focus:ring-accent/50 outline-none font-mono text-sm"
+                className="w-full bg-app-base border border-border rounded-lg px-4 py-3 text-tx-main focus:border-accent outline-none font-bold text-sm"
               />
               {error && (
                 <p className="text-danger text-xs mt-2 font-bold">{error}</p>
@@ -175,15 +240,15 @@ export default function UserConfigModal({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 px-4 py-3 bg-panel-hover hover:bg-panel text-tx-muted font-bold rounded-lg border border-border uppercase text-xs"
+                className="flex-1 px-4 py-3 bg-panel-hover hover:bg-panel text-tx-muted font-bold rounded-lg border border-border uppercase text-[10px] tracking-widest"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-[2] px-4 py-3 bg-accent hover:bg-accent-hover text-white font-bold rounded-lg shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] uppercase text-xs"
+                className="flex-[2] px-4 py-3 bg-accent hover:bg-accent-hover text-white font-black rounded-xl shadow-lg uppercase text-[10px] tracking-widest"
               >
-                Save Changes
+                Save Profile
               </button>
             </div>
           </form>

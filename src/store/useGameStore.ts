@@ -80,6 +80,7 @@ export const DEFAULT_STATE: GameState = {
     music: true,
     particles: true,
     theme: "theme-neon",
+    chatColor: "default", // Oletusväri
   },
 
   social: {
@@ -89,6 +90,7 @@ export const DEFAULT_STATE: GameState = {
     globalMessages: [],
     activeChatFriendId: null,
     unreadMessages: {},
+    unlockedChatColors: ["default"], // Pelaajalla on aina oletusväri auki
   },
 
   quests: {
@@ -185,6 +187,7 @@ export const customMerge = (
     settings: {
       ...DEFAULT_STATE.settings,
       ...(typedPersisted.settings || {}),
+      chatColor: typedPersisted.settings?.chatColor || "default", // Varmistus
     },
     worldShop: {
       ...DEFAULT_STATE.worldShop,
@@ -202,6 +205,9 @@ export const customMerge = (
       activeChatFriendId: null,
       incomingRequests: typedPersisted.social?.incomingRequests || [],
       outgoingRequests: typedPersisted.social?.outgoingRequests || [],
+      unlockedChatColors: typedPersisted.social?.unlockedChatColors || [
+        "default",
+      ], // Varmistus
     },
     quests: {
       ...DEFAULT_STATE.quests,

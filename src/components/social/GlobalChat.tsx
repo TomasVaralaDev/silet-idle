@@ -5,10 +5,13 @@ import {
   subscribeToGlobalChat,
 } from "../../services/socialServices";
 import { calculateTotalLevel } from "../../utils/gameUtils";
-import { wordFilter } from "../../utils/wordFilter"; // Tuodaan filtteri
+import { wordFilter } from "../../utils/wordFilter";
+import { CHAT_COLORS } from "../../data/chatColors"; // Tuodaan väridata
 
 export default function GlobalChat({ myUid }: { myUid: string }) {
-  const { social, setGlobalMessages, username, skills } = useGameStore();
+  // Haetaan asetukset storesta
+  const { social, setGlobalMessages, username, skills, settings } =
+    useGameStore();
 
   const [activeChannel, setActiveChannel] = useState<"global" | "beginner">(
     "global",
@@ -59,13 +62,17 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
     if (!input.trim() || cooldownRemaining > 0) return;
 
     try {
-      // 1. Sensuroidaan viesti ennen lähettämistä
       const filteredText = wordFilter.censor(input.trim());
-
       const displayName = `[Lv.${totalLevel}] ${username}`;
 
-      // 2. Lähetetään sensuroitu versio
-      await sendGlobalMessage(myUid, displayName, filteredText, activeChannel);
+      // Lähetetään viesti ja lisätään mukaan pelaajan valitsema chatColor ID
+      await sendGlobalMessage(
+        myUid,
+        displayName,
+        filteredText,
+        settings.chatColor || "default",
+        activeChannel,
+      );
 
       setInput("");
       setCooldownRemaining(10);
@@ -111,6 +118,22 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
                 minute: "2-digit",
               });
 
+              // Etsitään väri datatiedostosta
+              const colorData = CHAT_COLORS.find(
+                (c) => c.id === msg.senderColor,
+              );
+
+              // LUETTAVUUDEN PARANNUS:
+              // Lisätään drop-shadow, jotta gradientit ja tummat värit erottuvat tummalla taustalla.
+              const nameStyle: React.CSSProperties = {
+                ...(colorData?.style || {
+                  color: isMe ? "var(--color-accent)" : "var(--color-warning)",
+                }),
+                filter:
+                  "drop-shadow(0px 1px 1px rgba(0,0,0,0.8)) drop-shadow(0px 0px 4px rgba(0,0,0,0.4))",
+                WebkitFilter: "drop-shadow(0px 1px 1px rgba(0,0,0,0.8))",
+              };
+
               const rawName = msg.senderUsername || "Unknown";
               const match = rawName.match(/^(\[Lv\.\d+\])\s+(.*)$/);
               let levelTag = "";
@@ -138,7 +161,8 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
                     )}
 
                     <span
-                      className={`font-bold mr-1.5 uppercase tracking-tight shrink-0 ${isMe ? "text-accent" : "text-warning"}`}
+                      className="font-bold mr-1.5 uppercase tracking-tight shrink-0"
+                      style={nameStyle}
                     >
                       {cleanName}:
                     </span>

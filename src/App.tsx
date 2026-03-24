@@ -92,8 +92,20 @@ export default function App() {
     return (
       <div className="min-h-[100dvh] bg-app-base flex items-center justify-center relative">
         <UsernameModal
-          onConfirm={(name: string, avatarUrl: string) => {
-            setState({ username: name, avatar: avatarUrl });
+          onConfirm={(
+            name: string,
+            avatarUrl: string,
+            initialTheme: string,
+          ) => {
+            setState({
+              username: name,
+              avatar: avatarUrl,
+              settings: {
+                ...DEFAULT_STATE.settings,
+                theme: initialTheme,
+                chatColor: "default", // Uusi pelaaja aloittaa aina oletusvärillä
+              },
+            });
             emitEvent(
               "success",
               `Identity Confirmed: ${name}`,
@@ -117,18 +129,25 @@ export default function App() {
         <UserConfigModal
           currentUsername={username}
           currentAvatar={avatar}
-          onSave={(name: string, avatarUrl: string, newTheme: string) => {
+          // Lisätty chatColor parametri tähän:
+          onSave={(
+            name: string,
+            avatarUrl: string,
+            newTheme: string,
+            newChatColor: string,
+          ) => {
             setState((state) => ({
               username: name,
               avatar: avatarUrl,
               settings: {
                 ...(state.settings || DEFAULT_STATE.settings),
                 theme: newTheme,
+                chatColor: newChatColor, // TALLENTAA UUDEN VÄRIN
               },
             }));
             emitEvent(
               "info",
-              `Identity & Theme Updated`,
+              `Profile & Chat Color Updated`,
               "/assets/ui/icon_check.png",
             );
           }}

@@ -80,6 +80,7 @@ export interface GameSettings {
   music: boolean;
   particles: boolean;
   theme: string;
+  chatColor: string;
 }
 
 export interface ActiveAction {
@@ -364,6 +365,7 @@ export interface GlobalChatMessage {
   id: string;
   senderUid: string;
   senderUsername: string;
+  senderColor?: string; // UUSI: Lähettäjän nimen väri-ID
   text: string;
   timestamp: number;
 }
@@ -375,6 +377,7 @@ export interface SocialState {
   globalMessages: GlobalChatMessage[];
   activeChatFriendId: string | null;
   unreadMessages: Record<string, number>;
+  unlockedChatColors: string[]; // UUSI: Lista ID:istä, jotka pelaaja omistaa
 }
 
 export interface MarketListing {

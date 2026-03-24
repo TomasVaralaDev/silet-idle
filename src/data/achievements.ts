@@ -43,6 +43,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/ui/coins.png",
     description: "Accumulate 1,000,000 Coins.",
     condition: (state) => state.coins >= 1000000,
+    rewards: {
+      chatColorId: "gold", // TÄMÄ AVAUTUU NYT!
+    },
   },
   {
     id: "wealth_5",
@@ -123,6 +126,10 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/strength.png",
     description: "Defeat the World 4 Boss (Map 40).",
     condition: (state) => state.combatStats.maxMapCompleted >= 40,
+    rewards: {
+      coins: 10000, // Pieni rahapalkkio
+      chatColorId: "sky",
+    },
   },
   {
     id: "combat_map_80",

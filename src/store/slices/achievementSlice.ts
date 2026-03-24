@@ -79,6 +79,18 @@ export const createAchievementSlice: StateCreator<
       });
     }
 
+    // UUSI: Chat Color logiikka
+    if (rewards?.chatColorId) {
+      const currentColors = state.social?.unlockedChatColors || ["default"];
+      // Varmistetaan ettei väriä ole jo lisätty
+      if (!currentColors.includes(rewards.chatColorId)) {
+        updates.social = {
+          ...state.social,
+          unlockedChatColors: [...currentColors, rewards.chatColorId],
+        };
+      }
+    }
+
     set(updates);
 
     get().emitEvent(
@@ -87,11 +99,21 @@ export const createAchievementSlice: StateCreator<
       "/assets/ui/icon_achievements.png",
     );
 
-    if (rewards && (rewards.coins || rewards.items || rewards.xpMap)) {
+    // KORJATTU: Lisätty chatColorId ehtoon, jotta modaali aukeaa myös silloin kun ainoa palkinto on väri
+    if (
+      rewards &&
+      (rewards.coins || rewards.items || rewards.xpMap || rewards.chatColorId)
+    ) {
       const displayRewards: RewardEntry[] = [];
-      if (rewards.coins)
+
+      if (rewards.coins) {
         displayRewards.push({ itemId: "coins", amount: rewards.coins });
-      if (rewards.items) displayRewards.push(...rewards.items);
+      }
+
+      if (rewards.items) {
+        displayRewards.push(...rewards.items);
+      }
+
       if (rewards.xpMap) {
         Object.entries(rewards.xpMap).forEach(([skill, xp]) => {
           displayRewards.push({
@@ -100,6 +122,15 @@ export const createAchievementSlice: StateCreator<
           });
         });
       }
+
+      // UUSI: Lisätään väri modaaliin näytettäväksi
+      if (rewards.chatColorId) {
+        displayRewards.push({
+          itemId: `color_${rewards.chatColorId}`,
+          amount: 1, // Määrällä ei ole visuaalista merkitystä värille, mutta vaaditaan tyypin vuoksi
+        });
+      }
+
       get().openRewardModal(`Achievement: ${achievement.name}`, displayRewards);
     }
   },

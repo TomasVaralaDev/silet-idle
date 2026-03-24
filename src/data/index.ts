@@ -13,6 +13,7 @@ import {
   applyEnchantStats,
 } from "../utils/enchanting";
 import type { Resource } from "../types";
+import { CHAT_COLORS } from "./chatColors"; // LISÄTTY: Tuodaan värit
 
 export {
   WORLD_INFO,
@@ -163,8 +164,56 @@ const SkillResourceFactory: ItemSubFactory = {
   },
 };
 
+// ==========================================
+// --- UUDET VIRTUAALI-TEHTAAT (Rewards) ---
+// ==========================================
+
 /**
- * 8. PÄÄTEHDAS (The Master Factory)
+ * 8. Experience Factory
+ * Generoi lennosta nimen (esim. "woodcutting_xp" -> "Woodcutting XP")
+ */
+const ExperienceFactory: ItemSubFactory = {
+  canHandle: (id) => id.endsWith("_xp"),
+  create: (id) => {
+    const skillRaw = id.replace("_xp", "");
+    const skillDisplay = skillRaw.charAt(0).toUpperCase() + skillRaw.slice(1);
+
+    return {
+      name: `${skillDisplay} Experience`,
+      value: 0,
+      rarity: "uncommon",
+      category: "Experience",
+      icon: "/assets/ui/shop.png", // Kaikki XP näyttää tältä ikonilta RewardModalissa
+      description: `Experience points for the ${skillDisplay} skill.`,
+    };
+  },
+};
+
+/**
+ * 9. Chat Color Factory
+ * Hakee värin tiedot CHAT_COLORS datasta
+ */
+const ChatColorFactory: ItemSubFactory = {
+  canHandle: (id) => id.startsWith("color_"),
+  create: (id) => {
+    const colorId = id.replace("color_", "");
+    const colorData = CHAT_COLORS.find((c) => c.id === colorId);
+
+    if (!colorData) return { name: "Unknown Color", rarity: "common" };
+
+    return {
+      name: `Chat Color: ${colorData.name}`,
+      value: 0,
+      rarity: colorData.rarity,
+      category: "Cosmetic",
+      icon: "/assets/ui/icon_tavern.png", // Oletetaan että sinulla on jokin paletti-ikoni (voit poistaa tämän rivin jos ei ole)
+      description: `Unlocks the ${colorData.name} nameplate color for the Tavern chat.`,
+    };
+  },
+};
+
+/**
+ * 10. PÄÄTEHDAS (The Master Factory)
  */
 export const getItemDetails = (id: string): Resource | null => {
   if (!id) return null;
@@ -190,6 +239,8 @@ export const getItemDetails = (id: string): Resource | null => {
     EnchantScrollFactory,
     WorldLootFactory,
     SkillResourceFactory,
+    ExperienceFactory, // UUSI
+    ChatColorFactory, // UUSI
   ];
 
   const factory = factories.find((f) => f.canHandle(baseId));

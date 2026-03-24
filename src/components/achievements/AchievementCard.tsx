@@ -1,11 +1,12 @@
 import type { Achievement } from "../../types";
-import { useGameStore } from "../../store/useGameStore"; // Tuodaan store, jotta voidaan lunastaa
+import { useGameStore } from "../../store/useGameStore";
 import { getItemDetails } from "../../data";
+import { CHAT_COLORS } from "../../data/chatColors"; // LISÄTTY: Tuodaan väridata
 
 interface Props {
   achievement: Achievement;
   isUnlocked: boolean;
-  isClaimed: boolean; // LISÄTTY: Tieto onko palkinto haettu
+  isClaimed: boolean;
 }
 
 export default function AchievementCard({
@@ -15,11 +16,13 @@ export default function AchievementCard({
 }: Props) {
   const claimAchievement = useGameStore((state) => state.claimAchievement);
 
+  // KORJATTU: Tarkistetaan myös chatColorId
   const hasRewards =
     achievement.rewards &&
     (achievement.rewards.coins ||
       achievement.rewards.items ||
-      achievement.rewards.xpMap);
+      achievement.rewards.xpMap ||
+      achievement.rewards.chatColorId);
 
   return (
     <div
@@ -96,7 +99,8 @@ export default function AchievementCard({
       {hasRewards && (
         <div className="w-full sm:w-auto mt-2 sm:mt-0 flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 border-t sm:border-t-0 sm:border-l border-border/50 pt-2 sm:pt-0 sm:pl-4 shrink-0">
           {/* Näytetään pienet ikonit palkinnoista */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {/* 1. COINS */}
             {achievement.rewards?.coins && (
               <div
                 className="flex items-center gap-1 bg-app-base px-1.5 py-0.5 rounded border border-border"
@@ -112,6 +116,8 @@ export default function AchievementCard({
                 </span>
               </div>
             )}
+
+            {/* 2. ITEMS */}
             {achievement.rewards?.items?.map((item) => {
               const details = getItemDetails(item.itemId);
               return details ? (
@@ -131,6 +137,8 @@ export default function AchievementCard({
                 </div>
               ) : null;
             })}
+
+            {/* 3. XP */}
             {achievement.rewards?.xpMap && (
               <div
                 className="flex items-center gap-1 bg-app-base px-1.5 py-0.5 rounded border border-border"
@@ -141,6 +149,40 @@ export default function AchievementCard({
                 </span>
               </div>
             )}
+
+            {/* 4. CHAT COLOR (UUSI) */}
+            {achievement.rewards?.chatColorId &&
+              (() => {
+                const colorObj = CHAT_COLORS.find(
+                  (c) => c.id === achievement.rewards?.chatColorId,
+                );
+                if (!colorObj) return null;
+
+                return (
+                  <div
+                    className="flex items-center gap-1.5 bg-app-base px-1.5 py-0.5 rounded border border-border"
+                    title={`Unlocks Chat Color: ${colorObj.name}`}
+                  >
+                    <div
+                      className="w-2.5 h-2.5 rounded-full border border-black/50 shadow-sm"
+                      style={colorObj.style}
+                    ></div>
+                    <span
+                      className="text-[9px] font-black uppercase tracking-widest"
+                      style={{
+                        // Jos gradientti on käytössä, levitetään se tekstiin
+                        ...(colorObj.style.webkitBackgroundClip === "text"
+                          ? colorObj.style
+                          : { color: colorObj.style.color }),
+                        // Pieni varjo luettavuuden vuoksi
+                        filter: "drop-shadow(0px 1px 1px rgba(0,0,0,0.8))",
+                      }}
+                    >
+                      Color
+                    </span>
+                  </div>
+                );
+              })()}
           </div>
 
           {/* CLAIM NAPPI */}

@@ -231,6 +231,7 @@ export interface AchievementReward {
   coins?: number;
   xpMap?: Partial<Record<SkillType, number>>;
   items?: { itemId: string; amount: number }[];
+  chatColorId?: string; // UUSI PALKINTO: Chatin nimen väri
 }
 
 export interface Achievement {

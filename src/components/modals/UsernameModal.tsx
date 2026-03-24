@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { wordFilter } from "../../utils/wordFilter"; // Varmista, että utility on tässä polussa
 
 const AVAILABLE_AVATARS = [
   { id: 1, src: "/assets/profilepics/profile_pic_1.png", name: "Standard" },
@@ -34,7 +35,7 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
   const [error, setError] = useState("");
   const [showNameHelp, setShowNameHelp] = useState(false);
 
-  // Live preview for the selected theme
+  // Teeman esikatselu livenä
   useEffect(() => {
     document.body.classList.remove(...THEMES.map((t) => t.id));
     document.body.classList.add(selectedTheme);
@@ -42,19 +43,31 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+
+    // 1. Perusvalidointi
+    if (!trimmedName) {
       setError("Hero name required");
       return;
     }
-    if (name.length > 12) {
+
+    if (trimmedName.length > 12) {
       setError("Name too long (max 12 chars)");
       return;
     }
-    onConfirm(name.trim(), selectedAvatar, selectedTheme);
+
+    // 2. Banni-lista validointi
+    if (wordFilter.isProfane(trimmedName)) {
+      setError("Name contains restricted words");
+      return;
+    }
+
+    // Jos kaikki kunnossa, vahvistetaan
+    onConfirm(trimmedName, selectedAvatar, selectedTheme);
   };
 
   return (
-    <div className="bg-panel/60 backdrop-blur-xl p-8 rounded-3xl border border-border/50 shadow-2xl w-full max-w-md relative overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+    <div className="bg-panel/60 backdrop-blur-xl p-8 rounded-3xl border border-border/50 shadow-2xl w-full max-w-md relative overflow-hidden animate-in fade-in zoom-in-95 duration-500 text-left">
       {/* GLOW EFFECT */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-40"></div>
 
@@ -68,7 +81,7 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
       </header>
 
       <div className="space-y-8 max-h-[65vh] overflow-y-auto custom-scrollbar pr-2">
-        {/* AVATAR SELECTION */}
+        {/* PORTRAIT SELECTION */}
         <section>
           <label className="block text-[10px] font-black uppercase tracking-widest text-tx-muted mb-4 text-center">
             Select Portrait
@@ -100,7 +113,7 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
           </div>
         </section>
 
-        {/* THEME SELECTION */}
+        {/* INTERFACE THEME */}
         <section>
           <label className="block text-[10px] font-black uppercase tracking-widest text-tx-muted mb-4 text-center">
             Interface Theme
@@ -131,7 +144,7 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
           </div>
         </section>
 
-        {/* NAME INPUT */}
+        {/* HERO NAME INPUT */}
         <form
           onSubmit={handleSubmit}
           className="space-y-6 pt-4 border-t border-border/20"
@@ -142,7 +155,7 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
                 Hero Name
               </label>
 
-              {/* HELP ICON */}
+              {/* HELP ICON & TOOLTIP */}
               <div
                 className="relative flex items-center group cursor-help"
                 onMouseEnter={() => setShowNameHelp(true)}
@@ -153,7 +166,6 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
                   ?
                 </span>
 
-                {/* TOOLTIP */}
                 {showNameHelp && (
                   <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-panel border border-border/80 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-none">
                     <p className="text-[10px] leading-tight text-tx-main font-bold uppercase tracking-tight">
@@ -177,6 +189,7 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
               className="w-full bg-app-base/50 border border-border/50 rounded-xl px-4 py-4 text-tx-main placeholder:text-tx-muted/20 focus:outline-none focus:border-accent/50 transition-all font-bold text-sm"
               autoFocus
             />
+
             {error && (
               <p className="text-danger text-[10px] mt-2 ml-1 font-black uppercase tracking-tight animate-pulse">
                 {error}

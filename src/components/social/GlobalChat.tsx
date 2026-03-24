@@ -5,6 +5,7 @@ import {
   subscribeToGlobalChat,
 } from "../../services/socialServices";
 import { calculateTotalLevel } from "../../utils/gameUtils";
+import { wordFilter } from "../../utils/wordFilter"; // Tuodaan filtteri
 
 export default function GlobalChat({ myUid }: { myUid: string }) {
   const { social, setGlobalMessages, username, skills } = useGameStore();
@@ -56,9 +57,16 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || cooldownRemaining > 0) return;
+
     try {
+      // 1. Sensuroidaan viesti ennen lähettämistä
+      const filteredText = wordFilter.censor(input.trim());
+
       const displayName = `[Lv.${totalLevel}] ${username}`;
-      await sendGlobalMessage(myUid, displayName, input, activeChannel);
+
+      // 2. Lähetetään sensuroitu versio
+      await sendGlobalMessage(myUid, displayName, filteredText, activeChannel);
+
       setInput("");
       setCooldownRemaining(10);
     } catch (err) {
@@ -116,7 +124,7 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
               return (
                 <div
                   key={msg.id}
-                  className="flex items-start gap-2 py-1 border-b border-border/10 hover:bg-panel/20 transition-colors min-w-0"
+                  className="flex items-start gap-2 py-1 border-b border-border/10 hover:bg-panel/20 transition-colors min-w-0 animate-in fade-in slide-in-from-left-2 duration-300"
                 >
                   <span className="text-[10px] text-tx-muted font-mono mt-0.5 shrink-0 opacity-50">
                     [{timestamp}]
@@ -162,7 +170,6 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
                 : `Message ${activeChannel === "global" ? "Tavern" : "Beginners"}...`
             }
             disabled={cooldownRemaining > 0 || isLoading}
-            /* KORJAUS: Lisätty pr-20 (Padding Right), jotta teksti ei mene napin alle */
             className="w-full min-w-0 bg-app-base/50 border border-border rounded-sm px-3 py-2 pr-20 text-sm text-tx-main focus:outline-none focus:border-accent/50 disabled:opacity-50 transition-all placeholder:text-tx-muted/20 placeholder:normal-case font-bold tracking-wider"
           />
           <button

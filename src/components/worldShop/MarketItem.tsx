@@ -1,12 +1,13 @@
+import { useState } from "react";
 import { getItemDetails } from "../../data";
 import type { WorldShopItem } from "../../types";
 
 interface Props {
   item: WorldShopItem;
-  onBuy: (id: string) => void;
+  onBuy: (id: string, amount: number) => void;
   playerInventory: Record<string, number>;
   playerCoins: number;
-  purchaseCount: number; // Lisätty: tieto montako ostettu
+  purchaseCount: number;
 }
 
 export default function MarketItem({
@@ -16,75 +17,84 @@ export default function MarketItem({
   playerCoins,
   purchaseCount,
 }: Props) {
-  const canAffordCoins = playerCoins >= item.costCoins;
-  const canAffordMats = item.costMaterials.every(
-    (m) => (playerInventory[m.itemId] || 0) >= m.amount,
-  );
+  const [selectedAmount, setSelectedAmount] = useState(1);
 
-  // Daily limit tarkistus
+  // 1. LASKETAAN RAJOITUKSET
+  const remainingLimit = item.dailyLimit
+    ? item.dailyLimit - purchaseCount
+    : 999;
   const isLimitReached =
     item.dailyLimit !== undefined && purchaseCount >= item.dailyLimit;
 
+  // 2. LASKETAAN MAKSIMIMÄÄRÄ (Affordability + Limit)
+  const maxByCoins = Math.floor(playerCoins / item.costCoins);
+  const maxByMats = item.costMaterials.map((m) => {
+    const current = playerInventory[m.itemId] || 0;
+    return Math.floor(current / m.amount);
+  });
+
+  // Todellinen maksimi on pienin näistä kaikista
+  const absoluteMax = Math.max(
+    1,
+    Math.min(maxByCoins, ...maxByMats, remainingLimit),
+  );
+
+  // Kokonaiskustannukset valitulle määrälle
+  const totalCoinCost = item.costCoins * selectedAmount;
+  const canAffordCoins = playerCoins >= totalCoinCost;
+  const canAffordMats = item.costMaterials.every(
+    (m) => (playerInventory[m.itemId] || 0) >= m.amount * selectedAmount,
+  );
+
   const canAffordAll = canAffordCoins && canAffordMats && !isLimitReached;
+
+  const adjustAmount = (val: number) => {
+    const next = selectedAmount + val;
+    if (next >= 1 && next <= remainingLimit) {
+      setSelectedAmount(next);
+    }
+  };
+
+  const setMaxAmount = () => {
+    setSelectedAmount(absoluteMax);
+  };
 
   return (
     <div
-      className={`
-      relative group flex flex-col bg-panel/60 backdrop-blur-sm border transition-all duration-300 rounded-2xl overflow-hidden
-      ${
-        canAffordAll
-          ? "border-border hover:border-accent/50 hover:bg-panel/80 hover:shadow-[0_0_20px_rgb(var(--color-accent)/0.1)]"
-          : "border-danger/20 opacity-80"
-      }
-    `}
+      className={`relative group flex flex-col bg-panel/60 backdrop-blur-sm border transition-all duration-300 rounded-2xl overflow-hidden
+      ${canAffordAll ? "border-border hover:border-accent/50" : "border-danger/20 opacity-80"}`}
     >
-      {/* DAILY LIMIT MERKKI (oikea yläkulma) */}
+      {/* DAILY LIMIT */}
       {item.dailyLimit && (
         <div
-          className={`
-            absolute top-3 right-3 px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider border z-10
-            ${
-              isLimitReached
-                ? "bg-danger/20 text-danger border-danger/40"
-                : "bg-app-base/80 text-accent border-accent/30"
-            }
-        `}
+          className={`absolute top-3 right-3 px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider border z-10
+            ${isLimitReached ? "bg-danger/20 text-danger border-danger/40" : "bg-app-base/80 text-accent border-accent/30"}`}
         >
           Daily: {purchaseCount}/{item.dailyLimit}
         </div>
       )}
 
-      {/* Yläosa: Tuotteen tiedot */}
+      {/* Yläosa: Tiedot */}
       <div className="p-5 flex gap-4">
-        {/* Kuvake */}
         <div className="relative shrink-0">
           <div
-            className={`
-             w-16 h-16 bg-app-base rounded-xl border flex items-center justify-center overflow-hidden shadow-inner transition-colors
-             ${
-               isLimitReached
-                 ? "border-danger/30 grayscale opacity-50"
-                 : "border-border"
-             }
-          `}
+            className={`w-16 h-16 bg-app-base rounded-xl border flex items-center justify-center overflow-hidden
+             ${isLimitReached ? "border-danger/30 grayscale opacity-50" : "border-border"}`}
           >
             <img
               src={item.icon}
               alt={item.name}
-              className="w-10 h-10 pixelated group-hover:scale-110 transition-transform duration-500"
+              className="w-10 h-10 pixelated"
             />
           </div>
-          <div className="absolute -bottom-2 -right-2 bg-accent text-white text-[10px] font-black px-1.5 py-0.5 rounded border border-accent-hover shadow-sm z-20">
-            x{item.resultAmount}
+          <div className="absolute -bottom-2 -right-2 bg-accent text-white text-[10px] font-black px-1.5 py-0.5 rounded border border-accent-hover z-20">
+            x{item.resultAmount * selectedAmount}
           </div>
         </div>
 
-        {/* Tekstit */}
         <div className="flex-1 min-w-0 pt-1">
           <h3
-            className={`text-sm font-black uppercase tracking-tight truncate ${
-              isLimitReached ? "text-tx-muted line-through" : "text-tx-main"
-            }`}
+            className={`text-sm font-black uppercase truncate ${isLimitReached ? "text-tx-muted line-through" : "text-tx-main"}`}
           >
             {item.name}
           </h3>
@@ -94,40 +104,67 @@ export default function MarketItem({
         </div>
       </div>
 
-      {/* Keskiosa: Kustannukset */}
-      <div className="px-5 pb-4 space-y-3">
-        <div className="flex flex-wrap gap-2">
-          {/* Fragment Hinta (Aina varoitusväri/kulta, paitsi jos ei varaa) */}
-          <div
-            className={`
-            flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-mono font-bold transition-colors
-            ${
-              canAffordCoins
-                ? "bg-warning/5 border-warning/20 text-warning"
-                : "bg-danger/5 border-danger/20 text-danger"
-            }
-          `}
-          >
-            <img src="/assets/ui/coins.png" className="w-4 h-4" alt="Coins" />
-            {item.costCoins.toLocaleString()}
+      {/* Keskiosa: Määrän valinta + MAX-nappi */}
+      {!isLimitReached && (
+        <div className="px-5 mb-4 flex items-center gap-3">
+          <div className="flex-1 flex items-center justify-between bg-black/20 py-2 px-3 rounded-lg border border-white/5">
+            <button
+              onClick={() => adjustAmount(-1)}
+              disabled={selectedAmount <= 1}
+              className="w-8 h-8 rounded bg-panel border border-border flex items-center justify-center font-bold hover:bg-accent/20 disabled:opacity-30 transition-colors"
+            >
+              -
+            </button>
+
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] uppercase font-black text-tx-muted">
+                Qty
+              </span>
+              <span className="text-sm font-mono font-black text-accent">
+                {selectedAmount}
+              </span>
+            </div>
+
+            <button
+              onClick={() => adjustAmount(1)}
+              disabled={selectedAmount >= remainingLimit}
+              className="w-8 h-8 rounded bg-panel border border-border flex items-center justify-center font-bold hover:bg-accent/20 disabled:opacity-30 transition-colors"
+            >
+              +
+            </button>
           </div>
 
-          {/* Materiaali Hinnat */}
+          <button
+            onClick={setMaxAmount}
+            disabled={selectedAmount === absoluteMax || absoluteMax <= 0}
+            className="h-full px-4 py-2 bg-accent/10 hover:bg-accent/30 text-accent border border-accent/20 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all disabled:opacity-30"
+          >
+            Max
+          </button>
+        </div>
+      )}
+
+      {/* Kustannukset */}
+      <div className="px-5 pb-4 space-y-2">
+        <div className="flex flex-wrap gap-2">
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-mono font-bold
+            ${canAffordCoins ? "bg-warning/5 border-warning/20 text-warning" : "bg-danger/5 border-danger/20 text-danger"}`}
+          >
+            <img src="/assets/ui/coins.png" className="w-4 h-4" alt="Coins" />
+            {totalCoinCost.toLocaleString()}
+          </div>
+
           {item.costMaterials.map((mat) => {
             const details = getItemDetails(mat.itemId);
             const current = playerInventory[mat.itemId] || 0;
-            const enough = current >= mat.amount;
+            const required = mat.amount * selectedAmount;
+            const enough = current >= required;
             return (
               <div
                 key={mat.itemId}
-                className={`
-                flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-mono font-bold transition-colors
-                ${
-                  enough
-                    ? "bg-success/5 border-success/20 text-success"
-                    : "bg-danger/5 border-danger/20 text-danger"
-                }
-              `}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-mono font-bold
+                ${enough ? "bg-success/5 border-success/20 text-success" : "bg-danger/5 border-danger/20 text-danger"}`}
               >
                 {details?.icon && (
                   <img
@@ -136,32 +173,30 @@ export default function MarketItem({
                     alt=""
                   />
                 )}
-                {current}/{mat.amount}
+                {current}/{required}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Alaosa: Ostonappi */}
+      {/* Ostonappi */}
       <button
-        onClick={() => onBuy(item.id)}
+        onClick={() => onBuy(item.id, selectedAmount)}
         disabled={!canAffordAll}
-        className={`
-          w-full py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all
+        className={`w-full py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all
           ${
             isLimitReached
               ? "bg-panel text-danger/80 border-t border-danger/10 cursor-not-allowed"
               : canAffordAll
                 ? "bg-accent/20 hover:bg-accent text-accent hover:text-white border-t border-accent/30"
                 : "bg-app-base text-tx-muted/60 border-t border-border cursor-not-allowed"
-          }
-        `}
+          }`}
       >
         {isLimitReached
           ? "Daily Limit Reached"
           : canAffordAll
-            ? "Authorize Exchange"
+            ? `Confirm Exchange (x${selectedAmount})`
             : "Insufficient Assets"}
       </button>
     </div>

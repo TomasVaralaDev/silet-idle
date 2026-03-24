@@ -67,17 +67,34 @@ WORLD_SHOP_CONFIG.forEach(({ worldId, tiers, matName }) => {
     const scrollItem = SCROLLS_DATA.find((s) => s.id === targetScrollId);
 
     if (scrollItem) {
-      const coinCost = Math.floor(500 * Math.pow(1.5, tier - 1));
-      const matAmount = tier * 2;
+      // Määritetään materiaalin tyyppi tierin mukaan
+      let materialSuffix = "basic";
+      let matAmount = tier * 12;
+
+      if (tier >= 5) {
+        materialSuffix = "exotic";
+        matAmount = 10; // Exoticit ovat kalliita, 1 kpl riittää
+      } else if (tier >= 3) {
+        materialSuffix = "rare";
+        matAmount = Math.max(10, tier - 30); // Esim. Tier 3 vaatii 1kpl, Tier 4 vaatii 2kpl
+      }
+
+      const coinCost = Math.floor(500 * Math.pow(2, tier - 1)); // Nostettu kerrointa hieman (1.5 -> 2)
       const dailyLimit = DAILY_LIMITS[tier] || 1;
 
       DYNAMIC_SHOP_ITEMS.push({
         id: `shop_w${worldId}_scroll_t${tier}`,
         name: scrollItem.name,
-        description: scrollItem.description || "A magical enchanting scroll.",
+        description: scrollItem.description || "A powerful magical scroll.",
         icon: scrollItem.icon || "",
         costCoins: coinCost,
-        costMaterials: [{ itemId: `${matName}_basic`, amount: matAmount }],
+        // Käytetään dynaamisesti oikeaa materiaalia (basic, rare tai exotic)
+        costMaterials: [
+          {
+            itemId: `${matName}_${materialSuffix}`,
+            amount: matAmount,
+          },
+        ],
         worldId: worldId,
         resultItemId: scrollItem.id,
         resultAmount: 1,
@@ -86,7 +103,6 @@ WORLD_SHOP_CONFIG.forEach(({ worldId, tiers, matName }) => {
     }
   });
 });
-
 // Generoidaan malminiput (Ores)
 WORLD_ORE_CONFIG.forEach(({ worldId, oreId, matName }) => {
   const oreItem = miningResources.find((o) => o.id === oreId);
@@ -96,7 +112,7 @@ WORLD_ORE_CONFIG.forEach(({ worldId, oreId, matName }) => {
     // Materiaalikuluna pidetään 10x maailman omaa perusmateriaalia. Voit vapaasti hienosäätää näitä!
     const baseOreValue = oreItem.value || 1;
     const coinCost = baseOreValue * 100 * 2;
-    const matAmount = 10;
+    const matAmount = 1000;
 
     DYNAMIC_SHOP_ITEMS.push({
       id: `shop_w${worldId}_ore_bundle`,

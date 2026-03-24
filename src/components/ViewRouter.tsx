@@ -15,18 +15,19 @@ import {
   PrivacyPolicyView,
 } from "./meta/MetaViews";
 import WikiView from "./wiki/wikiView";
-import GuideView from "./guide/GuideView"; // LISÄTTY UUSI GUIDE
+import GuideView from "./guide/GuideView";
 
-import type { FullStoreState } from "../store/useGameStore";
+// Poistettu FullStoreState import, koska sitä ei enää käytetä tässä
 import type { ViewType, SkillType } from "../types";
 
 interface Props {
   currentView: ViewType;
-  state: FullStoreState;
+  // KORJATTU: 'state' poistettu propeista
   onSellClick: (id: string) => void;
 }
 
-export default function ViewRouter({ currentView, state, onSellClick }: Props) {
+// KORJATTU: 'state' poistettu argumenteista
+export default function ViewRouter({ currentView, onSellClick }: Props) {
   // CORE SYSTEMS
   if (currentView === "combat") return <CombatView />;
   if (currentView === "scavenger") return <ScavengingView />;
@@ -41,14 +42,14 @@ export default function ViewRouter({ currentView, state, onSellClick }: Props) {
   // META SYSTEMS
   if (currentView === "announcements") return <AnnouncementsView />;
   if (currentView === "patch_notes") return <PatchNotesView />;
-  if (currentView === "guide") return <GuideView />; // PÄIVITETTY REITITYS
+  if (currentView === "guide") return <GuideView />;
   if (currentView === "faq") return <FaqView />;
   if (currentView === "privacy_policy") return <PrivacyPolicyView />;
   if (currentView === "wiki") return <WikiView />;
 
   // MILESTONES
   if (currentView === "achievements") {
-    return <AchievementsView unlockedIds={state.unlockedAchievements || []} />;
+    return <AchievementsView />;
   }
 
   // SKILLS (Gathering & Production)

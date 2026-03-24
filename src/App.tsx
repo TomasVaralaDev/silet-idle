@@ -62,8 +62,6 @@ export default function App() {
     setOfflineSummary,
   } = useGameStore();
 
-  const fullState = useGameStore();
-
   useEffect(() => {
     const currentTheme = settings?.theme || "theme-neon";
     if (!document.body.classList.contains(currentTheme)) {
@@ -119,7 +117,6 @@ export default function App() {
   }
 
   return (
-    // LISÄTTY: h-[100dvh] kahlitsee korkeuden mobiiliselaimissa ja overflow-hidden estää koko sivun rullauksen
     <div className="h-[100dvh] w-full bg-app-base text-tx-main font-sans flex flex-col md:flex-row overflow-hidden relative">
       <NotificationManager />
       <RewardModal />
@@ -129,7 +126,6 @@ export default function App() {
         <UserConfigModal
           currentUsername={username}
           currentAvatar={avatar}
-          // Lisätty chatColor parametri tähän:
           onSave={(
             name: string,
             avatarUrl: string,
@@ -142,7 +138,7 @@ export default function App() {
               settings: {
                 ...(state.settings || DEFAULT_STATE.settings),
                 theme: newTheme,
-                chatColor: newChatColor, // TALLENTAA UUDEN VÄRIN
+                chatColor: newChatColor,
               },
             }));
             emitEvent(
@@ -241,9 +237,9 @@ export default function App() {
           onClose={() => setSelectedItemForSale(null)}
           onSell={sellItem}
         />
+
         <ViewRouter
           currentView={currentView}
-          state={fullState}
           onSellClick={setSelectedItemForSale}
         />
       </main>

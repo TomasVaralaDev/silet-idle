@@ -19,6 +19,24 @@ export const CHAT_COLORS: ChatColor[] = [
     rarity: "common",
   },
   {
+    id: "sky",
+    name: "Sky Weaver",
+    style: { color: "#3bd5ff" },
+    rarity: "uncommon",
+  },
+  {
+    id: "emerald",
+    name: "Emerald Knight",
+    style: { color: "#2ecc71" },
+    rarity: "rare",
+  },
+  {
+    id: "sakura",
+    name: "Neon Sakura",
+    style: { color: "#ff7eb3" },
+    rarity: "rare",
+  },
+  {
     id: "gold",
     name: "Golden Hero",
     style: {
@@ -30,19 +48,33 @@ export const CHAT_COLORS: ChatColor[] = [
     rarity: "epic",
   },
   {
-    id: "void",
-    name: "Void Walker",
+    id: "astral",
+    name: "Astral Light",
     style: {
-      background: "linear-gradient(45deg, #2c3e50, #000000, #4a00e0)",
+      background: "linear-gradient(to right, #00c6ff, #0072ff)",
+      webkitBackgroundClip: "text",
+      webkitTextFillColor: "transparent",
+    },
+    rarity: "epic",
+  },
+  {
+    id: "solar",
+    name: "Solar Flare",
+    style: {
+      background: "linear-gradient(to right, #f12711, #f5af19)",
       webkitBackgroundClip: "text",
       webkitTextFillColor: "transparent",
     },
     rarity: "legendary",
   },
   {
-    id: "emerald",
-    name: "Emerald Knight",
-    style: { color: "#2ecc71" },
-    rarity: "rare",
+    id: "dev",
+    name: "System Admin",
+    style: {
+      background: "linear-gradient(to right, #ff0844, #ffb199, #ff0844)",
+      webkitBackgroundClip: "text",
+      webkitTextFillColor: "transparent",
+    },
+    rarity: "legendary",
   },
 ];

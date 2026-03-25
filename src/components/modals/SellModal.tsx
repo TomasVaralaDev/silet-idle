@@ -38,16 +38,16 @@ export default function SellModal({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-xl shadow-2xl p-6 relative">
+      <div className="bg-panel border border-border w-full max-w-md rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.7)] p-6 relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-500 hover:text-slate-300"
+          className="absolute top-4 right-4 text-tx-muted hover:text-tx-main transition-colors"
         >
           ✕
         </button>
 
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-slate-950 rounded-full border-2 border-slate-800 mx-auto flex items-center justify-center mb-3 shadow-inner">
+          <div className="w-16 h-16 bg-app-base rounded-full border-2 border-border mx-auto flex items-center justify-center mb-3 shadow-inner">
             <img
               src={item.icon}
               alt={item.name}
@@ -55,37 +55,37 @@ export default function SellModal({
             />
           </div>
           <h2
-            className={`text-xl font-bold ${item.color} uppercase tracking-wider`}
+            className={`text-xl font-bold ${item.color || "text-tx-main"} uppercase tracking-wider`}
           >
             {item.name}
           </h2>
-          <p className="text-xs text-slate-500 font-mono mt-1">
-            Unit Value: <span className="text-amber-500">{item.value}g</span>
+          <p className="text-xs text-tx-muted font-mono mt-1">
+            Unit Value: <span className="text-warning">{item.value}g</span>
           </p>
         </div>
 
-        <div className="bg-slate-950/50 p-4 rounded-lg border border-slate-800/50 mb-6">
-          <div className="flex justify-between items-center mb-2 text-sm text-slate-400">
+        <div className="bg-app-base/50 p-4 rounded-lg border border-border/50 mb-6">
+          <div className="flex justify-between items-center mb-2 text-sm text-tx-muted">
             <span>In Storage:</span>
-            <span className="font-mono font-bold text-slate-200">{count}</span>
+            <span className="font-mono font-bold text-tx-main">{count}</span>
           </div>
 
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setSellAmount("1")}
-              className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 border border-slate-700"
+              className="flex-1 py-2 bg-panel hover:bg-panel-hover rounded text-xs font-bold text-tx-muted border border-border transition-colors"
             >
               1
             </button>
             <button
               onClick={() => setSellAmount(Math.floor(count / 2).toString())}
-              className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 border border-slate-700"
+              className="flex-1 py-2 bg-panel hover:bg-panel-hover rounded text-xs font-bold text-tx-muted border border-border transition-colors"
             >
               50%
             </button>
             <button
               onClick={() => setSellAmount("all")}
-              className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 border border-slate-700"
+              className="flex-1 py-2 bg-panel hover:bg-panel-hover rounded text-xs font-bold text-tx-muted border border-border transition-colors"
             >
               ALL
             </button>
@@ -96,19 +96,19 @@ export default function SellModal({
               type="number"
               value={sellAmount === "all" ? count : sellAmount}
               onChange={(e) => setSellAmount(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded py-2 px-3 text-right text-slate-200 font-mono focus:border-amber-500 outline-none"
+              className="w-full bg-black border border-border rounded py-2 px-3 text-right text-tx-main font-mono focus:border-accent outline-none transition-colors"
             />
-            <span className="absolute left-3 top-2 text-slate-500 text-xs font-bold uppercase">
+            <span className="absolute left-3 top-2 text-tx-muted text-xs font-bold uppercase">
               Amount
             </span>
           </div>
         </div>
 
         <div className="flex items-center justify-between mb-6 px-2">
-          <span className="text-sm font-bold text-slate-400 uppercase">
+          <span className="text-sm font-bold text-tx-muted uppercase">
             Total Profit
           </span>
-          <span className="text-xl font-mono font-bold text-amber-400 flex items-center gap-2">
+          <span className="text-xl font-mono font-bold text-warning flex items-center gap-2">
             {totalValue.toLocaleString()}{" "}
             <img
               src="/assets/ui/coins.png"
@@ -120,7 +120,7 @@ export default function SellModal({
 
         <button
           onClick={handleSell}
-          className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold uppercase tracking-widest rounded shadow-lg shadow-amber-900/20 transition-all active:scale-[0.98]"
+          className="w-full py-3 bg-accent hover:bg-accent-hover text-white font-bold uppercase tracking-widest rounded shadow-[0_0_15px_rgb(var(--color-accent)/0.2)] transition-all active:scale-[0.98]"
         >
           Confirm Transaction
         </button>

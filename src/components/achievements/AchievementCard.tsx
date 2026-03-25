@@ -1,7 +1,7 @@
 import type { Achievement } from "../../types";
 import { useGameStore } from "../../store/useGameStore";
 import { getItemDetails } from "../../data";
-import { CHAT_COLORS } from "../../data/chatColors"; // LISÄTTY: Tuodaan väridata
+import { CHAT_COLORS } from "../../data/chatColors";
 
 interface Props {
   achievement: Achievement;
@@ -16,7 +16,6 @@ export default function AchievementCard({
 }: Props) {
   const claimAchievement = useGameStore((state) => state.claimAchievement);
 
-  // KORJATTU: Tarkistetaan myös chatColorId
   const hasRewards =
     achievement.rewards &&
     (achievement.rewards.coins ||
@@ -29,9 +28,9 @@ export default function AchievementCard({
       className={`p-3 md:p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4 transition-all duration-300 relative overflow-hidden
         ${
           isClaimed
-            ? "bg-panel/30 border-success/20 opacity-80"
+            ? "bg-accent/5 border-accent/20 opacity-75"
             : isUnlocked
-              ? "bg-warning/5 border-warning/40 shadow-[0_0_15px_rgba(var(--color-warning)/0.1)]"
+              ? "bg-accent/10 border-accent/50 shadow-[0_0_15px_rgba(var(--color-accent)/0.15)]"
               : "bg-panel/50 border-border opacity-50 grayscale"
         }`}
     >
@@ -41,9 +40,9 @@ export default function AchievementCard({
           className={`p-2 md:p-3 rounded-xl border shrink-0 relative z-10
           ${
             isUnlocked && !isClaimed
-              ? "bg-warning/20 border-warning/50 shadow-inner"
+              ? "bg-accent/20 border-accent/50 shadow-inner"
               : isClaimed
-                ? "bg-success/10 border-success/30"
+                ? "bg-accent/10 border-accent/20"
                 : "bg-app-base border-border"
           }`}
         >
@@ -52,8 +51,8 @@ export default function AchievementCard({
             alt=""
             className={`w-10 h-10 md:w-12 md:h-12 pixelated transition-transform duration-500 ${
               isUnlocked && !isClaimed
-                ? "scale-110 drop-shadow-md"
-                : "opacity-80"
+                ? "scale-110 drop-shadow-[0_0_8px_rgba(var(--color-accent)/0.5)]"
+                : "opacity-70"
             }`}
           />
         </div>
@@ -62,9 +61,9 @@ export default function AchievementCard({
           <h3
             className={`font-black text-sm md:text-base uppercase tracking-tight mb-0.5 md:mb-1 truncate ${
               isUnlocked && !isClaimed
-                ? "text-warning"
+                ? "text-accent"
                 : isClaimed
-                  ? "text-success"
+                  ? "text-accent/80"
                   : "text-tx-muted"
             }`}
           >
@@ -83,9 +82,9 @@ export default function AchievementCard({
               className={`text-[9px] uppercase font-black px-1.5 py-0.5 rounded border tracking-widest transition-colors
               ${
                 isClaimed
-                  ? "text-success bg-success/10 border-success/30"
+                  ? "text-accent/70 bg-accent/10 border-accent/20"
                   : isUnlocked
-                    ? "text-warning bg-warning/10 border-warning/30"
+                    ? "text-accent bg-accent/20 border-accent/40"
                     : "text-tx-muted/50 bg-app-base border-border"
               }`}
             >
@@ -98,7 +97,6 @@ export default function AchievementCard({
       {/* PALKINNOT JA LUNASTUSNAPPI */}
       {hasRewards && (
         <div className="w-full sm:w-auto mt-2 sm:mt-0 flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 border-t sm:border-t-0 sm:border-l border-border/50 pt-2 sm:pt-0 sm:pl-4 shrink-0">
-          {/* Näytetään pienet ikonit palkinnoista */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* 1. COINS */}
             {achievement.rewards?.coins && (
@@ -111,7 +109,7 @@ export default function AchievementCard({
                   className="w-3 h-3 pixelated"
                   alt="Coins"
                 />
-                <span className="text-[9px] font-mono text-warning font-bold">
+                <span className="text-[9px] font-mono text-accent font-bold">
                   {achievement.rewards.coins}
                 </span>
               </div>
@@ -150,7 +148,7 @@ export default function AchievementCard({
               </div>
             )}
 
-            {/* 4. CHAT COLOR (UUSI) */}
+            {/* 4. CHAT COLOR */}
             {achievement.rewards?.chatColorId &&
               (() => {
                 const colorObj = CHAT_COLORS.find(
@@ -170,11 +168,9 @@ export default function AchievementCard({
                     <span
                       className="text-[9px] font-black uppercase tracking-widest"
                       style={{
-                        // Jos gradientti on käytössä, levitetään se tekstiin
                         ...(colorObj.style.webkitBackgroundClip === "text"
                           ? colorObj.style
                           : { color: colorObj.style.color }),
-                        // Pieni varjo luettavuuden vuoksi
                         filter: "drop-shadow(0px 1px 1px rgba(0,0,0,0.8))",
                       }}
                     >
@@ -189,7 +185,7 @@ export default function AchievementCard({
           {isUnlocked && !isClaimed && (
             <button
               onClick={() => claimAchievement(achievement.id)}
-              className="bg-warning text-black hover:bg-warning-hover font-black uppercase tracking-widest text-[10px] px-4 py-1.5 rounded shadow-lg transition-transform active:scale-95"
+              className="bg-accent text-white hover:bg-accent-hover font-black uppercase tracking-widest text-[10px] px-4 py-1.5 rounded shadow-[0_0_10px_rgba(var(--color-accent)/0.3)] transition-transform active:scale-95"
             >
               Claim
             </button>

@@ -4,6 +4,7 @@ import { SCROLLS_DATA } from "./scrolls";
 import { miningResources } from "./skills/mining";
 // HUOM! Varmista myös pussukoiden polku
 import { MYSTERY_POUCHES } from "./pouches";
+import { alchemyResources } from "./skills/alchemy";
 
 // --- 1. KÄÄRÖJEN ASETUKSET ---
 const WORLD_SHOP_CONFIG = [
@@ -171,6 +172,34 @@ WORLD_SHOP_CONFIG.forEach(({ worldId, matName }) => {
     resultAmount: 1,
     dailyLimit: 1, // Vain 1 kpl päivässä
   });
+});
+
+// E. Generoidaan Potion-niput (Potions) - UUSI OSIO
+WORLD_SHOP_CONFIG.forEach(({ worldId, matName }) => {
+  const targetPotionId = `potion_tier${worldId}`;
+  const potionItem = alchemyResources.find((p) => p.id === targetPotionId);
+
+  if (potionItem) {
+    // Hinta 10 potionin nipulle: tuplahinta perusarvoon nähden (gold sink)
+    const basePotionValue = potionItem.value || 10;
+    const coinCost = basePotionValue * 10 * 2;
+
+    // Vaatii hieman perusmateriaalia, esim. 50 kpl per World-taso per nippu
+    const matAmount = 50 * worldId;
+
+    DYNAMIC_SHOP_ITEMS.push({
+      id: `shop_w${worldId}_potion_bundle`,
+      name: `${potionItem.name} x10`,
+      description: `A bundle of 10 ${potionItem.name}s for combat.`,
+      icon: potionItem.icon || "",
+      costCoins: coinCost,
+      costMaterials: [{ itemId: `${matName}_basic`, amount: matAmount }],
+      worldId: worldId,
+      resultItemId: potionItem.id,
+      resultAmount: 10, // Antaa 10 potiona kerralla
+      dailyLimit: 5, // Pelaaja voi ostaa näitä max 5 nippua (50 potiona) päivässä
+    });
+  }
 });
 
 // --- 4. EXPORT ---

@@ -5,12 +5,13 @@ import { getItemById } from "../../utils/itemUtils";
 import ListingRow from "./ListingRow";
 import SellForm from "./SellForm";
 import MailboxView from "./MailboxView";
+import MyListingsView from "./MyListingsView"; // UUSI IMPORTTI TÄÄLLÄ
 import type { MarketListing } from "../../types";
 
-// TUODAAN TOOLTIP STORE:
 import { useTooltipStore } from "../../store/useToolTipStore";
 
-type MarketTab = "buy" | "sell" | "mailbox";
+// TYYPPIÄ PÄIVITETTY
+type MarketTab = "buy" | "sell" | "my_listings" | "mailbox";
 
 const CATEGORIES = [
   { id: "all", label: "All Resources" },
@@ -67,7 +68,6 @@ export default function MarketplaceView() {
     return uniqueItemIds
       .map((id) => {
         const item = getItemById(id);
-        // KORJAUS 1: Jos itemiä ei löydy pelin datasta, palautetaan null
         if (!item) return null;
 
         const itemListings = listings.filter((l) => l.itemId === id);
@@ -86,12 +86,11 @@ export default function MarketplaceView() {
           totalAvailable,
         };
       })
-      .filter((item): item is NonNullable<typeof item> => item !== null); // KORJAUS 2: Suodatetaan kaikki nullit pois listalta
+      .filter((item): item is NonNullable<typeof item> => item !== null);
   }, [listings]);
 
   const filteredCatalog = useMemo(() => {
     return catalog.filter((item) => {
-      // KORJAUS 3: Lisävarmistus ettei item ole undefined/null (vaikka catalog jo suodattaa ne)
       if (!item || !item.name) return false;
 
       const matchesSearch = item.name
@@ -182,20 +181,20 @@ export default function MarketplaceView() {
         {/* TABS & MAILBOX BUTTON */}
         <div className="flex items-center gap-4">
           <div className="flex bg-panel p-1 rounded-sm border border-border h-fit">
-            {(["buy", "sell"] as MarketTab[]).map((t) => (
+            {(["buy", "sell", "my_listings"] as MarketTab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => {
                   setTab(t);
                   setSelectedItemId(null);
                 }}
-                className={`px-6 py-1.5 text-[10px] font-bold uppercase transition-all ${
+                className={`px-4 py-1.5 text-[10px] font-bold uppercase transition-all ${
                   tab === t
                     ? "bg-accent text-white shadow-[0_0_15px_rgb(var(--color-accent)/0.3)]"
                     : "text-tx-muted hover:text-tx-main"
                 }`}
               >
-                {t === "buy" ? "Buy" : "Sell"}
+                {t === "buy" ? "Buy" : t === "sell" ? "Sell" : "My Listings"}
               </button>
             ))}
           </div>
@@ -295,12 +294,14 @@ export default function MarketplaceView() {
       <div className="flex-1 overflow-hidden relative">
         {tab === "mailbox" && <MailboxView userId={user.uid} />}
 
+        {/* UUSI VÄLILEHTI RENDERÖIDÄÄN TÄSSÄ */}
+        {tab === "my_listings" && <MyListingsView userId={user.uid} />}
+
         {tab === "sell" && (
           <SellForm
             myUid={user.uid}
             onComplete={() => {
-              setTab("buy");
-              fetchListings(true);
+              setTab("my_listings"); // Ohjataan suoraan "My Listings" -lehdelle, jotta myyjä näkee ilmoituksensa onnistuneen!
             }}
           />
         )}

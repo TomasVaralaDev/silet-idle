@@ -17,11 +17,11 @@ export const getActiveListings = async (limitCount = 50) => {
     collection(db, "listings"),
     where("status", "==", "active"),
     orderBy("createdAt", "desc"),
-    limit(limitCount)
+    limit(limitCount),
   );
   const snapshot = await getDocs(q);
   return snapshot.docs.map(
-    (doc) => ({ id: doc.id, ...doc.data() } as MarketListing)
+    (doc) => ({ id: doc.id, ...doc.data() }) as MarketListing,
   );
 };
 
@@ -30,7 +30,7 @@ export const createListing = async (
   sellerName: string,
   itemId: string,
   amount: number,
-  pricePerItem: number
+  pricePerItem: number,
 ) => {
   const userRef = doc(db, "users", sellerUid);
   const listingRef = doc(collection(db, "listings"));
@@ -99,10 +99,8 @@ export const purchaseListing = async (buyerUid: string, listingId: string) => {
 
     if (sellerSnap.exists()) {
       // --- UUSI MAILBOX LOGIIKKA ---
-      // Sen sijaan, että päivitettäisiin myyjän kolikoita (mikä aiheuttaa sync-ongelman),
-      // luodaan uusi viesti myyjän postilaatikkoon.
       const mailboxRef = doc(
-        collection(db, "users", listing.sellerUid, "mailbox")
+        collection(db, "users", listing.sellerUid, "mailbox"),
       );
 
       transaction.set(mailboxRef, {
@@ -141,11 +139,6 @@ export const cancelListing = async (listingId: string, sellerUid: string) => {
       throw new Error("Invalid");
 
     // WRITES
-    // Huomio: Jos myyjä peruuttaa listauksen toisella laitteella, tämäkin voisi
-    // teoriassa aiheuttaa sync-ongelman itemien palautuksessa.
-    // Nyt palautamme itemit suoraan inventoryyn. Jos tämä tuottaa ongelmia,
-    // voit myöhemmin muuttaa myös tämän lähettämään itemit postilaatikkoon!
-
     const newAmount =
       (sellerSnap.data()?.inventory?.[listing.itemId] || 0) + listing.amount;
 
@@ -160,4 +153,22 @@ export const cancelListing = async (listingId: string, sellerUid: string) => {
       inventory: { ...store.inventory, [listing.itemId]: newAmount },
     });
   });
+};
+
+// --- UUSI FUNKTIO LISÄTTY TÄHÄN ---
+export const getMyActiveListings = async (uid: string) => {
+  // Haemme vain omat aktiiviset ilmoitukset
+  const q = query(
+    collection(db, "listings"),
+    where("sellerUid", "==", uid),
+    where("status", "==", "active"),
+  );
+
+  const snapshot = await getDocs(q);
+  const listings = snapshot.docs.map(
+    (doc) => ({ id: doc.id, ...doc.data() }) as MarketListing,
+  );
+
+  // Lajitellaan lokaalisti, jottei Firebasessa tarvita uutta composite indexiä!
+  return listings.sort((a, b) => b.createdAt - a.createdAt);
 };

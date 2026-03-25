@@ -1,0 +1,81 @@
+import { useState, useEffect, useCallback } from "react";
+import { getMyActiveListings } from "../../services/marketService";
+import ListingRow from "./ListingRow";
+import type { MarketListing } from "../../types";
+
+interface Props {
+  userId: string;
+}
+
+export default function MyListingsView({ userId }: Props) {
+  const [listings, setListings] = useState<MarketListing[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMyListings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getMyActiveListings(userId);
+      setListings(data);
+    } catch (err) {
+      console.error("Error fetching my listings:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    fetchMyListings();
+  }, [fetchMyListings]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="text-accent animate-pulse font-mono text-sm uppercase tracking-widest">
+          Loading your listings...
+        </div>
+      </div>
+    );
+  }
+
+  if (listings.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 h-full">
+        <img
+          src="/assets/ui/icon_market.png"
+          className="w-20 h-20 pixelated opacity-10 mb-6 grayscale"
+          alt="No listings"
+        />
+        <p className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-tx-muted/40">
+          You have no active listings.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto custom-scrollbar p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="max-w-3xl mx-auto flex flex-col gap-1">
+        <div className="flex items-center px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
+          <span className="flex-1 text-left">Item</span>
+          <span className="hidden md:flex flex-col flex-1 text-left">
+            Status
+          </span>
+          <span className="flex flex-col items-end w-32 shrink-0 pr-4">
+            Total Price
+          </span>
+          <span className="w-24 text-right">Action</span>
+        </div>
+
+        {listings.map((l) => (
+          <ListingRow
+            key={l.id}
+            listing={l}
+            myUid={userId}
+            // onPurchase päivittää näkymän, jotta peruutettu kohde katoaa listasta!
+            onPurchase={fetchMyListings}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

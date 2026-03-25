@@ -1,153 +1,139 @@
-import { useState } from "react";
-import { TreePine, Hammer, Map, Crown, ArrowRight } from "lucide-react";
-import Phase1Awakening from "./phases/Phase1Awakening";
-import Phase2FirstForge from "./phases/Phase2FirstForge";
-import Phase3WorldWalker from "./phases/Phase3WorldWalker";
-import Phase4Endgame from "./phases/Phase4Endgame";
-
-export type PhaseId = 1 | 2 | 3 | 4 | null;
+import { BookOpen, ChevronRight, Star, AlertTriangle } from "lucide-react";
 
 export default function GuideView() {
-  const [activePhase, setActivePhase] = useState<PhaseId>(null);
-
-  if (activePhase === 1)
-    return <Phase1Awakening onBack={() => setActivePhase(null)} />;
-  if (activePhase === 2)
-    return <Phase2FirstForge onBack={() => setActivePhase(null)} />;
-  if (activePhase === 3)
-    return <Phase3WorldWalker onBack={() => setActivePhase(null)} />;
-  if (activePhase === 4)
-    return <Phase4Endgame onBack={() => setActivePhase(null)} />;
+  const sections = [
+    {
+      id: "gathering",
+      title: "01. The First Steps: Gathering",
+      content: `Welcome to the fractured worlds. To survive, you must first gather resources. Your gathering skills run continuously even while offline:
+      
+      • Woodcutting: Chop trees to gather logs. Logs are essential for crafting tools and weapons.
+      • Mining: Mine veins to gather raw ores. Ores are the foundation of your armor and weapons.
+      • Foraging & Fishing: Collect food. Never ignore this! Food is the only way to restore Health (HP) during combat.`,
+    },
+    {
+      id: "crafting",
+      title: "02. Production & Smithing",
+      content: `Raw materials are useless on their own. You need to process them into usable gear:
+      
+      1. Smelting: Take your mined ores to the furnace to create Ingots (e.g., Copper Ingots).
+      2. Smithing: Use ingots at the anvil to forge Armor (increases Defense) and Weapons (increases Melee/Attack).
+      3. Crafting: Turn logs into planks or craft accessories like rings and necklaces to boost your stats.`,
+    },
+    {
+      id: "combat",
+      title: "03. Combat & Survival",
+      content: `Once you have armor, a weapon, and food, you are ready to fight.
+      
+      • Combat Styles: Melee relies on strength, Ranged on precision, and Magic on runes. Choose a weapon that fits your style.
+      • Auto-Eat: In the Combat view, set your Auto-Eat threshold (e.g., 50%). If your HP drops below this, you will automatically consume equipped food.
+      • Death Penalty: If your HP reaches 0, you will die, losing progress and a portion of your XP. Always Retreat if you run out of food!`,
+    },
+    {
+      id: "automation",
+      title: "04. The Action Queue",
+      content: `TimeRing is an idle game, meaning automation is your best friend.
+      
+      • Queueing: You can queue multiple actions. For example, tell your character to mine 1,000 Copper, then smelt 500 Ingots.
+      • Offline Progress: When you close the game, your character continues working on the Queue.
+      • Upgrades: You start with limited Queue slots. You can buy more slots in the Gem Store or unlock them via achievements.`,
+    },
+    {
+      id: "scavenging",
+      title: "05. Scavenging Expeditions",
+      content: `You don't have to do everything yourself. Scavenging allows you to send idle expeditions to gather rare loot.
+      
+      • Send your scouts to different locations for a set duration (e.g., 2 hours, 8 hours).
+      • When they return, claim your loot, which can include rare artifacts, materials, and coins.
+      • Expeditions run entirely in the background and do not interrupt your main Queue.`,
+    },
+    {
+      id: "upgrades",
+      title: "06. Enchanting & Magic",
+      content: `When standard gear isn't enough to defeat a zone, it's time to use magic.
+      
+      • Enchanting Scrolls: Obtained from monster drops or crafting. Use them to upgrade your gear (e.g., Copper Sword +1).
+      • Success Rates: Enchanting has a chance to fail. The higher the item's level, the harder it is to enchant.
+      • Alchemy: Brew potions using foraged herbs to gain temporary combat or skilling buffs.`,
+    },
+    {
+      id: "progression",
+      title: "07. Bosses & World Progression",
+      content: `Your ultimate goal is to restore the worlds.
+      
+      • Clearing Zones: Defeat a specific number of enemies to clear a zone and move to the next.
+      • World Bosses: At the end of every world, a powerful Boss awaits. They hit hard and require high-tier food and enchanted gear.
+      • Boss Keys: Defeating a world boss grants a Key, unlocking the next, more dangerous world.`,
+    },
+    {
+      id: "economy",
+      title: "08. Economy & Marketplace",
+      content: `You are not alone in this universe. Use the economy to your advantage:
+      
+      • World Vendors: NPC shops that sell basic supplies, upgrade materials, and rare pouches.
+      • Global Marketplace: Trade directly with other players. Sell your surplus materials or buy that one rare drop you've been grinding for.
+      • Global Chat: Press the chat icon to talk, ask for advice, or negotiate trades with other Restorers.`,
+    },
+  ];
 
   return (
-    <div className="p-4 md:p-10 max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-500 text-left pb-32">
-      <header className="text-center space-y-4 mb-16 relative">
-        <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-tx-main drop-shadow-md relative z-10">
-          Restorer's Roadmap
-        </h2>
-        <p className="text-tx-muted text-sm md:text-base max-w-2xl mx-auto relative z-10 leading-relaxed">
-          Select a phase to read the detailed playthrough guide. Follow this to
-          ensure you are always progressing efficiently.
+    <div className="h-full flex flex-col bg-app-base text-tx-main font-sans animate-in fade-in duration-500 overflow-y-auto custom-scrollbar pb-24 text-left">
+      {/* HEADER */}
+      <header className="p-8 border-b border-border/50 bg-panel/30 shrink-0">
+        <div className="flex items-center gap-4 mb-2 text-accent">
+          <BookOpen size={24} />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">
+            Official Manual
+          </span>
+        </div>
+        <h1 className="text-4xl font-black uppercase tracking-tighter text-tx-main">
+          Restorer's Guide
+        </h1>
+        <p className="text-tx-muted text-xs mt-2 font-medium leading-relaxed uppercase tracking-wider">
+          Everything you need to survive the fractured worlds.
         </p>
       </header>
 
-      <div className="relative pl-6 md:pl-10 border-l-2 border-border/50 space-y-16">
-        {/* PHASE 1 */}
-        <div
-          className="relative group cursor-pointer"
-          onClick={() => setActivePhase(1)}
-        >
-          <div className="absolute -left-[35px] md:-left-[51px] bg-app-base border-4 border-success p-2 rounded-full z-10 shadow-[0_0_15px_rgb(var(--color-success)/0.3)] group-hover:scale-110 transition-transform">
-            <TreePine className="text-success" size={24} />
-          </div>
-          <div className="bg-panel/50 border border-border hover:border-success/50 transition-colors p-6 md:p-8 rounded-2xl shadow-lg relative overflow-hidden group-hover:bg-panel">
-            <div className="absolute top-0 right-0 bg-success/10 text-success text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest border-b border-l border-success/20">
-              Phase I: Early Game
-            </div>
-            <h3 className="text-2xl font-black text-tx-main uppercase tracking-widest mb-4 mt-2">
-              The Awakening
-            </h3>
-            <p className="text-sm text-tx-muted leading-relaxed mb-6">
-              Establish a basic economy, craft your first set of gear, and
-              survive the initial zones of World 1.
-            </p>
-            <div className="flex items-center gap-2 text-[10px] font-black text-success uppercase tracking-widest mt-4">
-              Read Full Guide{" "}
-              <ArrowRight
-                size={14}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </div>
-          </div>
-        </div>
+      {/* CONTENT AREA */}
+      <main className="p-6 md:p-10 space-y-12 max-w-2xl mx-auto">
+        {sections.map((section) => (
+          <section key={section.id} className="space-y-4">
+            <h2 className="text-accent text-xl font-black uppercase tracking-widest flex items-center gap-3 border-b border-border/50 pb-2">
+              <ChevronRight size={20} className="text-tx-muted" />
+              {section.title}
+            </h2>
 
-        {/* PHASE 2 */}
-        <div
-          className="relative group cursor-pointer"
-          onClick={() => setActivePhase(2)}
-        >
-          <div className="absolute -left-[35px] md:-left-[51px] bg-app-base border-4 border-warning p-2 rounded-full z-10 shadow-[0_0_15px_rgb(var(--color-warning)/0.3)] group-hover:scale-110 transition-transform">
-            <Hammer className="text-warning" size={24} />
-          </div>
-          <div className="bg-panel/50 border border-border hover:border-warning/50 transition-colors p-6 md:p-8 rounded-2xl shadow-lg relative overflow-hidden group-hover:bg-panel">
-            <div className="absolute top-0 right-0 bg-warning/10 text-warning text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest border-b border-l border-warning/20">
-              Phase II: Mid Game
+            <div className="bg-panel/50 border-l-2 border-accent/50 p-6 rounded-r-xl shadow-inner">
+              <p className="text-tx-muted/90 text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                {section.content}
+              </p>
             </div>
-            <h3 className="text-2xl font-black text-tx-main uppercase tracking-widest mb-4 mt-2">
-              The First Forge
-            </h3>
-            <p className="text-sm text-tx-muted leading-relaxed mb-6">
-              Prepare for the first World Boss and unlock the power of
-              Enchanting.
-            </p>
-            <div className="flex items-center gap-2 text-[10px] font-black text-warning uppercase tracking-widest mt-4">
-              Read Full Guide{" "}
-              <ArrowRight
-                size={14}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </div>
-          </div>
-        </div>
+          </section>
+        ))}
 
-        {/* PHASE 3 */}
-        <div
-          className="relative group cursor-pointer"
-          onClick={() => setActivePhase(3)}
-        >
-          <div className="absolute -left-[35px] md:-left-[51px] bg-app-base border-4 border-accent p-2 rounded-full z-10 shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] group-hover:scale-110 transition-transform">
-            <Map className="text-accent" size={24} />
-          </div>
-          <div className="bg-panel/50 border border-border hover:border-accent/50 transition-colors p-6 md:p-8 rounded-2xl shadow-lg relative overflow-hidden group-hover:bg-panel">
-            <div className="absolute top-0 right-0 bg-accent/10 text-accent text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest border-b border-l border-accent/20">
-              Phase III: Late Game
-            </div>
-            <h3 className="text-2xl font-black text-tx-main uppercase tracking-widest mb-4 mt-2">
-              The World Walker
+        {/* IMPORTANT NOTICE */}
+        <section className="bg-warning/10 border border-warning/30 p-6 rounded-xl space-y-3">
+          <div className="flex items-center gap-2 text-warning">
+            <AlertTriangle size={18} />
+            <h3 className="text-xs font-black uppercase tracking-widest">
+              Important Notice
             </h3>
-            <p className="text-sm text-tx-muted leading-relaxed mb-6">
-              Utilize World Vendors, explore Alchemy, and send followers on
-              Expeditions.
-            </p>
-            <div className="flex items-center gap-2 text-[10px] font-black text-accent uppercase tracking-widest mt-4">
-              Read Full Guide{" "}
-              <ArrowRight
-                size={14}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </div>
           </div>
-        </div>
+          <p className="text-[11px] text-tx-muted/80 leading-relaxed italic font-medium">
+            This guide is updated as the game evolves. If you run into issues,
+            you can always ask for help from other Restorers in the Global Chat.
+          </p>
+        </section>
 
-        {/* PHASE 4 */}
-        <div
-          className="relative group cursor-pointer"
-          onClick={() => setActivePhase(4)}
-        >
-          <div className="absolute -left-[35px] md:-left-[51px] bg-app-base border-4 border-danger p-2 rounded-full z-10 shadow-[0_0_15px_rgb(var(--color-danger)/0.3)] group-hover:scale-110 transition-transform">
-            <Crown className="text-danger" size={24} />
-          </div>
-          <div className="bg-panel/50 border border-border hover:border-danger/50 transition-colors p-6 md:p-8 rounded-2xl shadow-lg relative overflow-hidden group-hover:bg-panel">
-            <div className="absolute top-0 right-0 bg-danger/10 text-danger text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest border-b border-l border-danger/20">
-              Phase IV: Endgame
-            </div>
-            <h3 className="text-2xl font-black text-tx-main uppercase tracking-widest mb-4 mt-2 flex items-center gap-3">
-              Master of Time
-            </h3>
-            <p className="text-sm text-tx-muted leading-relaxed mb-6">
-              Min-max your setup, dominate the economy, and carve your name into
-              history.
-            </p>
-            <div className="flex items-center gap-2 text-[10px] font-black text-danger uppercase tracking-widest mt-4">
-              Read Full Guide{" "}
-              <ArrowRight
-                size={14}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </div>
+        {/* FOOTER DECORATION */}
+        <div className="flex justify-center py-10 opacity-30 text-accent">
+          <div className="flex gap-4">
+            <Star size={12} />
+            <Star size={12} />
+            <Star size={12} />
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

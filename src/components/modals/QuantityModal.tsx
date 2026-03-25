@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { getItemDetails } from "../../data";
+import { Clock, Target } from "lucide-react";
+import { formatRemainingTime } from "../../utils/formatUtils";
+import { getSpeedMultiplier } from "../../utils/gameUtils";
+import { useGameStore } from "../../store/useGameStore";
+import type { SkillType } from "../../types";
 
 interface QuantityModalProps {
   itemId: string;
@@ -20,11 +25,14 @@ export default function QuantityModal({
   const item = getItemDetails(itemId);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Haetaan pelaajan upgradet storesta nopeuden laskentaa varten
+  const upgrades = useGameStore((state) => state.upgrades);
+
   // Focus input automatically when opened
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select(); // Valitsee automaattisesti numeron "1", jotta sen yli voi kirjoittaa suoraan
+      inputRef.current.select(); // Valitsee automaattisesti numeron "1"
     }
   }, []);
 
@@ -35,6 +43,20 @@ export default function QuantityModal({
       onConfirm(val);
     }
   };
+
+  // --- LASKENTA LIVENÄ ---
+  const numericAmount = parseInt(amount) || 0;
+
+  // Oletetaan, että item.category vastaa skillin nimeä (esim. "woodcutting").
+  // Jos ei, nopeuskerroin on vain 1.
+  const skill = (item?.category || "") as SkillType;
+  const speedMult = getSpeedMultiplier(skill, upgrades);
+
+  const baseInterval = item?.interval || 3000;
+  // Minimissään 200ms per action, aivan kuten skillSlicessä
+  const timePerAction = Math.max(200, baseInterval / speedMult);
+  const totalTimeMs = timePerAction * numericAmount;
+  const totalXp = (item?.xpReward || 0) * numericAmount;
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
@@ -47,7 +69,7 @@ export default function QuantityModal({
           ✕
         </button>
 
-        {/* OTSIKKO JA IKONI (Tämä korjaa sen teksti-bugin!) */}
+        {/* OTSIKKO JA IKONI */}
         <h3 className="text-xl font-black text-tx-main mb-6 flex items-center gap-3 pr-8">
           {item?.icon && (
             <div className="w-10 h-10 bg-app-base border border-border rounded-lg flex items-center justify-center shrink-0 shadow-inner">
@@ -63,7 +85,7 @@ export default function QuantityModal({
 
         {/* FORMI */}
         <form onSubmit={handleSubmit}>
-          <div className="mb-6">
+          <div className="mb-4">
             <div className="flex justify-between items-end mb-2">
               <label className="text-xs font-black text-tx-muted uppercase tracking-widest">
                 Amount
@@ -92,6 +114,51 @@ export default function QuantityModal({
               </button>
             </div>
           </div>
+
+          {/* --- UUSI LIVE STATS SECTION --- */}
+          {item?.interval && numericAmount > 0 && (
+            <div className="grid grid-cols-2 gap-2 mb-6">
+              {/* AIKA-ARVIO */}
+              <div className="bg-app-base p-3 border border-border rounded-lg shadow-inner">
+                <div className="flex items-center gap-1.5 text-tx-muted mb-1">
+                  <Clock size={12} className="text-warning" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-warning">
+                    Duration
+                  </span>
+                </div>
+                <div className="text-tx-main font-mono text-sm mb-0.5">
+                  {formatRemainingTime(totalTimeMs)}
+                </div>
+                <div className="text-[9px] text-tx-muted font-mono">
+                  {(timePerAction / 1000).toFixed(1)}s / act
+                </div>
+              </div>
+
+              {/* XP-ARVIO (Näytetään vain, jos action antaa XP:tä) */}
+              {item?.xpReward ? (
+                <div className="bg-app-base p-3 border border-border rounded-lg shadow-inner">
+                  <div className="flex items-center gap-1.5 text-tx-muted mb-1">
+                    <Target size={12} className="text-success" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-success">
+                      Total XP
+                    </span>
+                  </div>
+                  <div className="text-tx-main font-mono text-sm mb-0.5">
+                    +{totalXp.toLocaleString()} XP
+                  </div>
+                  <div className="text-[9px] text-tx-muted font-mono">
+                    {item.xpReward} XP / act
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-app-base p-3 border border-border rounded-lg shadow-inner opacity-50 flex items-center justify-center">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-tx-muted">
+                    No XP Reward
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-3">
             <button

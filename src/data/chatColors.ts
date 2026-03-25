@@ -37,8 +37,8 @@ export const CHAT_COLORS: ChatColor[] = [
     rarity: "rare",
   },
   {
-    id: "gold",
-    name: "Golden Hero",
+    id: "Millionaire",
+    name: "Millionaire",
     style: {
       background:
         "linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)",
@@ -48,8 +48,8 @@ export const CHAT_COLORS: ChatColor[] = [
     rarity: "epic",
   },
   {
-    id: "astral",
-    name: "Astral Light",
+    id: "fisherking",
+    name: "The Fisher",
     style: {
       background: "linear-gradient(to right, #00c6ff, #0072ff)",
       webkitBackgroundClip: "text",
@@ -58,8 +58,8 @@ export const CHAT_COLORS: ChatColor[] = [
     rarity: "epic",
   },
   {
-    id: "solar",
-    name: "Solar Flare",
+    id: "nexuslord",
+    name: "Nexus Lord",
     style: {
       background: "linear-gradient(to right, #f12711, #f5af19)",
       webkitBackgroundClip: "text",

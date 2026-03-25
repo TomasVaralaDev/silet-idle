@@ -25,7 +25,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     condition: (state) => state.coins >= 10000,
     rewards: {
       coins: 5000,
-      xpMap: { crafting: 500 }, // Antaa Crafting XP:tä
+      xpMap: { crafting: 1000 }, // Antaa Crafting XP:tä
     },
   },
   {
@@ -44,7 +44,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: "Accumulate 1,000,000 Coins.",
     condition: (state) => state.coins >= 1000000,
     rewards: {
-      chatColorId: "gold", // TÄMÄ AVAUTUU NYT!
+      chatColorId: "Millionaire", // TÄMÄ AVAUTUU NYT!
     },
   },
   {
@@ -54,6 +54,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/ui/coins.png",
     description: "Accumulate 10,000,000 Coins.",
     condition: (state) => state.coins >= 10000000,
+    rewards: {
+      items: [{ itemId: "scroll_enchant_4", amount: 15 }],
+    },
   },
   {
     id: "gen_hoarder_1",
@@ -62,6 +65,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/ui/icon_inventory.png",
     description: "Have 20 unique items in your inventory.",
     condition: (state) => Object.keys(state.inventory).length >= 20,
+    rewards: {
+      coins: 5000,
+    },
   },
   {
     id: "gen_hoarder_2",
@@ -70,6 +76,10 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/ui/icon_inventory.png",
     description: "Have 50 unique items in your inventory.",
     condition: (state) => Object.keys(state.inventory).length >= 50,
+    rewards: {
+      coins: 10000,
+      xpMap: { mining: 1000 },
+    },
   },
   {
     id: "gen_queue_master",
@@ -78,6 +88,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/ui/icon_clock.png",
     description: "Unlock 5 Action Queue slots.",
     condition: (state) => state.unlockedQueueSlots >= 5,
+    rewards: {
+      coins: 10000,
+    },
   },
 
   // ==========================================
@@ -97,7 +110,7 @@ export const ACHIEVEMENTS: Achievement[] = [
         state.equipment.weapon
       ),
     rewards: {
-      items: [{ itemId: "red_potion", amount: 10 }],
+      items: [{ itemId: "potion_tier1", amount: 20 }],
     },
   },
   {
@@ -108,7 +121,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: "Complete the first combat map.",
     condition: (state) => state.combatStats.maxMapCompleted >= 1,
     rewards: {
-      xpMap: { attack: 100, melee: 100, defense: 100 }, // Tässä on virhe!
+      xpMap: { attack: 100, hitpoints: 100, defense: 100 }, // Tässä on virhe!
     },
   },
   {
@@ -118,6 +131,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/defense.png",
     description: "Defeat the World 1 Boss (Map 10).",
     condition: (state) => state.combatStats.maxMapCompleted >= 10,
+    rewards: {
+      items: [{ itemId: "bosskey_w1", amount: 10 }],
+    },
   },
   {
     id: "combat_map_40",
@@ -127,8 +143,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: "Defeat the World 4 Boss (Map 40).",
     condition: (state) => state.combatStats.maxMapCompleted >= 40,
     rewards: {
-      coins: 10000, // Pieni rahapalkkio
+      coins: 50000, // Pieni rahapalkkio
       chatColorId: "sky",
+      items: [{ itemId: "scroll_enchant_4", amount: 10 }],
     },
   },
   {
@@ -138,6 +155,10 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/combat.png",
     description: "Defeat the final challenge (Map 80).",
     condition: (state) => state.combatStats.maxMapCompleted >= 80,
+    rewards: {
+      coins: 50000, // Pieni rahapalkkio
+      chatColorId: "nexuslord",
+    },
   },
   {
     id: "stat_hp_10",
@@ -146,6 +167,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/hitpoints.png",
     description: "Reach Hitpoints level 10.",
     condition: (state) => state.skills.hitpoints.level >= 10,
+    rewards: {
+      coins: 5000, // Pieni rahapalkkio
+    },
   },
   {
     id: "stat_melee_50",
@@ -154,6 +178,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/melee.png",
     description: "Reach Melee level 50.",
     condition: (state) => state.skills.melee.level >= 50,
+    rewards: {
+      coins: 25000, // Pieni rahapalkkio
+    },
   },
   {
     id: "stat_ranged_50",
@@ -162,7 +189,11 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/ranged.png",
     description: "Reach Ranged level 50.",
     condition: (state) => state.skills.ranged.level >= 50,
+    rewards: {
+      coins: 25000, // Pieni rahapalkkio
+    },
   },
+
   {
     id: "stat_def_99",
     category: "combat",
@@ -170,6 +201,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/defense.png",
     description: "Reach Defense level 99.",
     condition: (state) => state.skills.defense.level >= 99,
+    rewards: {
+      coins: 100000, // Pieni rahapalkkio
+    },
   },
 
   // ==========================================
@@ -182,6 +216,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/woodcutting.png",
     description: "Gain your first Woodcutting experience.",
     condition: (state) => state.skills.woodcutting.xp > 0,
+    rewards: {
+      coins: 500, // Pieni rahapalkkio
+    },
   },
   {
     id: "wc_10",
@@ -190,6 +227,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/woodcutting.png",
     description: "Reach Woodcutting level 10.",
     condition: (state) => state.skills.woodcutting.level >= 10,
+    rewards: {
+      coins: 1000, // Pieni rahapalkkio
+    },
   },
   {
     id: "wc_50",
@@ -198,6 +238,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/woodcutting.png",
     description: "Reach Woodcutting level 50.",
     condition: (state) => state.skills.woodcutting.level >= 50,
+    rewards: {
+      coins: 10000, // Pieni rahapalkkio
+    },
   },
   {
     id: "wc_99",
@@ -206,6 +249,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/woodcutting.png",
     description: "Reach Woodcutting level 99.",
     condition: (state) => state.skills.woodcutting.level >= 99,
+    rewards: {
+      coins: 100000, // Pieni rahapalkkio
+    },
   },
 
   // ==========================================
@@ -218,6 +264,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/mining.png",
     description: "Gain your first Mining experience.",
     condition: (state) => state.skills.mining.xp > 0,
+    rewards: {
+      coins: 500, // Pieni rahapalkkio
+    },
   },
   {
     id: "mine_10",
@@ -226,6 +275,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/mining.png",
     description: "Reach Mining level 10.",
     condition: (state) => state.skills.mining.level >= 10,
+    rewards: {
+      coins: 1000, // Pieni rahapalkkio
+    },
   },
   {
     id: "mine_50",
@@ -234,6 +286,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/mining.png",
     description: "Reach Mining level 50.",
     condition: (state) => state.skills.mining.level >= 50,
+    rewards: {
+      coins: 10000, // Pieni rahapalkkio
+    },
   },
   {
     id: "mine_99",
@@ -242,6 +297,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/mining.png",
     description: "Reach Mining level 99.",
     condition: (state) => state.skills.mining.level >= 99,
+    rewards: {
+      coins: 100000, // Pieni rahapalkkio
+    },
   },
 
   // ==========================================
@@ -254,6 +312,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/foraging.png",
     description: "Gain your first Foraging experience.",
     condition: (state) => state.skills.foraging.xp > 0,
+    rewards: {
+      coins: 500, // Pieni rahapalkkio
+    },
   },
   {
     id: "forage_10",
@@ -262,6 +323,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/foraging.png",
     description: "Reach Foraging level 10.",
     condition: (state) => state.skills.foraging.level >= 10,
+    rewards: {
+      coins: 1000, // Pieni rahapalkkio
+    },
   },
   {
     id: "forage_50",
@@ -270,6 +334,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/foraging.png",
     description: "Reach Foraging level 50.",
     condition: (state) => state.skills.foraging.level >= 50,
+    rewards: {
+      coins: 10000, // Pieni rahapalkkio
+    },
   },
   {
     id: "forage_99",
@@ -278,6 +345,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/foraging.png",
     description: "Reach Foraging level 99.",
     condition: (state) => state.skills.foraging.level >= 99,
+    rewards: {
+      coins: 100000, // Pieni rahapalkkio
+    },
   },
 
   // ==========================================
@@ -290,6 +360,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/smithing.png",
     description: "Gain your first Smithing experience.",
     condition: (state) => state.skills.smithing.xp > 0,
+    rewards: {
+      coins: 500, // Pieni rahapalkkio
+    },
   },
   {
     id: "smith_10",
@@ -298,6 +371,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/smithing.png",
     description: "Reach Smithing level 10.",
     condition: (state) => state.skills.smithing.level >= 10,
+    rewards: {
+      coins: 1000, // Pieni rahapalkkio
+    },
   },
   {
     id: "smith_50",
@@ -306,6 +382,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/smithing.png",
     description: "Reach Smithing level 50.",
     condition: (state) => state.skills.smithing.level >= 50,
+    rewards: {
+      coins: 10000, // Pieni rahapalkkio
+    },
   },
   {
     id: "smith_99",
@@ -314,6 +393,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/smithing.png",
     description: "Reach Smithing level 99.",
     condition: (state) => state.skills.smithing.level >= 99,
+    rewards: {
+      coins: 100000, // Pieni rahapalkkio
+    },
   },
 
   // ==========================================
@@ -326,6 +408,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/crafting.png",
     description: "Gain your first Crafting experience.",
     condition: (state) => state.skills.crafting.xp > 0,
+    rewards: {
+      coins: 500, // Pieni rahapalkkio
+    },
   },
   {
     id: "craft_10",
@@ -334,6 +419,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/crafting.png",
     description: "Reach Crafting level 10.",
     condition: (state) => state.skills.crafting.level >= 10,
+    rewards: {
+      coins: 1000, // Pieni rahapalkkio
+    },
   },
   {
     id: "craft_50",
@@ -342,6 +430,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/crafting.png",
     description: "Reach Crafting level 50.",
     condition: (state) => state.skills.crafting.level >= 50,
+    rewards: {
+      coins: 10000, // Pieni rahapalkkio
+    },
   },
   {
     id: "craft_99",
@@ -350,6 +441,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/crafting.png",
     description: "Reach Crafting level 99.",
     condition: (state) => state.skills.crafting.level >= 99,
+    rewards: {
+      coins: 100000, // Pieni rahapalkkio
+    },
   },
 
   // ==========================================
@@ -362,6 +456,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/alchemy.png",
     description: "Gain your first Alchemy experience.",
     condition: (state) => state.skills.alchemy.xp > 0,
+    rewards: {
+      coins: 500, // Pieni rahapalkkio
+    },
   },
   {
     id: "alch_10",
@@ -370,6 +467,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/alchemy.png",
     description: "Reach Alchemy level 10.",
     condition: (state) => state.skills.alchemy.level >= 10,
+    rewards: {
+      coins: 1000, // Pieni rahapalkkio
+    },
   },
   {
     id: "alch_50",
@@ -378,6 +478,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/alchemy.png",
     description: "Reach Alchemy level 50.",
     condition: (state) => state.skills.alchemy.level >= 50,
+    rewards: {
+      coins: 10000, // Pieni rahapalkkio
+    },
   },
   {
     id: "alch_99",
@@ -386,6 +489,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "/assets/skills/alchemy.png",
     description: "Reach Alchemy level 99.",
     condition: (state) => state.skills.alchemy.level >= 99,
+    rewards: {
+      coins: 100000, // Pieni rahapalkkio
+    },
   },
   // ==========================================
   // --- 🎣 FISHING (Kalastus) ---
@@ -415,5 +521,9 @@ export const ACHIEVEMENTS: Achievement[] = [
     description:
       "Reach Fishing level 99. You've conquered the art of doing nothing usefull. Congratulations!",
     condition: (state) => state.skills.fishing.level >= 99,
+    rewards: {
+      items: [{ itemId: "fish_riverminnow", amount: 10 }],
+      chatColorId: "fisherking",
+    },
   },
 ];

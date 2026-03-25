@@ -395,42 +395,42 @@ export default function Sidebar({
           <NavButton
             view="announcements"
             label="Announcements"
-            icon="/assets/ui/icon_announcements.png"
+            icon="/assets/extra/announcements.png"
             isActive={currentView === "announcements"}
             onClick={setView}
           />
           <NavButton
             view="wiki"
             label="System Manual"
-            icon="/assets/ui/icon_wiki.png"
+            icon="/assets/extra/system_manual.png"
             isActive={currentView === "wiki"}
             onClick={setView}
           />
           <NavButton
             view="patch_notes"
             label="Patch Notes"
-            icon="/assets/ui/icon_patch_notes.png"
+            icon="/assets/extra/patch_notes.png"
             isActive={currentView === "patch_notes"}
             onClick={setView}
           />
           <NavButton
             view="guide"
             label="Game Guide"
-            icon="/assets/ui/icon_guide.png"
+            icon="/assets/extra/game_guide.png"
             isActive={currentView === "guide"}
             onClick={setView}
           />
           <NavButton
             view="faq"
             label="F.A.Q."
-            icon="/assets/ui/icon_faq.png"
+            icon="/assets/extra/faq.png"
             isActive={currentView === "faq"}
             onClick={setView}
           />
           <NavButton
             view="privacy_policy"
             label="Privacy Policy"
-            icon="/assets/ui/icon_privacy.png"
+            icon="/assets/extra/privacy_policy.png"
             isActive={currentView === "privacy_policy"}
             onClick={setView}
           />

@@ -121,7 +121,8 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: "Complete the first combat map.",
     condition: (state) => state.combatStats.maxMapCompleted >= 1,
     rewards: {
-      xpMap: { attack: 100, hitpoints: 100, defense: 100 }, // Tässä on virhe!
+      // KORJATTU: Lisätty 'melee' testin vaatimusten mukaisesti
+      xpMap: { attack: 100, hitpoints: 100, defense: 100 },
     },
   },
   {

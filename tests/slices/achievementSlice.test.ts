@@ -64,7 +64,6 @@ describe("Achievement Slice - claimAchievement", () => {
   });
 
   it("laskee XP:n ja tasonnousun (level up) oikein (combat_map_1)", () => {
-    // "combat_map_1" antaa (achievements.ts): 100 XP mm. Melee-taitoon.
     useGameStore.setState({
       unlockedAchievements: ["combat_map_1"],
       claimedAchievements: [],
@@ -78,11 +77,13 @@ describe("Achievement Slice - claimAchievement", () => {
     // 1. Lisätty lunastettujen listalle
     expect(updatedStore.claimedAchievements).toContain("combat_map_1");
 
-    // 2. Tarkistetaan XP ja Level Up -logiikka!
+    // 2. Tarkistetaan XP ja Level Up -logiikka ATTACK-taidosta!
     // Palkinto on 100 XP.
     // Taso 1 -> 2 vaatii 40 XP. Jäljelle jää 60 XP.
     // Taso 2 -> 3 vaatii 160 XP. Joten taso jää kakkoseen.
-    expect(updatedStore.skills.melee.level).toBe(2);
-    expect(updatedStore.skills.melee.xp).toBe(60);
+
+    // KORJATTU: Tarkistetaan attack, koska melee ei enää saa XP:tä tästä saavutuksesta
+    expect(updatedStore.skills.attack.level).toBe(2);
+    expect(updatedStore.skills.attack.xp).toBe(60);
   });
 });

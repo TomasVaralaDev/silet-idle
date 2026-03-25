@@ -220,7 +220,12 @@ export default function Sidebar({
                   }}
                   className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
-                  <span className="text-base">👤</span> User Settings
+                  <img
+                    src="/assets/profile/user_settings.png"
+                    className="w-4 h-4 pixelated"
+                    alt=""
+                  />{" "}
+                  User Settings
                 </button>
                 <button
                   onClick={() => {
@@ -229,14 +234,24 @@ export default function Sidebar({
                   }}
                   className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
-                  <span className="text-base">⚙️</span> Settings
+                  <img
+                    src="/assets/profile/settings.png"
+                    className="w-4 h-4 pixelated"
+                    alt=""
+                  />{" "}
+                  Settings
                 </button>
                 <div className="h-px bg-border/50 my-1 mx-2"></div>
                 <button
                   onClick={onLogout}
                   className="w-full text-left px-3 py-2 rounded hover:bg-danger/10 text-xs font-bold text-danger flex items-center gap-3"
                 >
-                  <span className="text-base">🔌</span> Log Out
+                  <img
+                    src="/assets/profile/logout.png"
+                    className="w-4 h-4 pixelated"
+                    alt=""
+                  />{" "}
+                  Log Out
                 </button>
               </div>
             )}

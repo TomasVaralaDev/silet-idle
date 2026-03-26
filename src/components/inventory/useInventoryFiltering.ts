@@ -5,7 +5,7 @@ import type { InventoryItem } from "./InventoryGrid";
 
 export type SortType = "rarity" | "level" | "amount" | "value";
 
-// PÄIVITETTY: consumables -> potions
+// Filter categories for the inventory view
 export type FilterType =
   | "all"
   | "weapons"
@@ -16,6 +16,7 @@ export type FilterType =
   | "materials"
   | "misc";
 
+// Numerical weights to help sort items by rarity
 const RARITY_WEIGHTS: Record<string, number> = {
   legendary: 4,
   epic: 3,
@@ -32,6 +33,7 @@ export function useInventoryFiltering() {
   const [sortDesc, setSortDesc] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Map raw inventory IDs and counts to full item detail objects
   const rawItems = useMemo(() => {
     return Object.entries(inventory)
       .map(([id, count]) => {
@@ -45,9 +47,11 @@ export function useInventoryFiltering() {
       );
   }, [inventory]);
 
+  // Apply filtering, searching, and sorting to the raw item list
   const processedItems = useMemo(() => {
     let result = [...rawItems];
 
+    // Handle text-based search filtering
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -57,9 +61,10 @@ export function useInventoryFiltering() {
       );
     }
 
+    // Handle category-based filtering
     if (filter !== "all") {
       result = result.filter((i) => {
-        // Tunnistuslogiikka kategorioille
+        // Category identification logic
         const isWeapon = i.slot === "weapon";
         const isArmor = [
           "head",
@@ -71,9 +76,11 @@ export function useInventoryFiltering() {
         ].includes(i.slot as string);
         const isRune = i.id.startsWith("rune_") || i.slot === "rune";
         const isPouch = i.id.startsWith("pouch_mystery_");
-        // isConsumable kattaa edelleen ruoat ja potionit "Potions" välilehdelle
+
+        // Consumables category includes both food items and alchemy potions
         const isConsumable =
           i.slot === "food" || i.category === "potion" || i.category === "Food";
+
         const isMaterial = [
           "ingot",
           "plank",
@@ -91,7 +98,7 @@ export function useInventoryFiltering() {
             return isRune;
           case "pouches":
             return isPouch;
-          case "potions": // Päivitetty case
+          case "potions":
             return isConsumable;
           case "materials":
             return isMaterial;
@@ -110,6 +117,7 @@ export function useInventoryFiltering() {
       });
     }
 
+    // Apply sorting logic
     result.sort((a, b) => {
       let valA = 0;
       let valB = 0;
@@ -131,13 +139,17 @@ export function useInventoryFiltering() {
           valB = b.value;
           break;
       }
+
+      // Fallback to alphabetical sorting if primary sort values are equal
       if (valA === valB) return a.name.localeCompare(b.name);
+
       return sortDesc ? valB - valA : valA - valB;
     });
 
     return result;
   }, [rawItems, filter, sortBy, sortDesc, searchQuery]);
 
+  // Helper to toggle sort type or flip direction
   const toggleSort = (type: SortType) => {
     if (sortBy === type) setSortDesc(!sortDesc);
     else {

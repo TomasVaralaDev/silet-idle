@@ -1,6 +1,7 @@
 import { BookOpen, ChevronRight, Star, AlertTriangle } from "lucide-react";
 
 export default function GuideView() {
+  // Data structure containing all guide chapters and their descriptions
   const sections = [
     {
       id: "gathering",
@@ -78,7 +79,9 @@ export default function GuideView() {
 
   return (
     <div className="h-full flex flex-col bg-app-base text-tx-main font-sans animate-in fade-in duration-500 overflow-y-auto custom-scrollbar pb-24 text-left">
-      {/* HEADER */}
+      {
+        // View Header Section
+      }
       <header className="p-8 border-b border-border/50 bg-panel/30 shrink-0">
         <div className="flex items-center gap-4 mb-2 text-accent">
           <BookOpen size={24} />
@@ -94,7 +97,9 @@ export default function GuideView() {
         </p>
       </header>
 
-      {/* CONTENT AREA */}
+      {
+        // Main Scrollable Content Area
+      }
       <main className="p-6 md:p-10 space-y-12 max-w-2xl mx-auto">
         {sections.map((section) => (
           <section key={section.id} className="space-y-4">
@@ -111,7 +116,9 @@ export default function GuideView() {
           </section>
         ))}
 
-        {/* IMPORTANT NOTICE */}
+        {
+          // Footer Notice for dynamic updates
+        }
         <section className="bg-warning/10 border border-warning/30 p-6 rounded-xl space-y-3">
           <div className="flex items-center gap-2 text-warning">
             <AlertTriangle size={18} />
@@ -125,7 +132,9 @@ export default function GuideView() {
           </p>
         </section>
 
-        {/* FOOTER DECORATION */}
+        {
+          // Visual Footer Decoration
+        }
         <div className="flex justify-center py-10 opacity-30 text-accent">
           <div className="flex gap-4">
             <Star size={12} />

@@ -7,6 +7,7 @@ export default function EquipmentPanel() {
   const equipment = useGameStore((state) => state.equipment);
   const unequipItem = useGameStore((state) => state.unequipItem);
 
+  // Helper to get visual indicator classes (glow and background) based on item rarity
   const getIndicatorClass = (rarity?: string) => {
     switch (rarity) {
       case "legendary":
@@ -22,6 +23,7 @@ export default function EquipmentPanel() {
     }
   };
 
+  // Internal helper to render individual equipment slots
   const renderSlot = (
     slot: Exclude<EquipmentSlot, "food">,
     isSmall: boolean = false,
@@ -47,12 +49,18 @@ export default function EquipmentPanel() {
         `}
         title={item ? `Unequip ${item.name}` : `Empty ${slot} slot`}
       >
+        {
+          // Placeholder text shown when slot is empty
+        }
         {!item && (
           <span className="text-[8px] text-tx-muted/30 uppercase font-black text-center leading-none select-none tracking-widest">
             {slot}
           </span>
         )}
 
+        {
+          // Item icon and rarity indicator shown when an item is equipped
+        }
         {item && (
           <>
             <img
@@ -60,11 +68,17 @@ export default function EquipmentPanel() {
               alt={item.name}
               className={`${iconSize} pixelated drop-shadow-[0_0_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform z-10`}
             />
+            {
+              // Visual rarity bar at the bottom of the slot
+            }
             <div
               className={`absolute bottom-0 inset-x-0 h-1.5 rounded-b-xl opacity-90 ${getIndicatorClass(
                 item.rarity,
               )}`}
             />
+            {
+              // Overaly effect on hover to indicate unequip action
+            }
             <div className="absolute inset-0 bg-danger/10 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center transition-opacity z-20">
               <span className="text-[7px] font-black uppercase text-danger bg-panel px-1.5 py-0.5 rounded border border-danger/30">
                 Remove
@@ -77,8 +91,10 @@ export default function EquipmentPanel() {
   };
 
   return (
-    // MUUTETTU: Poistettu 'h-full', lisätty 'shrink-0' jotta ei puristu kasaan
     <div className="bg-panel border border-border rounded-xl p-5 flex flex-col items-center shadow-inner shrink-0">
+      {
+        // Panel Header
+      }
       <div className="w-full flex justify-between items-center mb-6 border-b border-border pb-2">
         <h3 className="text-xs font-black text-tx-muted uppercase tracking-widest">
           Active Loadout
@@ -88,12 +104,18 @@ export default function EquipmentPanel() {
         </span>
       </div>
 
+      {
+        // Primary Gear Grid (Classic RPG layout: Head, Weapon, Body, Shield, Legs)
+      }
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div /> {renderSlot("head")} <div />
         {renderSlot("weapon")} {renderSlot("body")} {renderSlot("shield")}
         <div /> {renderSlot("legs")} <div />
       </div>
 
+      {
+        // Accessory Section (Necklace, Ring, Rune, Skill)
+      }
       <div className="w-full bg-app-base/20 rounded-xl p-3 border border-border/30">
         <div className="flex justify-center gap-2">
           {renderSlot("necklace", true)}

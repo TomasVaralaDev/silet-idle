@@ -1,13 +1,12 @@
-// src/components/inventory/StatComparison.tsx
 import { formatAttackSpeed } from "../../utils/formatUtils";
 
 interface StatComparisonProps {
   label: string;
   newValue: number | undefined;
   oldValue: number | undefined;
-  isSpeed?: boolean; // Nopeus on käänteinen: pienempi luku on parempi
-  isMultiplier?: boolean; // Esim. Crit DMG (1.5x)
-  isPercentage?: boolean; // Esim. Crit Chance (15%)
+  isSpeed?: boolean; // Speed is inverse: lower numerical values are better
+  isMultiplier?: boolean; // e.g. Crit DMG (1.5x)
+  isPercentage?: boolean; // e.g. Crit Chance (15%)
 }
 
 export default function StatComparison({
@@ -18,15 +17,16 @@ export default function StatComparison({
   isMultiplier = false,
   isPercentage = false,
 }: StatComparisonProps) {
-  if (!newValue && !oldValue) return null; // Jos kummallakaan ei ole tätä statsia, ei näytetä mitään
+  // Hide component if neither value is provided or both are zero
+  if (!newValue && !oldValue) return null;
 
   const diff = newValue - oldValue;
 
-  // Logiikka väritykselle (nopeudessa miinus on vihreä!)
+  // Determine if the change is beneficial (negative diff is positive for speed)
   const isPositiveChange = isSpeed ? diff < 0 : diff > 0;
   const isNegativeChange = isSpeed ? diff > 0 : diff < 0;
 
-  let colorClass = "text-tx-muted"; // Ei muutosta
+  let colorClass = "text-tx-muted"; // Default color for no change
   let sign = "";
 
   if (isPositiveChange) {
@@ -34,10 +34,10 @@ export default function StatComparison({
     sign = "+";
   } else if (isNegativeChange) {
     colorClass = "text-danger";
-    // diff on jo negatiivinen, joten emme tarvitse "sign" muuttujaa miinukselle
+    // Negative values already include the minus sign, so no manual sign is added
   }
 
-  // Muotoilijat arvoille
+  // Formatters for display values based on stat type
   const formatValue = (val: number) => {
     if (isSpeed) return formatAttackSpeed(val);
     if (isMultiplier) return `${val.toFixed(1)}x`;
@@ -58,12 +58,16 @@ export default function StatComparison({
         {label}
       </span>
       <div className="flex items-center gap-2">
-        {/* Uusi arvo (aina näkyvissä) */}
+        {
+          // Always display the primary/new value
+        }
         <span className="font-mono font-bold text-tx-main">
           {formatValue(newValue)}
         </span>
 
-        {/* Vain jos arvo on muuttunut, näytetään ero */}
+        {
+          // Display the difference badge only if the value has changed
+        }
         {diff !== 0 && (
           <span
             className={`font-mono font-bold text-[10px] ${colorClass} bg-panel px-1.5 py-0.5 rounded opacity-80 group-hover:opacity-100 transition-opacity`}

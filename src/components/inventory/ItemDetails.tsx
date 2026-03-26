@@ -22,11 +22,14 @@ export default function ItemDetails({
   const skills = useGameStore((state) => state.skills);
   const openPouch = useGameStore((state) => state.openPouch);
 
+  // Core item properties for conditional UI logic
   const isEquippable = !!item.slot;
   const isPouch = item.id.startsWith("pouch_mystery_");
   const currentlyEquipped = getEquippedItem(item.slot);
   const theme = getRarityStyle(item.rarity);
 
+  // -- Skill Requirement Logic --
+  // Determine which skill is required based on item category and check if player meets it
   let requiredSkillName = "Smithing";
   let playerSkillLevel = skills.smithing?.level || 1;
   let meetsRequirement = true;
@@ -51,12 +54,14 @@ export default function ItemDetails({
 
   return (
     <div
-      // LISÄTTY: overflow-hidden ja max-w-full varmistavat, ettei tämä laatikko koskaan venytä vanhempaansa
       className={`
       w-full max-w-full bg-panel flex flex-col relative shrink-0 shadow-2xl overflow-hidden
       ${isMobile ? "rounded-t-2xl border-none" : `border rounded-xl ${theme.border} border-opacity-50 animate-in slide-in-from-top-4 fade-in duration-300`}
     `}
     >
+      {
+        // Header Section: Icon and Basic Info
+      }
       <div className="p-4 flex gap-3 md:gap-4 relative border-b border-border/50">
         <button
           onClick={onClose}
@@ -78,7 +83,9 @@ export default function ItemDetails({
           />
         </div>
 
-        {/* LISÄTTY: min-w-0 on kriittinen tässä, jotta truncate toimii sen sisällä oleville teksteille */}
+        {
+          // Text Details: min-w-0 is critical for truncate to work in flex children
+        }
         <div className="flex flex-col justify-center min-w-0 pr-6 flex-1">
           <h3
             className={`font-bold text-sm md:text-base leading-tight truncate ${theme.text}`}
@@ -86,12 +93,13 @@ export default function ItemDetails({
           >
             {item.name}
           </h3>
-          {/* LISÄTTY: truncate estää pitkien kategorioiden karkaamisen */}
           <p className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold text-tx-muted mt-0.5 truncate">
             <span className={theme.text}>{item.rarity}</span>{" "}
             {item.category || "Item"}
           </p>
-          {/* LISÄTTY: flex-wrap antaa hintojen ja määrien pudota uudelle riville, jos tila loppuu */}
+          {
+            // Info Badges: Flex-wrap ensures price doesn't overflow container
+          }
           <div className="flex flex-wrap items-center gap-2 mt-1.5">
             <span className="text-[9px] md:text-[10px] bg-app-base px-2 py-0.5 rounded text-tx-muted border border-border shrink-0">
               x{item.count}
@@ -105,11 +113,16 @@ export default function ItemDetails({
       </div>
 
       <div className="px-3 md:px-4 py-3 space-y-3">
-        {/* LISÄTTY: break-words pakottaa pitkät sanat katkeamaan tarvittaessa */}
+        {
+          // Flavor Text: break-words prevents layout breaks from long strings
+        }
         <p className="text-[11px] md:text-xs text-tx-muted italic leading-relaxed border-l-2 border-[#E43636]/50 pl-3 bg-app-base/30 py-1 break-words">
           "{item.description || "A mysterious item with no description."}"
         </p>
 
+        {
+          // Requirement Alert: Shown only if player level is too low
+        }
         {!meetsRequirement && (
           <div className="bg-[#E43636]/10 border border-[#E43636]/30 rounded p-2 text-center mt-2">
             <p className="text-[9px] md:text-[10px] font-bold text-[#E43636] uppercase tracking-wider leading-tight">
@@ -118,8 +131,10 @@ export default function ItemDetails({
           </div>
         )}
 
+        {
+          // Stats Grid: Renders comparisons against currently equipped gear
+        }
         {(item.stats || item.healing) && (
-          // LISÄTTY: pienennetty välejä (gap-1.5) kapeita näyttöjä varten
           <div className="grid grid-cols-2 gap-1.5 md:gap-2 mt-2 bg-app-base/50 p-2 rounded-lg border border-border/50">
             {(item.stats?.attack || currentlyEquipped?.stats?.attack) && (
               <StatComparison
@@ -176,6 +191,9 @@ export default function ItemDetails({
               />
             )}
 
+            {
+              // Healing specialized stat row
+            }
             {item.healing && (
               <div className="bg-success/10 px-2 md:px-3 py-1.5 md:py-2 rounded border border-success/30 flex justify-between items-center text-xs col-span-2">
                 <span className="text-success font-bold uppercase text-[9px] md:text-[10px]">
@@ -190,6 +208,9 @@ export default function ItemDetails({
         )}
       </div>
 
+      {
+        // Footer Actions: Dynamic column count based on available actions
+      }
       <div
         className={`grid ${isEquippable || isPouch ? "grid-cols-2" : "grid-cols-1"} border-t border-border divide-x divide-border bg-app-base/50 mt-auto`}
       >
@@ -197,7 +218,6 @@ export default function ItemDetails({
           onClick={onSell}
           className="py-3 md:py-4 text-[10px] md:text-xs font-black uppercase tracking-widest text-[#E43636] hover:bg-[#E43636]/10 transition-colors flex items-center justify-center gap-2 group"
         >
-          {/* EMOJI POISTETTU JA KORVATTU COINS.PNG IKKONILLA */}
           <img
             src="/assets/ui/coins.png"
             className="w-4 h-4 pixelated group-hover:scale-125 transition-transform"

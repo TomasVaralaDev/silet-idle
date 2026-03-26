@@ -19,7 +19,7 @@ export default function InventoryControls({
   searchQuery,
   onSearchChange,
 }: Props) {
-  // PÄIVITETTY lista: Materials ja Misc mukana
+  // Available filter categories for the backpack view
   const filters: { id: FilterType; label: string }[] = [
     { id: "all", label: "All" },
     { id: "weapons", label: "Weapons" },
@@ -31,6 +31,7 @@ export default function InventoryControls({
     { id: "misc", label: "Misc" },
   ];
 
+  // Sorting metrics available for organizing the grid
   const sorts: { id: SortType; label: string }[] = [
     { id: "rarity", label: "Rarity" },
     { id: "level", label: "Level" },
@@ -40,7 +41,9 @@ export default function InventoryControls({
 
   return (
     <div className="flex flex-col gap-3 p-4 border-b border-border bg-panel/50">
-      {/* SEARCH BAR */}
+      {
+        // Search bar with clear button
+      }
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-tx-muted/50 flex items-center justify-center pointer-events-none">
           <svg
@@ -75,7 +78,9 @@ export default function InventoryControls({
         )}
       </div>
 
-      {/* TABS (Filtering) - Rullattava näkymä */}
+      {
+        // Scrollable category filter tabs
+      }
       <div className="flex overflow-x-auto pb-1 custom-scrollbar scrollbar-hide">
         <div className="flex bg-app-base p-1 rounded-lg border border-border min-w-max">
           {filters.map((f) => (
@@ -96,7 +101,9 @@ export default function InventoryControls({
         </div>
       </div>
 
-      {/* SORTING */}
+      {
+        // Sorting controls with direction indicators
+      }
       <div className="flex items-center justify-between mt-1">
         <span className="text-[9px] text-tx-muted font-bold uppercase tracking-widest">
           Sort:

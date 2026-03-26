@@ -19,6 +19,7 @@ export default function StatsPanel() {
     combatStats,
   } = useGameStore();
 
+  // Aggregate stats from all equipped items and determine combat style
   const playerCombatStats = useMemo(() => {
     const gearTotals = Object.values(equipment).reduce(
       (acc, itemId) => {
@@ -30,9 +31,11 @@ export default function StatsPanel() {
           acc.hpBonus += item.stats.hpBonus || 0;
           acc.critChance += item.stats.critChance || 0;
 
+          // Only keep the highest crit multiplier from gear
           if (item.stats.critMulti && item.stats.critMulti > acc.critMulti) {
             acc.critMulti = item.stats.critMulti;
           }
+          // Weapon determines the base attack speed
           if (item.slot === "weapon" && item.stats.attackSpeed) {
             acc.attackSpeed = item.stats.attackSpeed;
           }
@@ -54,6 +57,7 @@ export default function StatsPanel() {
       : null;
     const style: CombatStyle = weaponItem?.combatStyle || "melee";
 
+    // Merge skills and equipment totals
     const baseStats = getPlayerStats(skills, style, {
       damage: gearTotals.damage,
       armor: gearTotals.armor,
@@ -63,6 +67,7 @@ export default function StatsPanel() {
       critMulti: gearTotals.critMulti,
     });
 
+    // Final calculation for Max Hit and overall Combat Power
     const maxHit =
       (baseStats.weaponBase + 0.5 * baseStats.mainStat) *
       (1 + baseStats.bonusDamage);
@@ -86,6 +91,7 @@ export default function StatsPanel() {
     };
   }, [equipment, skills]);
 
+  // Food consumption cooldown logic
   const foodItem = equippedFood ? getItemDetails(equippedFood.itemId) : null;
   const foodTimer = combatStats?.foodTimer || 0;
   const isCooldown = foodTimer > 0;
@@ -96,7 +102,9 @@ export default function StatsPanel() {
 
   return (
     <div className="bg-panel border border-border rounded-xl flex flex-col shadow-2xl overflow-hidden shrink-0">
-      {/* HEADER WITH COMBAT POWER */}
+      {
+        // Header Section showing active style and calculated Combat Power
+      }
       <div className="p-4 border-b border-border bg-app-base/30 flex justify-between items-center shrink-0">
         <div>
           <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em]">
@@ -117,7 +125,9 @@ export default function StatsPanel() {
       </div>
 
       <div className="p-4 space-y-6">
-        {/* OFFENSIVE SECTION */}
+        {
+          // Offensive Stats Grid
+        }
         <section>
           <h4 className="text-[9px] font-black text-warning uppercase tracking-widest mb-3 flex items-center gap-2">
             <span className="h-px flex-1 bg-warning/20"></span> Offensive Stats{" "}
@@ -151,7 +161,9 @@ export default function StatsPanel() {
           </div>
         </section>
 
-        {/* DEFENSIVE SECTION */}
+        {
+          // Defensive Stats Grid
+        }
         <section>
           <h4 className="text-[9px] font-black text-success uppercase tracking-widest mb-3 flex items-center gap-2">
             <span className="h-px flex-1 bg-success/20"></span> Defensive Stats{" "}
@@ -175,7 +187,9 @@ export default function StatsPanel() {
           </div>
         </section>
 
-        {/* AUTO-RECOVERY SECTION */}
+        {
+          // Auto-Heal Settings and Equipped Consumable
+        }
         <section className="bg-app-base/40 rounded-xl p-3 border border-border/50">
           <div className="flex justify-between items-center mb-3">
             <h4 className="text-[9px] font-black text-tx-muted uppercase tracking-widest">
@@ -199,6 +213,9 @@ export default function StatsPanel() {
           >
             {foodItem ? (
               <>
+                {
+                  // Visual Cooldown Progress Bar
+                }
                 {isCooldown && (
                   <div
                     className="absolute inset-0 bg-panel-hover/90 z-10 origin-left transition-transform duration-100"
@@ -253,6 +270,7 @@ export default function StatsPanel() {
   );
 }
 
+// Helper component for individual stat tiles
 function StatBox({
   label,
   value,

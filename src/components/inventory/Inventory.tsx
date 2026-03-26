@@ -12,9 +12,11 @@ interface Props {
 }
 
 export default function Inventory({ onSellClick }: Props) {
+  // Local state for tracking the currently inspected item and mobile view navigation
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [mobileTab, setMobileTab] = useState<"gear" | "bag">("bag");
 
+  // Custom hook manages filtering, sorting, and search logic to keep this view clean
   const {
     items,
     filter,
@@ -28,19 +30,21 @@ export default function Inventory({ onSellClick }: Props) {
 
   const equipItem = useGameStore((state) => state.equipItem);
 
+  // Equip logic: Handles both direct clicks and secondary actions
   const handleEquip = (itemId?: string) => {
     const id = itemId || selectedItem?.id;
     if (!id) return;
     equipItem(id);
-    setSelectedItem(null);
+    setSelectedItem(null); // Close details after equipping
   };
 
   const handleSell = () => {
     if (!selectedItem) return;
     onSellClick(selectedItem.id);
-    setSelectedItem(null);
+    setSelectedItem(null); // Close details before opening sell modal
   };
 
+  // Toggle selection: Clicking the same item twice deselects it
   const handleItemClick = (item: InventoryItem) => {
     if (selectedItem?.id === item.id) {
       setSelectedItem(null);
@@ -51,7 +55,9 @@ export default function Inventory({ onSellClick }: Props) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative bg-app-base text-left">
-      {/* MOBIILI TABS */}
+      {
+        // Mobile Tab Navigation: Only visible on small screens to toggle between Gear and Backpack
+      }
       <div className="md:hidden flex p-2 bg-panel border-b border-border gap-2 shrink-0">
         <button
           onClick={() => setMobileTab("bag")}
@@ -85,12 +91,15 @@ export default function Inventory({ onSellClick }: Props) {
         </button>
       </div>
 
-      {/* PÄÄSÄILIÖ: 
-        Mobiilissa ja tableteilla (alle lg) asettelu on flex-col ja sivu rullaa pystysuunnassa.
-        Työpöydällä (lg ja yli) asettelu on flex-row ja sivu ei rullaa kokonaisuutena.
-      */}
+      {
+        // Main Container:
+        // Mobile/Tablet (< lg): Vertical flex-col layout with scrolling.
+        // Desktop (>= lg): Horizontal flex-row layout with fixed viewport.
+      }
       <div className="flex flex-col lg:flex-row h-full gap-4 lg:gap-6 p-2 lg:p-6 overflow-y-auto lg:overflow-hidden relative custom-scrollbar">
-        {/* VASEN SARAKE / YLÄOSA TABLETILLA */}
+        {
+          // Left Column (Desktop) / Top Section (Tablet): Active Loadout and Stats
+        }
         <div
           className={`w-full lg:w-1/3 flex flex-col gap-4 shrink-0 pb-4 lg:pb-0 overflow-y-visible lg:overflow-y-auto custom-scrollbar ${
             mobileTab === "gear" ? "flex" : "hidden md:flex"
@@ -98,6 +107,9 @@ export default function Inventory({ onSellClick }: Props) {
         >
           <EquipmentPanel />
 
+          {
+            // Desktop-only inline item details for quick inspection
+          }
           {selectedItem && (
             <div className="hidden lg:block animate-in slide-in-from-left-4 duration-200">
               <ItemDetails
@@ -112,8 +124,9 @@ export default function Inventory({ onSellClick }: Props) {
           <StatsPanel />
         </div>
 
-        {/* OIKEA SARAKE / ALAOSA TABLETILLA */}
-        {/* Laitetaan minimikorkeus tablettia varten (min-h-[60vh]), jotta grid ei puristu kasaan */}
+        {
+          // Right Column (Desktop) / Bottom Section (Tablet): Item Grid and Controls
+        }
         <div
           className={`w-full lg:w-2/3 min-h-[60vh] lg:min-h-0 lg:h-full overflow-hidden flex flex-col bg-panel border border-border rounded-xl shadow-lg relative shrink-0 lg:shrink ${
             mobileTab === "bag" ? "flex" : "hidden md:flex"
@@ -137,7 +150,9 @@ export default function Inventory({ onSellClick }: Props) {
         </div>
       </div>
 
-      {/* MOBIILI / TABLETTI POPUP */}
+      {
+        // Mobile/Tablet Modal Overlay: Triggered when an item is selected for inspection
+      }
       {selectedItem && (
         <div className="lg:hidden fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
           <div

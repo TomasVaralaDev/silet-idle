@@ -14,38 +14,49 @@ import type { Resource } from "../../types";
 export default function EnchantingView() {
   const { inventory, equipment, coins, attemptEnchant } = useGameStore();
 
+  // Manage which equipment slot the user is currently viewing/enchanting
   const [selectedSlot, setSelectedSlot] = useState<
     keyof typeof equipment | null
   >("weapon");
+
+  // Track which scroll catalyst is selected from the inventory
   const [selectedScrollId, setSelectedScrollId] = useState<string | null>(null);
 
+  // -- Enchanting Logic Calculations --
   const selectedItemId = selectedSlot ? equipment[selectedSlot] : null;
   const selectedItem = selectedItemId
     ? (getItemDetails(selectedItemId) as Resource)
     : null;
+
   const currentLevel = selectedItemId ? getEnchantLevel(selectedItemId) : 0;
   const isMaxLevel = currentLevel >= MAX_ENCHANT_LEVEL;
   const nextLevel = currentLevel + 1;
+
+  // Calculate cost based on the item's base value and the *next* level it will reach
   const cost = selectedItem
     ? getEnchantCost(nextLevel, selectedItem.value || 100)
     : 0;
   const canAfford = coins >= cost;
 
+  // Memoize available scrolls so we don't recalculate the inventory filter on every render
   const availableScrolls = useMemo(() => {
-    return Object.keys(inventory)
-      .filter((id) => id.startsWith("scroll_enchant_"))
-      .map((id) => {
-        const item = getItemDetails(id);
-        const tier = getScrollTier(id);
-        return {
-          id,
-          count: inventory[id],
-          name: item?.name,
-          icon: item?.icon,
-          tier,
-        };
-      })
-      .sort((a, b) => b.tier - a.tier);
+    return (
+      Object.keys(inventory)
+        .filter((id) => id.startsWith("scroll_enchant_"))
+        .map((id) => {
+          const item = getItemDetails(id);
+          const tier = getScrollTier(id);
+          return {
+            id,
+            count: inventory[id],
+            name: item?.name,
+            icon: item?.icon,
+            tier,
+          };
+        })
+        // Sort so highest tier (most effective) scrolls appear first
+        .sort((a, b) => b.tier - a.tier)
+    );
   }, [inventory]);
 
   const activeScroll = selectedScrollId
@@ -53,20 +64,26 @@ export default function EnchantingView() {
     : null;
   const scrollTier = activeScroll?.tier || 0;
 
+  // Determine success chance based on the current enchant level and the tier of the scroll used
   const successChance = getSuccessChance(currentLevel, scrollTier);
   const isScrollSelected = selectedScrollId !== null;
+
+  // Final validation before allowing the enchant action
   const canEnchant = canAfford && isScrollSelected && !isMaxLevel;
 
+  // Dynamically set the color of the success chance text for visual feedback
   let chanceColor = "text-tx-muted";
   if (isScrollSelected) {
     if (successChance >= 80) chanceColor = "text-success";
     else if (successChance >= 50) chanceColor = "text-warning";
-    else chanceColor = "text-[#E43636]"; // Käytetään pelin punaista
+    else chanceColor = "text-[#E43636]"; // Danger/Red indicating high risk of failure
   }
 
   return (
     <div className="h-full flex flex-col bg-app-base overflow-hidden">
-      {/* HEADER: Skaalattu mobiiliin */}
+      {
+        // Header Section
+      }
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-3 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
@@ -90,10 +107,15 @@ export default function EnchantingView() {
         <div className="h-full bg-accent transition-all duration-300 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] w-full"></div>
       </div>
 
-      {/* PÄÄSISÄLTÖ: Rullattava alue */}
+      {
+        // Main Scrollable Area
+      }
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 md:gap-10 items-center lg:items-start justify-center">
-          {/* VASEN: Hahmon varusteet (Gear Silhouette) */}
+          {
+            // Left Column: Active Loadout Silhouette
+            // Uses absolute positioning to map slots to specific parts of the character image
+          }
           <div className="w-full max-w-[340px] md:max-w-md shrink-0">
             <div className="bg-panel border border-border rounded-2xl p-4 md:p-8 relative shadow-xl overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-accent-hover opacity-30"></div>
@@ -101,7 +123,6 @@ export default function EnchantingView() {
                 Active Loadout
               </h2>
 
-              {/* Skaalattu siluetti mobiiliin */}
               <div className="relative h-[320px] md:h-[420px] w-full flex justify-center items-center select-none">
                 <img
                   src="/assets/ui/character_silhouette.png"
@@ -109,7 +130,6 @@ export default function EnchantingView() {
                   alt=""
                 />
 
-                {/* SLOTIT ASENNOITUINA (Responsive sizes) */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 scale-90 md:scale-100">
                   <EnchantSlot
                     slot="head"
@@ -151,7 +171,6 @@ export default function EnchantingView() {
                   />
                 </div>
 
-                {/* BOTTOM ROW */}
                 <div className="absolute bottom-0 w-full flex justify-center gap-1 md:gap-2 scale-90 md:scale-100">
                   <EnchantSlot
                     slot="necklace"
@@ -180,12 +199,17 @@ export default function EnchantingView() {
             </div>
           </div>
 
-          {/* OIKEA: Lumoamisen hallinta */}
+          {
+            // Right Column: Enchanting Details and Actions
+          }
           <div className="flex-1 w-full max-w-[400px] md:max-w-md bg-panel border border-border rounded-2xl p-5 md:p-8 flex flex-col relative overflow-hidden shadow-2xl min-h-[500px]">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/5 via-transparent to-transparent pointer-events-none"></div>
 
             {selectedItem ? (
               <div className="relative z-10 w-full flex flex-col h-full gap-5 md:gap-6">
+                {
+                  // Item Information
+                }
                 <div className="text-center">
                   <h3 className="text-lg md:text-2xl font-black text-tx-main tracking-tight uppercase">
                     {selectedItem.name}
@@ -202,7 +226,9 @@ export default function EnchantingView() {
                   )}
                 </div>
 
-                {/* SCROLL SELECTOR */}
+                {
+                  // Scroll / Catalyst Selector
+                }
                 {!isMaxLevel && (
                   <div
                     className={`rounded-xl p-4 border transition-all ${!isScrollSelected ? "bg-[#E43636]/5 border-[#E43636]/20" : "bg-app-base border-border"}`}
@@ -265,7 +291,9 @@ export default function EnchantingView() {
                   </div>
                 )}
 
-                {/* STATS & COST */}
+                {
+                  // Cost and Chance Summary
+                }
                 {!isMaxLevel && (
                   <div className="bg-app-base/60 rounded-xl p-4 border border-border space-y-4 shadow-inner">
                     <div className="flex justify-between items-center pb-3 border-b border-border/50">
@@ -298,7 +326,9 @@ export default function EnchantingView() {
                   </div>
                 )}
 
-                {/* ACTION BUTTON */}
+                {
+                  // Action Button
+                }
                 {!isMaxLevel && (
                   <button
                     onClick={() =>
@@ -320,6 +350,9 @@ export default function EnchantingView() {
                   </button>
                 )}
 
+                {
+                  // Max Level Placeholder
+                }
                 {isMaxLevel && (
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-warning font-black text-lg uppercase tracking-[0.2em] bg-warning/5 px-8 py-4 rounded-2xl border-2 border-warning/20 shadow-[0_0_20px_rgba(var(--color-warning)/0.1)]">
@@ -329,6 +362,7 @@ export default function EnchantingView() {
                 )}
               </div>
             ) : (
+              // Empty State
               <div className="flex flex-col items-center justify-center h-full text-tx-muted gap-4 opacity-30">
                 <div className="w-16 h-16 rounded-full border-2 border-dashed border-border flex items-center justify-center text-2xl">
                   ?
@@ -347,6 +381,7 @@ export default function EnchantingView() {
 
 // --- HELPER COMPONENTS ---
 
+// Visual slot for displaying equipment in the silhouette layout
 function EnchantSlot({
   slot,
   itemId,
@@ -362,6 +397,7 @@ function EnchantSlot({
   const rarityStyle = item ? getRarityStyle(item.rarity) : null;
   const enchantLevel = item && itemId ? getEnchantLevel(itemId) : 0;
 
+  // Map generic slot placeholders
   const getPlaceholder = (s: string) => {
     switch (s) {
       case "head":
@@ -411,7 +447,9 @@ function EnchantSlot({
               +{enchantLevel}
             </div>
           )}
-          {/* Label piilotetaan mobiilissa, näytetään vain isommilla */}
+          {
+            // Hover Label (Hidden on mobile to save space)
+          }
           <div
             className={`absolute -bottom-7 w-24 text-center text-[9px] bg-black/80 text-white px-2 py-1 rounded-md border border-border pointer-events-none transition-opacity hidden md:block ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"} z-30`}
           >

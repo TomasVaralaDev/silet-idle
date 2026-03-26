@@ -10,6 +10,7 @@ import {
 } from "../../utils/combatMechanics";
 import { calculateEnemyStats } from "../../utils/enemyScaling";
 
+// Interface for the simulation output data
 interface SimResult {
   winRate: number;
   avgTimeMs: number;
@@ -21,6 +22,7 @@ interface SimResult {
   xpPerHour: number;
 }
 
+// Formats milliseconds into a readable minute/second string
 const formatTime = (ms: number) => {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -37,6 +39,7 @@ export default function BattleSimulator() {
   const [result, setResult] = useState<SimResult | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
 
+  // Memoized player stats calculation based on current equipment and skills
   const playerStats = useMemo(() => {
     let weaponDmg = 1;
     let totalArmor = 0;
@@ -46,6 +49,7 @@ export default function BattleSimulator() {
     let critM = 1.5;
     let combatStyle: CombatStyle = "melee";
 
+    // Iterate through all equipment slots to aggregate stats
     Object.entries(store.equipment).forEach(([slot, itemId]) => {
       if (!itemId) return;
       const item = getItemDetails(itemId);
@@ -75,18 +79,20 @@ export default function BattleSimulator() {
     });
   }, [store.equipment, store.skills]);
 
+  // Main simulation execution logic
   const runSimulation = () => {
     setIsSimulating(true);
 
+    // Timeout allows the UI to update with the "Simulating" state before the heavy loop starts
     setTimeout(() => {
       const map = COMBAT_DATA.find((m) => m.id === selectedMapId)!;
       const zone = map.id % 10 === 0 ? 10 : map.id % 10;
 
-      // HAETAAN LIVE-STATIT SUORAAN KAAVASTASI!
+      // Calculate live enemy stats using the scaling formula
       const scaledStats = calculateEnemyStats(map.world, zone);
 
       const baseEnemyStats = getEnemyStats({
-        level: map.id, // map.id = 1-80, josta lasketaan armor (level * 4)
+        level: map.id, // Level determines armor (level * 4)
         attack: scaledStats.enemyAttack,
         maxHp: scaledStats.enemyHp,
         currentHp: scaledStats.enemyHp,
@@ -109,6 +115,7 @@ export default function BattleSimulator() {
 
       const FOOD_COOLDOWN_MS = 10000;
 
+      // Simulation loop based on user-selected iterations
       for (let i = 0; i < iterations; i++) {
         const pStats = { ...playerStats };
         const eStats = { ...baseEnemyStats };
@@ -120,11 +127,13 @@ export default function BattleSimulator() {
         let potsUsed = 0;
         let nextFoodReadyTime = 0;
 
-        const MAX_BATTLE_TIME_MS = 1000 * 60 * 60 * 24;
+        const MAX_BATTLE_TIME_MS = 1000 * 60 * 60 * 24; // Safety break for 24h simulation
 
+        // Single battle loop
         while (pStats.hp > 0 && eStats.hp > 0 && timeMs < MAX_BATTLE_TIME_MS) {
           let nextTick = Math.min(pNextAttack, eNextAttack);
 
+          // Check if player needs to eat food based on HP threshold
           const needsFood = pStats.hp / pStats.maxHp <= autoEatThreshold;
           if (
             needsFood &&
@@ -137,6 +146,7 @@ export default function BattleSimulator() {
 
           timeMs = nextTick;
 
+          // Consume food if possible
           if (
             needsFood &&
             timeMs >= nextFoodReadyTime &&
@@ -149,6 +159,7 @@ export default function BattleSimulator() {
             nextFoodReadyTime = timeMs + FOOD_COOLDOWN_MS;
           }
 
+          // Player attack tick
           if (timeMs === pNextAttack) {
             const hit = calculateHit(pStats, eStats);
             eStats.hp -= hit.finalDamage;
@@ -162,6 +173,7 @@ export default function BattleSimulator() {
             break;
           }
 
+          // Enemy attack tick
           if (timeMs === eNextAttack) {
             const hit = calculateHit(eStats, pStats);
             pStats.hp -= hit.finalDamage;
@@ -174,7 +186,7 @@ export default function BattleSimulator() {
         totalPotsUsed += potsUsed;
       }
 
-      // LASKETAAN EXP/H (Huomioidaan vain voitetut taistelut)
+      // Final result calculations (XP only counted from wins)
       const totalXpGained = wins * scaledStats.xpReward;
       const hoursSimulated = totalTimeMs / (1000 * 60 * 60);
       const xpPerHour = hoursSimulated > 0 ? totalXpGained / hoursSimulated : 0;
@@ -201,6 +213,9 @@ export default function BattleSimulator() {
       </h3>
 
       <div className="grid grid-cols-2 gap-4">
+        {
+          // Current Player Statistics Summary
+        }
         <div className="bg-slate-950 p-2 rounded border border-slate-800 space-y-1 text-[10px]">
           <div className="text-accent mb-1 font-bold flex justify-between">
             <span>YOUR STATS</span>
@@ -226,6 +241,9 @@ export default function BattleSimulator() {
           </div>
         </div>
 
+        {
+          // Simulation Controls
+        }
         <div className="space-y-2">
           <div>
             <label className="text-[10px] text-slate-500 block mb-1">
@@ -272,6 +290,9 @@ export default function BattleSimulator() {
         </div>
       </div>
 
+      {
+        // Simulation Results Display
+      }
       {result && (
         <div className="bg-black/50 p-3 rounded border border-accent/30 animate-in fade-in slide-in-from-top-2">
           <div
@@ -321,7 +342,9 @@ export default function BattleSimulator() {
             </div>
           </div>
 
-          {/* XP INFO RIVI */}
+          {
+            // XP Efficiency Breakdown
+          }
           <div className="grid grid-cols-2 gap-2 text-center text-[10px] mt-2">
             <div className="bg-slate-900 p-1.5 rounded border border-purple-900/30 flex flex-col justify-center">
               <div className="text-purple-400/70 uppercase tracking-wider">

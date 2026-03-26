@@ -9,15 +9,22 @@ interface Props {
 export default function BattleSimView({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
-  // Renderöidään modaali suoraan document.body -elementtiin createPortalilla!
-  // Tämä irrottaa sen täysin DevManagerin rajoituksista ja keskittää sen kaiken päälle.
+  // Use createPortal to render the modal into document.body
+  // This bypasses local CSS constraints and ensures the simulator stays on top of all UI layers
   return createPortal(
     <div className="fixed inset-0 z-[100000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-      {/* MODAL CONTAINER */}
+      {
+        // Modal Container
+      }
       <div className="bg-slate-900 border border-slate-700/50 rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden relative ring-1 ring-accent/20">
-        {/* MODAL HEADER */}
+        {
+          // Modal Header - Contains status indicator and close controls
+        }
         <div className="bg-slate-950 border-b border-slate-700/50 p-4 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-3">
+            {
+              // Animated Status Indicator
+            }
             <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-accent"></span>
@@ -34,12 +41,14 @@ export default function BattleSimView({ isOpen, onClose }: Props) {
           </button>
         </div>
 
-        {/* MODAL CONTENT */}
+        {
+          // Modal Content - Wraps the combat logic component
+        }
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-gradient-to-b from-slate-900 to-slate-950">
           <BattleSimulator />
         </div>
       </div>
     </div>,
-    document.body, // TÄMÄ ON TAIKASANA: Piirretään suoraan HTML-bodyyn!
+    document.body, // Target the document body to escape current component tree limits
   );
 }

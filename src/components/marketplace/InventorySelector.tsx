@@ -16,13 +16,13 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
     .filter((entry) => {
       const { count, item } = entry;
 
-      // 1. TIUKKA TARKISTUS: Jos itemiä ei ole datassa tai se on poistettu, se ei näy listalla
+      // 1. Strict validation: Ensure the item exists in the database and hasn't been deprecated
       if (!item) return false;
 
-      // 2. LOGIIKKA: Vain esineet joita on varastossa ja jotka eivät ole uniikkeja
+      // 2. Business Logic: Only list non-unique items that are currently in stock
       if (count <= 0 || item.isUnique) return false;
 
-      // 3. HAKUSUODATUS
+      // 3. Search Filtering: Match query against the localized item name
       const itemName = item.name || "";
       const query = searchQuery.toLowerCase();
 
@@ -32,13 +32,14 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
 
       return true;
     })
-    // Tyyppiturvallisuuden vuoksi kerrotaan koodille, että tästä eteenpäin item on aina olemassa
-    // (Poistaa tarpeen käyttää item! huutomerkkejä myöhemmin)
+    // Type casting to ensure 'item' is treated as non-null in subsequent operations
     .map((entry) => ({ ...entry, item: entry.item! }));
 
   return (
     <div className="flex flex-col h-full bg-app-base/50 rounded-sm border border-border overflow-hidden shadow-inner">
-      {/* Search Input */}
+      {
+        // Search Input Section
+      }
       <div className="p-3 bg-panel/30 border-b border-border">
         <div className="relative">
           <input
@@ -67,13 +68,17 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
         </div>
       </div>
 
-      {/* Table Header */}
+      {
+        // Table Header
+      }
       <div className="flex items-center px-4 py-2 bg-panel/50 border-b border-border text-[9px] font-bold text-tx-muted uppercase tracking-widest shrink-0">
         <span className="flex-1 text-left">Inventory</span>
         <span className="w-20 text-right">Qty</span>
       </div>
 
-      {/* Item List */}
+      {
+        // Scrollable Item List
+      }
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {availableItems.map(({ id, count, item }) => {
           const isSelected = selectedId === id;
@@ -122,7 +127,9 @@ export default function InventorySelector({ selectedId, onSelect }: Props) {
           );
         })}
 
-        {/* Empty States */}
+        {
+          // Empty States (Filtered vs Absolute)
+        }
         {availableItems.length === 0 && (
           <div className="py-20 flex flex-col items-center justify-center text-center space-y-3">
             <svg

@@ -17,6 +17,7 @@ export default function LeaderboardView() {
   const skills = useGameStore((state) => state.skills);
   const localTotalLevel = calculateTotalLevel(skills);
 
+  // Synchronize with Firebase Auth to identify the local player in the standings
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -29,6 +30,7 @@ export default function LeaderboardView() {
     return () => unsubscribe();
   }, []);
 
+  // Fetch leaderboard data from the service layer
   useEffect(() => {
     const loadLeaderboard = async () => {
       setLoading(true);
@@ -41,7 +43,7 @@ export default function LeaderboardView() {
         setEntries(top50);
         setMyRank(personalData);
       } catch (err) {
-        console.error("Archive Link Failure:", err);
+        console.error("Leaderboard fetch failed:", err);
       } finally {
         setLoading(false);
       }
@@ -50,12 +52,15 @@ export default function LeaderboardView() {
     loadLeaderboard();
   }, [currentUid, localTotalLevel]);
 
+  // Determine if the local player is already visible in the top list
   const isPlayerInTop50 =
     myRank && typeof myRank.rank === "number" && myRank.rank <= 50;
 
   return (
     <div className="h-full flex flex-col bg-app-base font-sans overflow-hidden text-left relative">
-      {/* HEADER SECTION - Mobiiliskaalautuva */}
+      {
+        // Header Section - Scaling for mobile and desktop
+      }
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
@@ -84,12 +89,16 @@ export default function LeaderboardView() {
         </div>
       </div>
 
-      {/* DECORATIVE ACCENT LINE */}
+      {
+        // Branding Accent Line
+      }
       <div className="h-1 bg-panel w-full shrink-0">
         <div className="h-full bg-accent w-full opacity-80"></div>
       </div>
 
-      {/* MAIN LIST CONTENT */}
+      {
+        // Main List Content - Scrollable area
+      }
       <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar pb-32">
         <div className="max-w-4xl mx-auto space-y-2 md:space-y-3">
           {loading ? (
@@ -114,7 +123,9 @@ export default function LeaderboardView() {
         </div>
       </div>
 
-      {/* PERSISTENT FOOTER - Näkyy jos pelaaja ei ole Top 50 */}
+      {
+        // Persistent Footer - Sticky display for player's rank if not in top 50
+      }
       {!loading && myRank && !isPlayerInTop50 && (
         <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 bg-panel/95 backdrop-blur-md border-t border-border z-30 animate-in slide-in-from-bottom duration-300">
           <div className="max-w-4xl mx-auto">
@@ -132,9 +143,7 @@ export default function LeaderboardView() {
   );
 }
 
-/**
- * ROW COMPONENT
- */
+// Internal row component for rendering individual leaderboard entries
 function LeaderboardRow({
   entry,
   isMe,
@@ -154,7 +163,9 @@ function LeaderboardRow({
             : "bg-panel/40 border-border"
       } ${isFooter ? "bg-app-base" : ""}`}
     >
-      {/* RANK NUMBER */}
+      {
+        // Position Indicator
+      }
       <div
         className={`w-8 md:w-12 text-center font-mono text-lg md:text-2xl font-black italic shrink-0 ${
           isMe
@@ -167,7 +178,9 @@ function LeaderboardRow({
         #{entry.rank}
       </div>
 
-      {/* AVATAR & NAME */}
+      {
+        // Profile Summary
+      }
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <img
           src={entry.avatar}
@@ -195,7 +208,9 @@ function LeaderboardRow({
         </div>
       </div>
 
-      {/* TOTAL LEVEL */}
+      {
+        // Progression Stats
+      }
       <div className="text-right shrink-0 pl-2 border-l border-border/50">
         <div className="text-lg md:text-2xl font-black text-tx-main font-mono leading-none">
           {entry.totalLevel}

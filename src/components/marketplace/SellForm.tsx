@@ -19,12 +19,12 @@ export default function SellForm({ myUid, onComplete }: Props) {
   const [price, setPrice] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Haetaan itemin tiedot turvallisesti
+  // Retrieve full item metadata safely
   const selectedItem = selectedId ? getItemById(selectedId) : null;
   const maxAmount = selectedId ? inventory[selectedId] || 0 : 0;
 
   useEffect(() => {
-    // Scrollataan automaattisesti alas lomakkeeseen mobiilissa, kun item valitaan
+    // Improve mobile UX by automatically scrolling to options panel when an item is picked
     if (selectedId && window.innerWidth < 768) {
       setTimeout(() => {
         document
@@ -41,6 +41,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
     }
   }, [selectedId, selectedItem, emitEvent]);
 
+  // Handle market listing submission with validation logic
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedId || !selectedItem || isSubmitting) return;
@@ -51,7 +52,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
     }
 
     if (amount < 1) {
-      emitEvent("error", "Value must be greater or equal to 1");
+      emitEvent("error", "Quantity must be at least 1");
       return;
     }
 
@@ -64,7 +65,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
     }
 
     if (price < 1) {
-      emitEvent("error", "Value must be greater or equal to 1");
+      emitEvent("error", "Unit price must be at least 1");
       return;
     }
 
@@ -85,20 +86,22 @@ export default function SellForm({ myUid, onComplete }: Props) {
   };
 
   return (
-    // Pienennetty paddigeejä mobiilissa (p-3/gap-4), jotta mahtuu paremmin ruudulle. Scrollataan tässä containerissa.
     <div className="h-full w-full flex flex-col md:flex-row gap-4 md:gap-6 p-3 md:p-6 overflow-y-auto md:overflow-hidden animate-in fade-in duration-500 text-left bg-app-base custom-scrollbar">
-      {/* LEFT: Inventory Selection */}
+      {
+        // Left Column: Item selection from player's inventory
+      }
       <div className="flex-1 min-h-[40vh] md:min-h-[300px] flex flex-col shrink-0">
         <h3 className="text-[10px] md:text-xs font-black text-tx-muted uppercase tracking-[0.2em] mb-2 md:mb-4 px-1 md:px-0">
           Select Resource
         </h3>
-        {/* Laitettu border ja tausta inventorylle, jotta se erottuu mobiilissa "laatikkona" */}
         <div className="flex-1 overflow-hidden bg-panel/30 border border-border/50 rounded-sm">
           <InventorySelector selectedId={selectedId} onSelect={setSelectedId} />
         </div>
       </div>
 
-      {/* RIGHT: Listing Options */}
+      {
+        // Right Column: Listing parameters configuration
+      }
       <div
         id="sell-options-panel"
         className="w-full md:w-80 lg:w-96 shrink-0 flex flex-col gap-4"
@@ -114,7 +117,9 @@ export default function SellForm({ myUid, onComplete }: Props) {
               noValidate
               className="flex flex-col gap-4 md:gap-6 flex-1"
             >
-              {/* Item Info Card */}
+              {
+                // Item Preview Summary
+              }
               <div className="bg-app-base p-3 md:p-4 rounded-sm border border-border flex items-center gap-3 md:gap-4 shadow-inner">
                 <img
                   src={selectedItem.icon}
@@ -143,9 +148,10 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 </div>
               )}
 
-              {/* Flex-rivi määrälle ja hinnalle mobiilissa tilan säästämiseksi, jos item ei ole uniikki */}
+              {
+                // Input Fields for amount and pricing
+              }
               <div className="flex flex-col sm:flex-row gap-4">
-                {/* Amount Input */}
                 <div
                   className={`flex-1 flex flex-col ${selectedItem.isUnique ? "opacity-50 pointer-events-none" : ""}`}
                 >
@@ -173,7 +179,6 @@ export default function SellForm({ myUid, onComplete }: Props) {
                   />
                 </div>
 
-                {/* Price Input */}
                 <div
                   className={`flex-1 flex flex-col ${selectedItem.isUnique ? "opacity-50 pointer-events-none" : ""}`}
                 >
@@ -199,7 +204,9 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 </div>
               </div>
 
-              {/* Revenue calculation */}
+              {
+                // Live potential revenue calculation
+              }
               <div
                 className={`mt-2 md:mt-auto p-3 md:p-4 bg-app-base rounded-sm border border-border border-dashed ${selectedItem.isUnique ? "opacity-50" : ""}`}
               >

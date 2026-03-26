@@ -11,6 +11,7 @@ export default function MyListingsView({ userId }: Props) {
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Load active listings associated with the current player UID
   const fetchMyListings = useCallback(async () => {
     setLoading(true);
     try {
@@ -53,11 +54,14 @@ export default function MyListingsView({ userId }: Props) {
   }
 
   return (
-    // Pienennetty paddingia mobiilissa (p-2 md:p-4)
     <div className="h-full overflow-y-auto custom-scrollbar p-2 md:p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* Kasvatettu mobiilissa rivien välistä gappia (gap-2), koska ne ovat nyt "kortteja" */}
+      {
+        // Increased gap on mobile to better separate listing cards
+      }
       <div className="max-w-3xl mx-auto flex flex-col gap-2 sm:gap-1">
-        {/* PIILOTETAAN OTSIKOT MOBIILISSA (hidden sm:flex) JA KORJATTU LEVEYDET MATCHAMAAN LISTINGROWTA */}
+        {
+          // Column headers (Desktop only) matched to ListingRow widths
+        }
         <div className="hidden sm:flex items-center gap-4 px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
           <span className="w-48 text-left">Item</span>
           <span className="flex-1 text-left">Status</span>
@@ -70,7 +74,7 @@ export default function MyListingsView({ userId }: Props) {
             key={l.id}
             listing={l}
             myUid={userId}
-            // onPurchase päivittää näkymän, jotta peruutettu kohde katoaa listasta!
+            // Passing fetchMyListings to refresh the view after a cancellation
             onPurchase={fetchMyListings}
           />
         ))}

@@ -12,20 +12,18 @@ interface Props {
 export default function ListingRow({ listing, myUid, onPurchase }: Props) {
   const item = getItemById(listing.itemId);
   const isOwn = listing.sellerUid === myUid;
-
   const { emitEvent } = useGameStore();
 
+  // Handle item purchase and trigger success/error notifications
   const handleBuy = async () => {
     if (isOwn) return;
     try {
       await purchaseListing(myUid, listing.id);
-
       emitEvent(
         "success",
         `Acquired ${listing.amount}x ${item?.name}!`,
         item?.icon,
       );
-
       onPurchase();
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -33,6 +31,7 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
     }
   };
 
+  // Remove own listing from market and return items to player inventory
   const handleCancel = async () => {
     if (!isOwn) return;
 
@@ -54,9 +53,11 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
   if (!item) return null;
 
   return (
-    // Pääcontainer: mobiilissa flex-col (pino), sm-koossa flex-row (rivi)
+    // Main Container: Vertical on mobile, horizontal row layout on small screens and up
     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-3 px-3 sm:px-4 border-b border-border/30 hover:bg-panel-hover/30 transition-colors group">
-      {/* ITEM INFO */}
+      {
+        // Item Summary Section
+      }
       <div className="flex items-center gap-3 w-full sm:w-48 shrink-0 text-left">
         <div className="relative shrink-0">
           <img
@@ -78,7 +79,9 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
             >
               {item.name}
             </span>
-            {/* Myyjän nimi mobiilissa nimen vieressä */}
+            {
+              // Mobile-only seller indicator
+            }
             <span className="sm:hidden text-[9px] text-tx-muted italic truncate max-w-[80px]">
               {isOwn ? "You" : listing.sellerName}
             </span>
@@ -95,7 +98,9 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
         </div>
       </div>
 
-      {/* MERCHANT (Vain Desktop) */}
+      {
+        // Merchant Info (Desktop only)
+      }
       <div className="hidden sm:flex flex-col flex-1 text-left min-w-0">
         <span className="text-[9px] text-tx-muted/60 uppercase font-black tracking-widest">
           Merchant
@@ -105,10 +110,10 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
         </span>
       </div>
 
-      {/* MOBILE BOTTOM ROW / DESKTOP RIGHT ALIGN */}
-      {/* Mobiilissa luodaan viiva (border-t) erottamaan hinta ja nappi, Desktopissa ei viivaa */}
+      {
+        // Action and Pricing Section: Separated by border on mobile
+      }
       <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-1 sm:mt-0 pt-2 sm:pt-0 border-t border-border/30 sm:border-none">
-        {/* TOTAL COST */}
         <div className="flex flex-col items-start sm:items-end w-auto sm:w-32 shrink-0">
           <span className="text-[9px] text-tx-muted/60 uppercase font-black tracking-widest">
             <span className="hidden sm:inline">Total Cost</span>
@@ -126,7 +131,6 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
           </div>
         </div>
 
-        {/* ACTION BUTTON */}
         <div className="w-auto sm:w-24 flex justify-end shrink-0">
           {isOwn ? (
             <button

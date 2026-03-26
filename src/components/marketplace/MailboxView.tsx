@@ -11,9 +11,9 @@ interface Props {
 export default function MailboxView({ userId }: Props) {
   const [messages, setMessages] = useState<MailMessage[]>([]);
   const [loading, setLoading] = useState(false);
-
   const setState = useGameStore((state) => state.setState);
 
+  // Fetch pending messages from the relay service
   const fetchMail = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
@@ -31,6 +31,7 @@ export default function MailboxView({ userId }: Props) {
     fetchMail();
   }, [fetchMail]);
 
+  // Transfer attached coins and items to the local game store state
   const handleClaim = async (msg: MailMessage) => {
     setState((state) => {
       const newCoins = state.coins + (msg.coinsAttached || 0);
@@ -51,6 +52,7 @@ export default function MailboxView({ userId }: Props) {
     });
 
     try {
+      // Remove message from the database after successful state transfer
       await MailboxService.deleteMessage(userId, msg.id);
       setMessages((prev) => prev.filter((m) => m.id !== msg.id));
     } catch (error) {
@@ -66,7 +68,6 @@ export default function MailboxView({ userId }: Props) {
     );
 
   return (
-    // Pienennetty paddingia mobiilissa (p-2 sm:p-4)
     <div className="p-2 sm:p-4 h-full overflow-y-auto custom-scrollbar bg-app-base/20">
       {messages.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 opacity-50">
@@ -84,10 +85,11 @@ export default function MailboxView({ userId }: Props) {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              // Muutettu mobiilissa flex-coliksi
               className="bg-panel border border-border p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 hover:border-accent/50 transition-all shadow-sm group"
             >
-              {/* IKONI JA TEKSTI: Ryhmitelty vierekkäin myös mobiilissa */}
+              {
+                // Content section: Groups icon, text, and attachments
+              }
               <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 w-full">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-app-base rounded flex items-center justify-center shrink-0 border border-border group-hover:border-accent/30 transition-colors">
                   <img
@@ -105,6 +107,9 @@ export default function MailboxView({ userId }: Props) {
                     {msg.message}
                   </p>
 
+                  {
+                    // Visual list of attached rewards
+                  }
                   <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
                     {msg.coinsAttached && (
                       <div className="flex items-center gap-1.5 text-warning font-mono text-[9px] sm:text-[10px] font-bold bg-warning/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded border border-warning/20">
@@ -143,7 +148,9 @@ export default function MailboxView({ userId }: Props) {
                 </div>
               </div>
 
-              {/* CLAIM NAPPI: Mobiilissa koko leveyden painike, työpöydällä oikeassa reunassa */}
+              {
+                // Claim Button: Full width on mobile for better ergonomics
+              }
               <button
                 onClick={() => handleClaim(msg)}
                 className="w-full sm:w-auto mt-1 sm:mt-0 bg-success hover:bg-success/80 text-white font-black text-[10px] uppercase px-5 py-2.5 sm:py-3 rounded border-b-4 border-black/20 active:border-b-0 active:translate-y-1 transition-all shadow-lg shrink-0"

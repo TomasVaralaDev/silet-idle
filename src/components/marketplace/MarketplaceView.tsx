@@ -7,7 +7,6 @@ import SellForm from "./SellForm";
 import MailboxView from "./MailboxView";
 import MyListingsView from "./MyListingsView";
 import type { MarketListing } from "../../types";
-
 import { useTooltipStore } from "../../store/useToolTipStore";
 
 type MarketTab = "buy" | "sell" | "my_listings" | "mailbox";
@@ -31,12 +30,13 @@ export default function MarketplaceView() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const lastFetchTime = useRef<number>(0);
-  const FETCH_COOLDOWN = 30000;
+  const FETCH_COOLDOWN = 30000; // Rate limit the relay fetch requests
   const { user } = useAuth();
 
   const showTooltip = useTooltipStore((state) => state.showTooltip);
   const hideTooltip = useTooltipStore((state) => state.hideTooltip);
 
+  // Fetch all active global listings from the market service
   const fetchListings = useCallback(async (force = false) => {
     const now = Date.now();
     if (!force && now - lastFetchTime.current < FETCH_COOLDOWN) return;
@@ -61,6 +61,7 @@ export default function MarketplaceView() {
     return () => hideTooltip && hideTooltip();
   }, [tab, hideTooltip]);
 
+  // Aggregate listings into a catalog for the high-level browsing view
   const catalog = useMemo(() => {
     const uniqueItemIds = Array.from(new Set(listings.map((l) => l.itemId)));
 
@@ -88,6 +89,7 @@ export default function MarketplaceView() {
       .filter((item): item is NonNullable<typeof item> => item !== null);
   }, [listings]);
 
+  // Handle category and search query logic
   const filteredCatalog = useMemo(() => {
     return catalog.filter((item) => {
       if (!item || !item.name) return false;
@@ -101,7 +103,6 @@ export default function MarketplaceView() {
         matchesCategory = true;
       } else {
         const cat = item.category;
-
         switch (activeCategory) {
           case "woodcutting":
             matchesCategory = cat === "log" || cat === "plank";
@@ -135,7 +136,6 @@ export default function MarketplaceView() {
             matchesCategory = cat === activeCategory;
         }
       }
-
       return matchesSearch && matchesCategory;
     });
   }, [catalog, searchQuery, activeCategory]);
@@ -155,9 +155,10 @@ export default function MarketplaceView() {
 
   return (
     <div className="flex flex-col h-full bg-app-base/80 font-sans overflow-hidden">
-      {/* HEADER: Mobiilissa allekkain (flex-col), työpöydällä vierekkäin (md:flex-row) */}
+      {
+        // View Header - Responsive layout shifts to column on mobile
+      }
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
-        {/* Title area */}
         <div className="flex items-center gap-4 w-full md:w-auto">
           <div
             className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0`}
@@ -180,9 +181,10 @@ export default function MarketplaceView() {
           </div>
         </div>
 
-        {/* TABS & MAILBOX BUTTON: Mobiilissa levittyy koko leveydelle */}
+        {
+          // Navigation Tabs and Mailbox shortcut
+        }
         <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto md:ml-auto">
-          {/* Scrollable tabs mobiilissa, jos ei mahdu */}
           <div className="flex bg-panel p-1 rounded-sm border border-border h-fit overflow-x-auto custom-scrollbar flex-1 md:flex-none">
             {(["buy", "sell", "my_listings"] as MarketTab[]).map((t) => (
               <button
@@ -223,12 +225,16 @@ export default function MarketplaceView() {
         </div>
       </div>
 
-      {/* FILTER & SEARCH BAR */}
+      {
+        // Marketplace Controls Section (Filters and Search)
+      }
       {tab === "buy" && (
         <div className="p-3 md:p-5 border-b border-border/30 bg-panel/20 shrink-0">
           {!selectedItemId && (
             <div className="space-y-3 md:space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-              {/* Kategoriat rullaavat sivuttain */}
+              {
+                // Horizontal category carousel
+              }
               <div className="flex gap-1.5 overflow-x-auto pb-1.5 custom-scrollbar snap-x">
                 {CATEGORIES.map((cat) => (
                   <button
@@ -245,7 +251,9 @@ export default function MarketplaceView() {
                 ))}
               </div>
 
-              {/* SEARCH BAR */}
+              {
+                // Market search bar
+              }
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-tx-muted/50 flex items-center justify-center pointer-events-none">
@@ -294,25 +302,20 @@ export default function MarketplaceView() {
         </div>
       )}
 
-      {/* MAIN CONTENT AREA */}
+      {
+        // Dynamic view rendering based on active tab
+      }
       <div className="flex-1 overflow-hidden relative">
         {tab === "mailbox" && <MailboxView userId={user.uid} />}
-
         {tab === "my_listings" && <MyListingsView userId={user.uid} />}
-
         {tab === "sell" && (
-          <SellForm
-            myUid={user.uid}
-            onComplete={() => {
-              setTab("my_listings");
-            }}
-          />
+          <SellForm myUid={user.uid} onComplete={() => setTab("my_listings")} />
         )}
 
         {tab === "buy" && (
           <div className="h-full overflow-y-auto custom-scrollbar p-3 md:p-4">
             {!selectedItemId && (
-              // Pienempi grid gap ja enemmän kolumneja pikkunäytöillä
+              // Global Catalog Grid: High density for efficient browsing
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
                 {filteredCatalog.map((item) => (
                   <button
@@ -337,9 +340,7 @@ export default function MarketplaceView() {
                     />
                     <div>
                       <div
-                        className={`text-[10px] md:text-xs font-bold leading-tight line-clamp-2 ${
-                          item.color || "text-tx-main"
-                        }`}
+                        className={`text-[10px] md:text-xs font-bold leading-tight line-clamp-2 ${item.color || "text-tx-main"}`}
                       >
                         {item.name}
                       </div>
@@ -363,6 +364,7 @@ export default function MarketplaceView() {
             )}
 
             {selectedItemId && (
+              // Specific Item Listing View: Shows all sellers for the chosen item
               <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div
                   className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4 p-3 md:p-4 bg-accent/5 border border-accent/20 rounded-sm"
@@ -389,7 +391,6 @@ export default function MarketplaceView() {
                   </div>
                 </div>
 
-                {/* Piilotetaan sarakkeiden otsikot mobiilissa, koska ne menevät todennäköisesti sekaisin */}
                 <div className="hidden sm:flex items-center px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
                   <span className="flex-1 text-left">Merchant</span>
                   <span className="w-24 text-right">Amount</span>
@@ -397,7 +398,6 @@ export default function MarketplaceView() {
                   <span className="w-24 text-right">Action</span>
                 </div>
 
-                {/* LISTING ROWS */}
                 <div className="flex flex-col gap-2 md:gap-1">
                   {selectedItemSellers.map((l) => (
                     <ListingRow

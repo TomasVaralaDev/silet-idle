@@ -9,7 +9,11 @@ import type { User } from "firebase/auth";
 
 export const useGameInitialization = (user: User | null) => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const { setState, syncWorldShopWithServer } = useGameStore();
+
+  // KORJAUS 1: Tuodaan myös syncQuestsWithServer storesta!
+  const { setState, syncWorldShopWithServer, syncQuestsWithServer } =
+    useGameStore();
+
   useEffect(() => {
     const initializeGame = async () => {
       console.log(
@@ -50,9 +54,12 @@ export const useGameInitialization = (user: User | null) => {
           setState(savedData);
           console.log("[INIT] Tila asetettu storeen.");
 
-          // 2. Kutsutaan reset-tarkistusta
-          console.log("[INIT] Kutsutaan syncWorldShopWithServer...");
-          syncWorldShopWithServer(serverResetTime); // Uusi nimi täällä
+          // 2. Kutsutaan reset-tarkistuksia
+          console.log("[INIT] Synkronoidaan World Shop ja Daily Quests...");
+          syncWorldShopWithServer(serverResetTime);
+
+          // KORJAUS 2: Kutsutaan questien reset-tarkistusta!
+          syncQuestsWithServer(serverResetTime);
 
           // 3. Offline progress
           const lastSave = savedData.lastTimestamp || Date.now();
@@ -86,6 +93,7 @@ export const useGameInitialization = (user: User | null) => {
     };
 
     initializeGame();
-  }, [user, setState, syncWorldShopWithServer]); // Muista päivittää myös riippuvuus
+  }, [user, setState, syncWorldShopWithServer, syncQuestsWithServer]); // KORJAUS 3: Lisätty riippuvuuksiin
+
   return { isDataLoaded };
 };

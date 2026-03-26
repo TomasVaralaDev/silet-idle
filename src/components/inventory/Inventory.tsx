@@ -51,7 +51,7 @@ export default function Inventory({ onSellClick }: Props) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative bg-app-base text-left">
-      {/* MOBIILI TABS: Emojit korvattu ikoneilla */}
+      {/* MOBIILI TABS */}
       <div className="md:hidden flex p-2 bg-panel border-b border-border gap-2 shrink-0">
         <button
           onClick={() => setMobileTab("bag")}
@@ -85,17 +85,21 @@ export default function Inventory({ onSellClick }: Props) {
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row h-full gap-4 md:gap-6 p-2 md:p-6 overflow-hidden relative">
-        {/* VASEN SARAKE */}
+      {/* PÄÄSÄILIÖ: 
+        Mobiilissa ja tableteilla (alle lg) asettelu on flex-col ja sivu rullaa pystysuunnassa.
+        Työpöydällä (lg ja yli) asettelu on flex-row ja sivu ei rullaa kokonaisuutena.
+      */}
+      <div className="flex flex-col lg:flex-row h-full gap-4 lg:gap-6 p-2 lg:p-6 overflow-y-auto lg:overflow-hidden relative custom-scrollbar">
+        {/* VASEN SARAKE / YLÄOSA TABLETILLA */}
         <div
-          className={`w-full md:w-1/3 flex flex-col gap-4 overflow-y-auto custom-scrollbar shrink-0 pb-20 md:pb-0 ${
-            mobileTab === "gear" ? "block" : "hidden md:flex"
+          className={`w-full lg:w-1/3 flex flex-col gap-4 shrink-0 pb-4 lg:pb-0 overflow-y-visible lg:overflow-y-auto custom-scrollbar ${
+            mobileTab === "gear" ? "flex" : "hidden md:flex"
           }`}
         >
           <EquipmentPanel />
 
           {selectedItem && (
-            <div className="hidden md:block animate-in slide-in-from-left-4 duration-200">
+            <div className="hidden lg:block animate-in slide-in-from-left-4 duration-200">
               <ItemDetails
                 item={selectedItem}
                 onClose={() => setSelectedItem(null)}
@@ -108,10 +112,11 @@ export default function Inventory({ onSellClick }: Props) {
           <StatsPanel />
         </div>
 
-        {/* OIKEA SARAKE */}
+        {/* OIKEA SARAKE / ALAOSA TABLETILLA */}
+        {/* Laitetaan minimikorkeus tablettia varten (min-h-[60vh]), jotta grid ei puristu kasaan */}
         <div
-          className={`w-full md:w-2/3 h-full overflow-hidden flex flex-col bg-panel border border-border rounded-xl shadow-lg relative ${
-            mobileTab === "bag" ? "block" : "hidden md:flex"
+          className={`w-full lg:w-2/3 min-h-[60vh] lg:min-h-0 lg:h-full overflow-hidden flex flex-col bg-panel border border-border rounded-xl shadow-lg relative shrink-0 lg:shrink ${
+            mobileTab === "bag" ? "flex" : "hidden md:flex"
           }`}
         >
           <InventoryControls
@@ -132,9 +137,9 @@ export default function Inventory({ onSellClick }: Props) {
         </div>
       </div>
 
-      {/* MOBIILI POPUP */}
+      {/* MOBIILI / TABLETTI POPUP */}
       {selectedItem && (
-        <div className="md:hidden fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+        <div className="lg:hidden fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-base/80 backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => setSelectedItem(null)}

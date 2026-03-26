@@ -21,9 +21,9 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-panel/80 backdrop-blur-sm border-l border-border">
+    <div className="flex flex-col h-full bg-panel/80 backdrop-blur-sm border-t lg:border-t-0 lg:border-l border-border">
       {/* HEADER */}
-      <div className="p-4 border-b border-border flex items-center justify-between bg-panel/90 shadow-sm z-10">
+      <div className="p-3 md:p-4 border-b border-border flex items-center justify-between bg-panel/90 shadow-sm z-10">
         <div className="flex flex-col text-left">
           <span className="text-[10px] font-black uppercase tracking-widest text-success">
             Zones
@@ -33,8 +33,8 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 bg-app-base/50 px-2 py-1 rounded-lg border border-border">
-          <span className="text-[9px] text-tx-muted uppercase font-black tracking-wider">
+        <div className="flex items-center gap-2 bg-app-base/50 px-2 py-1.5 rounded-lg border border-border">
+          <span className="text-[8px] md:text-[9px] text-tx-muted uppercase font-black tracking-wider">
             Auto push
           </span>
           <button
@@ -82,7 +82,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
               }
               disabled={isLocked}
               className={`
-                w-full p-4 border-b border-border/50 text-left transition-all duration-200 group relative
+                w-full p-3 md:p-4 border-b border-border/50 text-left transition-all duration-200 group relative
                 ${
                   isActive
                     ? "bg-success/10 border-l-4 border-l-success"
@@ -95,7 +95,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0 pr-2">
                   <div
-                    className={`text-sm font-bold mb-0.5 flex items-center gap-2 ${
+                    className={`text-xs md:text-sm font-bold mb-0.5 flex items-center gap-1.5 md:gap-2 ${
                       isActive
                         ? "text-tx-main"
                         : isLocked
@@ -106,7 +106,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                     <span className="truncate">{map.name}</span>
                     {map.isBoss && (
                       <span
-                        className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${
+                        className={`flex items-center gap-1 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded border ${
                           keyCount > 0
                             ? "bg-warning/20 text-warning border-warning/30"
                             : "bg-panel border-border text-tx-muted"
@@ -121,7 +121,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-tx-muted font-mono flex flex-wrap items-center gap-1">
+                  <div className="text-[9px] md:text-[10px] text-tx-muted font-mono flex flex-wrap items-center gap-1">
                     <span
                       className={`px-1 rounded border ${
                         isActive
@@ -143,7 +143,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
 
                 <div
                   className={`
-                    w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all
+                    w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all
                     ${
                       isActive
                         ? "bg-panel border-success/30 shadow-[0_0_10px_rgb(var(--color-success)/0.2)]"
@@ -156,19 +156,19 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                   {isProgressionLocked ? (
                     <img
                       src="/assets/ui/icon_locked.png"
-                      className="w-4 h-4 object-contain pixelated opacity-30"
+                      className="w-3.5 h-3.5 md:w-4 md:h-4 object-contain pixelated opacity-30"
                       alt="Locked"
                     />
                   ) : map.isBoss && !hasKey ? (
                     <img
                       src={keyImage}
-                      className="w-5 h-5 object-contain pixelated animate-pulse"
+                      className="w-4 h-4 md:w-5 md:h-5 object-contain pixelated animate-pulse"
                       alt="Key Needed"
                     />
                   ) : map.image ? (
                     <img
                       src={map.image}
-                      className={`w-5 h-5 object-contain transition-all ${
+                      className={`w-4 h-4 md:w-5 md:h-5 object-contain transition-all ${
                         isActive
                           ? "opacity-100 scale-110"
                           : "opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-80"
@@ -178,7 +178,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                   ) : (
                     <img
                       src="/assets/ui/icon_battle.png"
-                      className="w-5 h-5 object-contain pixelated opacity-30"
+                      className="w-4 h-4 md:w-5 md:h-5 object-contain pixelated opacity-30"
                       alt="Battle"
                     />
                   )}

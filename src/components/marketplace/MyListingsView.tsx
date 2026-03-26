@@ -29,8 +29,8 @@ export default function MyListingsView({ userId }: Props) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="text-accent animate-pulse font-mono text-sm uppercase tracking-widest">
+      <div className="flex justify-center items-center h-full p-6">
+        <div className="text-accent animate-pulse font-mono text-[10px] md:text-sm uppercase tracking-widest text-center">
           Loading your listings...
         </div>
       </div>
@@ -39,13 +39,13 @@ export default function MyListingsView({ userId }: Props) {
 
   if (listings.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 h-full">
+      <div className="flex flex-col items-center justify-center py-10 md:py-20 h-full px-4">
         <img
           src="/assets/ui/icon_market.png"
-          className="w-20 h-20 pixelated opacity-10 mb-6 grayscale"
+          className="w-16 h-16 md:w-20 md:h-20 pixelated opacity-10 mb-4 md:mb-6 grayscale"
           alt="No listings"
         />
-        <p className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-tx-muted/40">
+        <p className="text-[9px] md:text-[10px] font-black font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] text-tx-muted/40 text-center">
           You have no active listings.
         </p>
       </div>
@@ -53,16 +53,15 @@ export default function MyListingsView({ userId }: Props) {
   }
 
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="max-w-3xl mx-auto flex flex-col gap-1">
-        <div className="flex items-center px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
-          <span className="flex-1 text-left">Item</span>
-          <span className="hidden md:flex flex-col flex-1 text-left">
-            Status
-          </span>
-          <span className="flex flex-col items-end w-32 shrink-0 pr-4">
-            Total Price
-          </span>
+    // Pienennetty paddingia mobiilissa (p-2 md:p-4)
+    <div className="h-full overflow-y-auto custom-scrollbar p-2 md:p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      {/* Kasvatettu mobiilissa rivien välistä gappia (gap-2), koska ne ovat nyt "kortteja" */}
+      <div className="max-w-3xl mx-auto flex flex-col gap-2 sm:gap-1">
+        {/* PIILOTETAAN OTSIKOT MOBIILISSA (hidden sm:flex) JA KORJATTU LEVEYDET MATCHAMAAN LISTINGROWTA */}
+        <div className="hidden sm:flex items-center gap-4 px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
+          <span className="w-48 text-left">Item</span>
+          <span className="flex-1 text-left">Status</span>
+          <span className="w-32 text-right">Total Price</span>
           <span className="w-24 text-right">Action</span>
         </div>
 

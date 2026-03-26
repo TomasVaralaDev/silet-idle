@@ -5,12 +5,11 @@ import { getItemById } from "../../utils/itemUtils";
 import ListingRow from "./ListingRow";
 import SellForm from "./SellForm";
 import MailboxView from "./MailboxView";
-import MyListingsView from "./MyListingsView"; // UUSI IMPORTTI TÄÄLLÄ
+import MyListingsView from "./MyListingsView";
 import type { MarketListing } from "../../types";
 
 import { useTooltipStore } from "../../store/useToolTipStore";
 
-// TYYPPIÄ PÄIVITETTY
 type MarketTab = "buy" | "sell" | "my_listings" | "mailbox";
 
 const CATEGORIES = [
@@ -156,31 +155,35 @@ export default function MarketplaceView() {
 
   return (
     <div className="flex flex-col h-full bg-app-base/80 font-sans overflow-hidden">
-      {/* HEADER */}
-      <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
-        <div
-          className={`w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0`}
-        >
-          <img
-            src="/assets/ui/icon_market.png"
-            className="w-10 h-10 pixelated object-contain"
-            alt="Marketplace"
-          />
-        </div>
-        <div className="flex-1 text-left">
-          <h1
-            className={`text-3xl font-black uppercase tracking-widest text-accent mb-1`}
+      {/* HEADER: Mobiilissa allekkain (flex-col), työpöydällä vierekkäin (md:flex-row) */}
+      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
+        {/* Title area */}
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div
+            className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0`}
           >
-            Marketplace
-          </h1>
-          <p className="text-tx-muted text-sm font-medium">
-            Global Marketplace for adventurers.
-          </p>
+            <img
+              src="/assets/ui/icon_market.png"
+              className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
+              alt="Marketplace"
+            />
+          </div>
+          <div className="flex-1 text-left">
+            <h1
+              className={`text-xl md:text-3xl font-black uppercase tracking-widest text-accent mb-0.5 md:mb-1`}
+            >
+              Marketplace
+            </h1>
+            <p className="text-tx-muted text-[10px] md:text-sm font-medium">
+              Global Marketplace for adventurers.
+            </p>
+          </div>
         </div>
 
-        {/* TABS & MAILBOX BUTTON */}
-        <div className="flex items-center gap-4">
-          <div className="flex bg-panel p-1 rounded-sm border border-border h-fit">
+        {/* TABS & MAILBOX BUTTON: Mobiilissa levittyy koko leveydelle */}
+        <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto md:ml-auto">
+          {/* Scrollable tabs mobiilissa, jos ei mahdu */}
+          <div className="flex bg-panel p-1 rounded-sm border border-border h-fit overflow-x-auto custom-scrollbar flex-1 md:flex-none">
             {(["buy", "sell", "my_listings"] as MarketTab[]).map((t) => (
               <button
                 key={t}
@@ -188,7 +191,7 @@ export default function MarketplaceView() {
                   setTab(t);
                   setSelectedItemId(null);
                 }}
-                className={`px-4 py-1.5 text-[10px] font-bold uppercase transition-all ${
+                className={`px-3 md:px-4 py-1.5 text-[10px] font-bold uppercase transition-all whitespace-nowrap flex-1 md:flex-none ${
                   tab === t
                     ? "bg-accent text-white shadow-[0_0_15px_rgb(var(--color-accent)/0.3)]"
                     : "text-tx-muted hover:text-tx-main"
@@ -204,12 +207,12 @@ export default function MarketplaceView() {
               setTab("mailbox");
               setSelectedItemId(null);
             }}
-            className="relative flex items-center justify-center transition-all group"
+            className="relative flex items-center justify-center transition-all group shrink-0"
             title="Mailbox"
           >
             <img
               src="/assets/ui/icon_mail.png"
-              className={`w-10 h-10 pixelated transition-all ${
+              className={`w-8 h-8 md:w-10 md:h-10 pixelated transition-all ${
                 tab === "mailbox"
                   ? "brightness-125 scale-110"
                   : "brightness-50 opacity-60 group-hover:opacity-100 group-hover:brightness-100"
@@ -222,15 +225,16 @@ export default function MarketplaceView() {
 
       {/* FILTER & SEARCH BAR */}
       {tab === "buy" && (
-        <div className="p-5 border-b border-border/30 bg-panel/20 shrink-0">
+        <div className="p-3 md:p-5 border-b border-border/30 bg-panel/20 shrink-0">
           {!selectedItemId && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+            <div className="space-y-3 md:space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              {/* Kategoriat rullaavat sivuttain */}
+              <div className="flex gap-1.5 overflow-x-auto pb-1.5 custom-scrollbar snap-x">
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
-                    className={`px-4 py-1.5 rounded-sm text-[9px] font-bold uppercase border transition-all shrink-0 ${
+                    className={`px-3 py-1.5 rounded-sm text-[9px] font-bold uppercase border transition-all shrink-0 snap-start ${
                       activeCategory === cat.id
                         ? "border-accent text-accent bg-accent/10"
                         : "border-border text-tx-muted hover:border-border-hover"
@@ -271,7 +275,7 @@ export default function MarketplaceView() {
                 <button
                   onClick={() => fetchListings(true)}
                   disabled={loading}
-                  className="px-4 bg-panel border border-border text-accent text-[10px] font-bold uppercase hover:bg-panel-hover transition-colors disabled:opacity-50"
+                  className="px-4 bg-panel border border-border text-accent text-[10px] font-bold uppercase hover:bg-panel-hover transition-colors disabled:opacity-50 shrink-0"
                 >
                   {loading ? "..." : "⟳"}
                 </button>
@@ -294,22 +298,22 @@ export default function MarketplaceView() {
       <div className="flex-1 overflow-hidden relative">
         {tab === "mailbox" && <MailboxView userId={user.uid} />}
 
-        {/* UUSI VÄLILEHTI RENDERÖIDÄÄN TÄSSÄ */}
         {tab === "my_listings" && <MyListingsView userId={user.uid} />}
 
         {tab === "sell" && (
           <SellForm
             myUid={user.uid}
             onComplete={() => {
-              setTab("my_listings"); // Ohjataan suoraan "My Listings" -lehdelle, jotta myyjä näkee ilmoituksensa onnistuneen!
+              setTab("my_listings");
             }}
           />
         )}
 
         {tab === "buy" && (
-          <div className="h-full overflow-y-auto custom-scrollbar p-4">
+          <div className="h-full overflow-y-auto custom-scrollbar p-3 md:p-4">
             {!selectedItemId && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              // Pienempi grid gap ja enemmän kolumneja pikkunäytöillä
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
                 {filteredCatalog.map((item) => (
                   <button
                     key={item.id}
@@ -324,31 +328,31 @@ export default function MarketplaceView() {
                       showTooltip(item.id, e.clientX, e.clientY)
                     }
                     onMouseLeave={hideTooltip}
-                    className="group relative bg-panel/40 border border-border p-4 rounded-sm hover:border-accent/50 hover:bg-panel/60 transition-all flex flex-col items-center text-center gap-3"
+                    className="group relative bg-panel/40 border border-border p-3 md:p-4 rounded-sm hover:border-accent/50 hover:bg-panel/60 transition-all flex flex-col items-center text-center gap-2 md:gap-3"
                   >
                     <img
                       src={item.icon}
-                      className="w-12 h-12 pixelated group-hover:scale-110 transition-transform duration-300"
+                      className="w-10 h-10 md:w-12 md:h-12 pixelated group-hover:scale-110 transition-transform duration-300"
                       alt=""
                     />
                     <div>
                       <div
-                        className={`text-xs font-bold leading-tight ${
+                        className={`text-[10px] md:text-xs font-bold leading-tight line-clamp-2 ${
                           item.color || "text-tx-main"
                         }`}
                       >
                         {item.name}
                       </div>
-                      <div className="text-[9px] text-tx-muted font-mono mt-1 uppercase tracking-tighter">
+                      <div className="text-[8px] md:text-[9px] text-tx-muted font-mono mt-1 uppercase tracking-tighter">
                         {item.listingCount} Sellers • {item.totalAvailable} Qty
                       </div>
                     </div>
                     <div className="mt-auto pt-2 w-full border-t border-border/50">
-                      <div className="text-[10px] text-warning font-bold font-mono flex items-center justify-center gap-1">
+                      <div className="text-[9px] md:text-[10px] text-warning font-bold font-mono flex items-center justify-center gap-1 truncate">
                         <span>From {item.lowestPrice.toLocaleString()}</span>
                         <img
                           src="/assets/ui/coins.png"
-                          className="w-3 h-3 pixelated inline-block"
+                          className="w-3 h-3 pixelated inline-block shrink-0"
                           alt="coins"
                         />
                       </div>
@@ -361,7 +365,7 @@ export default function MarketplaceView() {
             {selectedItemId && (
               <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div
-                  className="flex items-center gap-4 mb-4 p-4 bg-accent/5 border border-accent/20 rounded-sm"
+                  className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4 p-3 md:p-4 bg-accent/5 border border-accent/20 rounded-sm"
                   onMouseEnter={(e) =>
                     showTooltip(selectedItemId, e.clientX, e.clientY)
                   }
@@ -372,45 +376,49 @@ export default function MarketplaceView() {
                 >
                   <img
                     src={getItemById(selectedItemId)?.icon}
-                    className="w-12 h-12 pixelated shadow-lg"
+                    className="w-10 h-10 md:w-12 md:h-12 pixelated shadow-lg shrink-0"
                     alt=""
                   />
-                  <div className="text-left">
-                    <h3 className="text-xl font-bold text-tx-main tracking-tight">
+                  <div className="text-left min-w-0">
+                    <h3 className="text-base md:text-xl font-bold text-tx-main tracking-tight truncate">
                       {getItemById(selectedItemId)?.name}
                     </h3>
-                    <p className="text-[10px] text-tx-muted uppercase font-mono tracking-widest">
+                    <p className="text-[9px] md:text-[10px] text-tx-muted uppercase font-mono tracking-widest">
                       For sale
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
+                {/* Piilotetaan sarakkeiden otsikot mobiilissa, koska ne menevät todennäköisesti sekaisin */}
+                <div className="hidden sm:flex items-center px-4 py-2 text-[9px] font-bold text-tx-muted uppercase tracking-widest border-b border-border/50">
                   <span className="flex-1 text-left">Merchant</span>
                   <span className="w-24 text-right">Amount</span>
                   <span className="w-32 text-right pr-4">Unit Price</span>
                   <span className="w-24 text-right">Action</span>
                 </div>
 
-                {selectedItemSellers.map((l) => (
-                  <ListingRow
-                    key={l.id}
-                    listing={l}
-                    myUid={user.uid}
-                    onPurchase={() => fetchListings(true)}
-                  />
-                ))}
+                {/* LISTING ROWS */}
+                <div className="flex flex-col gap-2 md:gap-1">
+                  {selectedItemSellers.map((l) => (
+                    <ListingRow
+                      key={l.id}
+                      listing={l}
+                      myUid={user.uid}
+                      onPurchase={() => fetchListings(true)}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
             {!loading && filteredCatalog.length === 0 && !selectedItemId && (
-              <div className="flex flex-col items-center justify-center py-20">
+              <div className="flex flex-col items-center justify-center py-10 md:py-20">
                 <img
                   src="/assets/ui/icon_market.png"
-                  className="w-20 h-20 pixelated opacity-10 mb-6 grayscale"
+                  className="w-16 h-16 md:w-20 md:h-20 pixelated opacity-10 mb-4 md:mb-6 grayscale"
                   alt="No signals"
                 />
-                <p className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-tx-muted/40">
+                <p className="text-[9px] md:text-[10px] font-black font-mono uppercase tracking-[0.2em] md:tracking-[0.3em] text-tx-muted/40 text-center">
                   No items for sale.
                 </p>
               </div>

@@ -7,7 +7,6 @@ export default function EquipmentPanel() {
   const equipment = useGameStore((state) => state.equipment);
   const unequipItem = useGameStore((state) => state.unequipItem);
 
-  // Apufunktio kirkkaan alareunan palkin värin hakemiseen
   const getIndicatorClass = (rarity?: string) => {
     switch (rarity) {
       case "legendary":
@@ -61,13 +60,11 @@ export default function EquipmentPanel() {
               alt={item.name}
               className={`${iconSize} pixelated drop-shadow-[0_0_8px_rgba(0,0,0,0.5)] group-hover:scale-110 transition-transform z-10`}
             />
-            {/* KORJATTU: Rarity Indicator kirkkaalla värillä ja hehkulla */}
             <div
               className={`absolute bottom-0 inset-x-0 h-1.5 rounded-b-xl opacity-90 ${getIndicatorClass(
                 item.rarity,
               )}`}
             />
-            {/* Hover Remove Overlay */}
             <div className="absolute inset-0 bg-danger/10 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center transition-opacity z-20">
               <span className="text-[7px] font-black uppercase text-danger bg-panel px-1.5 py-0.5 rounded border border-danger/30">
                 Remove
@@ -80,7 +77,8 @@ export default function EquipmentPanel() {
   };
 
   return (
-    <div className="bg-panel border border-border rounded-xl p-5 flex flex-col items-center shadow-inner h-full">
+    // MUUTETTU: Poistettu 'h-full', lisätty 'shrink-0' jotta ei puristu kasaan
+    <div className="bg-panel border border-border rounded-xl p-5 flex flex-col items-center shadow-inner shrink-0">
       <div className="w-full flex justify-between items-center mb-6 border-b border-border pb-2">
         <h3 className="text-xs font-black text-tx-muted uppercase tracking-widest">
           Active Loadout

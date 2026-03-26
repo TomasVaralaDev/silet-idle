@@ -7,7 +7,7 @@ interface Props {
 
 export default function WorldSelector({ selectedWorld, onSelectWorld }: Props) {
   return (
-    <div className="w-20 flex flex-col gap-2 overflow-y-auto custom-scrollbar bg-app-base border-r border-border p-2 shrink-0">
+    <div className="w-full lg:w-20 h-20 lg:h-full flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto custom-scrollbar bg-app-base lg:border-r border-b lg:border-b-0 border-border p-2 shrink-0 items-center lg:items-stretch">
       {Object.entries(WORLD_INFO).map(([idStr, info]) => {
         const id = parseInt(idStr);
         const isSelected = selectedWorld === id;
@@ -17,7 +17,7 @@ export default function WorldSelector({ selectedWorld, onSelectWorld }: Props) {
             key={id}
             onClick={() => onSelectWorld(id)}
             className={`
-              w-full aspect-square rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden group
+              h-full lg:w-full lg:h-auto aspect-square shrink-0 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden group
               ${
                 isSelected
                   ? "border-success shadow-[0_0_15px_rgb(var(--color-success)/0.4)] scale-[1.02]"
@@ -32,7 +32,7 @@ export default function WorldSelector({ selectedWorld, onSelectWorld }: Props) {
               style={{ backgroundImage: `url(${info.image})` }}
             />
 
-            {/* Overlay - Käytetään app-base väriä tummennukseen jotta se sulaa teemaan paremmin */}
+            {/* Overlay */}
             <div
               className={`absolute inset-0 bg-app-base/60 group-hover:bg-app-base/30 transition-colors ${
                 isSelected ? "bg-app-base/20" : ""
@@ -49,7 +49,7 @@ export default function WorldSelector({ selectedWorld, onSelectWorld }: Props) {
 
             {/* Valinta-indikaattori alareunassa */}
             {isSelected && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-success animate-in fade-in slide-in-from-bottom-1" />
+              <div className="absolute bottom-0 left-0 right-0 h-1.5 lg:h-1 bg-success animate-in fade-in slide-in-from-bottom-1" />
             )}
           </button>
         );

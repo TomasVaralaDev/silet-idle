@@ -67,7 +67,6 @@ export default function StatsPanel() {
       (baseStats.weaponBase + 0.5 * baseStats.mainStat) *
       (1 + baseStats.bonusDamage);
 
-    // KÄYTETÄÄN LOGIIKKA-FUNKTIOTA COMBAT POWERIN LASKENTAAN
     const combatPower = calculateCombatPower({
       maxHit,
       attackSpeed: baseStats.attackSpeed,
@@ -96,9 +95,9 @@ export default function StatsPanel() {
   );
 
   return (
-    <div className="bg-panel border border-border rounded-xl flex flex-col shadow-2xl overflow-hidden h-full">
+    <div className="bg-panel border border-border rounded-xl flex flex-col shadow-2xl overflow-hidden shrink-0">
       {/* HEADER WITH COMBAT POWER */}
-      <div className="p-4 border-b border-border bg-app-base/30 flex justify-between items-center">
+      <div className="p-4 border-b border-border bg-app-base/30 flex justify-between items-center shrink-0">
         <div>
           <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em]">
             Combat Stats
@@ -111,14 +110,13 @@ export default function StatsPanel() {
           <div className="text-[9px] font-bold text-tx-muted uppercase mb-1">
             Combat Power
           </div>
-          {/* Poistettu: drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] */}
           <div className="text-xl font-black text-warning leading-none">
             {formatNumber(playerCombatStats.combatPower)}
           </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-6 overflow-y-auto custom-scrollbar">
+      <div className="p-4 space-y-6">
         {/* OFFENSIVE SECTION */}
         <section>
           <h4 className="text-[9px] font-black text-warning uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -129,25 +127,25 @@ export default function StatsPanel() {
             <StatBox
               label="Damage"
               value={`${playerCombatStats.minHit}-${playerCombatStats.maxHit}`}
-              icon="⚔️"
+              icon="/assets/ui/icon_damage.png"
               color="text-warning"
             />
             <StatBox
               label="Attack Speed"
               value={formatAttackSpeed(playerCombatStats.attackSpeed)}
-              icon="⚡"
+              icon="/assets/ui/icon_attackspeed.png"
               color="text-accent"
             />
             <StatBox
               label="Crit Chance"
               value={`${(playerCombatStats.critChance * 100).toFixed(1)}%`}
-              icon="🎯"
+              icon="/assets/ui/icon_critchance.png"
               color="text-danger"
             />
             <StatBox
               label="Crit Multi"
               value={`${playerCombatStats.critMultiplier.toFixed(1)}x`}
-              icon="💥"
+              icon="/assets/ui/icon_critmulti.png"
               color="text-danger"
             />
           </div>
@@ -164,18 +162,19 @@ export default function StatsPanel() {
               label="Vitality"
               value={formatNumber(playerCombatStats.maxHp)}
               subValue={`+${playerCombatStats.gearHpBonus} gear`}
-              icon="❤️"
+              icon="/assets/ui/icon_vitality.png"
               color="text-danger"
             />
             <StatBox
               label="Armor"
               value={formatNumber(playerCombatStats.armor)}
               subValue={`${Math.floor((1 - 1 / (1 + playerCombatStats.armor / 100)) * 100)}% reduction`}
-              icon="🛡️"
+              icon="/assets/ui/icon_armorstat.png"
               color="text-accent"
             />
           </div>
         </section>
+
         {/* AUTO-RECOVERY SECTION */}
         <section className="bg-app-base/40 rounded-xl p-3 border border-border/50">
           <div className="flex justify-between items-center mb-3">
@@ -269,8 +268,9 @@ function StatBox({
 }) {
   return (
     <div className="bg-app-base/40 p-2.5 rounded-lg border border-border/40 hover:border-border transition-colors shadow-inner flex flex-col justify-center">
-      <div className="text-[8px] text-tx-muted uppercase font-black mb-1 flex items-center gap-1">
-        <span className="opacity-70">{icon}</span> {label}
+      <div className="text-[8px] text-tx-muted uppercase font-black mb-1 flex items-center gap-1.5">
+        <img src={icon} className="w-3 h-3 pixelated opacity-80" alt={label} />
+        {label}
       </div>
       <div className={`text-sm font-mono font-black ${color}`}>{value}</div>
       {subValue && (

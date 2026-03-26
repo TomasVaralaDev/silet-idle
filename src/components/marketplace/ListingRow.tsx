@@ -23,7 +23,7 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
       emitEvent(
         "success",
         `Acquired ${listing.amount}x ${item?.name}!`,
-        item?.icon
+        item?.icon,
       );
 
       onPurchase();
@@ -37,7 +37,7 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
     if (!isOwn) return;
 
     const confirmCancel = window.confirm(
-      `Do you want to cancel this listing and return ${listing.amount}x ${item?.name} to your storage?`
+      `Do you want to cancel this listing and return ${listing.amount}x ${item?.name} to your storage?`,
     );
 
     if (!confirmCancel) return;
@@ -54,23 +54,36 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
   if (!item) return null;
 
   return (
-    <div className="flex items-center gap-4 py-3 px-4 border-b border-border/30 hover:bg-panel-hover/30 transition-colors group">
+    // Pääcontainer: mobiilissa flex-col (pino), sm-koossa flex-row (rivi)
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-3 px-3 sm:px-4 border-b border-border/30 hover:bg-panel-hover/30 transition-colors group">
       {/* ITEM INFO */}
-      <div className="flex items-center gap-3 w-48 shrink-0 text-left">
-        <div className="relative">
-          <img src={item.icon} className="w-8 h-8 pixelated" alt="" />
-          <span className="absolute -top-1 -right-1 bg-panel text-[8px] font-mono px-1 border border-border text-tx-muted shadow-sm">
+      <div className="flex items-center gap-3 w-full sm:w-48 shrink-0 text-left">
+        <div className="relative shrink-0">
+          <img
+            src={item.icon}
+            className="w-8 h-8 md:w-10 md:h-10 pixelated"
+            alt=""
+          />
+          <span className="absolute -top-1 -right-1 bg-panel text-[8px] font-mono px-1 border border-border text-tx-muted shadow-sm rounded-sm">
             x{listing.amount}
           </span>
         </div>
-        <div className="flex flex-col min-w-0">
-          <span
-            className={`text-sm font-bold truncate ${
-              item.color || "text-tx-main"
-            }`}
-          >
-            {item.name}
-          </span>
+
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center justify-between sm:justify-start gap-2 w-full">
+            <span
+              className={`text-sm md:text-base font-bold truncate ${
+                item.color || "text-tx-main"
+              }`}
+            >
+              {item.name}
+            </span>
+            {/* Myyjän nimi mobiilissa nimen vieressä */}
+            <span className="sm:hidden text-[9px] text-tx-muted italic truncate max-w-[80px]">
+              {isOwn ? "You" : listing.sellerName}
+            </span>
+          </div>
+
           <span className="text-[9px] text-tx-muted font-mono uppercase tracking-tighter flex items-center gap-1">
             Unit: {listing.pricePerItem}{" "}
             <img
@@ -82,50 +95,55 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
         </div>
       </div>
 
-      {/* MERCHANT */}
-      <div className="hidden md:flex flex-col flex-1 text-left">
+      {/* MERCHANT (Vain Desktop) */}
+      <div className="hidden sm:flex flex-col flex-1 text-left min-w-0">
         <span className="text-[9px] text-tx-muted/60 uppercase font-black tracking-widest">
           Merchant
         </span>
-        <span className="text-xs text-tx-muted italic">
+        <span className="text-xs text-tx-muted italic truncate pr-2">
           {isOwn ? "✦ You (Seller)" : listing.sellerName}
         </span>
       </div>
 
-      {/* TOTAL COST */}
-      <div className="flex flex-col items-end w-32 shrink-0">
-        <span className="text-[9px] text-tx-muted/60 uppercase font-black tracking-widest">
-          Total Cost
-        </span>
-        <div className="flex items-center gap-2">
-          <img
-            src="/assets/ui/coins.png"
-            className="w-4 h-4 pixelated"
-            alt=""
-          />
-          <span className="font-mono text-warning font-black tracking-tighter text-base">
-            {listing.totalPrice.toLocaleString()}
+      {/* MOBILE BOTTOM ROW / DESKTOP RIGHT ALIGN */}
+      {/* Mobiilissa luodaan viiva (border-t) erottamaan hinta ja nappi, Desktopissa ei viivaa */}
+      <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-1 sm:mt-0 pt-2 sm:pt-0 border-t border-border/30 sm:border-none">
+        {/* TOTAL COST */}
+        <div className="flex flex-col items-start sm:items-end w-auto sm:w-32 shrink-0">
+          <span className="text-[9px] text-tx-muted/60 uppercase font-black tracking-widest">
+            <span className="hidden sm:inline">Total Cost</span>
+            <span className="sm:hidden">Total</span>
           </span>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <img
+              src="/assets/ui/coins.png"
+              className="w-3.5 h-3.5 md:w-4 md:h-4 pixelated"
+              alt=""
+            />
+            <span className="font-mono text-warning font-black tracking-tighter text-sm md:text-base">
+              {listing.totalPrice.toLocaleString()}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* ACTION BUTTON */}
-      <div className="w-24 flex justify-end">
-        {isOwn ? (
-          <button
-            onClick={handleCancel}
-            className="px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest border border-danger/30 text-danger hover:bg-danger/10 active:scale-95 transition-all"
-          >
-            Cancel
-          </button>
-        ) : (
-          <button
-            onClick={handleBuy}
-            className="px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest bg-accent hover:bg-accent-hover text-white shadow-[0_0_10px_rgb(var(--color-accent)/0.2)] active:scale-95 transition-all"
-          >
-            Acquire
-          </button>
-        )}
+        {/* ACTION BUTTON */}
+        <div className="w-auto sm:w-24 flex justify-end shrink-0">
+          {isOwn ? (
+            <button
+              onClick={handleCancel}
+              className="px-3 md:px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest border border-danger/30 text-danger hover:bg-danger/10 active:scale-95 transition-all"
+            >
+              Cancel
+            </button>
+          ) : (
+            <button
+              onClick={handleBuy}
+              className="px-3 md:px-4 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-widest bg-accent hover:bg-accent-hover text-white shadow-[0_0_10px_rgb(var(--color-accent)/0.2)] active:scale-95 transition-all"
+            >
+              Buy
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

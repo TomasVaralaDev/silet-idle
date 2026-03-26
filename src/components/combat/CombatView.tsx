@@ -28,12 +28,9 @@ export default function CombatView() {
   }, [combatStats.cooldownUntil, now]);
 
   const rawDiff = combatStats.cooldownUntil - now;
-  // HUOM: Poistettu 60000 ms maksimirajoitus, jotta 30s näkyy oikein eikä hyppää,
-  // jos rawDiff on jotain muuta. Max on nyt rawDiff.
   const cooldownLeft = rawDiff > 0 ? rawDiff : 0;
   const isRecovering = cooldownLeft > 0;
 
-  // UUSI: Haetaan rangaistuksen syy storesta
   const isRetreat = combatStats.cooldownReason === "retreat";
 
   const currentMap = combatStats.currentMapId
@@ -59,46 +56,42 @@ export default function CombatView() {
   }
 
   return (
-    <div className="h-full w-full flex bg-app-base overflow-hidden text-tx-main font-sans selection:bg-accent/30 selection:text-accent">
+    // 1. PÄÄCONTAINER: Mobiilissa flex-col (allekkain), lg-koossa flex-row (vierekkäin)
+    <div className="h-full w-full flex flex-col lg:flex-row bg-app-base overflow-y-auto lg:overflow-hidden text-tx-main font-sans selection:bg-accent/30 selection:text-accent custom-scrollbar">
       {/* LEFT: WORLD NAVIGATION */}
+      {/* Wrapperia ei välttämättä tarvita tässä, jos WorldSelector hoitaa oman skaalautuvuutensa, mutta se asettuu nyt mobiilissa ylimmäksi */}
       <WorldSelector
         selectedWorld={selectedWorld}
         onSelectWorld={setSelectedWorld}
       />
 
       {/* CENTER: BATTLE ZONE */}
-      <div className="flex-1 flex flex-col min-w-0 h-full relative">
-        {/* RECOVERY OVERLAY - DYNAMISOITU VETÄYTYMISTÄ VARTEN */}
+      {/* Mobiilissa tämä ottaa tarvitsemansa tilan, lg-koossa se joustaa keskelle (flex-1) */}
+      <div className="flex-1 flex flex-col min-w-0 h-auto lg:h-full relative border-y lg:border-y-0 border-border/50">
+        {/* RECOVERY OVERLAY */}
         {isRecovering && !combatStats.currentMapId && (
           <div className="absolute inset-0 z-[40] bg-app-base/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
-            {/* Spinnerin väri muuttuu syyn mukaan */}
             <div
-              className={`w-20 h-20 mb-6 rounded-full border-4 animate-spin shadow-lg ${
+              className={`w-16 h-16 md:w-20 md:h-20 mb-6 rounded-full border-4 animate-spin shadow-lg ${
                 isRetreat
                   ? "border-warning/20 border-t-warning shadow-warning/20"
                   : "border-danger/20 border-t-danger shadow-danger/20"
               }`}
             />
-
-            {/* Otsikko muuttuu syyn mukaan */}
             <h2
-              className={`text-2xl font-black uppercase tracking-[0.3em] mb-2 ${
+              className={`text-xl md:text-2xl font-black uppercase tracking-[0.3em] mb-2 ${
                 isRetreat ? "text-warning" : "text-danger"
               }`}
             >
               {isRetreat ? "Tactical Retreat" : "Defeated"}
             </h2>
-
-            {/* Teksti muuttuu syyn mukaan */}
-            <p className="text-tx-muted text-sm max-w-xs font-medium italic">
+            <p className="text-tx-muted text-xs md:text-sm max-w-xs font-medium italic">
               {isRetreat
                 ? "Falling back to regroup and catch your breath. Prepare for the next encounter."
                 : "You were defeated in combat. Returning to safety and recovering your strength."}
             </p>
-
-            {/* Laatikon väri muuttuu syyn mukaan */}
             <div
-              className={`mt-6 font-mono text-3xl font-black text-tx-main px-6 py-3 rounded-lg border shadow-2xl ${
+              className={`mt-6 font-mono text-2xl md:text-3xl font-black text-tx-main px-6 py-3 rounded-lg border shadow-2xl ${
                 isRetreat
                   ? "bg-warning/10 border-warning/30"
                   : "bg-danger/10 border-danger/30"
@@ -110,23 +103,27 @@ export default function CombatView() {
         )}
 
         {/* TOP PANEL: ARENA */}
-        <div className="h-[45%] shrink-0 relative bg-panel overflow-hidden border-b border-border shadow-inner">
+        {/* Mobiilissa asetetaan kiinteä minimikorkeus (esim 35vh), lg-koossa ottaa 45% */}
+        <div className="min-h-[35vh] lg:min-h-0 lg:h-[45%] shrink-0 relative bg-panel overflow-hidden border-b border-border shadow-inner">
           <BattleArena selectedWorldId={selectedWorld} />
         </div>
 
         {/* BOTTOM PANEL: LOGS & CONSUMABLES */}
-        <div className="flex-1 min-h-0 bg-app-base flex z-20">
-          <div className="w-1/2 border-r border-border p-5 flex flex-col bg-panel/30">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-4 flex items-center gap-2">
+        {/* Mobiilissa allekkain (flex-col), md-koossa vierekkäin (flex-row) */}
+        <div className="flex-1 min-h-[40vh] lg:min-h-0 bg-app-base flex flex-col md:flex-row z-20">
+          {/* CONSUMABLES (Food) */}
+          <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-border p-3 md:p-5 flex flex-col bg-panel/30">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-2 md:mb-4 flex items-center gap-2 shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               Consumables
             </h3>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-[150px] md:min-h-0">
               <FoodSelector />
             </div>
           </div>
 
-          <div className="w-1/2 flex flex-col bg-app-base">
+          {/* COMBAT LOGS */}
+          <div className="w-full md:w-1/2 flex flex-col bg-app-base min-h-[200px] md:min-h-0">
             <div className="flex-1 overflow-hidden relative">
               <div className="absolute inset-0">
                 <CombatLog />
@@ -137,7 +134,8 @@ export default function CombatView() {
       </div>
 
       {/* RIGHT: ZONE SELECTOR */}
-      <div className="w-80 flex-shrink-0 border-l border-border bg-panel/80 backdrop-blur-sm z-20 flex flex-col">
+      {/* Mobiilissa tämä ottaa koko leveyden (w-full) ja menee alimmaiseksi, työpöydällä se on oikeassa reunassa (lg:w-80) */}
+      <div className="w-full lg:w-80 flex-shrink-0 lg:border-l border-border bg-panel/80 backdrop-blur-sm z-20 flex flex-col h-auto lg:h-full">
         <ZoneSelector selectedWorldId={selectedWorld} />
       </div>
     </div>

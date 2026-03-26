@@ -14,8 +14,10 @@ export default function AchievementCard({
   isUnlocked,
   isClaimed,
 }: Props) {
+  // Hook to access the achievement claim logic from the store
   const claimAchievement = useGameStore((state) => state.claimAchievement);
 
+  // Helper to determine if the achievement has any associated rewards
   const hasRewards =
     achievement.rewards &&
     (achievement.rewards.coins ||
@@ -35,7 +37,9 @@ export default function AchievementCard({
         }`}
     >
       <div className="flex items-center gap-4 w-full sm:w-auto flex-1">
-        {/* Icon Container */}
+        {
+          // Icon Container
+        }
         <div
           className={`p-2 md:p-3 rounded-xl border shrink-0 relative z-10
           ${
@@ -94,11 +98,15 @@ export default function AchievementCard({
         </div>
       </div>
 
-      {/* PALKINNOT JA LUNASTUSNAPPI */}
+      {
+        // Rewards and Action Section
+      }
       {hasRewards && (
         <div className="w-full sm:w-auto mt-2 sm:mt-0 flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 border-t sm:border-t-0 sm:border-l border-border/50 pt-2 sm:pt-0 sm:pl-4 shrink-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            {/* 1. COINS */}
+            {
+              // 1. COINS
+            }
             {achievement.rewards?.coins && (
               <div
                 className="flex items-center gap-1 bg-app-base px-1.5 py-0.5 rounded border border-border"
@@ -115,28 +123,34 @@ export default function AchievementCard({
               </div>
             )}
 
-            {/* 2. ITEMS */}
-            {achievement.rewards?.items?.map((item) => {
-              const details = getItemDetails(item.itemId);
-              return details ? (
-                <div
-                  key={item.itemId}
-                  className="flex items-center gap-1 bg-app-base px-1.5 py-0.5 rounded border border-border"
-                  title={`${details.name} x${item.amount}`}
-                >
-                  <img
-                    src={details.icon}
-                    className="w-3 h-3 pixelated"
-                    alt={details.name}
-                  />
-                  <span className="text-[9px] font-mono text-tx-main font-bold">
-                    {item.amount}
-                  </span>
-                </div>
-              ) : null;
-            })}
+            {
+              // 2. ITEMS
+            }
+            {achievement.rewards?.items?.map(
+              (item: { itemId: string; amount: number }) => {
+                const details = getItemDetails(item.itemId);
+                return details ? (
+                  <div
+                    key={item.itemId}
+                    className="flex items-center gap-1 bg-app-base px-1.5 py-0.5 rounded border border-border"
+                    title={`${details.name} x${item.amount}`}
+                  >
+                    <img
+                      src={details.icon}
+                      className="w-3 h-3 pixelated"
+                      alt={details.name}
+                    />
+                    <span className="text-[9px] font-mono text-tx-main font-bold">
+                      {item.amount}
+                    </span>
+                  </div>
+                ) : null;
+              },
+            )}
 
-            {/* 3. XP */}
+            {
+              // 3. XP
+            }
             {achievement.rewards?.xpMap && (
               <div
                 className="flex items-center gap-1 bg-app-base px-1.5 py-0.5 rounded border border-border"
@@ -148,7 +162,9 @@ export default function AchievementCard({
               </div>
             )}
 
-            {/* 4. CHAT COLOR */}
+            {
+              // 4. CHAT COLOR
+            }
             {achievement.rewards?.chatColorId &&
               (() => {
                 const colorObj = CHAT_COLORS.find(
@@ -181,7 +197,9 @@ export default function AchievementCard({
               })()}
           </div>
 
-          {/* CLAIM NAPPI */}
+          {
+            // Claim button - Visible only when achievement is completed but not claimed
+          }
           {isUnlocked && !isClaimed && (
             <button
               onClick={() => claimAchievement(achievement.id)}

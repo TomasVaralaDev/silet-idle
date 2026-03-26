@@ -4,6 +4,7 @@ import { ACHIEVEMENTS } from "../../data/achievements";
 import AchievementCard from "./AchievementCard";
 import type { AchievementCategory } from "../../types";
 
+// Define filter categories for the milestones view
 const CATEGORIES: { id: AchievementCategory | "all"; label: string }[] = [
   { id: "all", label: "All" },
   { id: "general", label: "General" },
@@ -18,7 +19,7 @@ export default function AchievementsView() {
     AchievementCategory | "all"
   >("all");
 
-  // Haetaan listat storesta, jotta Claim-ominaisuus toimii
+  // Fetch progress lists from the store to handle unlocking and claiming logic
   const unlockedAchievements = useGameStore(
     (state) => state.unlockedAchievements || [],
   );
@@ -26,16 +27,20 @@ export default function AchievementsView() {
     (state) => state.claimedAchievements || [],
   );
 
+  // Filter achievements based on the selected category tab
   const filteredAchievements = ACHIEVEMENTS.filter(
     (ach) => activeCategory === "all" || ach.category === activeCategory,
   );
 
+  // Calculate overall completion progress
   const unlockCount = unlockedAchievements.length;
   const progressPercent = (unlockCount / ACHIEVEMENTS.length) * 100;
 
   return (
     <div className="h-full flex flex-col bg-app-base font-sans overflow-hidden">
-      {/* HEADER - Skaalautuva ja tuttu layout */}
+      {
+        // Header - Branding and total progress overview
+      }
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
         <div
           className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-warning/20 border border-warning/30 shadow-lg shrink-0`}
@@ -67,7 +72,9 @@ export default function AchievementsView() {
         </div>
       </div>
 
-      {/* PROGRESS BAR - Litteä, vanha tyyli */}
+      {
+        // Progress Bar - Visual completion feedback
+      }
       <div className="h-1 bg-panel w-full shrink-0">
         <div
           className={`h-full bg-warning transition-all duration-1000 opacity-80`}
@@ -75,7 +82,9 @@ export default function AchievementsView() {
         ></div>
       </div>
 
-      {/* TABS (Marketplace-tyyli) */}
+      {
+        // Category Tabs - Filter navigation
+      }
       <div className="p-3 md:p-5 border-b border-border/30 bg-panel/20 shrink-0">
         <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
           {CATEGORIES.map((cat) => (
@@ -94,7 +103,9 @@ export default function AchievementsView() {
         </div>
       </div>
 
-      {/* MAIN CONTENT - Grid 3 sarakkeella kuten vanhassa */}
+      {
+        // Main Content - Display filtered achievements in a responsive grid
+      }
       <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-10">
           {filteredAchievements.map((ach) => (
@@ -105,13 +116,15 @@ export default function AchievementsView() {
               <AchievementCard
                 achievement={ach}
                 isUnlocked={unlockedAchievements.includes(ach.id)}
-                isClaimed={claimedAchievements.includes(ach.id)} // Tieto välitetään kortille
+                isClaimed={claimedAchievements.includes(ach.id)}
               />
             </div>
           ))}
         </div>
 
-        {/* EMPTY STATE */}
+        {
+          // Empty State - Shown when no achievements match the filter
+        }
         {filteredAchievements.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-tx-muted/40">
             <span className="text-4xl mb-4 opacity-30">📡</span>

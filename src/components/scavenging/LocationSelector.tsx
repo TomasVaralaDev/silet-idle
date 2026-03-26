@@ -15,14 +15,14 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
   }));
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="hidden md:block p-5 border-b border-border/50 bg-panel/20">
+    <div className="h-full flex flex-col bg-app-base/50">
+      <div className="hidden md:block p-5 border-b border-border/50 bg-panel/30 shadow-sm shrink-0 z-10">
         <h3 className="text-[10px] font-black uppercase text-tx-muted tracking-[0.2em]">
-          Available Worlds
+          Available Sectors
         </h3>
       </div>
 
-      <div className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-hidden md:overflow-y-auto custom-scrollbar p-4 gap-3">
+      <div className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-hidden md:overflow-y-auto custom-scrollbar p-4 md:p-6 gap-4">
         {worlds.map((world) => {
           const requiredMapCompleted = (world.id - 1) * 10;
           const isLocked = combatStats.maxMapCompleted < requiredMapCompleted;
@@ -34,61 +34,83 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
               onClick={() => !isLocked && onSelect(world.id)}
               disabled={isLocked}
               className={`
-                shrink-0 w-48 md:w-full text-left rounded-sm overflow-hidden border transition-all flex flex-col md:flex-row h-24 md:h-20
+                relative shrink-0 w-64 md:w-full text-left rounded-xl overflow-hidden border-2 transition-all h-32 md:h-36 group shadow-lg
                 ${
                   isSelected
-                    ? "border-success bg-success/5"
+                    ? "border-success shadow-success/20 ring-4 ring-success/10 scale-[1.02]"
                     : isLocked
-                      ? "border-border/40 opacity-50 cursor-not-allowed bg-app-base"
-                      : "border-border hover:border-success/50 hover:bg-panel/40 bg-panel/20"
+                      ? "border-border/30 opacity-60 cursor-not-allowed grayscale"
+                      : "border-border hover:border-success/50 hover:scale-[1.01]"
                 }
               `}
             >
-              {/* Kuva */}
-              <div className="h-10 md:h-full w-full md:w-20 bg-app-base relative shrink-0 border-b md:border-b-0 md:border-r border-border/50">
+              {/* Taustakuva */}
+              <div className="absolute inset-0 bg-black">
                 <img
                   src={world.image}
                   alt={world.name}
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-60"} ${isLocked && "grayscale"}`}
+                  className={`w-full h-full object-cover transition-transform duration-700 ${
+                    isSelected
+                      ? "scale-105 opacity-80"
+                      : "opacity-40 group-hover:opacity-60 group-hover:scale-105"
+                  }`}
                 />
-                <div className="absolute top-1 left-1 bg-app-base/80 backdrop-blur-sm px-1.5 py-0.5 rounded-sm text-[8px] font-mono font-bold text-tx-main border border-border">
-                  W{world.id}
-                </div>
+              </div>
 
-                {isLocked && (
-                  <div className="absolute inset-0 bg-panel/80 flex items-center justify-center backdrop-blur-[1px]">
+              {/* Gradientit paremman luettavuuden takaamiseksi */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+
+              {/* Lukon ikoni */}
+              {isLocked && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] z-20">
+                  <div className="bg-black/80 p-3 rounded-full border border-border/50">
                     <img
                       src="/assets/ui/icon_locked.png"
                       alt="Locked"
-                      /* KORJAUS: Lisätty 'grayscale' luokka alle */
-                      className="w-6 h-6 object-contain rendering-pixelated opacity-80 grayscale"
+                      className="w-8 h-8 object-contain rendering-pixelated opacity-80 grayscale"
                     />
                   </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="p-2 md:p-3 flex-1 flex flex-col justify-center min-w-0">
-                <div
-                  className={`font-black text-[10px] md:text-xs uppercase tracking-tight truncate ${
-                    isSelected
-                      ? "text-success"
-                      : isLocked
-                        ? "text-tx-muted"
-                        : "text-tx-main"
-                  }`}
-                >
-                  {world.name}
                 </div>
-                {isLocked ? (
-                  <div className="text-[8px] text-danger font-mono mt-1 uppercase tracking-tighter">
-                    LOCKED: Complete Zone {(world.id - 1) * 10}
+              )}
+
+              {/* Sisältö */}
+              <div className="relative z-10 h-full flex flex-col p-4">
+                <div className="flex justify-between items-start mb-auto">
+                  <div
+                    className={`px-2 py-0.5 rounded text-[9px] font-mono font-black uppercase tracking-widest border shadow-sm ${
+                      isSelected
+                        ? "bg-success text-black border-success"
+                        : "bg-black/60 text-tx-muted border-border/50"
+                    }`}
+                  >
+                    World {world.id}
                   </div>
-                ) : (
-                  <div className="text-[9px] text-tx-muted truncate mt-0.5 font-medium">
-                    {world.description}
+                </div>
+
+                <div className="mt-auto">
+                  <div
+                    className={`font-black text-lg uppercase tracking-tight drop-shadow-md truncate ${
+                      isSelected
+                        ? "text-success"
+                        : isLocked
+                          ? "text-tx-muted/60"
+                          : "text-white group-hover:text-success/90 transition-colors"
+                    }`}
+                  >
+                    {world.name}
                   </div>
-                )}
+
+                  {isLocked ? (
+                    <div className="text-[10px] text-danger font-mono mt-1 uppercase tracking-widest font-black drop-shadow-md bg-black/50 inline-block px-1.5 rounded">
+                      Unlock: Clear Map {requiredMapCompleted}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-tx-muted/80 truncate mt-0.5 font-medium drop-shadow-md">
+                      {world.description}
+                    </div>
+                  )}
+                </div>
               </div>
             </button>
           );

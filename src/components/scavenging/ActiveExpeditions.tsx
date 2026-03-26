@@ -28,7 +28,7 @@ export default function ActiveExpeditions() {
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
       {scavenger.activeExpeditions.map((exp) => {
         const worldInfo = WORLD_INFO[exp.mapId];
         const elapsed = now - exp.startTime;
@@ -39,65 +39,85 @@ export default function ActiveExpeditions() {
         return (
           <div
             key={exp.id}
-            className={`bg-panel border p-3 md:p-4 rounded-lg relative overflow-hidden group transition-colors ${
-              isFinished ? "border-success/50 bg-success/5" : "border-border"
+            className={`group relative flex flex-col bg-panel border-2 rounded-xl overflow-hidden transition-all duration-300 ${
+              isFinished
+                ? "border-success/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]"
+                : "border-border hover:border-border-hover shadow-lg"
             }`}
           >
-            {/* Progress Bar */}
-            <div
-              className={`absolute bottom-0 left-0 h-1 transition-all duration-1000 ${
-                isFinished ? "bg-success" : "bg-warning"
-              }`}
-              style={{ width: `${progress}%` }}
-            />
+            {/* Taustakuva (Isompi koko ja overlay) */}
+            <div className="h-24 md:h-28 w-full relative overflow-hidden bg-black">
+              {worldInfo?.image && (
+                <img
+                  src={worldInfo.image}
+                  alt=""
+                  className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${
+                    isFinished ? "opacity-60" : "opacity-40"
+                  }`}
+                />
+              )}
+              {/* Gradientit tekstin luettavuutta varten */}
+              <div className="absolute inset-0 bg-gradient-to-t from-panel via-panel/40 to-transparent" />
 
-            <div className="flex justify-between items-center mb-2 relative z-10">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded bg-app-base border border-border-hover overflow-hidden shrink-0">
-                  {worldInfo?.image && (
-                    <img
-                      src={worldInfo.image}
-                      className="w-full h-full object-cover opacity-80"
-                      alt=""
-                    />
-                  )}
-                </div>
+              {/* Tekstit kuvan päällä */}
+              <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end">
                 <div>
-                  <div className="font-bold text-xs md:text-sm text-tx-main line-clamp-1">
+                  <div className="text-[10px] text-tx-muted uppercase font-black tracking-widest mb-0.5">
+                    Sector Explorer
+                  </div>
+                  <div className="font-black text-lg md:text-xl text-white uppercase tracking-tight drop-shadow-md">
                     {worldInfo?.name || `World ${exp.mapId}`}
                   </div>
-                  <div className="text-[9px] md:text-[10px] text-tx-muted uppercase font-black tracking-tighter">
-                    Active Expedition
-                  </div>
                 </div>
-              </div>
-              <div className="text-right shrink-0 ml-2">
-                <div
-                  className={`font-mono text-xs md:text-sm font-bold ${
-                    isFinished ? "text-success" : "text-warning"
-                  }`}
-                >
-                  {isFinished ? "COMPLETED" : formatRemainingTime(timeLeft)}
+
+                <div className="text-right">
+                  <div
+                    className={`font-mono text-sm md:text-base font-black tracking-tighter drop-shadow-md ${
+                      isFinished ? "text-success animate-pulse" : "text-warning"
+                    }`}
+                  >
+                    {isFinished ? "COMPLETED" : formatRemainingTime(timeLeft)}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 mt-2 md:mt-3 relative z-10">
-              {!isFinished ? (
-                <button
-                  onClick={() => cancelExpedition(exp.id)}
-                  className="px-3 py-1.5 md:py-1 bg-danger/10 hover:bg-danger/20 text-danger text-[9px] md:text-[10px] font-bold uppercase rounded border border-danger/30 transition-colors"
-                >
-                  Abort
-                </button>
-              ) : (
-                <button
-                  onClick={() => claimExpedition(exp.id)}
-                  className="w-full md:w-auto px-4 py-2 md:py-1.5 bg-success hover:bg-success/80 text-white text-[10px] md:text-xs font-bold rounded shadow-lg shadow-success/20 animate-pulse uppercase tracking-wider"
-                >
-                  Collect Rewards
-                </button>
-              )}
+            {/* Sisältöalue (Napit ja edistyminen) */}
+            <div className="p-4 bg-panel/80 backdrop-blur-sm relative z-10">
+              <div className="flex justify-between items-center gap-4">
+                {/* Progress prosentti pienenä */}
+                <div className="text-[10px] font-mono font-bold text-tx-muted uppercase">
+                  Progress: {progress.toFixed(0)}%
+                </div>
+
+                <div className="flex gap-2">
+                  {!isFinished ? (
+                    <button
+                      onClick={() => cancelExpedition(exp.id)}
+                      className="px-4 py-2 bg-black/40 hover:bg-danger/20 text-danger text-[10px] font-black uppercase rounded border border-danger/30 transition-all active:scale-95"
+                    >
+                      Abort
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => claimExpedition(exp.id)}
+                      className="px-6 py-2 bg-success hover:bg-success/80 text-black text-[11px] font-black rounded shadow-lg shadow-success/20 animate-pulse uppercase tracking-widest transition-all active:scale-95"
+                    >
+                      Collect Rewards
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar (Sijoitettu pohjaan) */}
+            <div className="absolute bottom-0 left-0 w-full h-1.5 bg-black/40">
+              <div
+                className={`h-full transition-all duration-1000 ${
+                  isFinished ? "bg-success" : "bg-warning"
+                } ${!isFinished && "shadow-[0_0_10px_rgba(245,158,11,0.5)]"}`}
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
         );

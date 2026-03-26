@@ -42,7 +42,6 @@ export const getTopPlayersByLevel = async (): Promise<LeaderboardEntry[]> => {
     throw error;
   }
 };
-
 /**
  * Hakee nykyisen pelaajan sijoitustiedot Total Levelin perusteella.
  */

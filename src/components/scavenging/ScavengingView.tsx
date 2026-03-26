@@ -62,8 +62,8 @@ export default function ScavengingView() {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-app-base/30">
-        {/* WORLD SELECTOR */}
-        <div className="w-full md:w-[350px] flex-shrink-0 bg-panel/30 border-b md:border-b-0 md:border-r border-border/50 flex flex-col">
+        {/* WORLD SELECTOR - Levennetty 350 -> 400px työpöydällä jotta kortit loistavat */}
+        <div className="w-full md:w-[400px] flex-shrink-0 bg-panel/30 border-b md:border-b-0 md:border-r border-border/50 flex flex-col z-10 shadow-xl">
           <LocationSelector
             selectedWorldId={selectedWorldId}
             onSelect={setSelectedWorldId}
@@ -71,49 +71,46 @@ export default function ScavengingView() {
         </div>
 
         {/* OIKEA PUOLI: Config & Active */}
-        <div className="flex-1 flex flex-col p-6 min-w-0 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col p-4 md:p-8 min-w-0 overflow-y-auto custom-scrollbar">
           {/* CONFIGURE NEW */}
-          <div className="bg-panel/40 border border-border rounded-sm p-5 mb-8 flex flex-col gap-5">
-            <h2 className="text-xs font-black text-tx-muted uppercase tracking-[0.2em] border-b border-border/50 pb-2">
+          <div className="bg-panel/60 border border-border rounded-xl p-6 mb-8 flex flex-col gap-6 shadow-lg backdrop-blur-sm">
+            <h2 className="text-xs font-black text-tx-muted uppercase tracking-[0.2em] border-b border-border/50 pb-3">
               Prepare Expedition
             </h2>
 
-            <div className="flex flex-col xl:flex-row gap-5">
-              {/* UUSI: Kohde Info Maailman kuvalla */}
+            <div className="flex flex-col xl:flex-row gap-6">
+              {/* Kohde Info Maailman kuvalla */}
               <div
-                className={`relative border border-border rounded-sm flex-1 flex flex-col justify-center overflow-hidden transition-all duration-300 ${selectedWorld ? "h-32 xl:h-auto" : "bg-app-base p-4"}`}
+                className={`relative border border-border rounded-lg flex-1 flex flex-col justify-center overflow-hidden transition-all duration-300 ${selectedWorld ? "h-32 xl:h-auto shadow-inner" : "bg-black/50 p-6"}`}
               >
                 {selectedWorld && (
                   <>
-                    {/* Taustakuva */}
                     <img
                       src={selectedWorld.image}
                       alt=""
                       className="absolute inset-0 w-full h-full object-cover opacity-20 transition-opacity duration-500"
                     />
-                    {/* Tumma overlay luettavuutta varten */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-app-base via-app-base/80 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent"></div>
                   </>
                 )}
 
-                {/* Tekstisisältö */}
                 <div
-                  className={`relative z-10 ${selectedWorld ? "p-4 mt-auto" : ""}`}
+                  className={`relative z-10 ${selectedWorld ? "p-5 mt-auto" : ""}`}
                 >
-                  <div className="text-[9px] uppercase text-tx-muted font-bold tracking-widest mb-1">
+                  <div className="text-[10px] uppercase text-tx-muted font-black tracking-widest mb-1.5 drop-shadow-md">
                     Target Destination
                   </div>
                   <div
-                    className={`text-lg font-black uppercase tracking-tight ${
+                    className={`text-2xl font-black uppercase tracking-tight ${
                       selectedWorld
-                        ? "text-success drop-shadow-[0_2px_3px_rgba(0,0,0,0.8)]"
+                        ? "text-success drop-shadow-[0_2px_4px_rgba(0,0,0,1)]"
                         : "text-tx-muted/40"
                     }`}
                   >
                     {selectedWorld ? selectedWorld.name : "Awaiting Orders..."}
                   </div>
                   {selectedWorld && (
-                    <div className="text-[10px] font-mono text-tx-muted mt-2 inline-block bg-black/50 px-2 py-0.5 rounded-sm border border-border/50">
+                    <div className="text-[10px] font-mono text-tx-muted mt-2 inline-block bg-black/60 px-2 py-0.5 rounded border border-border/50 shadow-sm backdrop-blur-sm">
                       WORLD {selectedWorldId}
                     </div>
                   )}
@@ -121,7 +118,7 @@ export default function ScavengingView() {
               </div>
 
               {/* Slider & Nappi */}
-              <div className="flex-1 flex flex-col gap-3 justify-end">
+              <div className="flex-1 flex flex-col gap-4 justify-end">
                 <DurationSlider value={duration} onChange={setDuration} />
 
                 <button
@@ -132,11 +129,11 @@ export default function ScavengingView() {
                   }
                   disabled={!canStart}
                   className={`
-                    w-full py-3 rounded-sm font-black uppercase tracking-widest text-xs transition-all border
+                    w-full py-4 rounded-lg font-black uppercase tracking-widest text-xs transition-all border-2 shadow-lg
                     ${
                       canStart
-                        ? "bg-success/10 border-success text-success hover:bg-success hover:text-white"
-                        : "bg-panel border-border text-tx-muted/40 cursor-not-allowed"
+                        ? "bg-success/10 border-success text-success hover:bg-success hover:text-black hover:shadow-success/30 hover:scale-[1.01] active:scale-95"
+                        : "bg-panel border-border/50 text-tx-muted/40 cursor-not-allowed"
                     }
                   `}
                 >
@@ -154,7 +151,7 @@ export default function ScavengingView() {
 
           {/* ACTIVE EXPEDITIONS */}
           <div className="flex flex-col flex-1">
-            <h2 className="text-[10px] font-black uppercase text-tx-muted mb-4 tracking-[0.2em] border-b border-border/50 pb-2">
+            <h2 className="text-[11px] font-black uppercase text-tx-muted mb-6 tracking-[0.2em] border-b border-border/50 pb-3">
               Active Scouting Parties
             </h2>
             <ActiveExpeditions />

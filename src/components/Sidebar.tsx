@@ -37,6 +37,7 @@ function NavButton({
 }: NavButtonProps) {
   return (
     <button
+      id={`nav-${view}`}
       onClick={() => onClick(view)}
       className={`
         w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group mb-1 shrink-0

@@ -22,6 +22,7 @@ import UserConfigModal from "./components/modals/UserConfigModal";
 import QuestModal from "./components/quests/QuestModal";
 import Auth from "./components/Auth";
 import DevManager from "./components/DevManager";
+import TutorialOverlay from "./components/TutorialOverlay";
 
 import { Menu, X } from "lucide-react";
 
@@ -101,7 +102,7 @@ export default function App() {
               settings: {
                 ...DEFAULT_STATE.settings,
                 theme: initialTheme,
-                chatColor: "default", // Uusi pelaaja aloittaa aina oletusvärillä
+                chatColor: "default",
               },
             });
             emitEvent(
@@ -243,6 +244,10 @@ export default function App() {
           onSellClick={setSelectedItemForSale}
         />
       </main>
+
+      {/* --- LISÄTTY TUTORIAALI TÄHÄN --- */}
+      <TutorialOverlay />
+
       <SocialOverlay />
       <DevManager />
       <ItemTooltip />

@@ -441,6 +441,7 @@ export interface GameState {
   quests: QuestState;
   worldShop: WorldShopState;
   queue: QueueItem[];
+  tutorial: TutorialState;
 }
 
 export interface QueueItem {
@@ -512,4 +513,11 @@ export interface PremiumShopItem {
   isOneTime?: boolean;
   maxPurchases?: number; // LISÄTTY
   rewards?: PremiumShopRewards; // LISÄTTY
+}
+
+// --- TUTORIAL ---
+export interface TutorialState {
+  step: number;
+  isComplete: boolean;
+  isActive: boolean;
 }

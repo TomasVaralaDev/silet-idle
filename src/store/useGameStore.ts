@@ -9,9 +9,6 @@ import type {
   SkillType,
 } from "../types";
 
-// Poistettu import: ACHIEVEMENTS, calculateXpGain (Nyt ne ovat Slicessä)
-
-// Slices
 import {
   createInventorySlice,
   type InventorySlice,
@@ -36,7 +33,6 @@ import {
   createPremiumShopSlice,
   type PremiumShopSlice,
 } from "./slices/premiumShopSlice";
-// LISÄTTY: Uusi achievement slice
 import {
   createAchievementSlice,
   type AchievementSlice,
@@ -50,7 +46,6 @@ interface RewardModalState {
   rewards: RewardEntry[];
 }
 
-// LISÄTTY: AchievementSlice lisätty listaan
 export type FullStoreState = GameState &
   InventorySlice &
   SkillSlice &
@@ -76,8 +71,10 @@ export type FullStoreState = GameState &
     setOfflineSummary: (summary: OfflineSummary | null) => void;
     openRewardModal: (title: string, rewards: RewardEntry[]) => void;
     closeRewardModal: () => void;
-    // HUOM: claimAchievement puuttuu tästä tarkoituksella,
-    // se on nyt AchievementSlice-määrittelyssä!
+
+    // --- TUTORIAALIN FUNKTIOT ---
+    nextTutorialStep: () => void;
+    completeTutorial: () => void;
   };
 
 export const DEFAULT_STATE: GameState = {
@@ -94,7 +91,6 @@ export const DEFAULT_STATE: GameState = {
     theme: "theme-neon",
     chatColor: "default",
   },
-
   social: {
     friends: [],
     incomingRequests: [],
@@ -104,16 +100,8 @@ export const DEFAULT_STATE: GameState = {
     unreadMessages: {},
     unlockedChatColors: ["default"],
   },
-
-  quests: {
-    dailyQuests: [],
-    lastResetTime: 0,
-  },
-  worldShop: {
-    purchases: {},
-    lastResetTime: 0,
-  },
-
+  quests: { dailyQuests: [], lastResetTime: 0 },
+  worldShop: { purchases: {}, lastResetTime: 0 },
   inventory: {},
   skills: {
     woodcutting: { xp: 0, level: 1 },
@@ -153,12 +141,8 @@ export const DEFAULT_STATE: GameState = {
   upgrades: [],
   premiumPurchases: {},
   maxOfflineHoursIncrement: 0,
-
-  // HUOM! Näiden pitää edelleen olla DEFAULT_STATE:ssä (koska ne tallennetaan persistillä),
-  // mutta logiikka on Slicessä.
   unlockedAchievements: [],
   claimedAchievements: [],
-
   combatStats: {
     hp: 110,
     currentMapId: null,
@@ -173,6 +157,7 @@ export const DEFAULT_STATE: GameState = {
     enemyAttackTimer: 0,
   },
   enemy: null,
+  tutorial: { step: 0, isActive: true, isComplete: false }, // UUSI
 };
 
 export const customMerge = (
@@ -192,17 +177,18 @@ export const customMerge = (
     });
   }
 
+  // Vanhoille pelaajille ei pakoteta tutoriaalia
+  const isOldPlayer =
+    typedPersisted.username && typedPersisted.username !== "Player";
+
   return {
     ...currentState,
     ...typedPersisted,
     unlockedQueueSlots: typedPersisted.unlockedQueueSlots ?? 2,
     premiumPurchases: typedPersisted.premiumPurchases || {},
     maxOfflineHoursIncrement: typedPersisted.maxOfflineHoursIncrement || 0,
-
-    // Säilytetään merge
     unlockedAchievements: typedPersisted.unlockedAchievements || [],
     claimedAchievements: typedPersisted.claimedAchievements || [],
-
     settings: {
       ...DEFAULT_STATE.settings,
       ...(typedPersisted.settings || {}),
@@ -233,6 +219,12 @@ export const customMerge = (
       ...(typedPersisted.quests || {}),
       dailyQuests: typedPersisted.quests?.dailyQuests || [],
     },
+    // UUSI TUTORIAL MERGE: Jos vanha pelaaja, tutoriaali on valmis
+    tutorial:
+      typedPersisted.tutorial ||
+      (isOldPlayer
+        ? { step: 99, isActive: false, isComplete: true }
+        : DEFAULT_STATE.tutorial),
 
     enemy: null,
     queue: typedPersisted.queue || [],
@@ -258,12 +250,18 @@ export const useGameStore = create<FullStoreState>()(
       ...createSocialSlice(set, get, ...args),
       ...createQuestSlice(set, get, ...args),
       ...createPremiumShopSlice(set, get, ...args),
-
-      // LISÄTTY: Kytketään Achievement Slice osaksi päästorea
       ...createAchievementSlice(set, get, ...args),
 
-      // HUOM! Pitkä claimAchievement() logiikka on nyt poistettu täältä
-      // ja se hoituu automaattisesti yllä olevan Slicen kautta.
+      // --- TUTORIAL LOGIIKKA ---
+      nextTutorialStep: () =>
+        set((state) => ({
+          tutorial: { ...state.tutorial, step: state.tutorial.step + 1 },
+        })),
+      completeTutorial: () =>
+        set((state) => ({
+          tutorial: { ...state.tutorial, isActive: false, isComplete: true },
+          coins: state.coins + 500, // Starttibonus!
+        })),
 
       emitEvent: (type, message, icon) =>
         set((state) => {
@@ -283,19 +281,13 @@ export const useGameStore = create<FullStoreState>()(
         })),
 
       setOfflineSummary: (summary: OfflineSummary | null) =>
-        set({
-          offlineSummary: summary,
-        }),
+        set({ offlineSummary: summary }),
 
       openRewardModal: (title, rewards) =>
-        set({
-          rewardModal: { isOpen: true, title, rewards },
-        }),
+        set({ rewardModal: { isOpen: true, title, rewards } }),
 
       closeRewardModal: () =>
-        set({
-          rewardModal: { isOpen: false, title: "", rewards: [] },
-        }),
+        set({ rewardModal: { isOpen: false, title: "", rewards: [] } }),
 
       setState: (updater) =>
         set((state: FullStoreState) => {

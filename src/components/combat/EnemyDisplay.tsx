@@ -3,11 +3,13 @@ import { useGameStore } from "../../store/useGameStore";
 export default function EnemyDisplay() {
   const { enemy, combatStats } = useGameStore();
 
-  // Jos vihollista ei ole ladattu tai respawn on käynnissä
+  // Show searching animation if no enemy is loaded or respawn timer is active
   if (!enemy || combatStats.respawnTimer > 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-slate-900/50 rounded-xl border border-slate-800 p-8 relative overflow-hidden">
-        {/* Animaatio raita */}
+        {
+          // Animation Overlay
+        }
         <div className="absolute inset-0 bg-slate-900/80 z-10 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin"></div>
@@ -25,7 +27,7 @@ export default function EnemyDisplay() {
     );
   }
 
-  // Lasketaan HP-prosentti turvallisesti
+  // Safely calculate HP percentage to prevent UI overflow
   const hpPercent = Math.max(
     0,
     Math.min(100, (combatStats.enemyCurrentHp / enemy.maxHp) * 100),
@@ -33,9 +35,13 @@ export default function EnemyDisplay() {
 
   return (
     <div className="h-full flex flex-col bg-slate-900/50 rounded-xl border border-slate-800 p-4 relative overflow-hidden">
-      {/* Vihollisen tiedot */}
+      {
+        // Enemy Details Section
+      }
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
-        {/* Kuva */}
+        {
+          // Portrait Container
+        }
         <div className="relative group">
           <div className="w-32 h-32 bg-slate-950 rounded-lg border-2 border-red-900/30 flex items-center justify-center shadow-lg overflow-hidden">
             {enemy.icon ? (
@@ -48,13 +54,17 @@ export default function EnemyDisplay() {
               <span className="text-4xl">💀</span>
             )}
           </div>
-          {/* Level Badge */}
+          {
+            // Level Badge
+          }
           <div className="absolute -bottom-3 -right-3 bg-slate-800 border border-slate-600 text-white text-xs font-bold px-2 py-1 rounded-full">
             Lvl {enemy.level}
           </div>
         </div>
 
-        {/* Nimi */}
+        {
+          // Name and Info
+        }
         <div className="text-center">
           <h2 className="text-xl font-black text-red-400 uppercase tracking-wide">
             {enemy.name}
@@ -65,7 +75,9 @@ export default function EnemyDisplay() {
         </div>
       </div>
 
-      {/* HP Palkki */}
+      {
+        // HP Bar Section
+      }
       <div className="mt-4 w-full">
         <div className="flex justify-between text-xs font-bold mb-1 px-1">
           <span className="text-slate-400">HP</span>
@@ -74,7 +86,9 @@ export default function EnemyDisplay() {
           </span>
         </div>
         <div className="h-4 bg-slate-950 rounded-full overflow-hidden border border-slate-800 relative">
-          {/* Taustapalkki (punainen hehku) */}
+          {
+            // Background bar with red glow effect
+          }
           <div
             className="h-full bg-red-600 transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(220,38,38,0.5)]"
             style={{ width: `${hpPercent}%` }}

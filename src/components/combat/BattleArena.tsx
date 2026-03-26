@@ -13,15 +13,15 @@ export default function BattleArena({
   const { enemy, combatStats, stopCombat, skills, avatar, equipment } =
     useGameStore();
 
-  // --- VFX TILAT ---
+  // Local states for handling visual effects (VFX)
   const [isShaking, setIsShaking] = useState(false);
   const [playerFlash, setPlayerFlash] = useState(false);
   const [enemyFlash, setEnemyFlash] = useState(false);
 
-  // Ref seuraa jo käsiteltyjä osumia välttääkseen tuplaanimaatiot
+  // Ref tracks already processed damage numbers to prevent duplicate animations
   const processedIds = useRef<Set<string>>(new Set());
 
-  // VFX Logiikka: Tarkkailee uusia vahinkonumeroita
+  // VFX Logic: Monitors the store for new damage popups and triggers animations
   useEffect(() => {
     const popUps = combatStats.damagePopUps || [];
     if (popUps.length === 0) return;
@@ -36,14 +36,14 @@ export default function BattleArena({
 
         if (p.type === "player") {
           triggeredPlayerFlash = true;
-          triggeredShake = true; // Ruutu tärisee kun pelaajaan osutaan
+          triggeredShake = true; // Shake the screen when player takes damage
         } else if (p.type === "enemy") {
           triggeredEnemyFlash = true;
         }
       }
     });
 
-    // requestAnimationFrame korjaa ESLint "cascading renders" -virheen
+    // requestAnimationFrame used to avoid ESLint "cascading renders" warnings
     requestAnimationFrame(() => {
       if (triggeredShake) {
         setIsShaking(true);
@@ -59,7 +59,7 @@ export default function BattleArena({
       }
     });
 
-    // Pidetään muisti puhtaana
+    // Keep the set clean to prevent memory leaks over long sessions
     if (processedIds.current.size > 50) {
       processedIds.current.clear();
     }
@@ -67,7 +67,7 @@ export default function BattleArena({
 
   const bgImage = WORLD_INFO[selectedWorldId]?.image || "";
 
-  // Lasketaan pelaajan max HP varusteiden perusteella
+  // Calculate live player stats based on current equipment
   const playerCombatStats = useMemo(() => {
     const gearTotals = Object.values(equipment).reduce(
       (acc, itemId) => {
@@ -85,6 +85,7 @@ export default function BattleArena({
       ? (getItemDetails(equipment.weapon) as Resource)
       : null;
     const style: CombatStyle = weaponItem?.combatStyle || "melee";
+
     return getPlayerStats(skills, style, { hpBonus: gearTotals.hpBonus });
   }, [equipment, skills]);
 
@@ -98,9 +99,9 @@ export default function BattleArena({
     (combatStats.enemyCurrentHp / enemyMaxHp) * 100,
   );
 
-  // Vahinkonumeroiden renderöinti
+  // Helper to render floating damage numbers above the target
   const renderPopUps = (targetType: "player" | "enemy") => {
-    // hp <= 0 riittää turvalukoksi; vältetään Date.now() renderöinnin aikana
+    // Safety check: Don't render popups if player is dead
     if (combatStats.hp <= 0) return null;
 
     return (
@@ -108,8 +109,9 @@ export default function BattleArena({
         {(combatStats.damagePopUps || [])
           .filter((p) => p.type === targetType)
           .map((p, index) => {
-            // Vakaa offset indeksin perusteella estää numeroiden heilumisen
+            // Stable offset based on index prevents overlapping numbers
             const offsetPx = -15 + ((index * 15) % 30);
+
             return (
               <div
                 key={p.id}
@@ -148,7 +150,9 @@ export default function BattleArena({
     <div
       className={`h-full w-full relative bg-app-base select-none overflow-hidden ${isShaking ? "animate-shake" : ""}`}
     >
-      {/* TAUSTA */}
+      {
+        // Background Map Image
+      }
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000 opacity-30 scale-105"
         style={{ backgroundImage: `url(${bgImage})` }}
@@ -157,7 +161,9 @@ export default function BattleArena({
       </div>
 
       <div className="relative h-full w-full flex justify-between items-end pb-12 px-16 max-w-6xl mx-auto">
-        {/* --- PELAAJA (Vasen) --- */}
+        {
+          // Player Area (Left Side)
+        }
         <div className="flex flex-col items-center gap-3 relative group w-32">
           {renderPopUps("player")}
 
@@ -172,7 +178,6 @@ export default function BattleArena({
           </div>
 
           <div className="w-24 h-24 relative flex items-center justify-center">
-            {/* HOHTO POISTETTU PELAAJALTA */}
             <img
               src={avatar || "/assets/ui/icon_user_avatar.png"}
               alt="Player"
@@ -189,11 +194,13 @@ export default function BattleArena({
             onClick={stopCombat}
             className="mt-2 text-[10px] uppercase font-black tracking-widest text-danger hover:text-white bg-danger/10 hover:bg-danger px-4 py-1.5 rounded border border-danger/20 transition-all active:scale-95"
           >
-            Retreat
+            Retretreat
           </button>
         </div>
 
-        {/* --- VS / INFO --- */}
+        {
+          // Center Information (Respawn Timer)
+        }
         <div className="mb-20 flex flex-col items-center gap-2">
           {combatStats.respawnTimer > 0 && (
             <div className="px-5 py-2 bg-panel/90 rounded border border-warning/30 text-warning text-xs font-mono font-black animate-pulse shadow-2xl backdrop-blur-sm">
@@ -202,9 +209,10 @@ export default function BattleArena({
           )}
         </div>
 
-        {/* --- VIHOLLINEN (Oikea) --- */}
+        {
+          // Enemy Area (Right Side)
+        }
         <div className="flex flex-col items-center justify-end gap-3 relative w-32 min-h-[180px]">
-          {/* Numerot vihollisen päällä (näkyvät vaikka vihollinen kuolisi one-shotilla) */}
           {renderPopUps("enemy")}
 
           {enemy ? (
@@ -221,7 +229,6 @@ export default function BattleArena({
 
               <div className="w-24 h-24 relative flex items-center justify-center">
                 <div className={enemyFlash ? "animate-flash-white" : ""}>
-                  {/* HOHTO POISTETTU VIHOLLISELTA */}
                   {enemy.icon ? (
                     <img
                       src={enemy.icon}

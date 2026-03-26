@@ -10,7 +10,7 @@ export default function FoodSelector() {
   const setState = useGameStore((state) => state.setState);
   const combatStats = useGameStore((state) => state.combatStats);
 
-  // --- COOLDOWN LOGIIKKA ---
+  // Global cooldown logic for consuming items
   const foodTimer = combatStats?.foodTimer || 0;
   const isGlobalCooldown = foodTimer > 0;
   const cooldownProgress = Math.max(
@@ -18,7 +18,7 @@ export default function FoodSelector() {
     Math.min(100, ((10000 - foodTimer) / 10000) * 100),
   );
 
-  // Hae kaikki ruoat ja potionit inventaariosta
+  // Filter inventory for consumable items and sort by healing power (highest first)
   const foodItems = Object.entries(inventory)
     .filter(([id, count]) => {
       if (count <= 0) return false;
@@ -29,7 +29,6 @@ export default function FoodSelector() {
         details?.slot === "food"
       );
     })
-    // Järjestetään niin, että parhaiten parantavat ovat ensin
     .sort(([idA], [idB]) => {
       const a = getItemDetails(idA) as Resource | undefined;
       const b = getItemDetails(idB) as Resource | undefined;
@@ -51,7 +50,9 @@ export default function FoodSelector() {
 
   return (
     <div className="flex flex-col h-full bg-app-base overflow-hidden">
-      {/* 1. AUTO-EAT THRESHOLD (Slider siirretty ylös, tiiviimpi asettelu) */}
+      {
+        // 1. Auto-Eat Threshold Slider
+      }
       <div className="bg-panel border-b border-border/50 p-3 shrink-0">
         <div className="flex justify-between items-center mb-2">
           <span className="text-[10px] font-black uppercase tracking-widest text-tx-muted flex items-center gap-1.5">
@@ -63,7 +64,9 @@ export default function FoodSelector() {
           </span>
         </div>
 
-        {/* Slider */}
+        {
+          // Custom Slider Implementation
+        }
         <div className="relative w-full h-1.5 bg-app-base rounded-full border border-border/50">
           <div
             className="absolute left-0 top-0 bottom-0 bg-success/30 rounded-full"
@@ -77,7 +80,9 @@ export default function FoodSelector() {
             onChange={handleSettingChange}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
           />
-          {/* Custom kahva (visuaalinen kikka sliderille) */}
+          {
+            // Visual slider handle
+          }
           <div
             className="absolute top-1/2 -mt-2 -ml-2 w-4 h-4 bg-panel border-2 border-success rounded-full shadow-[0_0_5px_rgb(var(--color-success)/0.5)] pointer-events-none"
             style={{ left: `${combatSettings.autoEatThreshold}%` }}
@@ -85,7 +90,9 @@ export default function FoodSelector() {
         </div>
       </div>
 
-      {/* 2. INVENTORY GRID & ACTIVE ITEM */}
+      {
+        // 2. Inventory Grid & Active Item
+      }
       <div className="flex-1 overflow-y-auto custom-scrollbar p-3">
         {foodItems.length === 0 && !equippedFood ? (
           <div className="h-full flex flex-col items-center justify-center text-tx-muted opacity-50">
@@ -96,16 +103,19 @@ export default function FoodSelector() {
           </div>
         ) : (
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            {/* AKTIIVINEN ESINE (Aina ensimmäisenä) */}
+            {
+              // Active Item (Always displayed first)
+            }
             {equippedFood && activeFoodDetails && (
               <button
                 disabled={isGlobalCooldown}
                 className="aspect-square bg-success/5 border border-success ring-1 ring-success/30 rounded-xl flex flex-col items-center justify-center relative group transition-all shadow-[0_0_15px_rgba(var(--color-success)/0.15)] col-start-1"
                 title={`Unequip ${activeFoodDetails.name}`}
-                // Voit lisätä unequip-logiikan halutessasi, tällä hetkellä klikkaus tekee saman equipItem
                 onClick={() => equipItem(equippedFood.itemId)}
               >
-                {/* Cooldown overlay active itemille */}
+                {
+                  // Cooldown overlay for the active item
+                }
                 {isGlobalCooldown && (
                   <div
                     className="absolute inset-0 bg-app-base/80 z-10 transition-transform duration-100 ease-linear rounded-xl origin-left"
@@ -131,9 +141,11 @@ export default function FoodSelector() {
               </button>
             )}
 
-            {/* MUUT ESINEET */}
+            {
+              // Other available consumables
+            }
             {foodItems.map(([id, count]) => {
-              if (id === equippedFood?.itemId) return null; // Älä näytä aktiivista uudestaan
+              if (id === equippedFood?.itemId) return null; // Skip if already active
               const item = getItemDetails(id) as Resource | undefined;
               if (!item) return null;
 
@@ -154,12 +166,13 @@ export default function FoodSelector() {
                     alt={item.name}
                   />
 
-                  {/* Määrä */}
                   <span className="absolute bottom-1 right-1 text-[9px] font-mono text-tx-muted group-hover:text-tx-main bg-app-base/90 px-1 rounded z-30">
                     {count as number}
                   </span>
 
-                  {/* Pieni indikaattori jos parantaa */}
+                  {
+                    // Healing indicator dot
+                  }
                   {(item.healing || 0) > 0 && (
                     <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-success/60 z-30 shadow-[0_0_5px_rgb(var(--color-success)/0.4)]" />
                   )}

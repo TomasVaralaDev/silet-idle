@@ -6,14 +6,18 @@ export default function CombatLog() {
 
   return (
     <div className="h-full flex flex-col bg-app-base rounded-xl border border-border overflow-hidden shadow-inner">
-      {/* HEADER */}
+      {
+        // Header
+      }
       <div className="p-3 border-b border-border bg-panel/50">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted">
           Combat Log
         </h3>
       </div>
 
-      {/* LOG CONTENT */}
+      {
+        // Log Content Area
+      }
       <div className="flex-1 overflow-y-auto p-4 space-y-1.5 font-mono text-[11px] custom-scrollbar text-left">
         {logs.length === 0 ? (
           <div className="text-tx-muted italic text-center mt-10 opacity-30 uppercase tracking-widest text-[9px]">
@@ -21,11 +25,12 @@ export default function CombatLog() {
           </div>
         ) : (
           logs.map((log, index) => {
-            // Oletusväri ja tyyli
+            // Default styling for standard log entries
             let logColor = "text-tx-muted";
             let fontWeight = "font-medium";
             let bgHighlight = "";
 
+            // Dynamic styling based on log event type
             if (log.includes("Victory!")) {
               logColor = "text-warning";
               fontWeight = "font-black";
@@ -33,21 +38,17 @@ export default function CombatLog() {
               logColor = "text-accent-hover";
               fontWeight = "font-bold";
             } else if (log.startsWith("Hit ")) {
-              // Pelaajan iskut
-              logColor = "text-tx-main";
+              logColor = "text-tx-main"; // Player attack
               if (log.includes("Critical!")) {
                 logColor = "text-warning";
                 fontWeight = "font-black";
               }
             } else if (log.startsWith("Took ") || log.includes("Defeated!")) {
-              // Vihollisen iskut tai kuolema
-              logColor = "text-danger";
+              logColor = "text-danger"; // Enemy attack or player death
               bgHighlight = "bg-danger/5";
             } else if (log.includes("blocked!")) {
-              // Blokattu isku
               logColor = "text-success opacity-80";
             } else if (log.includes("Healed")) {
-              // Parantuminen
               logColor = "text-success";
               fontWeight = "font-bold";
             }

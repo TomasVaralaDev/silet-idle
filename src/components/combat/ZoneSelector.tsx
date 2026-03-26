@@ -22,7 +22,9 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-panel/80 backdrop-blur-sm border-t lg:border-t-0 lg:border-l border-border">
-      {/* HEADER */}
+      {
+        // Header Section with Auto-Push Toggle
+      }
       <div className="p-3 md:p-4 border-b border-border flex items-center justify-between bg-panel/90 shadow-sm z-10">
         <div className="flex flex-col text-left">
           <span className="text-[10px] font-black uppercase tracking-widest text-success">
@@ -59,12 +61,14 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
         </div>
       </div>
 
-      {/* ZONE LIST */}
+      {
+        // Zone List - Render all available combat areas for the selected world
+      }
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {zones.map((map) => {
           const isActive = combatStats.currentMapId === map.id;
 
-          // AVAIN-TARKISTUKSET
+          // Progression and Key Logic
           const keyCount = map.keyRequired
             ? inventory[map.keyRequired] || 0
             : 0;
@@ -104,6 +108,9 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                     }`}
                   >
                     <span className="truncate">{map.name}</span>
+                    {
+                      // Boss Key Requirement Indicator
+                    }
                     {map.isBoss && (
                       <span
                         className={`flex items-center gap-1 text-[9px] md:text-[10px] px-1.5 py-0.5 rounded border ${
@@ -121,6 +128,10 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                       </span>
                     )}
                   </div>
+
+                  {
+                    // Zone Details Footer (Level, Enemy Name, Boss Lock status)
+                  }
                   <div className="text-[9px] md:text-[10px] text-tx-muted font-mono flex flex-wrap items-center gap-1">
                     <span
                       className={`px-1 rounded border ${
@@ -141,6 +152,9 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                   </div>
                 </div>
 
+                {
+                  // Right-side Status Icon (Locked, Key Needed, Image, or Default Battle Icon)
+                }
                 <div
                   className={`
                     w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all
@@ -185,6 +199,9 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                 </div>
               </div>
 
+              {
+                // Active State Glowing Edge Indicator
+              }
               {isActive && (
                 <div className="absolute left-0 bottom-0 top-0 w-1 bg-success shadow-[0_0_15px_rgb(var(--color-success)/0.6)]"></div>
               )}

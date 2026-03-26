@@ -10,9 +10,9 @@ import { formatRemainingTime } from "../../utils/formatUtils";
 
 export default function CombatView() {
   const combatStats = useGameStore((s) => s.combatStats);
-
   const [now, setNow] = useState(() => Date.now());
 
+  // Update local timer to render real-time cooldown countdowns
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
 
@@ -37,6 +37,7 @@ export default function CombatView() {
     ? COMBAT_DATA.find((m) => m.id === combatStats.currentMapId)
     : null;
 
+  // Determine the active world based on the current map or fallback to calculated progress
   const activeWorldId =
     currentMap?.world ||
     (combatStats.currentMapId
@@ -50,25 +51,29 @@ export default function CombatView() {
     return Math.ceil(maxMap / 10) || 1;
   });
 
+  // Sync selected world when the active map changes (e.g. advancing to a new zone)
   if (activeWorldId !== prevActiveWorldId) {
     setPrevActiveWorldId(activeWorldId);
     setSelectedWorld(activeWorldId || 1);
   }
 
   return (
-    // 1. PÄÄCONTAINER: Mobiilissa flex-col (allekkain), lg-koossa flex-row (vierekkäin)
     <div className="h-full w-full flex flex-col lg:flex-row bg-app-base overflow-y-auto lg:overflow-hidden text-tx-main font-sans selection:bg-accent/30 selection:text-accent custom-scrollbar">
-      {/* LEFT: WORLD NAVIGATION */}
-      {/* Wrapperia ei välttämättä tarvita tässä, jos WorldSelector hoitaa oman skaalautuvuutensa, mutta se asettuu nyt mobiilissa ylimmäksi */}
+      {
+        // Left Column: World Navigation
+      }
       <WorldSelector
         selectedWorld={selectedWorld}
         onSelectWorld={setSelectedWorld}
       />
 
-      {/* CENTER: BATTLE ZONE */}
-      {/* Mobiilissa tämä ottaa tarvitsemansa tilan, lg-koossa se joustaa keskelle (flex-1) */}
+      {
+        // Center Column: Battle Arena and Interactions
+      }
       <div className="flex-1 flex flex-col min-w-0 h-auto lg:h-full relative border-y lg:border-y-0 border-border/50">
-        {/* RECOVERY OVERLAY */}
+        {
+          // Recovery Overlay - Blocks interaction during death or retreat cooldowns
+        }
         {isRecovering && !combatStats.currentMapId && (
           <div className="absolute inset-0 z-[40] bg-app-base/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
             <div
@@ -102,16 +107,20 @@ export default function CombatView() {
           </div>
         )}
 
-        {/* TOP PANEL: ARENA */}
-        {/* Mobiilissa asetetaan kiinteä minimikorkeus (esim 35vh), lg-koossa ottaa 45% */}
+        {
+          // Top Section: Visual Battle Arena
+        }
         <div className="min-h-[35vh] lg:min-h-0 lg:h-[45%] shrink-0 relative bg-panel overflow-hidden border-b border-border shadow-inner">
           <BattleArena selectedWorldId={selectedWorld} />
         </div>
 
-        {/* BOTTOM PANEL: LOGS & CONSUMABLES */}
-        {/* Mobiilissa allekkain (flex-col), md-koossa vierekkäin (flex-row) */}
+        {
+          // Bottom Section: Consumables and Logs
+        }
         <div className="flex-1 min-h-[40vh] lg:min-h-0 bg-app-base flex flex-col md:flex-row z-20">
-          {/* CONSUMABLES (Food) */}
+          {
+            // Bottom Left: Food / Consumables Management
+          }
           <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-border p-3 md:p-5 flex flex-col bg-panel/30">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-2 md:mb-4 flex items-center gap-2 shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
@@ -122,7 +131,9 @@ export default function CombatView() {
             </div>
           </div>
 
-          {/* COMBAT LOGS */}
+          {
+            // Bottom Right: Combat Log Stream
+          }
           <div className="w-full md:w-1/2 flex flex-col bg-app-base min-h-[200px] md:min-h-0">
             <div className="flex-1 overflow-hidden relative">
               <div className="absolute inset-0">
@@ -133,8 +144,9 @@ export default function CombatView() {
         </div>
       </div>
 
-      {/* RIGHT: ZONE SELECTOR */}
-      {/* Mobiilissa tämä ottaa koko leveyden (w-full) ja menee alimmaiseksi, työpöydällä se on oikeassa reunassa (lg:w-80) */}
+      {
+        // Right Column: Zone Selection and Combat Initiation
+      }
       <div className="w-full lg:w-80 flex-shrink-0 lg:border-l border-border bg-panel/80 backdrop-blur-sm z-20 flex flex-col h-auto lg:h-full">
         <ZoneSelector selectedWorldId={selectedWorld} />
       </div>

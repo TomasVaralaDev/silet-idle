@@ -6,7 +6,7 @@ import type { Resource } from "../../types";
 export default function PlayerStats() {
   const { skills, combatStats, username, equipment } = useGameStore();
 
-  // 1. Lasketaan varusteiden HP-bonus
+  // 1. Calculate HP bonus from equipped items
   const gearHpBonus = (Object.values(equipment) as (string | null)[]).reduce(
     (acc, itemId) => {
       if (!itemId) return acc;
@@ -16,12 +16,12 @@ export default function PlayerStats() {
     0,
   );
 
-  // 2. Lasketaan lopullinen Max HP (Varmistetaan identtinen kaava combatMechanicsin kanssa)
+  // 2. Calculate final Max HP (Ensures formula consistency with combatMechanics)
   const currentHpLevel = skills.hitpoints?.level || 10;
   const baseHp = currentHpLevel * 10;
   const maxHp = baseHp + gearHpBonus;
 
-  // 3. Nykyinen HP (ja varmistus ettei se visuaalisesti ylitä maksimia)
+  // 3. Current HP logic (Includes visual clamp to prevent exceeding max)
   const currentHp = Math.min(combatStats.hp, maxHp);
   const hpPercent = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
 
@@ -31,7 +31,9 @@ export default function PlayerStats() {
 
   return (
     <div className="bg-panel/50 rounded-xl border border-border p-4 shadow-sm backdrop-blur-sm">
-      {/* Profile and XP Section */}
+      {
+        // Profile and XP Section
+      }
       <div className="flex items-center gap-3 mb-4">
         <div className="w-12 h-12 bg-accent/20 rounded-full border border-accent/30 flex items-center justify-center shrink-0 shadow-inner">
           <span className="text-xl">👤</span>
@@ -53,7 +55,9 @@ export default function PlayerStats() {
             </span>
           </div>
 
-          {/* HP XP Bar */}
+          {
+            // HP XP Progress Bar
+          }
           <div className="h-1 bg-app-base rounded-full mt-1 border border-border/50 overflow-hidden">
             <div
               className="h-full bg-accent transition-all duration-500 shadow-[0_0_8px_rgb(var(--color-accent)/0.4)]"
@@ -63,7 +67,9 @@ export default function PlayerStats() {
         </div>
       </div>
 
-      {/* Health Bar (Actual current HP) */}
+      {
+        // Main Health Bar (Actual current HP)
+      }
       <div className="space-y-1 mt-3">
         <div className="flex justify-between text-[11px] font-black uppercase tracking-widest px-1">
           <span className="text-danger">Vital Signs</span>
@@ -79,7 +85,9 @@ export default function PlayerStats() {
         </div>
       </div>
 
-      {/* Combat Stats Grid */}
+      {
+        // Combat Statistics Grid
+      }
       <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border/30">
         <div className="text-center group">
           <div className="text-[9px] text-tx-muted uppercase font-black tracking-[0.2em] group-hover:text-accent transition-colors">

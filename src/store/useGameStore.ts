@@ -217,6 +217,7 @@ export const customMerge = (
       activeChatFriendId: null,
       incomingRequests: typedPersisted.social?.incomingRequests || [],
       outgoingRequests: typedPersisted.social?.outgoingRequests || [],
+      globalMessages: [], // <--- TÄMÄ RIVI ON TÄRKEÄ! Älä lähetä näitä Firebaseen!
       unlockedChatColors: typedPersisted.social?.unlockedChatColors || [
         "default",
       ],
@@ -385,6 +386,11 @@ export const useGameStore = create<FullStoreState>()(
         delete (rest as Partial<FullStoreState>).rewardModal;
         delete (rest as Partial<FullStoreState>).gems;
         delete (rest as Partial<FullStoreState>).upgrades;
+        if (rest.social) {
+          const socialCopy = { ...rest.social };
+          socialCopy.globalMessages = []; // Tyhjennetään tallennuksesta
+          rest.social = socialCopy;
+        }
         return rest;
       },
     },

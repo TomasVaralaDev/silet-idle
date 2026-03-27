@@ -129,33 +129,33 @@ export default function SkillView({ skill }: SkillViewProps) {
   const isQueueFull = queue.length >= maxSlots;
 
   return (
-    <div className="h-full flex flex-col bg-app-base text-tx-main relative">
-      {/* HEADER - Skaalattu mobiiliin (pienemmät paddigit ja fontit) */}
-      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-3 md:gap-6 sticky top-0 z-20 backdrop-blur-sm">
+    <div className="h-full flex flex-col bg-app-base text-tx-main relative overflow-hidden">
+      {/* HEADER - Skaalattu mobiiliin ja yhtenäistetty muiden näkymien tyyliin */}
+      <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
         <div
-          className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center ${definition.bgColor} shadow-lg shrink-0`}
+          className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center ${definition.bgColor} border border-white/10 shadow-lg shrink-0`}
         >
           <img
             src={definition.icon}
-            className="w-8 h-8 md:w-10 md:h-10 pixelated"
+            className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
             alt={definition.sidebarLabel}
           />
         </div>
-        <div className="flex-1 text-left">
+        <div className="flex-1 min-w-0">
           <h1
-            className={`text-xl md:text-3xl font-bold uppercase tracking-widest ${definition.color} mb-0.5 md:mb-1`}
+            className={`text-xl md:text-3xl font-black uppercase tracking-widest ${definition.color} mb-0.5 md:mb-1 truncate`}
           >
             {definition.sidebarLabel}
           </h1>
-          <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block">
+          <p className="text-tx-muted text-[10px] md:text-sm font-medium hidden sm:block truncate">
             {definition.description}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-lg md:text-2xl font-black text-tx-main">
+          <div className="text-lg md:text-2xl font-black text-tx-main uppercase tracking-tighter">
             Level {currentLevel}
           </div>
-          <div className="text-[9px] md:text-xs font-mono text-tx-muted mt-0.5 md:mt-1">
+          <div className="text-[9px] md:text-xs font-mono text-tx-muted mt-0.5 md:mt-1 uppercase">
             {isMaxLevel ? (
               <span className="text-success font-bold">MAX LEVEL</span>
             ) : (
@@ -166,7 +166,6 @@ export default function SkillView({ skill }: SkillViewProps) {
       </div>
 
       <div className="h-1 bg-panel w-full shrink-0">
-        {/* Poistettu: shadow-[0_0_10px_currentColor] */}
         <div
           className={`h-full ${definition.bgColor} transition-all duration-300`}
           style={{ width: `${progressPercent}%` }}

@@ -20,28 +20,36 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
     setSaveStatus("saving");
     const now = Date.now();
 
-    // LISÄTTY: Lasketaan Total Level nykyisistä skilleistä
     const currentTotalLevel = calculateTotalLevel(currentStateSnapshot.skills);
 
     // Päivitetään aikaleima storeen
     setState((prev: GameState) => ({ ...prev, lastTimestamp: now }));
 
-    // Puhdistetaan data tallennusta varten
+    // 1. POIMITAAN DATA JA EROTETAAN FUNKTIOT
     const {
       setState: _ss,
       emitEvent: _ee,
       clearEvent: _ce,
       updateQuestProgress: _uqp,
+      updateUserProfile: _uup, // Lisätty tämä uusi funktio poistolistalle
       ...dataToSave
     } = currentStateSnapshot;
 
+    // 2. PUHDISTETAAN SOCIAL-OBJEKTI (Kriittinen vaihe!)
+    // Emme halua tallentaa globalMessages-listaa pelaajan dokumenttiin.
+    const sanitizedSocial = {
+      ...dataToSave.social,
+      globalMessages: [], // Pakotetaan tyhjäksi ennen lähetystä
+    };
+
+    // 3. MUODOSTETAAN LOPULLINEN PAYLOAD
     const finalPayload = {
       ...dataToSave,
+      social: sanitizedSocial, // Käytetään puhdistettua versiota
       lastTimestamp: now,
     };
 
     try {
-      // Suoritetaan molemmat tallennukset rinnakkain
       await Promise.all([
         saveGameData(user.uid, finalPayload),
         updateLeaderboardEntry(
@@ -49,7 +57,7 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
           currentStateSnapshot.username,
           currentStateSnapshot.avatar || "/assets/ui/icon_user_avatar.png",
           currentStateSnapshot.combatStats.maxMapCompleted,
-          currentTotalLevel, // LISÄTTY: Nyt tallennetaan myös kokonaistaso!
+          currentTotalLevel,
         ),
       ]);
 

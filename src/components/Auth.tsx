@@ -61,7 +61,7 @@ export default function Auth() {
             TIME <span className="text-accent">RING</span>
           </h1>
           <p className="text-[11px] font-bold uppercase tracking-widest text-tx-muted mt-2 opacity-60">
-            Cloud Save & Sync
+            Log in to Start
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export default function Auth() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-app-base/50 border border-border/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-all"
+                className="w-full bg-app-base/50 border border-border/50 placeholder:text-tx-muted/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-accent/50 transition-all"
                 placeholder="••••••••"
               />
             </div>

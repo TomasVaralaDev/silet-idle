@@ -33,8 +33,8 @@ export const createCombatSlice: StateCreator<
       const seconds = Math.ceil(cooldownLeft / 1000);
       state.emitEvent(
         "warning",
-        `System recovering... Wait ${seconds}s`,
-        "/assets/ui/icon_warning.png",
+        `You were defeated... Wait ${seconds}s`,
+        "/assets/ui/icon_death.png",
       );
       return;
     }

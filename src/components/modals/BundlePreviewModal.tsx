@@ -42,17 +42,18 @@ export default function BundlePreviewModal({
   const isPurchaseDisabled =
     !canAfford || isProcessing || isMaxedOut || isOwned;
 
+  // LOGIIKKA: Haetaan kaikki kuvat suoraan meidän uudesta tehtaasta (getItemById)
   const getIconForReward = (key: string) => {
-    if (key === "gems") return "assets/ui/icon_gem.png";
-    if (key === "coins") return "assets/ui/icon_coin.png";
-    if (key.includes("Slots")) return "assets/ui/icon_upgrade.png";
-
+    if (key === "gems") return "/assets/ui/icon_gem.png";
+    if (key === "coins") return "/assets/ui/icon_coin.png";
     const itemData = getItemById(key);
     if (itemData?.icon) {
-      return itemData.icon;
+      return itemData.icon.startsWith("/")
+        ? itemData.icon
+        : `/${itemData.icon}`;
     }
-
-    return `assets/items/${key}.png`;
+    // Fallback jos ei jostain syystä löydy tehtaasta
+    return `/assets/items/${key}.png`;
   };
 
   const handleClose = () => {
@@ -82,9 +83,12 @@ export default function BundlePreviewModal({
           <div className="absolute inset-0 bg-accent/10 blur-xl rounded-full scale-150"></div>
 
           <img
-            src={item.icon}
+            src={item.icon.startsWith("/") ? item.icon : `/${item.icon}`}
             className="w-24 h-24 pixelated drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] z-10 animate-pulse-slow"
             alt={item.name}
+            onError={(e) => {
+              e.currentTarget.src = "/assets/ui/icon_unknown.png";
+            }}
           />
           <h2 className="text-2xl font-black text-tx-main uppercase tracking-widest mt-4 text-center z-10 drop-shadow-md">
             {item.name}
@@ -110,7 +114,7 @@ export default function BundlePreviewModal({
         </div>
 
         {/* SISÄLTÖ / PALKINNOT */}
-        <div className="p-6 bg-panel">
+        <div className="p-6 bg-panel max-h-[50vh] overflow-y-auto custom-scrollbar">
           <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4 text-center">
             Bundle Contents
           </h3>
@@ -121,7 +125,7 @@ export default function BundlePreviewModal({
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src="assets/ui/icon_gem.png"
+                    src={getIconForReward("gems")} // LOGIIKKA KÄYTÖSSÄ
                     className="w-6 h-6 pixelated"
                     alt="Gems"
                   />
@@ -133,16 +137,16 @@ export default function BundlePreviewModal({
               </div>
             )}
 
-            {/* UUSI: Offline Time Stats - KÄYTETÄÄN icon_time.png */}
+            {/* Offline Time Stats */}
             {item.rewards?.stats?.offlineHoursIncrement && (
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src="assets/ui/icon_time.png"
+                    src={getIconForReward("Max Offline Time")} // LOGIIKKA KÄYTÖSSÄ!
                     className="w-6 h-6 pixelated"
                     alt="Offline Time"
                     onError={(e) =>
-                      (e.currentTarget.src = "assets/ui/icon_upgrade.png")
+                      (e.currentTarget.src = "/assets/ui/icon_gem.png")
                     }
                   />
                   <span className="font-bold text-tx-main">
@@ -160,11 +164,11 @@ export default function BundlePreviewModal({
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src="assets/ui/icon_upgrade.png"
+                    src={getIconForReward("Expedition Slots")} // LOGIIKKA KÄYTÖSSÄ!
                     className="w-6 h-6 pixelated"
                     alt="Expedition Slots"
                     onError={(e) =>
-                      (e.currentTarget.src = "assets/ui/icon_star.png")
+                      (e.currentTarget.src = "/assets/ui/icon_gem.png")
                     }
                   />
                   <span className="font-bold text-tx-main">
@@ -182,11 +186,11 @@ export default function BundlePreviewModal({
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src="assets/ui/icon_upgrade.png"
+                    src={getIconForReward("Max Queue Slots")} // LOGIIKKA KÄYTÖSSÄ!
                     className="w-6 h-6 pixelated"
                     alt="Queue Slots"
                     onError={(e) =>
-                      (e.currentTarget.src = "assets/ui/icon_star.png")
+                      (e.currentTarget.src = "/assets/ui/icon_gem.png")
                     }
                   />
                   <span className="font-bold text-tx-main">
@@ -213,11 +217,11 @@ export default function BundlePreviewModal({
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={getIconForReward(itemId)}
+                      src={getIconForReward(itemId)} // LOGIIKKA KÄYTÖSSÄ
                       className="w-6 h-6 pixelated"
                       alt={itemId}
                       onError={(e) => {
-                        e.currentTarget.src = "assets/ui/icon_unknown.png";
+                        e.currentTarget.src = "/assets/ui/icon_gem.png";
                       }}
                     />
                     <span className="font-bold text-tx-main capitalize">
@@ -256,7 +260,7 @@ export default function BundlePreviewModal({
                 <span>Confirm Purchase</span>
                 <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
                   <img
-                    src="assets/ui/icon_gem.png"
+                    src="/assets/ui/icon_gem.png"
                     className="w-4 h-4 pixelated"
                     alt="gem"
                   />
@@ -265,18 +269,6 @@ export default function BundlePreviewModal({
               </>
             )}
           </button>
-
-          {/* VIRHEILMOITUKSET NAPIN ALLA */}
-          {!canAfford && !isProcessing && !isMaxedOut && !isOwned && (
-            <p className="text-center text-danger text-[10px] mt-2 font-bold uppercase tracking-wider">
-              Not enough gems
-            </p>
-          )}
-          {isMaxedOut && !isProcessing && (
-            <p className="text-center text-info text-[10px] mt-2 font-bold uppercase tracking-wider">
-              Maximum purchase limit reached
-            </p>
-          )}
         </div>
       </div>
     </div>

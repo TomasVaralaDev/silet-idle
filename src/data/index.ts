@@ -213,6 +213,42 @@ const ChatColorFactory: ItemSubFactory = {
 };
 
 /**
+ * 10. Premium Stat Factory (UUSI)
+ * Vastaa abstrakteista bundle-palkinnoista, jotta ne saavat kuvat RewardModalissa.
+ */
+const PremiumStatFactory: ItemSubFactory = {
+  canHandle: (id) =>
+    ["Expedition Slots", "Max Queue Slots", "Max Offline Time"].includes(id),
+  create: (id) => {
+    if (id === "Expedition Slots") {
+      return {
+        name: "Expedition Slot",
+        icon: "/assets/skills/scavenging.png",
+        rarity: "legendary",
+        description: "Increases maximum active expeditions.",
+      };
+    }
+    if (id === "Max Queue Slots") {
+      return {
+        name: "Max Queue Slots",
+        icon: "/assets/ui/icon_inventory.png",
+        rarity: "legendary",
+        description: "Unlocks maximum action queue slots.",
+      };
+    }
+    if (id === "Max Offline Time") {
+      return {
+        name: "Max Offline Time",
+        icon: "/assets/items/timeCrystal.png",
+        rarity: "legendary",
+        description: "Increases the maximum duration of offline progress.",
+      };
+    }
+    return {};
+  },
+};
+
+/**
  * 10. PÄÄTEHDAS (The Master Factory)
  */
 export const getItemDetails = (id: string): Resource | null => {
@@ -241,6 +277,7 @@ export const getItemDetails = (id: string): Resource | null => {
     SkillResourceFactory,
     ExperienceFactory, // UUSI
     ChatColorFactory, // UUSI
+    PremiumStatFactory,
   ];
 
   const factory = factories.find((f) => f.canHandle(baseId));

@@ -300,3 +300,98 @@ export const scheduledShopReset = onSchedule("0 0 * * *", async () => {
     );
   }
 });
+
+// --- UUSI: Käyttäjänimen vaihto cooldownilla ---
+export const changeUsername = onCall(async (request) => {
+  // 1. Tarkista että käyttäjä on kirjautunut
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "You must be logged in to change your name.",
+    );
+  }
+
+  const uid = request.auth.uid;
+  const { newName } = request.data;
+
+  // 2. Perusvalidoinnit nimelle
+  if (!newName || typeof newName !== "string") {
+    throw new HttpsError("invalid-argument", "Name must be a string.");
+  }
+
+  const trimmedName = newName.trim();
+  if (trimmedName.length < 3 || trimmedName.length > 12) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Name must be between 3 and 12 characters.",
+    );
+  }
+
+  const userRef = admin.firestore().collection("users").doc(uid);
+  const now = Date.now();
+  const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 tuntia
+
+  try {
+    // 3. Suoritetaan Transaction, jotta luku ja kirjoitus ovat atomisia
+    const updatedLastNameChange = await admin
+      .firestore()
+      .runTransaction(async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+
+        if (!userDoc.exists) {
+          throw new HttpsError("not-found", "User document not found.");
+        }
+
+        const userData = userDoc.data() || {};
+        const currentName = userData.username;
+        const settings = userData.settings || {};
+        const lastNameChange = settings.lastNameChange || 0;
+
+        // 4. Jos nimi on täysin sama, ei tehdä mitään (mutta palautetaan true)
+        if (currentName === trimmedName) {
+          return lastNameChange; // Palautetaan vanha aikaleima
+        }
+
+        // 5. Tarkistetaan Cooldown
+        const timeSinceLastChange = now - lastNameChange;
+        if (timeSinceLastChange < COOLDOWN_MS) {
+          const hoursLeft = Math.ceil(
+            (COOLDOWN_MS - timeSinceLastChange) / (1000 * 60 * 60),
+          );
+          throw new HttpsError(
+            "failed-precondition",
+            `Name change is on cooldown. Please wait ${hoursLeft} hours.`,
+          );
+        }
+
+        // 6. Päivitetään uusi nimi ja asetetaan uusi aikaleima
+        transaction.update(userRef, {
+          username: trimmedName,
+          "settings.lastNameChange": now,
+        });
+
+        return now; // Palautetaan uusi aikaleima frontendille
+      });
+
+    // Palautetaan onnistuminen ja uusi aikaleima, jotta frontendin store voi päivittää itsensä
+    return {
+      success: true,
+      message: "Identity updated successfully.",
+      lastNameChange: updatedLastNameChange,
+    };
+  } catch (error: unknown) {
+    // KORJATTU: Käytetään unknown ja tarkistetaan onko se Error-instanssi
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error(`[changeUsername] Error for user ${uid}:`, errorMessage);
+
+    // Välitetään HttpsErrorit sellaisenaan frontendille
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    throw new HttpsError(
+      "internal",
+      "An error occurred while changing your name.",
+    );
+  }
+});

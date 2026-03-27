@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
-import { CHAT_COLORS } from "../../data/chatColors"; // Tuodaan väridata
+import { CHAT_COLORS } from "../../data/chatColors";
+import { wordFilter } from "../../utils/wordFilter"; // LISÄTTY IMPORT
 
 const AVAILABLE_AVATARS = [
   { id: 1, src: "/assets/profilepics/profile_pic_1.png", name: "Standard" },
@@ -25,15 +26,16 @@ const THEMES = [
 interface Props {
   currentUsername: string;
   currentAvatar: string;
-  // Päivitetty onSave ottamaan vastaan myös chatColor
   onSave: (
     name: string,
     avatar: string,
     theme: string,
     chatColor: string,
-  ) => void;
+  ) => void | Promise<void>;
   onClose: () => void;
 }
+
+const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 tuntia
 
 export default function UserConfigModal({
   currentUsername,
@@ -42,7 +44,7 @@ export default function UserConfigModal({
   onClose,
 }: Props) {
   const settings = useGameStore((state) => state.settings);
-  const social = useGameStore((state) => state.social); // Haetaan unlocked värit
+  const social = useGameStore((state) => state.social);
 
   const [name, setName] = useState(currentUsername);
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar);
@@ -53,6 +55,35 @@ export default function UserConfigModal({
     settings?.chatColor || "default",
   );
   const [error, setError] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // --- COOLDOWN LOGIIKKA ---
+  const lastNameChange = settings?.lastNameChange || 0;
+  const [timeLeft, setTimeLeft] = useState(() =>
+    Math.max(0, COOLDOWN_MS - (Date.now() - lastNameChange)),
+  );
+  const isNameCooldown = timeLeft > 0;
+
+  useEffect(() => {
+    if (!isNameCooldown) return;
+
+    const interval = setInterval(() => {
+      const remaining = Math.max(
+        0,
+        COOLDOWN_MS - (Date.now() - lastNameChange),
+      );
+      setTimeLeft(remaining);
+      if (remaining === 0) clearInterval(interval);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isNameCooldown, lastNameChange]);
+
+  const formatTime = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  };
 
   // Live preview teemalle
   useEffect(() => {
@@ -66,20 +97,29 @@ export default function UserConfigModal({
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
+
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
       setError("Identity required");
       return;
     }
-    if (name.length > 12) {
+    if (trimmedName.length > 12) {
       setError("Identity too long (max 12 chars)");
       return;
     }
 
-    // Nyt tallennetaan myös valittu väri
-    onSave(name.trim(), selectedAvatar, selectedTheme, selectedChatColor);
-    onClose();
+    // UUSI LISÄYS: Profanity check ennen palvelimelle lähettämistä
+    if (wordFilter.isProfane(trimmedName)) {
+      setError("Inappropriate identity detected");
+      return;
+    }
+
+    setIsProcessing(true);
+    await onSave(trimmedName, selectedAvatar, selectedTheme, selectedChatColor);
+    setIsProcessing(false);
   };
 
   return (
@@ -144,7 +184,7 @@ export default function UserConfigModal({
             </div>
           </div>
 
-          {/* CHAT COLORS (Uusi osio) */}
+          {/* CHAT COLORS */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-3 text-center">
               Tavern Name Color
@@ -219,17 +259,31 @@ export default function UserConfigModal({
             className="space-y-6 pt-2 border-t border-border/50"
           >
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-wider text-tx-muted mb-2">
-                Character Designation
-              </label>
+              <div className="flex justify-between items-end mb-2">
+                <label className="block text-[10px] font-black uppercase tracking-wider text-tx-muted">
+                  Character Designation
+                </label>
+                {/* NÄYTETÄÄN COOLDOWN JOS SE ON PÄÄLLÄ */}
+                {isNameCooldown && (
+                  <span className="text-[10px] font-bold text-warning uppercase tracking-wider bg-warning/10 px-2 py-0.5 rounded">
+                    Cooldown: {formatTime(timeLeft)}
+                  </span>
+                )}
+              </div>
+
               <input
                 type="text"
                 value={name}
+                disabled={isNameCooldown || isProcessing}
                 onChange={(e) => {
                   setName(e.target.value);
                   setError("");
                 }}
-                className="w-full bg-app-base border border-border rounded-lg px-4 py-3 text-tx-main focus:border-accent outline-none font-bold text-sm"
+                className={`w-full border rounded-lg px-4 py-3 font-bold text-sm outline-none transition-all ${
+                  isNameCooldown
+                    ? "bg-panel border-border/30 text-tx-muted cursor-not-allowed opacity-70"
+                    : "bg-app-base border-border text-tx-main focus:border-accent"
+                }`}
               />
               {error && (
                 <p className="text-danger text-xs mt-2 font-bold">{error}</p>
@@ -240,15 +294,19 @@ export default function UserConfigModal({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 px-4 py-3 bg-panel-hover hover:bg-panel text-tx-muted font-bold rounded-lg border border-border uppercase text-[10px] tracking-widest"
+                disabled={isProcessing}
+                className="flex-1 px-4 py-3 bg-panel-hover hover:bg-panel text-tx-muted font-bold rounded-lg border border-border uppercase text-[10px] tracking-widest disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-[2] px-4 py-3 bg-accent hover:bg-accent-hover text-white font-black rounded-xl shadow-lg uppercase text-[10px] tracking-widest"
+                disabled={
+                  isProcessing || (isNameCooldown && name !== currentUsername)
+                }
+                className="flex-[2] flex items-center justify-center gap-2 px-4 py-3 bg-accent hover:bg-accent-hover text-white font-black rounded-xl shadow-lg uppercase text-[10px] tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Profile
+                {isProcessing ? "Processing..." : "Save Profile"}
               </button>
             </div>
           </form>

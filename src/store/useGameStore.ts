@@ -37,7 +37,7 @@ import {
   createAchievementSlice,
   type AchievementSlice,
 } from "./slices/achievementSlice";
-
+import { getFunctions, httpsCallable } from "firebase/functions"; // PUUTTUVAT TUONNIT LISÄTTY TÄNNE!
 import type { OfflineSummary } from "../systems/offlineSystem";
 
 interface RewardModalState {
@@ -71,6 +71,12 @@ export type FullStoreState = GameState &
     setOfflineSummary: (summary: OfflineSummary | null) => void;
     openRewardModal: (title: string, rewards: RewardEntry[]) => void;
     closeRewardModal: () => void;
+    updateUserProfile: (
+      name: string,
+      avatar: string,
+      theme: string,
+      chatColor: string,
+    ) => Promise<boolean>;
 
     // --- TUTORIAALIN FUNKTIOT ---
     nextTutorialStep: () => void;
@@ -90,6 +96,7 @@ export const DEFAULT_STATE: GameState = {
     particles: true,
     theme: "theme-neon",
     chatColor: "default",
+    lastNameChange: 0, // UUSI: Jotta tiedämme frontendissä, onko nappi harmaana
   },
   social: {
     friends: [],
@@ -262,7 +269,61 @@ export const useGameStore = create<FullStoreState>()(
           tutorial: { ...state.tutorial, isActive: false, isComplete: true },
           coins: state.coins + 500, // Starttibonus!
         })),
+      updateUserProfile: async (newName, newAvatar, newTheme, newChatColor) => {
+        const state = get();
+        const currentName = state.username;
 
+        // Vaikka nimi ei muuttuisikaan, tallennetaan teema, avatar ja väri lokaalisti
+        set({
+          avatar: newAvatar,
+          settings: {
+            ...state.settings,
+            theme: newTheme,
+            chatColor: newChatColor,
+          },
+        });
+
+        // Jos nimeä ei edes yritetty muuttaa, lopetetaan tähän ja palautetaan true (onnistui)
+        if (newName === currentName) {
+          get().emitEvent("success", "Profile updated!");
+          return true;
+        }
+
+        // Jos nimeä yritettiin muuttaa, tehdään Firebase Cloud Function kutsu
+        try {
+          get().emitEvent("info", "Updating identity...");
+          const functions = getFunctions();
+          const changeNameFn = httpsCallable<
+            { newName: string },
+            { success: boolean; lastNameChange: number }
+          >(functions, "changeUsername");
+
+          const result = await changeNameFn({ newName });
+
+          if (result.data.success) {
+            // Backend hyväksyi! Päivitetään storeen uusi nimi ja serverin antama aikaleima
+            set((prevState) => ({
+              username: newName,
+              settings: {
+                ...prevState.settings,
+                lastNameChange: result.data.lastNameChange,
+              },
+            }));
+            get().emitEvent("success", "Identity updated successfully!");
+            return true;
+          } else {
+            // Jos backend palauttaa false jostain syystä
+            get().emitEvent("error", "Could not update identity.");
+            return false;
+          }
+        } catch (error: unknown) {
+          // KORJATTU ANY-VIRHE
+          const message =
+            error instanceof Error ? error.message : "Failed to change name.";
+          get().emitEvent("error", message);
+          return false;
+        }
+      },
       emitEvent: (type, message, icon) =>
         set((state) => {
           const newEvent: GameEvent = {

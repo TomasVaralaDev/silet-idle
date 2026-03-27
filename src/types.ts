@@ -81,6 +81,7 @@ export interface GameSettings {
   particles: boolean;
   theme: string;
   chatColor: string;
+  lastNameChange?: number; // LISÄÄ TÄMÄ RIVI!
 }
 
 export interface ActiveAction {

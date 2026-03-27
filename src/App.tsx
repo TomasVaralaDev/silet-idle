@@ -61,6 +61,7 @@ export default function App() {
     emitEvent,
     offlineSummary,
     setOfflineSummary,
+    updateUserProfile,
   } = useGameStore();
 
   useEffect(() => {
@@ -123,30 +124,29 @@ export default function App() {
       <RewardModal />
       <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
 
+      {/* --- KÄYTTÄJÄPROFIILIN ASETUKSET PÄIVITETTY --- */}
       {showUserConfig && (
         <UserConfigModal
           currentUsername={username}
           currentAvatar={avatar}
-          onSave={(
+          onSave={async (
             name: string,
             avatarUrl: string,
             newTheme: string,
             newChatColor: string,
           ) => {
-            setState((state) => ({
-              username: name,
-              avatar: avatarUrl,
-              settings: {
-                ...(state.settings || DEFAULT_STATE.settings),
-                theme: newTheme,
-                chatColor: newChatColor,
-              },
-            }));
-            emitEvent(
-              "info",
-              `Profile & Chat Color Updated`,
-              "/assets/ui/icon_check.png",
+            // TÄSSÄ KUTSUTAAN NYT UUTTA TURVALLISTA FUNKTIOTA (Ja odotetaan sitä)
+            const success = await updateUserProfile(
+              name,
+              avatarUrl,
+              newTheme,
+              newChatColor,
             );
+
+            // Suljetaan ikkuna vain, jos toiminto onnistui (eli cooldown ei estänyt nimen vaihtoa)
+            if (success) {
+              setShowUserConfig(false);
+            }
           }}
           onClose={() => setShowUserConfig(false)}
         />

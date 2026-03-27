@@ -1,118 +1,136 @@
+import {
+  ShoppingBag,
+  ArrowLeftRight,
+  AlertCircle,
+  TrendingDown,
+} from "lucide-react";
+
 export default function VendorsArticle() {
   return (
-    <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-8 text-left">
-      <section>
-        <h2 className="text-4xl font-black text-tx-main uppercase tracking-tighter mb-4">
-          World Vendors
+    <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
+      {/* HEADER - Professional Logistics Briefing */}
+      <header className="border-b border-border pb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
+            Manual v1.7
+          </span>
+        </div>
+        <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
+          Trade & Acquisition Nodes
         </h2>
-        <p className="text-tx-muted leading-relaxed mb-6">
-          Regional Traders are the primary source for essential augmentation
-          materials. These vendors require both{" "}
-          <span className="text-tx-main font-bold">Coins</span> and{" "}
-          <span className="text-tx-main font-bold">World Loot</span> extracted
-          from the local wildlife.
+        <p className="text-tx-muted text-sm leading-relaxed mt-4">
+          Regional Traders serve as the primary distribution points for
+          essential augmentation catalysts. Procurement requires a combination
+          of Credits (Coins) and localized resources extracted from the
+          surrounding environment.
         </p>
+      </header>
+
+      {/* PROCUREMENT PROTOCOLS - Clean Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-6 bg-panel/5 border border-border rounded-lg space-y-3">
+          <div className="flex items-center gap-2">
+            <ArrowLeftRight size={16} className="text-tx-muted" />
+            <h4 className="text-xs font-bold text-tx-main uppercase tracking-wide">
+              Exchange Protocol
+            </h4>
+          </div>
+          <p className="text-[11px] text-tx-muted leading-relaxed">
+            Acquisition from World Vendors necessitates a multi-currency
+            exchange. Travelers must provide both Credits and specific regional
+            materials (Basic, Rare, or Exotic).
+          </p>
+        </div>
+
+        <div className="p-6 bg-panel/5 border border-border rounded-lg space-y-3">
+          <div className="flex items-center gap-2">
+            <TrendingDown size={16} className="text-tx-muted" />
+            <h4 className="text-xs font-bold text-tx-main uppercase tracking-wide">
+              Daily Supply Quotas
+            </h4>
+          </div>
+          <p className="text-[11px] text-tx-muted leading-relaxed">
+            All acquisition nodes operate under{" "}
+            <span className="text-tx-main font-bold">Strict Daily Quotas</span>.
+            Inventory levels are replenished exactly once every 24-hour cycle.
+          </p>
+        </div>
       </section>
 
-      {/* SECTION: TRADING MECHANICS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-5 bg-panel border border-border rounded-xl">
-          <h4 className="text-warning font-black text-[10px] uppercase mb-3 tracking-widest flex items-center gap-2">
-            <img
-              src="/assets/ui/coins.png"
-              className="w-4 h-4 pixelated"
-              alt=""
-            />
-            Exchange Protocol
-          </h4>
-          <p className="text-xs text-tx-muted leading-relaxed">
-            Purchasing items from World Vendors requires a combination of Gold
-            and materials (Basic, Rare, or Exotic drops) from that specific
-            world.
-          </p>
+      {/* CATALYST AVAILABILITY - Structured Data */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <ShoppingBag className="text-tx-main" size={20} />
+          <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
+            Augmentation Catalyst Tiers
+          </h3>
         </div>
-        <div className="p-5 bg-panel border border-border rounded-xl">
-          <h4 className="text-warning font-black text-[10px] uppercase mb-3 tracking-widest flex items-center gap-2">
-            <span>⏳</span>
-            Daily Supply Limits
-          </h4>
+
+        <div className="space-y-4">
           <p className="text-xs text-tx-muted leading-relaxed">
-            Vendors have a{" "}
-            <span className="text-danger font-bold">Strict Daily Limit</span> on
-            their stock. This limit resets once every 24 hours.
+            Regional merchants facilitate the distribution of Augmentation
+            Scrolls (T1–T4). Higher-tier catalysts possess significantly reduced
+            stock levels due to supply chain scarcity.
           </p>
+
+          <div className="border border-border/50 rounded-lg overflow-hidden bg-panel/5">
+            <div className="p-4 border-b border-border/20 bg-panel/10">
+              <h4 className="text-[10px] font-bold uppercase text-tx-main">
+                Supply Logic Registry
+              </h4>
+              <p className="text-[10px] text-tx-muted mt-1">
+                As catalyst potency increases, availability decreases
+                proportionally.
+              </p>
+            </div>
+
+            <div className="divide-y divide-border/20">
+              <VendorTierRow
+                world="Regional Zone 01"
+                item="Tier 1 Catalyst"
+                cost="Credits + R1 Loot"
+                cap="Standard Stock"
+              />
+              <VendorTierRow
+                world="Regional Zone 02"
+                item="Tier 2 Catalyst"
+                cost="Credits + R2 Loot"
+                cap="Regulated Stock"
+              />
+              <VendorTierRow
+                world="Regional Zone 03"
+                item="Tier 3 Catalyst"
+                cost="Credits + R3 Loot"
+                cap="Limited Stock"
+              />
+              <VendorTierRow
+                world="Regional Zone 04"
+                item="Tier 4 Catalyst"
+                cost="Credits + R4 Loot"
+                cap="Critical Scarcity"
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* SECTION: ENCHANTMENT SCROLLS */}
-      <section className="bg-panel/30 border border-border/50 p-6 rounded-2xl">
-        <h3 className="text-sm font-bold text-warning uppercase tracking-[0.2em] mb-4">
-          Enchantment Scroll Tiers (T1 - T4)
-        </h3>
-        <p className="text-xs text-tx-muted mb-4 leading-relaxed">
-          Regional Merchants only stock scrolls ranging from{" "}
-          <span className="text-tx-main font-bold">Tier 1 to Tier 4</span>. Each
-          tier provides a different success probability when used to augment
-          your equipment.
-        </p>
-
-        <div className="bg-app-base/40 p-4 border border-border/30 rounded-xl mb-4">
-          <h4 className="text-[10px] font-black uppercase text-tx-main mb-2">
-            Supply Scarcity Logic
+      {/* LOGISTICS ADVISORY */}
+      <div className="p-4 border border-border/50 rounded-lg bg-panel/5 flex gap-4 items-start">
+        <AlertCircle className="text-tx-muted shrink-0" size={18} />
+        <div className="space-y-1">
+          <h4 className="text-xs font-bold text-tx-main uppercase tracking-widest">
+            Logistics Advisory
           </h4>
           <p className="text-[11px] text-tx-muted leading-relaxed">
-            As the Scroll Tier increases, the{" "}
-            <span className="text-warning font-bold">
-              Daily Cap decreases significantly
+            Do not accumulate regional materials excessively. Due to daily
+            procurement caps, failure to secure high-tier catalysts daily will
+            result in significant long-term delays in achieving{" "}
+            <span className="text-tx-main font-semibold">
+              Max Augmentation (+5)
             </span>
-            . While Tier 1 scrolls are abundant, Tier 4 scrolls are highly
-            limited and should be purchased whenever available.
+            .
           </p>
         </div>
-
-        <div className="space-y-2">
-          <VendorTierRow
-            world="World 1 (Greenvale)"
-            item="Tier 1 Scroll"
-            cost="Coins + World 1 Loot"
-            cap="High Stock"
-          />
-          <VendorTierRow
-            world="World 2 (Stonefall)"
-            item="Tier 2 Scroll"
-            cost="Coins + World 2 Loot"
-            cap="Medium Stock"
-          />
-          <VendorTierRow
-            world="World 3 (Ashridge)"
-            item="Tier 3 Scroll"
-            cost="Coins + World 3 Loot"
-            cap="Low Stock"
-          />
-          <VendorTierRow
-            world="World 4 (Frostreach)"
-            item="Tier 4 Scroll"
-            cost="Coins + World 4 Loot"
-            cap="Minimal Stock"
-          />
-        </div>
-
-        <p className="text-[10px] text-tx-muted mt-4 italic">
-          *Note: No vendor currently stocks scrolls above Tier 4.
-        </p>
-      </section>
-
-      {/* PRO TIP */}
-      <div className="p-4 bg-warning/5 border border-warning/20 rounded-xl">
-        <p className="text-xs text-tx-muted">
-          <span className="text-warning font-black uppercase mr-2">
-            Pro Tip:
-          </span>
-          Do not hoard your world loot. Because of the daily limits, missing a
-          day of purchases can delay your final{" "}
-          <span className="text-tx-main font-bold">Enchantment +5</span>{" "}
-          upgrades for weeks.
-        </p>
       </div>
     </div>
   );
@@ -129,20 +147,24 @@ function VendorTierRow({
   cost: string;
   cap: string;
 }) {
+  const isCritical = cap === "Critical Scarcity";
+
   return (
-    <div className="flex justify-between items-center p-3 bg-app-base/50 border-b border-border/30 last:border-0">
-      <div className="flex flex-col">
-        <span className="text-[10px] font-black uppercase text-tx-main">
+    <div className="flex justify-between items-center p-4 hover:bg-panel/10 transition-colors">
+      <div className="space-y-1">
+        <span className="block text-[10px] font-bold uppercase text-tx-main">
           {world}
         </span>
-        <span className="text-[9px] text-tx-muted uppercase font-mono">
+        <span className="block text-[9px] text-tx-muted uppercase font-mono tracking-tighter">
           {cost}
         </span>
       </div>
-      <div className="text-right">
-        <div className="text-[10px] font-bold text-accent">{item}</div>
+      <div className="text-right space-y-1">
+        <div className="text-[10px] font-bold text-tx-main uppercase">
+          {item}
+        </div>
         <div
-          className={`text-[9px] font-bold uppercase ${cap === "Minimal Stock" ? "text-danger" : "text-tx-muted opacity-60"}`}
+          className={`text-[9px] font-bold uppercase tracking-tighter ${isCritical ? "text-accent" : "text-tx-muted opacity-60"}`}
         >
           {cap}
         </div>

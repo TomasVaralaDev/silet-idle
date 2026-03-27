@@ -1,90 +1,101 @@
-import { Sparkles, ScrollText, Skull } from "lucide-react";
+import { Sparkles, ScrollText, ShieldAlert } from "lucide-react";
 
 export default function EnchantingArticle() {
   return (
-    <div className="animate-in fade-in slide-in-from-right-8 duration-500 space-y-12 text-left relative z-10">
-      {/* HEADER */}
-      <header className="border-b-2 border-accent/30 pb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-accent font-mono text-sm tracking-widest">
-            CHAPTER 04
+    <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
+      {/* HEADER - Professional Technical Briefing */}
+      <header className="border-b border-border pb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
+            Manual v1.3
           </span>
         </div>
-        <h2 className="text-3xl md:text-5xl font-black text-tx-main uppercase tracking-tighter drop-shadow-md">
-          The Great Forge
+        <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
+          Enchanting
         </h2>
-        <p className="text-tx-muted text-sm md:text-base leading-relaxed mt-4 max-w-2xl">
-          Raw materials can only take you so far. To face the true horrors of
-          the realms, you must learn to infuse your equipment with magical
-          catalysts.
+        <p className="text-tx-muted text-sm leading-relaxed mt-4">
+          Standard equipment can be enhanced beyond its base specifications
+          through the infusion of magical catalysts. Understanding the stability
+          limits of the Nexus Forge is critical to maximizing combat efficiency.
         </p>
       </header>
 
-      {/* LAWS OF AUGMENTATION */}
-      <section>
-        <div className="p-6 md:p-10 bg-panel border-2 border-border rounded-3xl relative overflow-hidden shadow-2xl">
-          {/* Koristeellinen taustaikoni */}
-          <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none">
-            <Sparkles size={250} />
-          </div>
-
-          <h3 className="text-xl md:text-2xl font-black uppercase text-accent mb-8 flex items-center gap-3 relative z-10">
-            <ScrollText size={24} />
-            Laws of Augmentation
+      {/* LAWS OF AUGMENTATION - Clean, structured data */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <ScrollText className="text-tx-main" size={20} />
+          <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
+            Operational Constraints
           </h3>
+        </div>
 
-          <ul className="space-y-6 relative z-10">
+        <div className="bg-panel/5 border border-border rounded-lg overflow-hidden">
+          <div className="divide-y divide-border/30">
             {/* Rule 1 */}
-            <li className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-black text-sm">
-                I
+            <div className="p-6 flex gap-6 group">
+              <div className="text-xs font-bold text-border group-hover:text-accent transition-colors pt-1">
+                01
               </div>
-              <div>
-                <h4 className="text-tx-main font-bold uppercase tracking-wider text-sm mb-1">
-                  The Rule of Power
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-tx-main uppercase tracking-wide">
+                  Statistical Scaling
                 </h4>
-                <p className="text-sm text-tx-muted leading-relaxed">
-                  Every successful enchantment increases the item's base stats
-                  by exactly <strong className="text-success">+20%</strong>.
+                <p className="text-xs text-tx-muted leading-relaxed">
+                  Every successful augmentation cycle increases the item's base
+                  attributes by{" "}
+                  <span className="text-tx-main font-bold">+20%</span>. This
+                  bonus is cumulative based on the original base values.
                 </p>
               </div>
-            </li>
+            </div>
 
             {/* Rule 2 */}
-            <li className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-black text-sm">
-                II
+            <div className="p-6 flex gap-6 group">
+              <div className="text-xs font-bold text-border group-hover:text-accent transition-colors pt-1">
+                02
               </div>
-              <div>
-                <h4 className="text-tx-main font-bold uppercase tracking-wider text-sm mb-1">
-                  The Rule of Limits
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-tx-main uppercase tracking-wide">
+                  Stability Threshold
                 </h4>
-                <p className="text-sm text-tx-muted leading-relaxed">
-                  The forge can only stabilize mortal equipment up to{" "}
-                  <strong className="text-warning">Level +5</strong> before the
-                  magic becomes too volatile to contain.
+                <p className="text-xs text-tx-muted leading-relaxed">
+                  Equipment can be stabilized up to a maximum of
+                  <span className="text-tx-main font-bold"> Level +5</span>.
+                  Attempting to exceed this threshold is currently restricted by
+                  the Forge safety protocols.
                 </p>
               </div>
-            </li>
-
-            {/* Rule 3 (Boss Items) */}
-            <li className="flex items-start gap-4 p-4 mt-8 bg-danger/10 border border-danger/20 rounded-xl shadow-inner">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center text-danger">
-                <Skull size={16} />
-              </div>
-              <div>
-                <h4 className="text-danger font-black uppercase tracking-wider text-sm mb-1">
-                  The Ancient Exception
-                </h4>
-                <p className="text-xs text-danger/80 leading-relaxed uppercase italic font-bold">
-                  Ancient artifacts (Boss Drops) cannot be enchanted. Their
-                  power is absolute and their magic is already sealed.
-                </p>
-              </div>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* INCOMPATIBILITY NOTICE - Mieto mutta selkeä varoitus */}
+      <section className="space-y-4">
+        <div className="p-5 border border-border/50 bg-panel/5 rounded-lg flex gap-4 items-start">
+          <ShieldAlert className="text-tx-muted shrink-0" size={18} />
+          <div className="space-y-1">
+            <h4 className="text-xs font-bold text-tx-main uppercase tracking-widest">
+              Compatibility Constraints
+            </h4>
+            <p className="text-[11px] text-tx-muted leading-relaxed">
+              Ancient artifacts and specialized{" "}
+              <span className="text-tx-main font-semibold">Boss Drops</span> are
+              ineligible for augmentation. These items possess sealed magical
+              properties that cannot be altered by standard Forge operations.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* STRATEGIC FOOTER */}
+      <div className="p-4 border-l border-border bg-panel/10 flex items-center gap-3">
+        <Sparkles className="text-tx-muted shrink-0" size={16} />
+        <p className="text-[11px] text-tx-muted leading-relaxed opacity-70">
+          Tip: Prioritize augmenting your primary weapon before armor to
+          maximize your resource-to-damage ratio during early realm progression.
+        </p>
+      </div>
     </div>
   );
 }

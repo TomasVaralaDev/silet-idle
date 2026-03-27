@@ -31,6 +31,7 @@ export const processCombatTick = (
     equippedFood,
     upgrades,
     combatSettings,
+    coins, // LISÄTTY: Luetaan nykyinen rahamäärä statesta
   } = state;
 
   if (activeAction?.skill !== "combat" || !combatStats.currentMapId) return {};
@@ -47,6 +48,7 @@ export const processCombatTick = (
   const extendedStats = { ...combatStats } as CombatState;
   const newInventory = { ...inventory };
   let newEquippedFood = equippedFood ? { ...equippedFood } : null;
+  let newCoins = coins || 0; // LISÄTTY: Alustetaan muuttuja rahan seurantaan
 
   // Pop-upien siivous (poistetaan yli 0.5s vanhat)
   const now = Date.now();
@@ -153,6 +155,7 @@ export const processCombatTick = (
           return {
             activeAction: null,
             enemy: null,
+            coins: newCoins,
             combatStats: {
               ...extendedStats,
               hp: pHP,
@@ -190,12 +193,13 @@ export const processCombatTick = (
         inventory: cleanInventory(newInventory),
         enemy: newEnemy,
         equippedFood: newEquippedFood,
+        coins: newCoins,
         combatStats: {
           ...extendedStats,
           hp: pHP,
           respawnTimer: 0,
           enemyCurrentHp: enemyStatsInit.hp,
-          playerAttackTimer: Math.min(1000, gearStats.attackSpeed), // Reilu alku molemmille
+          playerAttackTimer: Math.min(1000, gearStats.attackSpeed),
           enemyAttackTimer: Math.min(1500, enemyStatsInit.attackSpeed),
           combatLog: currentLog,
         },
@@ -208,6 +212,7 @@ export const processCombatTick = (
         respawnTimer: nextTimer,
         combatLog: currentLog,
       },
+      coins: newCoins,
       equippedFood: newEquippedFood,
       inventory: cleanInventory(newInventory),
     };
@@ -243,7 +248,7 @@ export const processCombatTick = (
   if (extendedStats.playerAttackTimer <= 0 && currentEnemyHp > 0) {
     const playerHit = calculateHit(playerStats, enemyStats);
     currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
-    extendedStats.playerAttackTimer = playerStats.attackSpeed; // Reset Timer
+    extendedStats.playerAttackTimer = playerStats.attackSpeed;
 
     if (playerHit.finalDamage > 0) {
       extendedStats.damagePopUps.push({
@@ -291,13 +296,21 @@ export const processCombatTick = (
       newSkills[s].xp = res.xp;
     });
 
+    // --- LOOT LOGIIKKA PÄIVITETTY ---
     const dropResult = rollWeightedDrop(map.drops);
     if (dropResult) {
-      newInventory[dropResult.itemId] =
-        (newInventory[dropResult.itemId] || 0) + dropResult.amount;
-      const droppedItem = getItemDetails(dropResult.itemId);
-      if (droppedItem)
-        addLog(`Loot: Acquired ${dropResult.amount}x ${droppedItem.name}`);
+      if (dropResult.itemId === "coins") {
+        // Jos id on coins, lisätään suoraan lompakkoon
+        newCoins += dropResult.amount;
+        addLog(`Loot: Acquired ${dropResult.amount} coins`);
+      } else {
+        // Muuten lisätään inventoryyn
+        newInventory[dropResult.itemId] =
+          (newInventory[dropResult.itemId] || 0) + dropResult.amount;
+        const droppedItem = getItemDetails(dropResult.itemId);
+        if (droppedItem)
+          addLog(`Loot: Acquired ${dropResult.amount}x ${droppedItem.name}`);
+      }
     }
 
     const store = useGameStore.getState();
@@ -322,6 +335,7 @@ export const processCombatTick = (
       inventory: cleanInventory(newInventory),
       skills: newSkills,
       enemy: null,
+      coins: newCoins, // PALAUTETAAN PÄIVITETTY RAHA
       equippedFood: newEquippedFood,
       combatStats: {
         ...extendedStats,
@@ -341,7 +355,7 @@ export const processCombatTick = (
   if (extendedStats.enemyAttackTimer <= 0 && pHP > 0) {
     const enemyHit = calculateHit(enemyStats, playerStats);
     pHP = Math.max(0, pHP - enemyHit.finalDamage);
-    extendedStats.enemyAttackTimer = enemyStats.attackSpeed; // Reset Timer
+    extendedStats.enemyAttackTimer = enemyStats.attackSpeed;
 
     if (enemyHit.finalDamage > 0) {
       extendedStats.damagePopUps.push({
@@ -374,6 +388,7 @@ export const processCombatTick = (
     return {
       activeAction: null,
       enemy: null,
+      coins: newCoins,
       combatStats: {
         ...extendedStats,
         hp: 0,
@@ -384,7 +399,7 @@ export const processCombatTick = (
         combatLog: currentLog,
         cooldownUntil: Date.now() + 60000,
         damagePopUps: [],
-        cooldownReason: "death", // LISÄTTY: Tieto UI:ta varten
+        cooldownReason: "death",
       },
       equippedFood: newEquippedFood,
       inventory: cleanInventory(newInventory),
@@ -395,6 +410,7 @@ export const processCombatTick = (
   return {
     inventory: cleanInventory(newInventory),
     equippedFood: newEquippedFood,
+    coins: newCoins,
     combatStats: {
       ...extendedStats,
       hp: pHP,

@@ -26,6 +26,7 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
     setState((prev: GameState) => ({ ...prev, lastTimestamp: now }));
 
     // 1. POIMITAAN DATA JA EROTETAAN FUNKTIOT
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
       setState: _ss,
       emitEvent: _ee,

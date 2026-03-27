@@ -31,7 +31,7 @@ export const processCombatTick = (
     equippedFood,
     upgrades,
     combatSettings,
-    coins, // LISÄTTY: Luetaan nykyinen rahamäärä statesta
+    coins,
   } = state;
 
   if (activeAction?.skill !== "combat" || !combatStats.currentMapId) return {};
@@ -48,9 +48,9 @@ export const processCombatTick = (
   const extendedStats = { ...combatStats } as CombatState;
   const newInventory = { ...inventory };
   let newEquippedFood = equippedFood ? { ...equippedFood } : null;
-  let newCoins = coins || 0; // LISÄTTY: Alustetaan muuttuja rahan seurantaan
+  let newCoins = coins || 0;
 
-  // Pop-upien siivous (poistetaan yli 0.5s vanhat)
+  // Cleanup old damage pop-ups (> 500ms)
   const now = Date.now();
   extendedStats.damagePopUps = (extendedStats.damagePopUps || []).filter(
     (p) => now - p.createdAt < 500,
@@ -64,7 +64,7 @@ export const processCombatTick = (
     return cleaned;
   };
 
-  // 1. VARUSTEIDEN KOONTI
+  // 1. GATHER EQUIPMENT STATS
   const gearStats = (Object.values(equipment) as (string | null)[]).reduce(
     (acc, itemId) => {
       if (!itemId) return acc;
@@ -93,7 +93,7 @@ export const processCombatTick = (
     },
   );
 
-  // 2. HP LASKENTA & TURVATARKISTUS
+  // 2. HEALTH & AUTO-EAT LOGIC
   const currentHpLevel = skills.hitpoints?.level || 1;
   const maxHp = 100 + currentHpLevel * 10 + gearStats.hpBonus;
 
@@ -108,7 +108,6 @@ export const processCombatTick = (
   const hpPercent = (pHP / maxHp) * 100;
   const threshold = combatSettings.autoEatThreshold || 0;
 
-  // AUTO-EAT LOGIIKKA
   if (
     newEquippedFood &&
     pHP > 0 &&
@@ -141,7 +140,7 @@ export const processCombatTick = (
     }
   }
 
-  // 3. RESPAWN LOGIIKKA
+  // 3. RESPAWN LOGIC
   if (extendedStats.respawnTimer > 0) {
     const nextTimer = Math.max(0, extendedStats.respawnTimer - tickMs);
     if (nextTimer === 0) {
@@ -218,7 +217,7 @@ export const processCombatTick = (
     };
   }
 
-  // 4. TAISTELU - TICK DOWN AJASTIMET
+  // 4. COMBAT EXECUTION
   extendedStats.playerAttackTimer = Math.max(
     0,
     (extendedStats.playerAttackTimer || 0) - tickMs,
@@ -244,7 +243,7 @@ export const processCombatTick = (
     attack: map.enemyAttack,
   });
 
-  // --- PELAAJA LYÖ VIHOLLISTA ---
+  // PLAYER STRIKES ENEMY
   if (extendedStats.playerAttackTimer <= 0 && currentEnemyHp > 0) {
     const playerHit = calculateHit(playerStats, enemyStats);
     currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
@@ -272,7 +271,7 @@ export const processCombatTick = (
     }
   }
 
-  // --- VIHOLLINEN KUOLI -> JAA XP JA LOOT ---
+  // ENEMY DEFEATED -> LOOT & XP
   if (currentEnemyHp <= 0) {
     addLog(`Victory! Defeated ${map.enemyName}.`);
     const safeXpReward = map.xpReward || 1;
@@ -296,15 +295,12 @@ export const processCombatTick = (
       newSkills[s].xp = res.xp;
     });
 
-    // --- LOOT LOGIIKKA PÄIVITETTY ---
     const dropResult = rollWeightedDrop(map.drops);
     if (dropResult) {
       if (dropResult.itemId === "coins") {
-        // Jos id on coins, lisätään suoraan lompakkoon
         newCoins += dropResult.amount;
         addLog(`Loot: Acquired ${dropResult.amount} coins`);
       } else {
-        // Muuten lisätään inventoryyn
         newInventory[dropResult.itemId] =
           (newInventory[dropResult.itemId] || 0) + dropResult.amount;
         const droppedItem = getItemDetails(dropResult.itemId);
@@ -317,9 +313,22 @@ export const processCombatTick = (
     store.updateQuestProgress("KILL", map.id.toString(), 1);
 
     const newMaxMapCompleted = Math.max(extendedStats.maxMapCompleted, map.id);
-    let nextMapId = extendedStats.currentMapId;
 
-    if (combatSettings.autoProgress) {
+    let nextMapId: number | null = extendedStats.currentMapId;
+    let nextActiveAction: GameState["activeAction"] = activeAction;
+    let nextRespawnTimer = 2000;
+    let nextDamagePopUps = extendedStats.damagePopUps;
+
+    // Handle Automation Settings
+    if (combatSettings.autoRetreat) {
+      // 1-Kill Farming: Automatically stop combat cleanly after victory
+      nextMapId = null;
+      nextActiveAction = null;
+      nextRespawnTimer = 0; // CLEAR TIMER SO UI REMOVES BADGE
+      nextDamagePopUps = []; // CLEAR FLOATING NUMBERS
+      addLog("Auto-Retreat successful. Returning to camp.");
+    } else if (combatSettings.autoProgress) {
+      // Auto Push: Proceed to next level if available
       const nextMap = COMBAT_DATA.find((m) => m.id === map.id + 1);
       if (
         nextMap &&
@@ -332,26 +341,28 @@ export const processCombatTick = (
     }
 
     return {
+      activeAction: nextActiveAction,
       inventory: cleanInventory(newInventory),
       skills: newSkills,
       enemy: null,
-      coins: newCoins, // PALAUTETAAN PÄIVITETTY RAHA
+      coins: newCoins,
       equippedFood: newEquippedFood,
       combatStats: {
         ...extendedStats,
         hp: pHP,
         enemyCurrentHp: 0,
-        respawnTimer: 2000,
+        respawnTimer: nextRespawnTimer,
         playerAttackTimer: 0,
         enemyAttackTimer: 0,
         combatLog: currentLog,
         maxMapCompleted: newMaxMapCompleted,
         currentMapId: nextMapId,
+        damagePopUps: nextDamagePopUps,
       },
     };
   }
 
-  // --- VIHOLLINEN LYÖ PELAAJAA ---
+  // ENEMY STRIKES PLAYER
   if (extendedStats.enemyAttackTimer <= 0 && pHP > 0) {
     const enemyHit = calculateHit(enemyStats, playerStats);
     pHP = Math.max(0, pHP - enemyHit.finalDamage);
@@ -382,7 +393,7 @@ export const processCombatTick = (
     }
   }
 
-  // --- KUOLEMA ---
+  // DEATH PENALTY
   if (pHP <= 0) {
     addLog("Defeated! Returning to safety. 1 min to heal up...");
     return {
@@ -400,13 +411,14 @@ export const processCombatTick = (
         cooldownUntil: Date.now() + 60000,
         damagePopUps: [],
         cooldownReason: "death",
+        respawnTimer: 0, // CLEAR ON DEATH AS WELL
       },
       equippedFood: newEquippedFood,
       inventory: cleanInventory(newInventory),
     };
   }
 
-  // --- NORMAALI TILANNE (Kukaan ei kuollut) ---
+  // NORMAL STATE (Combat continues)
   return {
     inventory: cleanInventory(newInventory),
     equippedFood: newEquippedFood,

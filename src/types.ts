@@ -265,6 +265,7 @@ export interface ScavengerState {
 export interface CombatSettings {
   autoEatThreshold: number;
   autoProgress: boolean;
+  autoRetreat: boolean;
 }
 
 export interface SkillData {

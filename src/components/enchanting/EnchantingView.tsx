@@ -76,7 +76,7 @@ export default function EnchantingView() {
   if (isScrollSelected) {
     if (successChance >= 80) chanceColor = "text-success";
     else if (successChance >= 50) chanceColor = "text-warning";
-    else chanceColor = "text-[#E43636]"; // Danger/Red indicating high risk of failure
+    else chanceColor = "text-[#E43636]";
   }
 
   return (
@@ -130,7 +130,9 @@ export default function EnchantingView() {
                   alt=""
                 />
 
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 scale-90 md:scale-100">
+                <div
+                  className={`absolute top-0 left-1/2 -translate-x-1/2 scale-90 md:scale-100 ${selectedSlot === "head" ? "z-50" : "z-10"}`}
+                >
                   <EnchantSlot
                     slot="head"
                     itemId={equipment.head}
@@ -138,7 +140,9 @@ export default function EnchantingView() {
                     onClick={() => setSelectedSlot("head")}
                   />
                 </div>
-                <div className="absolute top-[22%] left-1/2 -translate-x-1/2 scale-90 md:scale-100">
+                <div
+                  className={`absolute top-[22%] left-1/2 -translate-x-1/2 scale-90 md:scale-100 ${selectedSlot === "body" ? "z-50" : "z-10"}`}
+                >
                   <EnchantSlot
                     slot="body"
                     itemId={equipment.body}
@@ -146,7 +150,9 @@ export default function EnchantingView() {
                     onClick={() => setSelectedSlot("body")}
                   />
                 </div>
-                <div className="absolute top-[48%] left-1/2 -translate-x-1/2 scale-90 md:scale-100">
+                <div
+                  className={`absolute top-[48%] left-1/2 -translate-x-1/2 scale-90 md:scale-100 ${selectedSlot === "legs" ? "z-50" : "z-10"}`}
+                >
                   <EnchantSlot
                     slot="legs"
                     itemId={equipment.legs}
@@ -154,7 +160,9 @@ export default function EnchantingView() {
                     onClick={() => setSelectedSlot("legs")}
                   />
                 </div>
-                <div className="absolute top-[22%] left-[5%] md:left-[10%] scale-90 md:scale-100">
+                <div
+                  className={`absolute top-[22%] left-[5%] md:left-[10%] scale-90 md:scale-100 ${selectedSlot === "weapon" ? "z-50" : "z-10"}`}
+                >
                   <EnchantSlot
                     slot="weapon"
                     itemId={equipment.weapon}
@@ -162,7 +170,9 @@ export default function EnchantingView() {
                     onClick={() => setSelectedSlot("weapon")}
                   />
                 </div>
-                <div className="absolute top-[22%] right-[5%] md:right-[10%] scale-90 md:scale-100">
+                <div
+                  className={`absolute top-[22%] right-[5%] md:right-[10%] scale-90 md:scale-100 ${selectedSlot === "shield" ? "z-50" : "z-10"}`}
+                >
                   <EnchantSlot
                     slot="shield"
                     itemId={equipment.shield}
@@ -171,7 +181,9 @@ export default function EnchantingView() {
                   />
                 </div>
 
-                <div className="absolute bottom-0 w-full flex justify-center gap-1 md:gap-2 scale-90 md:scale-100">
+                <div
+                  className={`absolute bottom-0 w-full flex justify-center gap-1 md:gap-2 scale-90 md:scale-100 ${["necklace", "ring", "rune"].includes(selectedSlot as string) ? "z-50" : "z-10"}`}
+                >
                   <EnchantSlot
                     slot="necklace"
                     itemId={equipment.necklace}
@@ -424,17 +436,17 @@ function EnchantSlot({
   return (
     <div
       onClick={onClick}
-      className={`w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 relative group
+      className={`w-14 h-14 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 relative group group-hover:z-40
         ${
           isSelected
-            ? `bg-panel-hover border-2 border-accent shadow-[0_0_15px_rgb(var(--color-accent)/0.4)] scale-110 z-10`
-            : `bg-app-base border-2 ${rarityStyle ? rarityStyle.border : "border-border/50"} hover:border-border shadow-inner`
+            ? `bg-panel-hover border-2 border-accent shadow-[0_0_15px_rgb(var(--color-accent)/0.4)] scale-110 z-50`
+            : `bg-app-base border-2 ${rarityStyle ? rarityStyle.border : "border-border/50"} hover:border-border shadow-inner z-10`
         }
       `}
     >
       {item ? (
         <>
-          <div className="absolute inset-0 bg-gradient-to-br from-panel/20 to-panel/60 rounded-lg"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-panel/20 to-panel/60 rounded-lg pointer-events-none"></div>
           <img
             src={item.icon}
             className="w-8 h-8 sm:w-12 sm:h-12 pixelated relative z-10 drop-shadow-xl group-hover:scale-110 transition-transform"
@@ -447,14 +459,6 @@ function EnchantSlot({
               +{enchantLevel}
             </div>
           )}
-          {
-            // Hover Label (Hidden on mobile to save space)
-          }
-          <div
-            className={`absolute -bottom-7 w-24 text-center text-[9px] bg-black/80 text-white px-2 py-1 rounded-md border border-border pointer-events-none transition-opacity hidden md:block ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"} z-30`}
-          >
-            {item.name}
-          </div>
         </>
       ) : (
         <img

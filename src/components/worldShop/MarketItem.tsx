@@ -196,7 +196,7 @@ export default function MarketItem({
         {isLimitReached
           ? "Daily Limit Reached"
           : canAffordAll
-            ? `Confirm Exchange (x${selectedAmount})`
+            ? `Buy (x${selectedAmount})`
             : "Insufficient Assets"}
       </button>
     </div>

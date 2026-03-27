@@ -188,6 +188,7 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            maxLength={300} // LISÄÄ TÄMÄ RIVI
             placeholder={
               cooldownRemaining > 0
                 ? `Waiting... (${cooldownRemaining}s)`

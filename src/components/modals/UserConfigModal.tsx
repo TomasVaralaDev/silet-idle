@@ -133,7 +133,13 @@ export default function UserConfigModal({
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"></div>
 
         <h2 className="text-xl font-black uppercase tracking-widest text-center mb-6 text-tx-main flex items-center justify-center gap-3">
-          <span className="text-2xl">👤</span> User Profile
+          {/* EMOJI KORVATTU KUVALLA */}
+          <img
+            src="/assets/profile/user_settings.png"
+            alt=""
+            className="w-6 h-6 pixelated object-contain"
+          />
+          User Profile
         </h2>
 
         <div className="space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">

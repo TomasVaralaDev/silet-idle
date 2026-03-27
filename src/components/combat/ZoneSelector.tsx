@@ -1,8 +1,8 @@
-import { useState } from "react"; // LISÄTTY
+import { useState } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { COMBAT_DATA } from "../../data/combat";
 import type { CombatMap } from "../../types";
-import ZoneIntelModal from "./ZoneIntelModal"; // TUODAAN UUSI MODAL
+import ZoneIntelModal from "./ZoneIntelModal";
 
 interface Props {
   selectedWorldId: number;
@@ -15,10 +15,10 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
     combatStats,
     combatSettings,
     toggleAutoProgress,
+    toggleAutoRetreat, // Brought in from store
     inventory,
   } = useGameStore();
 
-  // UUSI: Tila valitulle vyöhykkeelle (infonäyttöä varten)
   const [infoZone, setInfoZone] = useState<CombatMap | null>(null);
 
   const zones = COMBAT_DATA.filter(
@@ -27,16 +27,17 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-panel/80 backdrop-blur-sm border-t lg:border-t-0 lg:border-l border-border relative">
-      {/* PLACEHOLDER MODALILLE 
-        Tämä renderöidään tässä komponentissa, jotta se pysyy Z-indeksin päällä
-      */}
-      {/* Renderöidään modal vain kun tarpeen */}
+      {
+        // Intel Modal Overlay
+      }
       {infoZone && (
         <ZoneIntelModal zone={infoZone} onClose={() => setInfoZone(null)} />
       )}
 
-      {/* Header Section */}
-      <div className="p-3 md:p-4 border-b border-border flex items-center justify-between bg-panel/90 shadow-sm z-10">
+      {
+        // Header Section with Automation Toggles
+      }
+      <div className="p-3 md:p-4 border-b border-border flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-panel/90 shadow-sm z-10">
         <div className="flex flex-col text-left">
           <span className="text-[10px] font-black uppercase tracking-widest text-success">
             Zones
@@ -46,13 +47,48 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 bg-app-base/50 px-2 py-1.5 rounded-lg border border-border">
-          <span className="text-[8px] md:text-[9px] text-tx-muted uppercase font-black tracking-wider">
-            Auto push
-          </span>
-          <button
-            onClick={toggleAutoProgress}
-            className={`
+        <div className="flex items-center gap-2">
+          {
+            // Auto-Retreat (1-Kill) Toggle
+          }
+          <div
+            className="flex items-center gap-2 bg-app-base/50 px-2 py-1.5 rounded-lg border border-border"
+            title="Automatically stop combat after one kill"
+          >
+            <span className="text-[8px] md:text-[9px] text-tx-muted uppercase font-black tracking-wider">
+              1-Kill
+            </span>
+            <button
+              onClick={toggleAutoRetreat}
+              className={`
+                  w-8 h-4 rounded-full relative transition-all duration-300
+                  ${
+                    combatSettings.autoRetreat
+                      ? "bg-accent shadow-[0_0_8px_rgb(var(--color-accent)/0.4)]"
+                      : "bg-panel-hover"
+                  }
+                `}
+            >
+              <div
+                className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 shadow-sm ${
+                  combatSettings.autoRetreat
+                    ? "translate-x-4"
+                    : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
+
+          {
+            // Auto Push Toggle
+          }
+          <div className="flex items-center gap-2 bg-app-base/50 px-2 py-1.5 rounded-lg border border-border">
+            <span className="text-[8px] md:text-[9px] text-tx-muted uppercase font-black tracking-wider">
+              Auto push
+            </span>
+            <button
+              onClick={toggleAutoProgress}
+              className={`
                   w-8 h-4 rounded-full relative transition-all duration-300
                   ${
                     combatSettings.autoProgress
@@ -60,19 +96,22 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                       : "bg-panel-hover"
                   }
                 `}
-          >
-            <div
-              className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 shadow-sm ${
-                combatSettings.autoProgress
-                  ? "translate-x-4"
-                  : "translate-x-0.5"
-              }`}
-            />
-          </button>
+            >
+              <div
+                className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 shadow-sm ${
+                  combatSettings.autoProgress
+                    ? "translate-x-4"
+                    : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Zone List */}
+      {
+        // Zone List rendering
+      }
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {zones.map((map) => {
           const isActive = combatStats.currentMapId === map.id;
@@ -143,11 +182,10 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                       Lvl {map.id}
                     </span>
 
-                    {/* INFO NAPPI LISÄTTY TÄHÄN */}
                     {!isProgressionLocked && (
                       <button
                         onClick={(e) => {
-                          e.stopPropagation(); // Estää combat-vaihdon
+                          e.stopPropagation();
                           setInfoZone(map);
                         }}
                         className="ml-1 w-4 h-4 rounded-full bg-accent/10 border border-accent/20 text-accent flex items-center justify-center hover:bg-accent hover:text-white transition-all text-[8px] font-black"

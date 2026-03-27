@@ -15,6 +15,7 @@ export interface CombatSlice {
   processCombatTick: () => void;
   addCombatLog: (message: string) => void;
   toggleAutoProgress: () => void;
+  toggleAutoRetreat: () => void;
   updateCombatSettings: (settings: Partial<CombatSettings>) => void;
 }
 
@@ -25,7 +26,7 @@ export const createCombatSlice: StateCreator<
   CombatSlice
 > = (set, get) => ({
   startCombat: (mapId: number) => {
-    // --- COOLDOWN TARKISTUS ---
+    // Check for cooldown before starting combat
     const state = get();
     const cooldownLeft = (state.combatStats.cooldownUntil || 0) - Date.now();
 
@@ -42,7 +43,7 @@ export const createCombatSlice: StateCreator<
     const map = COMBAT_DATA.find((m) => m.id === mapId);
     if (!map) return;
 
-    // --- BOSS AVAIN TARKISTUS JA KULUTUS ---
+    // Boss key requirement validation and consumption
     if (map.isBoss && map.keyRequired) {
       const currentInventory = state.inventory;
       const keyCount = currentInventory[map.keyRequired] || 0;
@@ -75,13 +76,13 @@ export const createCombatSlice: StateCreator<
       currentMapId: mapId,
       enemyCurrentHp: map.enemyHp,
       respawnTimer: 0,
-      playerAttackTimer: 1000, // Alkuviive ennen ensimmäistä iskua (1s)
-      enemyAttackTimer: 1500, // Vihollinen iskee hieman myöhemmin alussa
+      playerAttackTimer: 1000,
+      enemyAttackTimer: 1500,
       hp:
         currentStats.hp > 0
           ? currentStats.hp
           : get().skills.hitpoints.level * 10,
-      cooldownReason: null, // Nollataan syy aina kun uusi taistelu alkaa
+      cooldownReason: null,
     };
 
     set({
@@ -127,7 +128,6 @@ export const createCombatSlice: StateCreator<
     }
   },
 
-  // RETREAT: Pysäytetään taistelu ja asetetaan VETÄYTYMIS-rangaistus
   stopCombat: () =>
     set({
       activeAction: null,
@@ -139,18 +139,33 @@ export const createCombatSlice: StateCreator<
         respawnTimer: 0,
         playerAttackTimer: 0,
         enemyAttackTimer: 0,
-        cooldownUntil: Date.now() + 30000, // 30 sekunnin rangaistus vetäytymisestä
-        cooldownReason: "retreat", // LISÄTTY: Tieto vetäytymisestä UI:ta varten
+        cooldownUntil: Date.now() + 30000,
+        cooldownReason: "retreat",
+        damagePopUps: [], // CLEAR FLOATING NUMBERS ON MANUAL RETREAT
       },
     }),
 
   toggleAutoProgress: () =>
-    set({
+    set((state) => ({
       combatSettings: {
-        ...get().combatSettings,
-        autoProgress: !get().combatSettings.autoProgress,
+        ...state.combatSettings,
+        autoProgress: !state.combatSettings.autoProgress,
+        autoRetreat: !state.combatSettings.autoProgress
+          ? false
+          : state.combatSettings.autoRetreat,
       },
-    }),
+    })),
+
+  toggleAutoRetreat: () =>
+    set((state) => ({
+      combatSettings: {
+        ...state.combatSettings,
+        autoRetreat: !state.combatSettings.autoRetreat,
+        autoProgress: !state.combatSettings.autoRetreat
+          ? false
+          : state.combatSettings.autoProgress,
+      },
+    })),
 
   updateCombatSettings: (newSettings) =>
     set((state) => ({

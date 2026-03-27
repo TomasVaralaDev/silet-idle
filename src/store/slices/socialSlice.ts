@@ -15,6 +15,7 @@ export interface SocialSlice {
   setGlobalMessages: (messages: GlobalChatMessage[]) => void; // UUSI
   setActiveChat: (friendUid: string | null) => void;
   addFriendLocally: (friend: Friend) => void;
+  removeFriendLocally: (friendUid: string) => void; // LISÄTTY
 }
 
 export const createSocialSlice: StateCreator<
@@ -50,6 +51,17 @@ export const createSocialSlice: StateCreator<
   addFriendLocally: (friend) =>
     set((state) => ({
       social: { ...state.social, friends: [...state.social.friends, friend] },
+    })),
+  removeFriendLocally: (friendUid) =>
+    set((state) => ({
+      social: {
+        ...state.social,
+        friends: state.social.friends.filter((f) => f.uid !== friendUid),
+        activeChatFriendId:
+          state.social.activeChatFriendId === friendUid
+            ? null
+            : state.social.activeChatFriendId,
+      },
     })),
   setActiveChat: (friendUid) =>
     set((state) => ({

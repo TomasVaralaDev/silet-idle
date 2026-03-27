@@ -292,8 +292,8 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* SCROLLABLE NAVIGATION AREA - Vain tämä rullaa */}
-      <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10 pb-32 md:pb-4 min-h-0">
+      {/* SCROLLABLE NAVIGATION AREA - MUUTETTU: Lisätty min-h-[30vh] ja poistettu vanha pb-32 -kikka */}
+      <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10 min-h-[30vh] pb-4">
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
             General
@@ -383,7 +383,7 @@ export default function Sidebar({
           <NavButton
             view="worldmarket"
             label="World Vendors"
-            icon="/assets/ui/icon_market.png" // Voit harkita tämän ikonin vaihtamista johonkin combat-tyylisempään myöhemmin
+            icon="/assets/ui/icon_market.png"
             isActive={currentView === "worldmarket"}
             onClick={setView}
           />
@@ -453,7 +453,10 @@ export default function Sidebar({
         </div>
       </div>
 
-      <QueuePanel />
+      {/* QUEUE AREA - UUSI LAATIKKO: Rajoitettu max-h ja oma scrolli, jottei se litistä navigointia */}
+      <div className="shrink-0 max-h-[30vh] overflow-y-auto custom-scrollbar border-t border-border/50 bg-panel/30 relative z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
+        <QueuePanel />
+      </div>
 
       {/* FOOTER AREA - Kiinteä pohjassa */}
       <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20 shrink-0">

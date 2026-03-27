@@ -3,6 +3,7 @@ import {
   getDoc,
   updateDoc,
   arrayUnion,
+  arrayRemove,
   collection,
   addDoc,
   query as firestoreQuery,
@@ -111,6 +112,28 @@ export const finalizeFriendship = async (
   } catch (error) {
     console.error("Error finalizing friendship:", error);
     return null;
+  }
+};
+export const removeFriend = async (myUid: string, targetUid: string) => {
+  try {
+    const myRef = doc(db, "users", myUid);
+    const mySnap = await getDoc(myRef);
+
+    if (!mySnap.exists()) return;
+
+    // Haetaan nykyinen lista, jotta saamme tarkan objektin poistoa varten
+    const myFriends: Friend[] = mySnap.data().social?.friends || [];
+    const friendToRemove = myFriends.find((f) => f.uid === targetUid);
+
+    // Poistetaan kohde omalta listalta arrayRemove-komennolla
+    if (friendToRemove) {
+      await updateDoc(myRef, {
+        "social.friends": arrayRemove(friendToRemove),
+      });
+    }
+  } catch (error) {
+    console.error("Error removing friend:", error);
+    throw error;
   }
 };
 

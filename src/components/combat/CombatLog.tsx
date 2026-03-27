@@ -5,23 +5,20 @@ export default function CombatLog() {
   const logs = combatStats?.combatLog || [];
 
   return (
-    <div className="h-full flex flex-col bg-app-base rounded-xl border border-border overflow-hidden shadow-inner">
-      {
-        // Header
-      }
+    // POISTETTU: rounded-xl, border ja border-border
+    <div className="h-full flex flex-col bg-app-base overflow-hidden shadow-inner">
+      {/* Header */}
       <div className="p-3 border-b border-border bg-panel/50">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted">
           Combat Log
         </h3>
       </div>
 
-      {
-        // Log Content Area
-      }
+      {/* Log Content Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-1.5 font-mono text-[11px] custom-scrollbar text-left">
         {logs.length === 0 ? (
           <div className="text-tx-muted italic text-center mt-10 opacity-30 uppercase tracking-widest text-[9px]">
-            - No active signals -
+            - No ongoing Combat -
           </div>
         ) : (
           logs.map((log, index) => {

@@ -194,7 +194,7 @@ export default function BattleArena({
             onClick={stopCombat}
             className="mt-2 text-[10px] uppercase font-black tracking-widest text-danger hover:text-white bg-danger/10 hover:bg-danger px-4 py-1.5 rounded border border-danger/20 transition-all active:scale-95"
           >
-            Retretreat
+            Retreat
           </button>
         </div>
 

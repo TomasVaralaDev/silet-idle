@@ -50,13 +50,11 @@ export default function FoodSelector() {
 
   return (
     <div className="flex flex-col h-full bg-app-base overflow-hidden">
-      {
-        // 1. Auto-Eat Threshold Slider
-      }
+      {/* 1. Auto-Eat Threshold Slider */}
       <div className="bg-panel border-b border-border/50 p-3 shrink-0">
         <div className="flex justify-between items-center mb-2">
+          {/* VILKKUVA PALLURA POISTETTU TÄSTÄ */}
           <span className="text-[10px] font-black uppercase tracking-widest text-tx-muted flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             Auto-Eat Threshold
           </span>
           <span className="text-[10px] font-mono font-bold text-success bg-success/10 px-2 py-0.5 rounded border border-success/20 shadow-sm">
@@ -64,9 +62,7 @@ export default function FoodSelector() {
           </span>
         </div>
 
-        {
-          // Custom Slider Implementation
-        }
+        {/* Custom Slider Implementation */}
         <div className="relative w-full h-1.5 bg-app-base rounded-full border border-border/50">
           <div
             className="absolute left-0 top-0 bottom-0 bg-success/30 rounded-full"
@@ -80,9 +76,7 @@ export default function FoodSelector() {
             onChange={handleSettingChange}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
           />
-          {
-            // Visual slider handle
-          }
+          {/* Visual slider handle */}
           <div
             className="absolute top-1/2 -mt-2 -ml-2 w-4 h-4 bg-panel border-2 border-success rounded-full shadow-[0_0_5px_rgb(var(--color-success)/0.5)] pointer-events-none"
             style={{ left: `${combatSettings.autoEatThreshold}%` }}
@@ -90,22 +84,18 @@ export default function FoodSelector() {
         </div>
       </div>
 
-      {
-        // 2. Inventory Grid & Active Item
-      }
+      {/* 2. Inventory Grid & Active Item */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-3">
         {foodItems.length === 0 && !equippedFood ? (
           <div className="h-full flex flex-col items-center justify-center text-tx-muted opacity-50">
-            <span className="text-2xl mb-2">🍽️</span>
+            <span className="text-2xl mb-2 grayscale">🍽️</span>
             <span className="text-[10px] uppercase font-bold tracking-widest">
               No consumables
             </span>
           </div>
         ) : (
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            {
-              // Active Item (Always displayed first)
-            }
+            {/* Active Item (Always displayed first) */}
             {equippedFood && activeFoodDetails && (
               <button
                 disabled={isGlobalCooldown}
@@ -113,9 +103,7 @@ export default function FoodSelector() {
                 title={`Unequip ${activeFoodDetails.name}`}
                 onClick={() => equipItem(equippedFood.itemId)}
               >
-                {
-                  // Cooldown overlay for the active item
-                }
+                {/* Cooldown overlay for the active item */}
                 {isGlobalCooldown && (
                   <div
                     className="absolute inset-0 bg-app-base/80 z-10 transition-transform duration-100 ease-linear rounded-xl origin-left"
@@ -141,9 +129,7 @@ export default function FoodSelector() {
               </button>
             )}
 
-            {
-              // Other available consumables
-            }
+            {/* Other available consumables */}
             {foodItems.map(([id, count]) => {
               if (id === equippedFood?.itemId) return null; // Skip if already active
               const item = getItemDetails(id) as Resource | undefined;
@@ -170,12 +156,7 @@ export default function FoodSelector() {
                     {count as number}
                   </span>
 
-                  {
-                    // Healing indicator dot
-                  }
-                  {(item.healing || 0) > 0 && (
-                    <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-success/60 z-30 shadow-[0_0_5px_rgb(var(--color-success)/0.4)]" />
-                  )}
+                  {/* PIENI VIHREÄ PALLURA (HEALING INDICATOR DOT) POISTETTU TÄSTÄ */}
                 </button>
               );
             })}

@@ -114,16 +114,10 @@ export default function CombatView() {
           <BattleArena selectedWorldId={selectedWorld} />
         </div>
 
-        {
-          // Bottom Section: Consumables and Logs
-        }
+        {/* Bottom Section: Consumables and Logs */}
         <div className="flex-1 min-h-[40vh] lg:min-h-0 bg-app-base flex flex-col md:flex-row z-20">
-          {
-            // Bottom Left: Food / Consumables Management
-          }
           <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-border p-3 md:p-5 flex flex-col bg-panel/30">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-2 md:mb-4 flex items-center gap-2 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-2 md:mb-4 shrink-0">
               Consumables
             </h3>
             <div className="flex-1 min-h-[150px] md:min-h-0">

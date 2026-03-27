@@ -82,7 +82,7 @@ export default function SocialOverlay() {
             <div className="bg-panel/60 border-b border-border/50 flex flex-col shrink-0">
               <div className="p-3 flex justify-between items-center bg-app-base/30">
                 <h3 className="font-bold text-tx-main text-sm uppercase tracking-widest truncate mr-2">
-                  {activeChatId ? "Secure Channel" : "Social Hub"}
+                  {activeChatId ? "Private" : "Social Hub"}
                 </h3>
                 <div className="flex items-center gap-3 shrink-0">
                   {/* ID SPAN POISTETTU TÄSTÄ */}

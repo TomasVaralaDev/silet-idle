@@ -33,7 +33,7 @@ export type ViewType =
   | "enchanting"
   | "worldmarket"
   | "marketplace"
-  | "announcements"
+  | "roadmap"
   | "patch_notes"
   | "faq"
   | "guide"

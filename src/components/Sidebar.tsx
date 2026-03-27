@@ -406,10 +406,10 @@ export default function Sidebar({
             Extra
           </p>
           <NavButton
-            view="announcements"
-            label="Announcements"
+            view="roadmap"
+            label="roadmap"
             icon="/assets/extra/announcements.png"
-            isActive={currentView === "announcements"}
+            isActive={currentView === "roadmap"}
             onClick={setView}
           />
           <NavButton

@@ -9,7 +9,7 @@ import MarketplaceView from "./marketplace/MarketplaceView";
 import LeaderboardView from "./leaderboard/LeaderboardView";
 import PremiumShopView from "./premiumShop/PremiumShopView";
 import {
-  AnnouncementsView,
+  RoadmapView,
   PatchNotesView,
   FaqView,
   PrivacyPolicyView,
@@ -40,7 +40,7 @@ export default function ViewRouter({ currentView, onSellClick }: Props) {
   if (currentView === "premium_shop") return <PremiumShopView />;
 
   // META SYSTEMS
-  if (currentView === "announcements") return <AnnouncementsView />;
+  if (currentView === "roadmap") return <RoadmapView />;
   if (currentView === "patch_notes") return <PatchNotesView />;
   if (currentView === "guide") return <GuideView />;
   if (currentView === "faq") return <FaqView />;

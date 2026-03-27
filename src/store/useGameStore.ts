@@ -268,7 +268,7 @@ export const useGameStore = create<FullStoreState>()(
       completeTutorial: () =>
         set((state) => ({
           tutorial: { ...state.tutorial, isActive: false, isComplete: true },
-          coins: state.coins + 500, // Starttibonus!
+          coins: state.coins + 5000, // Starttibonus!
         })),
       updateUserProfile: async (newName, newAvatar, newTheme, newChatColor) => {
         const state = get();

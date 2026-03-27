@@ -27,9 +27,9 @@ interface TutorialStepData {
 
 const TUTORIAL_STEPS: TutorialStepData[] = [
   {
-    title: "Welcome, Restorer",
+    title: "Welcome to the Nexus!",
     content:
-      "The worlds have fractured. As a Restorer, your job is to rebuild what was lost. Let's teach you the basics of survival.",
+      "Your destiny is to defeat the Nexus Lord and reclaim the realms. First, you must master the basics of survival in these wild lands.",
     buttonText: "Let's Go",
     trigger: "manual",
   },
@@ -131,14 +131,14 @@ const TUTORIAL_STEPS: TutorialStepData[] = [
   {
     title: "11. Idle Expeditions",
     content:
-      "You survived! You can't be everywhere at once. Go to 'Expeditions' and send out your first Scavenger.",
+      "You survived! You can't be everywhere at once. Go to 'Expeditions' and send out your first troop of scouts.",
     trigger: "expedition_active",
     highlightElementId: "nav-scavenger",
   },
   {
     title: "You're Ready",
     content:
-      "Gather, Process, Craft, Equip, and Fight. This is the core loop of TimeRing. Here are 500 Coins to kickstart your journey. Good luck!",
+      "Gather, Process, Craft, Equip, and Fight. This is the core loop of Nexus Idle. Here are 5000 Coins to kickstart your journey. Good luck!",
     buttonText: "Finish Tutorial",
     trigger: "manual",
   },
@@ -318,7 +318,7 @@ export default function TutorialOverlay() {
     completeTutorial();
     emitEvent(
       "success",
-      "Tutorial completed! +500 Coins awarded.",
+      "Tutorial completed! +5000 Coins awarded.",
       "/assets/ui/coins.png",
     );
   };

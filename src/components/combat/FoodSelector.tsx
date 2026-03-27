@@ -85,10 +85,9 @@ export default function FoodSelector() {
       </div>
 
       {/* 2. Inventory Grid & Active Item */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-3">
+      <div className="flex-1 overflow-y-a uto custom-scrollbar p-3">
         {foodItems.length === 0 && !equippedFood ? (
           <div className="h-full flex flex-col items-center justify-center text-tx-muted opacity-50">
-            <span className="text-2xl mb-2 grayscale">🍽️</span>
             <span className="text-[10px] uppercase font-bold tracking-widest">
               No consumables
             </span>

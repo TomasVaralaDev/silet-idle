@@ -162,7 +162,7 @@ export default function App() {
       {/* --- MOBIILI HEADER --- */}
       <div className="md:hidden flex shrink-0 items-center justify-between p-4 border-b border-border/50 bg-panel/90 backdrop-blur-md z-50">
         <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-1">
-          Time<span className="text-accent">Ring</span>
+          Nexus<span className="text-accent">Idle</span>
         </h1>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

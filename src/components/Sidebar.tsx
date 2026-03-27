@@ -177,7 +177,7 @@ export default function Sidebar({
         <div className="flex justify-between items-center mb-4">
           <div className="hidden md:flex flex-col text-left">
             <h1 className="text-2xl font-bold text-tx-main tracking-widest uppercase flex flex-col leading-none">
-              Time<span className="text-accent text-3xl">Ring</span>
+              Nexus<span className="text-accent text-3xl">Idle</span>
             </h1>
             <span className="text-[10px] text-tx-muted/70 tracking-[0.3em] uppercase mt-1">
               System v1.0

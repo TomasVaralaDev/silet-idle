@@ -58,7 +58,7 @@ export default function Auth() {
       <div className="relative z-10 w-full max-w-[400px] animate-in fade-in duration-500">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black uppercase tracking-widest text-tx-main">
-            TIME <span className="text-accent">RING</span>
+            Nexus <span className="text-accent">Idle</span>
           </h1>
           <p className="text-[11px] font-bold uppercase tracking-widest text-tx-muted mt-2 opacity-60">
             Log in to Start

@@ -6,11 +6,11 @@ export default function GuideView() {
     {
       id: "gathering",
       title: "01. The First Steps: Gathering",
-      content: `Welcome to the fractured worlds. To survive, you must first gather resources. Your gathering skills run continuously even while offline:
+      content: `Welcome to the World of Nexus Idle. To survive, you must first gather resources. Your gathering skills run continuously even while offline:
       
-      • Woodcutting: Chop trees to gather logs. Logs are essential for crafting tools and weapons.
-      • Mining: Mine veins to gather raw ores. Ores are the foundation of your armor and weapons.
-      • Foraging & Fishing: Collect food. Never ignore this! Food is the only way to restore Health (HP) during combat.`,
+      • Woodcutting: Chop trees to gather logs. Logs are essential for crafting weapons.
+      • Mining: Mine veins to gather raw ores. Ores are the foundation of your armor, weapons and accessories.
+      • Foraging & Alchemy: Collect Potions. Never ignore this! Potions are the only way to restore Health (HP) during combat.`,
     },
     {
       id: "crafting",

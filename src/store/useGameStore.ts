@@ -139,7 +139,11 @@ export const DEFAULT_STATE: GameState = {
     skill: null,
   },
   equippedFood: null,
-  combatSettings: { autoEatThreshold: 50, autoProgress: false },
+  combatSettings: {
+    autoEatThreshold: 50,
+    autoProgress: false,
+    autoRetreat: false,
+  },
   scavenger: { activeExpeditions: [], unlockedSlots: 1 },
   activeAction: null,
   queue: [],

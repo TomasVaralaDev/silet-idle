@@ -179,9 +179,6 @@ export default function Sidebar({
             <h1 className="text-2xl font-bold text-tx-main tracking-widest uppercase flex flex-col leading-none">
               Nexus<span className="text-accent text-3xl">Idle</span>
             </h1>
-            <span className="text-[10px] text-tx-muted/70 tracking-[0.3em] uppercase mt-1">
-              System v1.0
-            </span>
           </div>
 
           <div

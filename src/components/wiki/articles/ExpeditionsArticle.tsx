@@ -1,113 +1,181 @@
-import { Compass, Clock, Package } from "lucide-react";
-
 export default function ExpeditionsArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - Professional Logistics Briefing */}
+      {/* HEADER - RPG-henkinen ja selkeä */}
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
-            Manual v1.5
+            Chapter 06
           </span>
         </div>
         <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
-          Scouting & Logistics
+          Expeditions & Scouting
         </h2>
         <p className="text-tx-muted text-sm leading-relaxed mt-4">
-          Expeditionary units provide a passive acquisition stream for regional
-          resources. Deploying scouts allows for continuous material gathering
-          without diverting the Traveler from active combat or specialized
-          skilling operations.
+          A wise adventurer doesn't work alone. By deploying scouts to
+          previously explored worlds, you can continuously gather vital
+          resources, rare keys, and mystical runes while you focus on combat or
+          crafting.
         </p>
       </header>
 
-      {/* OPERATIONAL OVERVIEW */}
+      {/* DEPLOYMENT MECHANICS */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <Compass className="text-tx-main" size={20} />
+          <img
+            src="/assets/ui/icon_compass_placeholder.png"
+            alt="Compass"
+            className="w-5 h-5 pixelated opacity-80"
+          />
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
-            Deployment Protocols
+            Deploying Scouts
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          <div className="bg-panel/5 border border-border p-6 rounded-lg space-y-4">
-            <div className="flex items-center gap-3">
-              <Package size={18} className="text-tx-muted" />
-              <span className="text-sm font-bold text-tx-main uppercase tracking-wide">
-                Resource Extraction
-              </span>
-            </div>
-            <p className="text-xs text-tx-muted leading-relaxed">
-              Scouts are dispatched to unlocked regions to identify and secure
-              localized assets. The volume of recovered materials is directly
-              influenced by the region's difficulty and the duration of the
-              scouting cycle.
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
+            <span className="text-xs font-bold text-tx-main uppercase tracking-wide flex items-center gap-2">
+              <img
+                src="/assets/ui/icon_clock_placeholder.png"
+                alt="Time"
+                className="w-4 h-4 pixelated"
+              />
+              Expedition Duration
+            </span>
+            <p className="text-[11px] text-tx-muted leading-relaxed">
+              You can send scouts on journeys ranging from a quick{" "}
+              <span className="text-tx-main font-semibold">10 minutes</span> up
+              to a grueling{" "}
+              <span className="text-tx-main font-semibold">12 hours</span>.
+              Longer trips yield vastly more resources.
             </p>
           </div>
 
-          <div className="bg-panel/5 border border-border p-6 rounded-lg space-y-4">
-            <div className="flex items-center gap-3">
-              <Clock size={18} className="text-tx-muted" />
-              <span className="text-sm font-bold text-tx-main uppercase tracking-wide">
-                Temporal Yield Optimization
+          <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
+            <span className="text-xs font-bold text-tx-main uppercase tracking-wide flex items-center gap-2">
+              <img
+                src="/assets/ui/icon_group_placeholder.png"
+                alt="Slots"
+                className="w-4 h-4 pixelated"
+              />
+              Scout Capacity
+            </span>
+            <p className="text-[11px] text-tx-muted leading-relaxed">
+              Every adventurer begins with{" "}
+              <span className="text-tx-main font-semibold">
+                1 free scouting slot
               </span>
-            </div>
-            <p className="text-xs text-tx-muted leading-relaxed">
-              Longer deployment cycles yield higher aggregate returns but reduce
-              the frequency of resource rotation. For maximum efficiency, align
-              expedition durations with your terminal check-in intervals.
+              . As you progress, you can unlock up to a maximum of 10 concurrent
+              expedition slots.
             </p>
           </div>
         </div>
       </section>
 
-      {/* TECHNICAL SPECIFICATIONS */}
+      {/* REGIONAL LOOT (Keys & Currency) */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <img
+            src="/assets/ui/icon_loot_placeholder.png"
+            alt="Loot"
+            className="w-5 h-5 pixelated opacity-80"
+          />
+          <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
+            Regional Spoils
+          </h3>
+        </div>
+
+        <div className="bg-panel/10 border border-border/50 p-6 rounded-lg space-y-4">
+          <p className="text-[11px] text-tx-muted leading-relaxed mb-4">
+            Scouts can only be sent to Worlds you have already unlocked. Upon
+            returning, they bring back a massive assortment of loot specific to
+            that region.
+          </p>
+
+          <ul className="space-y-4">
+            <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px] border-b border-border/20 pb-4">
+              <div className="flex items-center gap-2">
+                <img
+                  src="/assets/items/boss_key_placeholder.png"
+                  className="w-4 h-4 pixelated"
+                  alt="Key"
+                />
+                <span className="text-tx-main font-bold uppercase tracking-wider">
+                  Boss Keys & Materials
+                </span>
+              </div>
+              <div className="md:text-right max-w-sm">
+                <p className="text-tx-muted leading-relaxed">
+                  Expeditions are the absolute{" "}
+                  <span className="text-tx-main font-semibold">
+                    best method
+                  </span>{" "}
+                  for farming the Boss Keys required to progress, as well as
+                  general monster loot from that world.
+                </p>
+              </div>
+            </li>
+
+            <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px]">
+              <div className="flex items-center gap-2">
+                <img
+                  src="/assets/ui/icon_coin_placeholder.png"
+                  className="w-4 h-4 pixelated"
+                  alt="Currency"
+                />
+                <span className="text-tx-main font-bold uppercase tracking-wider">
+                  World Currency
+                </span>
+              </div>
+              <div className="md:text-right max-w-sm">
+                <p className="text-tx-muted leading-relaxed">
+                  Scouts gather large amounts of localized World Currency, which
+                  is heavily required for purchasing essential upgrades from the
+                  World Store.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* ANCIENT RUNES (TÄRKEÄ ERIKOISUUS) */}
       <section className="space-y-4">
-        <h3 className="text-xs font-bold text-tx-muted uppercase tracking-[0.2em]">
-          Unit Specifications
-        </h3>
-        <div className="border border-border/50 rounded-lg overflow-hidden">
-          <table className="w-full text-left text-[11px]">
-            <thead className="bg-panel/10 border-b border-border/50">
-              <tr>
-                <th className="p-3 font-bold text-tx-main uppercase">
-                  Parameter
-                </th>
-                <th className="p-3 font-bold text-tx-main uppercase">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/20">
-              <tr>
-                <td className="p-3 text-tx-muted">Active Slot Capacity</td>
-                <td className="p-3 text-tx-main font-medium uppercase tracking-tighter">
-                  Tier Dependent
-                </td>
-              </tr>
-              <tr>
-                <td className="p-3 text-tx-muted">Resource Variance</td>
-                <td className="p-3 text-tx-main font-medium uppercase tracking-tighter">
-                  Regional Mapping
-                </td>
-              </tr>
-              <tr>
-                <td className="p-3 text-tx-muted">Risk Factor</td>
-                <td className="p-3 text-success font-bold uppercase tracking-tighter">
-                  Zero (Safe)
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="p-5 border border-accent/30 bg-accent/5 rounded-lg flex gap-4 items-start">
+          <img
+            src="/assets/items/rune_placeholder.png"
+            alt="Rune"
+            className="w-6 h-6 pixelated opacity-90 mt-0.5 shrink-0"
+          />
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-accent uppercase tracking-widest">
+              Exclusive Reward: Ancient Runes
+            </h4>
+            <p className="text-[11px] text-tx-muted leading-relaxed">
+              Expeditions are the{" "}
+              <strong className="text-tx-main">only way to obtain Runes</strong>{" "}
+              in the game. When equipped in your Rune slot, these powerful
+              stones drastically reduce crafting times and provide massive
+              Experience (XP) boosts for your gathering and refining skills.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* STRATEGIC FOOTER */}
-      <div className="p-4 border-l border-border bg-panel/10">
-        <p className="text-[11px] text-tx-muted leading-relaxed opacity-70">
-          Logistics Note: Ensure inventory capacity is sufficient before
-          recalling long-term expeditions. Overflow materials may be lost if
-          regional caches exceed local storage limits.
-        </p>
+      {/* ADVENTURER'S TIP */}
+      <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
+        <img
+          src="/assets/ui/icon_tip_placeholder.png"
+          alt="Tip"
+          className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
+        />
+        <div className="space-y-1">
+          <p className="text-[11px] text-tx-muted leading-relaxed italic opacity-80">
+            Adventurer's Tip: Before you log off for the night or head to work,
+            always send your scouts on a 12-hour expedition. You'll wake up to a
+            mountain of Runes and Boss Keys!
+          </p>
+        </div>
       </div>
     </div>
   );

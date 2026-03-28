@@ -1,127 +1,146 @@
-import { Database, Percent, Star, ShieldCheck } from "lucide-react";
-
 export default function TreasuresArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - Professional Resource Briefing */}
+      {/* HEADER - RPG-henkinen ja selkeä */}
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
-            Manual v1.9
+            Chapter 10
           </span>
         </div>
         <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
-          Yield & Rarity Classifications
+          Enemy Spoils & Loot
         </h2>
         <p className="text-tx-muted text-sm leading-relaxed mt-4">
-          Every hostile entity within the Nexus holds a specific data-set of
-          recoverable assets. The frequency of these yields is determined by
-          standardized rarity coefficients.
+          Every monster guarding the realms hoards valuable treasures. Defeating
+          them is the primary way to line your pockets with gold and gather the
+          keys necessary to challenge the ultimate threats.
         </p>
       </header>
 
-      {/* RARITY TABLE - Clean and structured */}
+      {/* STANDARD DROPS */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <Database className="text-tx-main" size={20} />
+          <img
+            src="/assets/ui/icon_loot_placeholder.png"
+            alt="Loot"
+            className="w-5 h-5 pixelated opacity-80"
+          />
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
-            Asset Recovery Rates
+            Standard Monster Drops
           </h3>
         </div>
 
         <div className="border border-border/50 rounded-lg overflow-hidden bg-panel/5">
           <div className="divide-y divide-border/20">
             <LootRow
-              label="Common Materials"
-              rate="100% (Guaranteed)"
-              desc="Standard raw resources for basic crafting."
+              label="Gold Coins"
+              rate="Common"
+              desc="The universal currency used for enchanting and marketplace trades."
+              iconSrc="/assets/ui/icon_coin_placeholder.png"
             />
             <LootRow
-              label="Rare Catalysts"
-              rate="~10.00%"
-              desc="Specialized gems required for mid-tier augmentation."
+              label="World Currency"
+              rate="Uncommon"
+              desc="Localized currency specific to the world you are currently fighting in."
+              iconSrc="/assets/items/world_currency_placeholder.png"
             />
             <LootRow
-              label="Artifact Remnants"
-              rate="10.00% (Boss Units)"
-              desc="Unique components from high-value targets."
-            />
-            <LootRow
-              label="Exotic Blueprints"
-              rate="~1.00%"
-              desc="Highly volatile data. Minimal recovery probability."
+              label="Boss Keys"
+              rate="Rare"
+              desc="Required to challenge the Zone 10 World Boss. Dropped by standard monsters."
+              iconSrc="/assets/items/boss_key_placeholder.png"
               isCritical
             />
           </div>
         </div>
       </section>
 
-      {/* TECHNICAL SPECIFICATIONS */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-5 bg-panel/5 border border-border rounded-lg space-y-2">
-          <div className="flex items-center gap-2">
-            <Percent size={14} className="text-tx-muted" />
-            <span className="text-[10px] font-bold text-tx-main uppercase">
-              Drop Calculation
-            </span>
-          </div>
-          <p className="text-[11px] text-tx-muted leading-relaxed">
-            Yields are calculated per combat cycle. Luck modifiers from
-            specialized jewelry can influence the frequency of Rare and Exotic
-            categories.
-          </p>
+      {/* BOSS DROPS (10% Chance) */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-3 mb-4">
+          <img
+            src="/assets/items/boss_weapon_placeholder.png"
+            alt="Boss Loot"
+            className="w-5 h-5 pixelated opacity-80"
+          />
+          <h3 className="text-lg font-bold text-danger/80 uppercase tracking-wider">
+            World Boss Artifacts
+          </h3>
         </div>
-        <div className="p-5 bg-panel/5 border border-border rounded-lg space-y-2">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-tx-muted" />
-            <span className="text-[10px] font-bold text-tx-main uppercase">
-              Auto-Loot Protocol
-            </span>
-          </div>
+
+        <div className="bg-danger/5 border border-danger/20 p-6 rounded-lg space-y-2">
           <p className="text-[11px] text-tx-muted leading-relaxed">
-            All recovered assets are automatically transferred to the Traveler's
-            inventory. Ensure sufficient storage capacity before long-term
-            engagement.
+            World Bosses guard the ultimate prizes. Every time you successfully
+            defeat a World Boss, there is a{" "}
+            <span className="text-danger font-bold tracking-wide">
+              ~10% chance
+            </span>{" "}
+            that it will drop its signature Boss Weapon.
+          </p>
+          <p className="text-[11px] text-tx-muted leading-relaxed pt-2 border-t border-danger/10">
+            While these legendary armaments cannot be enchanted, their raw base
+            stats are incredibly high, providing enough power to carry you
+            entirely through the next World.
           </p>
         </div>
       </section>
 
-      {/* STRATEGIC FOOTER */}
-      <div className="p-4 border-l border-border bg-panel/10 flex items-start gap-4">
-        <Star className="text-tx-muted shrink-0" size={16} />
-        <p className="text-[11px] text-tx-muted leading-relaxed opacity-70 italic">
-          Field Advisory: Focus your deployment on zones where the common
-          material yield aligns with your current forging requirements. Rare
-          assets should be viewed as supplementary to your primary resource
-          loop.
-        </p>
+      {/* ADVENTURER'S TIP (Auto-loot) */}
+      <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
+        <img
+          src="/assets/ui/icon_bag_placeholder.png"
+          alt="Bag"
+          className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
+        />
+        <div className="space-y-1">
+          <h4 className="text-xs font-bold text-tx-main uppercase tracking-widest">
+            Adventurer's Tip: Auto-Loot
+          </h4>
+          <p className="text-[11px] text-tx-muted leading-relaxed italic opacity-80">
+            You don't need to manually pick up items! All defeated monster loot
+            goes straight into your inventory automatically. Just make sure you
+            have enough free storage slots before leaving your character to
+            fight overnight.
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
+// Apukomponentti (Päivitetty tukemaan kuva-ikonia)
 function LootRow({
   label,
   rate,
   desc,
+  iconSrc,
   isCritical = false,
 }: {
   label: string;
   rate: string;
   desc: string;
+  iconSrc: string;
   isCritical?: boolean;
 }) {
   return (
-    <div className="p-4 hover:bg-panel/10 transition-colors flex justify-between items-start gap-4">
-      <div className="space-y-1">
-        <span className="block text-xs font-bold text-tx-main uppercase tracking-wide">
-          {label}
-        </span>
-        <p className="text-[10px] text-tx-muted leading-relaxed max-w-[250px]">
-          {desc}
-        </p>
+    <div className="p-4 hover:bg-panel/10 transition-colors flex justify-between items-center gap-4">
+      <div className="flex items-start gap-4">
+        <img
+          src={iconSrc}
+          alt={label}
+          className="w-6 h-6 pixelated mt-0.5 shrink-0"
+        />
+        <div className="space-y-1">
+          <span className="block text-xs font-bold text-tx-main uppercase tracking-wide">
+            {label}
+          </span>
+          <p className="text-[10px] text-tx-muted leading-relaxed max-w-[250px]">
+            {desc}
+          </p>
+        </div>
       </div>
-      <div className="text-right">
+      <div className="text-right shrink-0">
         <span
           className={`text-[10px] font-mono font-bold uppercase tracking-tighter ${isCritical ? "text-accent" : "text-tx-muted"}`}
         >

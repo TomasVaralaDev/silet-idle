@@ -1,68 +1,71 @@
-import { Sparkles, ScrollText, ShieldAlert } from "lucide-react";
-
 export default function EnchantingArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - Professional Technical Briefing */}
+      {/* HEADER - RPG-henkinen ja selkeä */}
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
-            Manual v1.3
+            Chapter 05
           </span>
         </div>
         <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
           Enchanting
         </h2>
         <p className="text-tx-muted text-sm leading-relaxed mt-4">
-          Standard equipment can be enhanced beyond its base specifications
-          through the infusion of magical catalysts. Understanding the stability
-          limits of the Nexus Forge is critical to maximizing combat efficiency.
+          Standard equipment can be magically enhanced beyond its base power.
+          Mastering the enchanting system and managing your magical scrolls is
+          critical for pushing into the most dangerous realms.
         </p>
       </header>
 
-      {/* LAWS OF AUGMENTATION - Clean, structured data */}
+      {/* LAWS OF ENCHANTING - Säännöt roolipelimuodossa */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <ScrollText className="text-tx-main" size={20} />
+          <img
+            src="/assets/ui/icon_sparkles_placeholder.png"
+            alt="Magic"
+            className="w-5 h-5 pixelated opacity-80"
+          />
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
-            Operational Constraints
+            The Rules of Magic
           </h3>
         </div>
 
         <div className="bg-panel/5 border border-border rounded-lg overflow-hidden">
           <div className="divide-y divide-border/30">
-            {/* Rule 1 */}
+            {/* Rule 1: The 20% Boost */}
             <div className="p-6 flex gap-6 group">
               <div className="text-xs font-bold text-border group-hover:text-accent transition-colors pt-1">
                 01
               </div>
               <div className="space-y-1">
                 <h4 className="text-sm font-bold text-tx-main uppercase tracking-wide">
-                  Statistical Scaling
+                  Power Scaling (+20%)
                 </h4>
                 <p className="text-xs text-tx-muted leading-relaxed">
-                  Every successful augmentation cycle increases the item's base
-                  attributes by{" "}
-                  <span className="text-tx-main font-bold">+20%</span>. This
-                  bonus is cumulative based on the original base values.
+                  Every successful enchantment adds a flat{" "}
+                  <span className="text-tx-main font-bold">+20% boost</span>
+                  to the item's original base stats. An item can be upgraded up
+                  to a maximum of{" "}
+                  <span className="text-accent font-bold">+5</span>, essentially
+                  doubling its original power.
                 </p>
               </div>
             </div>
 
-            {/* Rule 2 */}
+            {/* Rule 2: Scaling Costs */}
             <div className="p-6 flex gap-6 group">
               <div className="text-xs font-bold text-border group-hover:text-accent transition-colors pt-1">
                 02
               </div>
               <div className="space-y-1">
                 <h4 className="text-sm font-bold text-tx-main uppercase tracking-wide">
-                  Stability Threshold
+                  Enchanting Costs
                 </h4>
                 <p className="text-xs text-tx-muted leading-relaxed">
-                  Equipment can be stabilized up to a maximum of
-                  <span className="text-tx-main font-bold"> Level +5</span>.
-                  Attempting to exceed this threshold is currently restricted by
-                  the Forge safety protocols.
+                  The gold and material cost required to enchant an item scales
+                  dynamically. High-level equipment costs significantly more to
+                  enchant than beginner gear.
                 </p>
               </div>
             </div>
@@ -70,19 +73,73 @@ export default function EnchantingArticle() {
         </div>
       </section>
 
-      {/* INCOMPATIBILITY NOTICE - Mieto mutta selkeä varoitus */}
+      {/* SCROLLS & SUCCESS RATES (UUSI OSIO: T1-T4 ja prosentit) */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <img
+            src="/assets/items/scroll_placeholder.png"
+            alt="Scroll"
+            className="w-5 h-5 pixelated opacity-80"
+          />
+          <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
+            Scroll Tiers & Success Rates
+          </h3>
+        </div>
+
+        <div className="bg-panel/10 border border-border/50 p-6 rounded-lg space-y-4">
+          <p className="text-[11px] text-tx-muted leading-relaxed mb-4">
+            As your item's upgrade level increases (e.g., going from +3 to +4),
+            the base chance of a successful enchantment drops drastically. To
+            counter this, you must use higher-tier scrolls.
+          </p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <ScrollTierCard
+              tier="T1"
+              name="Basic Scroll"
+              desc="Best for +1 to +2"
+            />
+            <ScrollTierCard
+              tier="T2"
+              name="Adept Scroll"
+              desc="Best for +2 to +3"
+            />
+            <ScrollTierCard
+              tier="T3"
+              name="Mystic Scroll"
+              desc="Crucial for +4"
+            />
+            <ScrollTierCard
+              tier="T4"
+              name="Divine Scroll"
+              desc="Required for +5"
+              isRare
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* BOSS WEAPON RESTRICTION */}
       <section className="space-y-4">
-        <div className="p-5 border border-border/50 bg-panel/5 rounded-lg flex gap-4 items-start">
-          <ShieldAlert className="text-tx-muted shrink-0" size={18} />
+        <div className="p-5 border border-danger/30 bg-danger/5 rounded-lg flex gap-4 items-start">
+          <img
+            src="/assets/ui/icon_alert_placeholder.png"
+            alt="Alert"
+            className="w-5 h-5 pixelated opacity-80 mt-0.5 shrink-0"
+          />
           <div className="space-y-1">
-            <h4 className="text-xs font-bold text-tx-main uppercase tracking-widest">
-              Compatibility Constraints
+            <h4 className="text-xs font-bold text-danger uppercase tracking-widest">
+              Ancient Artifacts (Boss Drops)
             </h4>
             <p className="text-[11px] text-tx-muted leading-relaxed">
-              Ancient artifacts and specialized{" "}
-              <span className="text-tx-main font-semibold">Boss Drops</span> are
-              ineligible for augmentation. These items possess sealed magical
-              properties that cannot be altered by standard Forge operations.
+              Weapons and artifacts dropped directly by{" "}
+              <span className="text-danger font-semibold">World Bosses</span>{" "}
+              are already brimming with ancient magic. Because of their sheer
+              raw power,{" "}
+              <span className="font-bold text-tx-main">
+                Boss Drops cannot be enchanted
+              </span>
+              .
             </p>
           </div>
         </div>
@@ -90,12 +147,48 @@ export default function EnchantingArticle() {
 
       {/* STRATEGIC FOOTER */}
       <div className="p-4 border-l border-border bg-panel/10 flex items-center gap-3">
-        <Sparkles className="text-tx-muted shrink-0" size={16} />
-        <p className="text-[11px] text-tx-muted leading-relaxed opacity-70">
-          Tip: Prioritize augmenting your primary weapon before armor to
-          maximize your resource-to-damage ratio during early realm progression.
+        <img
+          src="/assets/ui/icon_tip_placeholder.png"
+          alt="Tip"
+          className="w-4 h-4 pixelated opacity-60 shrink-0"
+        />
+        <p className="text-[11px] text-tx-muted leading-relaxed opacity-80 italic">
+          Adventurer's Tip: Don't waste your rare T4 Divine Scrolls on beginner
+          iron weapons! Save them for your highest-tier crafted gear when
+          attempting that final +5 upgrade.
         </p>
       </div>
+    </div>
+  );
+}
+
+// Apukomponentti T1-T4 scrolleille
+function ScrollTierCard({
+  tier,
+  name,
+  desc,
+  isRare = false,
+}: {
+  tier: string;
+  name: string;
+  desc: string;
+  isRare?: boolean;
+}) {
+  return (
+    <div
+      className={`p-3 border rounded text-center space-y-1 ${isRare ? "border-accent/50 bg-accent/5" : "border-border/50 bg-panel/5"}`}
+    >
+      <span
+        className={`block text-xs font-black uppercase ${isRare ? "text-accent" : "text-tx-main"}`}
+      >
+        {tier}
+      </span>
+      <span className="block text-[10px] font-bold text-tx-main uppercase tracking-tight">
+        {name}
+      </span>
+      <span className="block text-[9px] text-tx-muted leading-tight">
+        {desc}
+      </span>
     </div>
   );
 }

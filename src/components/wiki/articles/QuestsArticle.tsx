@@ -1,50 +1,93 @@
-import { FileText, Target, Hammer, Pickaxe } from "lucide-react";
-
 export default function QuestsArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - Professional Assignment Briefing */}
+      {/* HEADER - RPG-henkinen ja selkeä */}
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
-            Manual v1.6
+            Chapter 07
           </span>
         </div>
         <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
-          Operational Objectives
+          Daily Quests
         </h2>
         <p className="text-tx-muted text-sm leading-relaxed mt-4">
-          The Guild issues high-priority field assignments every 24 hours.
-          Completion of these objectives provides a vital influx of Credits,
-          Skill Data (XP), and specialized augmentation catalysts.
+          Every adventurer needs a steady income. The local guilds offer a fresh
+          set of daily tasks that provide a reliable source of Experience (XP),
+          Coins, and essential crafting materials.
         </p>
       </header>
 
-      {/* OBJECTIVE CATEGORIES - Clean Grid */}
+      {/* THE RESET SYSTEM */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <FileText className="text-tx-main" size={20} />
+          <img
+            src="/assets/ui/icon_clock_placeholder.png"
+            alt="Time"
+            className="w-5 h-5 pixelated opacity-80"
+          />
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
-            Assignment Classifications
+            The Midnight Reset
+          </h3>
+        </div>
+        <div className="bg-panel/5 border border-border p-6 rounded-lg space-y-4">
+          <p className="text-[11px] text-tx-muted leading-relaxed">
+            The quest board is wiped clean and repopulated with new tasks
+            exactly at
+            <span className="text-tx-main font-bold"> 00:00 UTC</span> every
+            single day. Make sure to claim your completed rewards before the
+            server time resets, or they will be lost forever.
+          </p>
+        </div>
+      </section>
+
+      {/* QUEST CATEGORIES */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <img
+            src="/assets/ui/icon_quest_placeholder.png"
+            alt="Quests"
+            className="w-5 h-5 pixelated opacity-80"
+          />
+          <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
+            Quest Objectives
           </h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             {
-              label: "Gather",
-              desc: "Acquire raw materials to alleviate local resource shortages.",
-              icon: <Pickaxe size={16} className="text-tx-muted" />,
+              label: "Gathering",
+              desc: "Extract raw materials like wood, ores, and fish.",
+              icon: (
+                <img
+                  src="/assets/ui/icon_gather_placeholder.png"
+                  className="w-4 h-4 pixelated"
+                  alt="Gather"
+                />
+              ),
             },
             {
-              label: "Process",
-              desc: "Refine materials into weapons or elixirs for Guild supply chains.",
-              icon: <Hammer size={16} className="text-tx-muted" />,
+              label: "Crafting",
+              desc: "Refine materials into weapons, armor, or potions.",
+              icon: (
+                <img
+                  src="/assets/ui/icon_craft_placeholder.png"
+                  className="w-4 h-4 pixelated"
+                  alt="Craft"
+                />
+              ),
             },
             {
-              label: "Neutralize",
-              desc: "Eliminate designated threats to maintain secure paths through the realms.",
-              icon: <Target size={16} className="text-tx-muted" />,
+              label: "Combat",
+              desc: "Defeat a specific number of monsters in the realms.",
+              icon: (
+                <img
+                  src="/assets/ui/icon_combat_placeholder.png"
+                  className="w-4 h-4 pixelated"
+                  alt="Combat"
+                />
+              ),
             },
           ].map((type) => (
             <div
@@ -65,42 +108,20 @@ export default function QuestsArticle() {
         </div>
       </section>
 
-      {/* SYSTEM SPECIFICATIONS */}
-      <section className="space-y-4">
-        <h3 className="text-xs font-bold text-tx-muted uppercase tracking-[0.2em]">
-          Protocol Parameters
-        </h3>
-        <div className="p-4 border border-border/50 rounded-lg bg-panel/5">
-          <ul className="space-y-3">
-            <li className="flex justify-between items-center text-[11px] border-b border-border/20 pb-2">
-              <span className="text-tx-muted">Reset Cycle</span>
-              <span className="text-tx-main font-medium uppercase">
-                Every 24 Hours
-              </span>
-            </li>
-            <li className="flex justify-between items-center text-[11px] border-b border-border/20 pb-2">
-              <span className="text-tx-muted">Stack Limit</span>
-              <span className="text-tx-main font-medium uppercase">
-                Non-Cumulative
-              </span>
-            </li>
-            <li className="flex justify-between items-center text-[11px]">
-              <span className="text-tx-muted">Bonus Threshold</span>
-              <span className="text-accent font-bold uppercase tracking-tighter">
-                Full Set Bonus
-              </span>
-            </li>
-          </ul>
+      {/* ADVENTURER'S TIP */}
+      <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
+        <img
+          src="/assets/ui/icon_tip_placeholder.png"
+          alt="Tip"
+          className="w-4 h-4 pixelated opacity-80 mt-0.5 shrink-0"
+        />
+        <div className="space-y-1">
+          <p className="text-[11px] text-tx-muted leading-relaxed italic opacity-80">
+            Adventurer's Tip: You can work on your daily quests passively! Just
+            set up your Automatic Queue before you log off, and your character
+            will complete the Gathering and Crafting tasks while you sleep.
+          </p>
         </div>
-      </section>
-
-      {/* STRATEGIC FOOTER */}
-      <div className="p-4 border-l border-border bg-panel/10">
-        <p className="text-[11px] text-tx-muted leading-relaxed opacity-70">
-          Field Note: Assignments are calculated based on your current skill
-          levels. The rewards scale proportionally to the difficulty of the task
-          assigned.
-        </p>
       </div>
     </div>
   );

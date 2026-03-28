@@ -1,31 +1,33 @@
-import { Shield, Sword, Gem, Flame } from "lucide-react";
-
 export default function EquipmentArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - Minimalistinen ja asiallinen */}
+      {/* HEADER - RPG-henkinen ja selkeä */}
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
-            Manual v1.1
+            Chapter 03
           </span>
         </div>
         <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
           Armament & Defense
         </h2>
         <p className="text-tx-muted text-sm leading-relaxed mt-4">
-          Survival within the Nexus is directly proportional to the quality of
-          your equipment. Optimizing your gear across all specialized slots is
-          essential for engaging high-tier threats.
+          Your survival in the shifting realms is dictated by the quality of
+          your gear. Understanding how to optimize your equipment slots and meet
+          their strict requirements is essential for facing higher-tier threats.
         </p>
       </header>
 
-      {/* EQUIPMENT SLOTS - Siisti ruudukko ilman raskaita efektejä */}
+      {/* EQUIPMENT SLOTS */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <Shield className="text-tx-main" size={20} />
+          <img
+            src="/assets/ui/icon_equipment_placeholder.png"
+            alt="Equipment"
+            className="w-5 h-5 pixelated opacity-80"
+          />
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
-            Standard Issue Slots
+            Equipment Slots
           </h3>
         </div>
 
@@ -33,107 +35,147 @@ export default function EquipmentArticle() {
           {/* Armor */}
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
-              <Shield size={16} className="text-tx-muted" />
+              <img
+                src="/assets/ui/icon_shield_placeholder.png"
+                alt="Armor"
+                className="w-4 h-4 pixelated"
+              />
               <span className="text-xs font-bold uppercase tracking-wide">
-                Armor Units
+                Armor (Head, Body, Legs)
               </span>
             </div>
             <p className="text-[11px] text-tx-muted leading-relaxed">
-              Comprised of{" "}
-              <span className="text-tx-main font-semibold">
-                Head, Body, and Leg
-              </span>{" "}
-              protection. Primary source of Defense rating and Maximum
-              Hitpoints.
+              The foundation of your survivability. These pieces provide the
+              bulk of your Defense rating and maximum Hitpoints.
             </p>
           </div>
 
           {/* Weapons */}
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
-              <Sword size={16} className="text-tx-muted" />
+              <img
+                src="/assets/ui/icon_sword_placeholder.png"
+                alt="Weapon"
+                className="w-4 h-4 pixelated"
+              />
               <span className="text-xs font-bold uppercase tracking-wide">
-                Offensive Tools
+                Weapons & Shields
               </span>
             </div>
             <p className="text-[11px] text-tx-muted leading-relaxed">
-              Determines{" "}
-              <span className="text-tx-main font-semibold">Attack Damage</span>{" "}
-              and combat style. Shields may be deployed to mitigate incoming
+              Dictates your Attack Damage and combat style (Melee, Ranged, or
+              Magic). Shields can be equipped to further mitigate incoming
               damage.
             </p>
           </div>
 
-          {/* Jewelry */}
+          {/* Accessories */}
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
-              <Gem size={16} className="text-tx-muted" />
+              <img
+                src="/assets/ui/icon_ring_placeholder.png"
+                alt="Accessory"
+                className="w-4 h-4 pixelated"
+              />
               <span className="text-xs font-bold uppercase tracking-wide">
                 Accessories
               </span>
             </div>
             <p className="text-[11px] text-tx-muted leading-relaxed">
-              Necklaces and Rings provide specialized stat boosts, including
-              <span className="text-tx-main font-semibold">
-                Critical Multipliers
-              </span>{" "}
-              and haste.
+              Necklaces and rings provide highly specialized stat boosts,
+              including Critical Multipliers and attack speed enhancements.
             </p>
           </div>
 
           {/* Consumables */}
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
-              <Flame size={16} className="text-tx-muted" />
+              <img
+                src="/assets/ui/icon_potion_placeholder.png"
+                alt="Consumable"
+                className="w-4 h-4 pixelated"
+              />
               <span className="text-xs font-bold uppercase tracking-wide">
-                Sustenance
+                Consumables
               </span>
             </div>
             <p className="text-[11px] text-tx-muted leading-relaxed">
-              Food and Potions linked to the{" "}
-              <span className="text-tx-main font-semibold">Auto-Eat</span>{" "}
-              system. Essential for sustained combat operations.
+              Food and potions linked to your Auto-Eat system. Essential for
+              sustaining your health during prolonged encounters.
             </p>
           </div>
         </div>
       </section>
 
-      {/* STRATEGIC OVERVIEW - Taulukkomuotoinen lisäinfo */}
-      <section className="space-y-4">
-        <h3 className="text-xs font-bold text-tx-muted uppercase tracking-[0.2em]">
-          Deployment Specifications
-        </h3>
-        <div className="p-4 border border-border/50 rounded-lg bg-panel/5">
-          <ul className="space-y-3">
-            <li className="flex justify-between items-center text-[11px] border-b border-border/20 pb-2">
-              <span className="text-tx-muted">Requirement Check</span>
-              <span className="text-tx-main font-medium uppercase">
-                Level-Locked
+      {/* GEAR REQUIREMENTS & LIMITS (TÄRKEIN OSIO) */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <img
+            src="/assets/ui/icon_book_placeholder.png"
+            alt="Rules"
+            className="w-5 h-5 pixelated opacity-80"
+          />
+          <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
+            Requirements & Augmentation
+          </h3>
+        </div>
+
+        <div className="bg-panel/10 border border-border/50 p-6 rounded-lg space-y-4">
+          <ul className="space-y-4">
+            {/* Level Lock */}
+            <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px] border-b border-border/20 pb-4">
+              <span className="text-tx-main font-bold uppercase tracking-wider">
+                Skill-Based Level Locks
               </span>
+              <div className="md:text-right max-w-sm">
+                <p className="text-tx-muted leading-relaxed">
+                  You cannot equip gear unless you meet the{" "}
+                  <span className="text-tx-main font-bold">
+                    Crafting/Smithing
+                  </span>{" "}
+                  level required to make it. For example, to wear a Gold Armor
+                  set, your Smithing must be Level 30.
+                  <span className="text-warning font-semibold">
+                    {" "}
+                    Purchasing the item from the Marketplace does not bypass
+                    this restriction.
+                  </span>
+                </p>
+              </div>
             </li>
-            <li className="flex justify-between items-center text-[11px] border-b border-border/20 pb-2">
-              <span className="text-tx-muted">Durability Status</span>
-              <span className="text-tx-main font-medium uppercase">
-                Indestructible
+
+            {/* Enchanting Limit */}
+            <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px]">
+              <span className="text-tx-main font-bold uppercase tracking-wider">
+                Maximum Enchantment
               </span>
-            </li>
-            <li className="flex justify-between items-center text-[11px]">
-              <span className="text-tx-muted">Augmentation</span>
-              <span className="text-accent font-bold uppercase tracking-tighter">
-                Enchanting Eligible
-              </span>
+              <div className="md:text-right max-w-sm">
+                <p className="text-tx-muted leading-relaxed">
+                  All equippable gear can be magically enhanced up to a maximum
+                  of <span className="text-accent font-bold text-xs">+5</span>.
+                  Each successful enchantment massively boosts the item's base
+                  stats.
+                </p>
+              </div>
             </li>
           </ul>
         </div>
       </section>
 
-      {/* FOOTER NOTE */}
-      <div className="p-4 border-l border-border bg-panel/10">
-        <p className="text-[11px] text-tx-muted leading-relaxed italic opacity-70">
-          Field Tip: Always balance your Defense against the enemy's tier. A
-          high damage output is useless if your character cannot sustain the
-          duration of the encounter.
-        </p>
+      {/* TIP BOX */}
+      <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
+        <img
+          src="/assets/ui/icon_tip_placeholder.png"
+          alt="Tip"
+          className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
+        />
+        <div className="space-y-1">
+          <p className="text-[11px] text-tx-muted leading-relaxed italic opacity-80">
+            Adventurer's Tip: Before spending all your hard-earned coins on the
+            Marketplace, double-check your skill levels! A legendary weapon is
+            entirely useless if you lack the proficiency to wield it.
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -55,14 +55,23 @@ export const createScavengerSlice: StateCreator<
     const rolls = Math.max(1, minutes);
 
     const rewardsMap: Record<string, number> = {};
+    let coinsGained = 0; // UUSI: Pidetään kirjaa saaduista kolikoista
 
     if (worldLootTable) {
       for (let i = 0; i < rolls; i++) {
         // 1. Normaali maailman lootti
         const result = rollWeightedDrop(worldLootTable);
         if (result) {
-          newInventory[result.itemId] =
-            (newInventory[result.itemId] || 0) + result.amount;
+          // TARKISTETAAN ONKO KYSEESSÄ KOLIKOT
+          if (result.itemId === "coins") {
+            coinsGained += result.amount;
+          } else {
+            // Jos ei ole kolikko, menee inventoryyn
+            newInventory[result.itemId] =
+              (newInventory[result.itemId] || 0) + result.amount;
+          }
+
+          // Lisätään molemmat silti rewardsMapiin, jotta ne näkyvät UI:ssa
           rewardsMap[result.itemId] =
             (rewardsMap[result.itemId] || 0) + result.amount;
         }
@@ -111,6 +120,7 @@ export const createScavengerSlice: StateCreator<
     );
 
     set((state) => ({
+      coins: state.coins + coinsGained, // TÄMÄ KORJAA ONGELMAN
       inventory: newInventory,
       scavenger: {
         ...state.scavenger,

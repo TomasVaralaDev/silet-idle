@@ -22,7 +22,7 @@ export default function EquipmentArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_equipment_placeholder.png"
+            src="/assets/items/armor/armor_head_eternium.png"
             alt="Equipment"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -36,7 +36,7 @@ export default function EquipmentArticle() {
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
-                src="/assets/ui/icon_shield_placeholder.png"
+                src="/assets/items/armor/armor_chest_eternium.png"
                 alt="Armor"
                 className="w-4 h-4 pixelated"
               />
@@ -54,7 +54,7 @@ export default function EquipmentArticle() {
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
-                src="/assets/ui/icon_sword_placeholder.png"
+                src="/assets/items/weapons/boss_w8_sword.png"
                 alt="Weapon"
                 className="w-4 h-4 pixelated"
               />
@@ -73,7 +73,7 @@ export default function EquipmentArticle() {
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
-                src="/assets/ui/icon_ring_placeholder.png"
+                src="/assets/items/necklace/necklace_eternium.png"
                 alt="Accessory"
                 className="w-4 h-4 pixelated"
               />
@@ -91,7 +91,7 @@ export default function EquipmentArticle() {
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
-                src="/assets/ui/icon_potion_placeholder.png"
+                src="/assets/items/alchemy/potion_tier8.png"
                 alt="Consumable"
                 className="w-4 h-4 pixelated"
               />
@@ -111,7 +111,7 @@ export default function EquipmentArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_book_placeholder.png"
+            src="/assets/items/body_iron.png"
             alt="Rules"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -165,7 +165,7 @@ export default function EquipmentArticle() {
       {/* TIP BOX */}
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
-          src="/assets/ui/icon_tip_placeholder.png"
+          src="/assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
         />

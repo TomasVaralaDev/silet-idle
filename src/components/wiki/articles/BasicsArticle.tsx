@@ -32,7 +32,7 @@ export default function BasicsArticle() {
               desc: "Extract raw materials like ores, wood, and herbs. Your foundation relies on the resources you collect.",
               icon: (
                 <img
-                  src="/assets/ui/icon_gather_placeholder.png"
+                  src="/assets/skills/mining.png"
                   alt="Gather"
                   className="w-5 h-5 pixelated opacity-80"
                 />
@@ -44,7 +44,7 @@ export default function BasicsArticle() {
               desc: "Forge your materials into weapons, armor, accessories, and life-saving potions to prepare for battle.",
               icon: (
                 <img
-                  src="/assets/ui/icon_craft_placeholder.png"
+                  src="/assets/skills/crafting.png"
                   alt="Craft"
                   className="w-5 h-5 pixelated opacity-80"
                 />
@@ -56,7 +56,7 @@ export default function BasicsArticle() {
               desc: "Use magical scrolls and catalysts to enhance your crafted gear, drastically increasing your power.",
               icon: (
                 <img
-                  src="/assets/ui/icon_enchant_placeholder.png"
+                  src="/assets/ui/icon_enchanting.png"
                   alt="Enchant"
                   className="w-5 h-5 pixelated opacity-80"
                 />
@@ -68,7 +68,7 @@ export default function BasicsArticle() {
               desc: "Equip your best items and face the monsters of the current zone to gather loot and progress further.",
               icon: (
                 <img
-                  src="/assets/ui/icon_combat_placeholder.png"
+                  src="/assets/ui/icon_battle.png"
                   alt="Combat"
                   className="w-5 h-5 pixelated opacity-80"
                 />
@@ -124,7 +124,7 @@ export default function BasicsArticle() {
           <div className="flex items-center p-4 bg-accent/5 border-b border-border/50">
             <div className="w-24 text-[10px] font-bold text-accent uppercase tracking-tighter flex items-center gap-2">
               <img
-                src="/assets/items/boss_key_placeholder.png"
+                src="/assets/items/bosskey/bosskey_w7.png"
                 alt="Key"
                 className="w-3 h-3 pixelated"
               />
@@ -156,7 +156,7 @@ export default function BasicsArticle() {
       {/* STRATEGIC NOTE */}
       <div className="p-4 border-l border-warning bg-warning/5 flex gap-4 items-start">
         <img
-          src="/assets/ui/icon_info_placeholder.png"
+          src="/assets/ui/icon_achievements.png"
           alt="Info"
           className="w-5 h-5 pixelated opacity-80 mt-0.5 shrink-0"
         />

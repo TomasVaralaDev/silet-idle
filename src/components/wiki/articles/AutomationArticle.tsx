@@ -22,7 +22,7 @@ export default function AutomationArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_queue_placeholder.png"
+            src="/assets/ui/icon_equipment.png"
             alt="Queue"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -53,7 +53,7 @@ export default function AutomationArticle() {
             <div className="flex justify-between items-center text-[11px] bg-panel/20 p-2.5 rounded border border-border">
               <div className="flex items-center gap-3">
                 <img
-                  src="/assets/items/pine_log_placeholder.png"
+                  src="/assets/resources/tree/pine_log.png"
                   alt="Log"
                   className="w-4 h-4 pixelated"
                 />
@@ -61,12 +61,12 @@ export default function AutomationArticle() {
                   01. Chop Pine Logs
                 </span>
               </div>
-              <span className="text-tx-muted font-mono">100 / 100</span>
+              <span className="text-tx-muted font-mono">99 / 100</span>
             </div>
             <div className="flex justify-between items-center text-[11px] p-2.5 rounded border border-border/50 opacity-60">
               <div className="flex items-center gap-3">
                 <img
-                  src="/assets/items/pine_plank_placeholder.png"
+                  src="/assets/resources/tree/pine_plank.png"
                   alt="Plank"
                   className="w-4 h-4 pixelated grayscale"
                 />
@@ -82,7 +82,7 @@ export default function AutomationArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_offline_placeholder.png"
+            src="/assets/items/timeCrystal.png"
             alt="Offline"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -112,22 +112,6 @@ export default function AutomationArticle() {
           </div>
         </div>
       </section>
-
-      {/* ADVENTURER'S NOTE */}
-      <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
-        <img
-          src="/assets/ui/icon_clock_placeholder.png"
-          alt="Clock"
-          className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
-        />
-        <div className="space-y-1">
-          <p className="text-[11px] text-tx-muted leading-relaxed italic opacity-80">
-            Adventurer's Tip: Maximum offline duration can be expanded through
-            specific upgrades. Ensure your queue is sufficiently stocked with
-            raw materials before taking a long rest!
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

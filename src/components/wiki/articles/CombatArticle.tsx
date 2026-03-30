@@ -22,7 +22,7 @@ export default function CombatArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_speed_placeholder.png"
+            src="/assets/ui/icon_attackspeed.png"
             alt="Speed"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -81,7 +81,7 @@ export default function CombatArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_crosshair_placeholder.png"
+            src="/assets/ui/icon_death.png"
             alt="Combat Styles"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -137,22 +137,22 @@ export default function CombatArticle() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <StatDetail
-            iconSrc="/assets/ui/icon_atk_placeholder.png"
+            iconSrc="/assets/skills/attack.png"
             label="Attack Level"
             desc="Increases base accuracy and overall damage output."
           />
           <StatDetail
-            iconSrc="/assets/ui/icon_def_placeholder.png"
+            iconSrc="/assets/skills/defense.png"
             label="Armor Level"
             desc="Improves base damage mitigation against enemy strikes."
           />
           <StatDetail
-            iconSrc="/assets/ui/icon_hp_placeholder.png"
+            iconSrc="/assets/skills/hitpoints.png"
             label="Max HP"
             desc="Determines your health pool. Expanded by Hitpoints level and gear."
           />
           <StatDetail
-            iconSrc="/assets/ui/icon_crit_chance_placeholder.png"
+            iconSrc="/assets/ui/icon_critchance.png"
             label="Crit Dynamics"
             desc="Equipment determines your Critical Chance and Damage multipliers."
           />
@@ -163,7 +163,7 @@ export default function CombatArticle() {
       <section className="space-y-6 pt-4">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_loot_placeholder.png"
+            src="/assets/ui/icon_reward.png"
             alt="Loot"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -183,7 +183,7 @@ export default function CombatArticle() {
 
           <div className="flex items-start gap-3 pt-2">
             <img
-              src="/assets/items/boss_weapon_placeholder.png"
+              src="/assets/items/bows/boss_w4_bow.png"
               alt="Boss Weapon"
               className="w-6 h-6 pixelated shrink-0 mt-1"
             />
@@ -240,7 +240,7 @@ export default function CombatArticle() {
       {/* ADVENTURER'S TIP */}
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
-          src="/assets/ui/icon_potion_placeholder.png"
+          src="/assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-4 h-4 pixelated opacity-80 mt-0.5 shrink-0"
         />

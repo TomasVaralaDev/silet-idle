@@ -57,21 +57,21 @@ export const WIKI_TABS: WikiTabDef[] = [
   },
   {
     id: "equipment",
-    label: "The Armory",
+    label: "Equiqment",
     icon: "/assets/ui/icon_inventory.png",
     desc: "Weapons & Protection",
     component: EquipmentArticle,
   },
   {
     id: "combat",
-    label: "Art of War",
+    label: "Combat",
     icon: "/assets/skills/combat.png",
     desc: "Combat & Tactics",
     component: CombatArticle,
   },
   {
     id: "enchanting",
-    label: "The Forge",
+    label: "Enchanting",
     icon: "/assets/ui/icon_enchanting.png",
     desc: "Magical Augmentation",
     component: EnchantingArticle,
@@ -106,7 +106,7 @@ export const WIKI_TABS: WikiTabDef[] = [
   },
   {
     id: "treasures",
-    label: "Spoils of War",
+    label: "Enemy Drops",
     icon: "/assets/ui/icon_quest.png",
     desc: "Drops & Rarities",
     component: TreasuresArticle,

@@ -1,7 +1,7 @@
 export default function VendorsArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja selkeä */}
+      {/* HEADER */}
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -13,8 +13,8 @@ export default function VendorsArticle() {
         </h2>
         <p className="text-tx-muted text-sm leading-relaxed mt-4">
           Each World features its own specialized Vendor. These local merchants
-          are your primary source for crucial magical supplies, provided you
-          have the right combination of currencies to trade.
+          are your primary source for crucial supplies, provided you have the
+          right combination of currencies to trade.
         </p>
       </header>
 
@@ -23,7 +23,7 @@ export default function VendorsArticle() {
         <div className="p-6 bg-panel/5 border border-border rounded-lg space-y-3">
           <div className="flex items-center gap-2">
             <img
-              src="/assets/ui/icon_coin_placeholder.png"
+              src="/assets/lootpoolszones/eternalnexus_rare.png"
               alt="Trade"
               className="w-5 h-5 pixelated opacity-80"
             />
@@ -34,11 +34,10 @@ export default function VendorsArticle() {
           <p className="text-[11px] text-tx-muted leading-relaxed">
             World Vendors don't just accept standard gold. Purchasing items
             requires a combination of{" "}
-            <span className="text-warning font-semibold">Coins</span>, localized{" "}
-            <span className="text-tx-main font-semibold">World Currency</span>,
-            and specific{" "}
-            <span className="text-tx-main font-semibold">Monster Drops</span>{" "}
-            from that region.
+            <span className="text-warning font-semibold">Coins</span> and
+            localized{" "}
+            <span className="text-tx-main font-semibold">World Currency</span>{" "}
+            (which drops directly from monsters in that region).
           </p>
         </div>
 
@@ -64,63 +63,79 @@ export default function VendorsArticle() {
         </div>
       </section>
 
-      {/* ENCHANTING SCROLLS */}
+      {/* VENDOR INVENTORY (Scrolls, Potions, Mystery Bags) */}
       <section className="space-y-6">
-        <div className="flex items-center gap-3">
-          <img
-            src="/assets/items/scroll_placeholder.png"
-            alt="Scrolls"
-            className="w-5 h-5 pixelated opacity-80"
-          />
-          <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
-            Enchanting Scrolls (T1 - T4)
-          </h3>
-        </div>
+        <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
+          Vendor Inventory
+        </h3>
 
         <div className="space-y-4">
-          <p className="text-xs text-tx-muted leading-relaxed">
-            Outside of buying from other players on the Marketplace, World
-            Vendors are the
-            <strong className="text-tx-main font-semibold"> only way</strong> to
-            acquire Enchanting Scrolls. The higher the World tier, the better
-            the scrolls they sell.
-          </p>
+          {/* Scrolls */}
+          <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
+            <img
+              src="/assets/items/enchantingscroll/enchanting_tier3.png"
+              alt="Scroll"
+              className="w-6 h-6 pixelated mt-1 shrink-0"
+            />
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-tx-main uppercase tracking-wide">
+                Enchanting Scrolls
+              </h4>
+              <p className="text-[11px] text-tx-muted leading-relaxed">
+                Outside of the player Marketplace, World Vendors are the{" "}
+                <strong className="text-tx-main">only way</strong> to acquire
+                Enchanting Scrolls (Tiers 1-4). Different scrolls are sold
+                across various worlds.
+              </p>
+            </div>
+          </div>
 
-          <div className="border border-border/50 rounded-lg overflow-hidden bg-panel/5">
-            <div className="divide-y divide-border/20">
-              <VendorTierRow
-                world="World 1"
-                item="Tier 1 Scrolls"
-                cost="Coins + W1 Currency + W1 Loot"
-                cap="High Stock Limit"
-              />
-              <VendorTierRow
-                world="World 2"
-                item="Tier 2 Scrolls"
-                cost="Coins + W2 Currency + W2 Loot"
-                cap="Medium Stock Limit"
-              />
-              <VendorTierRow
-                world="World 3"
-                item="Tier 3 Scrolls"
-                cost="Coins + W3 Currency + W3 Loot"
-                cap="Low Stock Limit"
-              />
-              <VendorTierRow
-                world="World 4+"
-                item="Tier 4 Scrolls"
-                cost="Coins + W4 Currency + W4 Loot"
-                cap="Strict Daily Limit"
-              />
+          {/* Potions */}
+          <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
+            <img
+              src="/assets/items/alchemy/potion_tier5.png"
+              alt="Potion"
+              className="w-6 h-6 pixelated mt-1 shrink-0"
+            />
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-tx-main uppercase tracking-wide">
+                Combat Potions
+              </h4>
+              <p className="text-[11px] text-tx-muted leading-relaxed">
+                If you prefer to focus entirely on combat and skip leveling your{" "}
+                <span className="text-tx-main font-semibold">Forager</span> and{" "}
+                <span className="text-tx-main font-semibold">Alchemist</span>{" "}
+                skills, you can buy high-quality potions directly from the
+                vendors to keep you alive.
+              </p>
+            </div>
+          </div>
+
+          {/* Mystery Bags */}
+          <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
+            <img
+              src="/assets/items/pouch_legendary.png"
+              alt="Mystery Bag"
+              className="w-6 h-6 pixelated mt-1 shrink-0"
+            />
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-accent uppercase tracking-wide">
+                Mystery Bags
+              </h4>
+              <p className="text-[11px] text-tx-muted leading-relaxed">
+                Vendors occasionally stock mysterious loot bags. Once purchased,
+                these can be opened directly from your inventory for a chance at
+                various surprise rewards and materials.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ADVENTURER'S TIP - Tärkeä vinkki stackaamisesta */}
+      {/* ADVENTURER'S TIP - Stacking scrolls */}
       <div className="p-4 border-l border-border bg-panel/10 flex gap-4 items-start">
         <img
-          src="/assets/ui/icon_tip_placeholder.png"
+          src="/assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-5 h-5 pixelated opacity-80 mt-0.5 shrink-0"
         />
@@ -131,48 +146,9 @@ export default function VendorsArticle() {
           <p className="text-[11px] text-tx-muted leading-relaxed">
             Do not wait until you need to enchant your gear to start buying
             scrolls! Because of the daily limits, you should try to buy your
-            maximum allowance of T3 and T4 scrolls every single day. Stacking
-            them in your inventory early prevents massive progression delays
-            later on.
+            maximum allowance of scrolls every single day. Stacking them in your
+            inventory early prevents massive progression delays later on.
           </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Apukomponentti listaukseen
-function VendorTierRow({
-  world,
-  item,
-  cost,
-  cap,
-}: {
-  world: string;
-  item: string;
-  cost: string;
-  cap: string;
-}) {
-  const isStrict = cap.includes("Strict");
-
-  return (
-    <div className="flex flex-col md:flex-row md:justify-between md:items-center p-4 hover:bg-panel/10 transition-colors gap-2">
-      <div className="space-y-1">
-        <span className="block text-[10px] font-bold uppercase text-tx-main">
-          {world} Vendor
-        </span>
-        <span className="block text-[9px] text-tx-muted uppercase font-mono tracking-tighter">
-          Cost: {cost}
-        </span>
-      </div>
-      <div className="md:text-right space-y-1">
-        <div className="text-[10px] font-bold text-accent uppercase">
-          {item}
-        </div>
-        <div
-          className={`text-[9px] font-bold uppercase tracking-tighter ${isStrict ? "text-danger" : "text-tx-muted opacity-60"}`}
-        >
-          {cap}
         </div>
       </div>
     </div>

@@ -23,8 +23,8 @@ export default function ExpeditionsArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_compass_placeholder.png"
-            alt="Compass"
+            src="/assets/ui/icon_scope.png"
+            alt="Scope"
             className="w-5 h-5 pixelated opacity-80"
           />
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
@@ -35,11 +35,6 @@ export default function ExpeditionsArticle() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <span className="text-xs font-bold text-tx-main uppercase tracking-wide flex items-center gap-2">
-              <img
-                src="/assets/ui/icon_clock_placeholder.png"
-                alt="Time"
-                className="w-4 h-4 pixelated"
-              />
               Expedition Duration
             </span>
             <p className="text-[11px] text-tx-muted leading-relaxed">
@@ -53,11 +48,6 @@ export default function ExpeditionsArticle() {
 
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <span className="text-xs font-bold text-tx-main uppercase tracking-wide flex items-center gap-2">
-              <img
-                src="/assets/ui/icon_group_placeholder.png"
-                alt="Slots"
-                className="w-4 h-4 pixelated"
-              />
               Scout Capacity
             </span>
             <p className="text-[11px] text-tx-muted leading-relaxed">
@@ -65,8 +55,7 @@ export default function ExpeditionsArticle() {
               <span className="text-tx-main font-semibold">
                 1 free scouting slot
               </span>
-              . As you progress, you can unlock up to a maximum of 10 concurrent
-              expedition slots.
+              . You may purchase new slots or complete achievements.
             </p>
           </div>
         </div>
@@ -76,7 +65,7 @@ export default function ExpeditionsArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_loot_placeholder.png"
+            src="/assets/ui/icon_reward.png"
             alt="Loot"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -96,7 +85,7 @@ export default function ExpeditionsArticle() {
             <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px] border-b border-border/20 pb-4">
               <div className="flex items-center gap-2">
                 <img
-                  src="/assets/items/boss_key_placeholder.png"
+                  src="/assets/items/bosskey/bosskey_w6.png"
                   className="w-4 h-4 pixelated"
                   alt="Key"
                 />
@@ -119,7 +108,7 @@ export default function ExpeditionsArticle() {
             <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px]">
               <div className="flex items-center gap-2">
                 <img
-                  src="/assets/ui/icon_coin_placeholder.png"
+                  src="/assets/lootpoolszones/frostreach_basic.png"
                   className="w-4 h-4 pixelated"
                   alt="Currency"
                 />
@@ -143,7 +132,7 @@ export default function ExpeditionsArticle() {
       <section className="space-y-4">
         <div className="p-5 border border-accent/30 bg-accent/5 rounded-lg flex gap-4 items-start">
           <img
-            src="/assets/items/rune_placeholder.png"
+            src="/assets/items/runes/rune_6.png"
             alt="Rune"
             className="w-6 h-6 pixelated opacity-90 mt-0.5 shrink-0"
           />
@@ -165,7 +154,7 @@ export default function ExpeditionsArticle() {
       {/* ADVENTURER'S TIP */}
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
-          src="/assets/ui/icon_tip_placeholder.png"
+          src="/assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
         />
@@ -173,7 +162,7 @@ export default function ExpeditionsArticle() {
           <p className="text-[11px] text-tx-muted leading-relaxed italic opacity-80">
             Adventurer's Tip: Before you log off for the night or head to work,
             always send your scouts on a 12-hour expedition. You'll wake up to a
-            mountain of Runes and Boss Keys!
+            mountain of Runes, Coins and Boss Keys!
           </p>
         </div>
       </div>

@@ -13,7 +13,7 @@ const GEM_PACKS: Record<
   string,
   { gems: number; priceEur: number; name: string }
 > = {
-  gems_400: { gems: 400, priceEur: 5, name: "Gem Pouch" },
+  gems_400: { gems: 400, priceEur: 0.5, name: "Gem Pouch" },
   gems_1000: { gems: 1000, priceEur: 10, name: "Gem Chest" },
   gems_2500: { gems: 2500, priceEur: 20, name: "Gem Vault" },
 };

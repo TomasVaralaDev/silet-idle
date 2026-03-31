@@ -34,7 +34,7 @@ export const PREMIUM_SHOP_ITEMS: PremiumShopItem[] = [
     name: "Legendary Rune Bundle",
     description:
       "A divine collection of every Legendary Speed Rune. Become the ultimate master of all gathering and crafting skills instantly.",
-    priceGems: 800,
+    priceGems: 600,
     icon: "./assets/items/runes/rune_7.png", // Käytetään hienointa riimun ikonia paketin kuvana
     category: "Bundles",
     isOneTime: true,

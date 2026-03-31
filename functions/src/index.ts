@@ -108,8 +108,8 @@ export const createStripeCheckout = onCall(async (request) => {
         packId: packId,
       },
       // Ohjataan staattisiin sivuille pelin sijaan
-      success_url: "http://localhost:5173/success.html",
-      cancel_url: "http://localhost:5173/cancel.html",
+      success_url: "http://nexusidle.net/success.html",
+      cancel_url: "http://nexusidle.net/cancel.html",
 
       // Kun julkaiset (Production), vaihda nämä Hosting-osoitteisiisi:
       // success_url: "https://idle-a35ee.web.app/success.html",

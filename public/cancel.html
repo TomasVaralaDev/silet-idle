@@ -2,34 +2,94 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Purchase Cancelled</title>
     <style>
+      :root {
+        --app-base: #0b111a;
+        --panel: #131b26;
+        --border: #233142;
+        --tx-main: #f8fafc;
+        --tx-muted: #64748b;
+      }
+
       body {
-        background: #0f172a;
-        color: #f8fafc;
-        font-family: sans-serif;
+        background-color: var(--app-base);
+        font-family: ui-sans-serif, system-ui, sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
         height: 100vh;
         margin: 0;
+      }
+
+      .card {
+        background-color: var(--panel);
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        width: 440px;
         text-align: center;
       }
-      .card {
-        background: #1e293b;
-        padding: 2rem;
-        border-radius: 1.5rem;
-        border: 1px solid #334155;
+
+      .gem-icon {
+        width: 64px;
+        height: 64px;
+        image-rendering: pixelated;
+        margin-bottom: 0.75rem;
+        opacity: 0.8;
+      }
+
+      h1 {
+        color: var(--tx-main);
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 0.5rem 0;
+      }
+
+      p {
+        color: var(--tx-muted);
+        font-size: 1rem;
+        line-height: 1.4;
+        margin: 0 0 1.25rem 0;
+      }
+
+      button {
+        background-color: transparent;
+        color: var(--tx-muted);
+        border: 1px solid var(--border);
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition:
+          background-color 0.2s,
+          color 0.2s;
+        width: 100%;
+      }
+
+      button:hover {
+        background-color: var(--border);
+        color: var(--tx-main);
       }
     </style>
   </head>
   <body>
     <div class="card">
-      <h1>Order Cancelled</h1>
-      <p>
-        No charges were made. You can close this tab and return to the game.
-      </p>
-      <button onclick="window.close()">Close Window</button>
+      <h1>Cancelled</h1>
+      <p>No charges were made. You can close this tab.</p>
+      <button onclick="window.close()">Close</button>
     </div>
+
+    <script>
+      // Sulkee ikkunan automaattisesti 3 sekunnin kuluttua
+      setTimeout(() => {
+        window.close();
+      }, 3000);
+    </script>
   </body>
 </html>

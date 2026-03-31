@@ -18,6 +18,9 @@ export default function FoodSelector() {
     Math.min(100, ((10000 - foodTimer) / 10000) * 100),
   );
 
+  // LISÄTTY: Lasketaan jäljellä oleva aika sekunteina yhden desimaalin tarkkuudella
+  const timeLeft = (foodTimer / 1000).toFixed(1);
+
   // Filter inventory for consumable items and sort by healing power (highest first)
   const foodItems = Object.entries(inventory)
     .filter(([id, count]) => {
@@ -53,7 +56,6 @@ export default function FoodSelector() {
       {/* 1. Auto-Eat Threshold Slider */}
       <div className="bg-panel border-b border-border/50 p-3 shrink-0">
         <div className="flex justify-between items-center mb-2">
-          {/* VILKKUVA PALLURA POISTETTU TÄSTÄ */}
           <span className="text-[10px] font-black uppercase tracking-widest text-tx-muted flex items-center gap-1.5">
             Auto-Eat Threshold
           </span>
@@ -85,7 +87,7 @@ export default function FoodSelector() {
       </div>
 
       {/* 2. Inventory Grid & Active Item */}
-      <div className="flex-1 overflow-y-a uto custom-scrollbar p-3">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-3">
         {foodItems.length === 0 && !equippedFood ? (
           <div className="h-full flex flex-col items-center justify-center text-tx-muted opacity-50">
             <span className="text-[10px] uppercase font-bold tracking-widest">
@@ -104,12 +106,20 @@ export default function FoodSelector() {
               >
                 {/* Cooldown overlay for the active item */}
                 {isGlobalCooldown && (
-                  <div
-                    className="absolute inset-0 bg-app-base/80 z-10 transition-transform duration-100 ease-linear rounded-xl origin-left"
-                    style={{
-                      transform: `scaleX(${cooldownProgress / 100})`,
-                    }}
-                  />
+                  <>
+                    <div
+                      className="absolute inset-0 bg-app-base/80 z-10 transition-transform duration-100 ease-linear rounded-xl origin-left"
+                      style={{
+                        transform: `scaleX(${cooldownProgress / 100})`,
+                      }}
+                    />
+                    {/* LISÄTTY: Ajastimen teksti */}
+                    <div className="absolute inset-0 flex items-center justify-center z-40">
+                      <span className="text-[11px] font-black text-danger font-mono bg-panel/80 px-1.5 py-0.5 rounded border border-danger/30 shadow-md">
+                        {timeLeft}s
+                      </span>
+                    </div>
+                  </>
                 )}
 
                 <img
@@ -154,8 +164,6 @@ export default function FoodSelector() {
                   <span className="absolute bottom-1 right-1 text-[9px] font-mono text-tx-muted group-hover:text-tx-main bg-app-base/90 px-1 rounded z-30">
                     {count as number}
                   </span>
-
-                  {/* PIENI VIHREÄ PALLURA (HEALING INDICATOR DOT) POISTETTU TÄSTÄ */}
                 </button>
               );
             })}

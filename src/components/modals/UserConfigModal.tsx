@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { CHAT_COLORS } from "../../data/chatColors";
-import { wordFilter } from "../../utils/wordFilter"; // LISÄTTY IMPORT
+import { wordFilter } from "../../utils/wordFilter";
+import { ChevronDown } from "lucide-react"; // LISÄTTY IMPORT NUOLTA VARTEN
 
 const AVAILABLE_AVATARS = [
   { id: 1, src: "./assets/profilepics/profile_pic_1.png", name: "Standard" },
@@ -10,6 +11,14 @@ const AVAILABLE_AVATARS = [
   { id: 4, src: "./assets/profilepics/profile_pic_4.png", name: "Mage" },
   { id: 5, src: "./assets/profilepics/profile_pic_5.png", name: "Warrior" },
   { id: 6, src: "./assets/profilepics/profile_pic_6.png", name: "Construct" },
+  { id: 7, src: "./assets/profilepics/profile_pic_7.png", name: "ninja" },
+  { id: 8, src: "./assets/profilepics/profile_pic_8.png", name: "witch" },
+  { id: 9, src: "./assets/profilepics/profile_pic_9.png", name: "ranger" },
+  { id: 10, src: "./assets/profilepics/profile_pic_10.png", name: "herald" },
+  { id: 11, src: "./assets/profilepics/profile_pic_11.png", name: "ranger2" },
+  { id: 12, src: "./assets/profilepics/profile_pic_12.png", name: "mage2" },
+  { id: 13, src: "./assets/profilepics/profile_pic_13.png", name: "witch2" },
+  { id: 14, src: "./assets/profilepics/profile_pic_14.png", name: "yeehaw" },
 ];
 
 const THEMES = [
@@ -56,6 +65,9 @@ export default function UserConfigModal({
   );
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // UUSI: Tila profiilikuvien näkyvyydelle (oletuksena kiinni)
+  const [showAvatars, setShowAvatars] = useState(false);
 
   // --- COOLDOWN LOGIIKKA ---
   const lastNameChange = settings?.lastNameChange || 0;
@@ -111,7 +123,6 @@ export default function UserConfigModal({
       return;
     }
 
-    // UUSI LISÄYS: Profanity check ennen palvelimelle lähettämistä
     if (wordFilter.isProfane(trimmedName)) {
       setError("Inappropriate identity detected");
       return;
@@ -133,7 +144,6 @@ export default function UserConfigModal({
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"></div>
 
         <h2 className="text-xl font-black uppercase tracking-widest text-center mb-6 text-tx-main flex items-center justify-center gap-3">
-          {/* EMOJI KORVATTU KUVALLA */}
           <img
             src="./assets/profile/user_settings.png"
             alt=""
@@ -162,32 +172,54 @@ export default function UserConfigModal({
             </p>
           </div>
 
-          {/* AVATARS */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-3 text-center">
-              Portrait Appearance
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              {AVAILABLE_AVATARS.map((avatar) => (
-                <button
-                  key={avatar.id}
-                  type="button"
-                  onClick={() => setSelectedAvatar(avatar.src)}
-                  className={`
-                    relative group rounded-xl overflow-hidden border-2 transition-all duration-200 p-1
-                    ${selectedAvatar === avatar.src ? "border-accent bg-accent/20 shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] scale-105" : "border-border bg-panel-hover hover:border-border-hover hover:bg-panel"}
-                  `}
-                >
-                  <div className="aspect-square rounded-lg overflow-hidden bg-app-base">
-                    <img
-                      src={avatar.src}
-                      alt={avatar.name}
-                      className="w-full h-full object-cover pixelated"
-                    />
-                  </div>
-                </button>
-              ))}
-            </div>
+          {/* AVATARS - NYT PIILOTETTAVISSA */}
+          <div className="border border-border/50 bg-panel/30 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowAvatars(!showAvatars)}
+              className="w-full p-3 flex items-center justify-between hover:bg-panel-hover transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={selectedAvatar}
+                  className="w-6 h-6 rounded bg-app-base border border-border pixelated"
+                  alt="Current"
+                />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-tx-muted">
+                  Portrait Appearance
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-tx-muted transition-transform duration-300 ${showAvatars ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {showAvatars && (
+              <div className="p-3 pt-0 grid grid-cols-3 gap-3 border-t border-border/30 animate-in fade-in slide-in-from-top-2 duration-200">
+                {AVAILABLE_AVATARS.map((avatar) => (
+                  <button
+                    key={avatar.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedAvatar(avatar.src);
+                      setShowAvatars(false); // Vapaaehtoinen: sulkee valikon kun kuva on valittu
+                    }}
+                    className={`
+                      relative group rounded-xl overflow-hidden border-2 transition-all duration-200 p-1
+                      ${selectedAvatar === avatar.src ? "border-accent bg-accent/20 shadow-[0_0_15px_rgb(var(--color-accent)/0.3)] scale-105" : "border-border bg-panel-hover hover:border-border-hover hover:bg-panel"}
+                    `}
+                  >
+                    <div className="aspect-square rounded-lg overflow-hidden bg-app-base">
+                      <img
+                        src={avatar.src}
+                        alt={avatar.name}
+                        className="w-full h-full object-cover pixelated"
+                      />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* CHAT COLORS */}
@@ -269,7 +301,6 @@ export default function UserConfigModal({
                 <label className="block text-[10px] font-black uppercase tracking-wider text-tx-muted">
                   Character Designation
                 </label>
-                {/* NÄYTETÄÄN COOLDOWN JOS SE ON PÄÄLLÄ */}
                 {isNameCooldown && (
                   <span className="text-[10px] font-bold text-warning uppercase tracking-wider bg-warning/10 px-2 py-0.5 rounded">
                     Cooldown: {formatTime(timeLeft)}

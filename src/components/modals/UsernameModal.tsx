@@ -8,6 +8,14 @@ const AVAILABLE_AVATARS = [
   { id: 4, src: "./assets/profilepics/profile_pic_4.png", name: "Mage" },
   { id: 5, src: "./assets/profilepics/profile_pic_5.png", name: "Warrior" },
   { id: 6, src: "./assets/profilepics/profile_pic_6.png", name: "Construct" },
+  { id: 7, src: "./assets/profilepics/profile_pic_7.png", name: "ninja" },
+  { id: 8, src: "./assets/profilepics/profile_pic_8.png", name: "witch" },
+  { id: 9, src: "./assets/profilepics/profile_pic_9.png", name: "ranger" },
+  { id: 10, src: "./assets/profilepics/profile_pic_10.png", name: "herald" },
+  { id: 11, src: "./assets/profilepics/profile_pic_11.png", name: "ranger2" },
+  { id: 12, src: "./assets/profilepics/profile_pic_12.png", name: "mage2" },
+  { id: 13, src: "./assets/profilepics/profile_pic_13.png", name: "witch2" },
+  { id: 14, src: "./assets/profilepics/profile_pic_14.png", name: "yeehaw" },
 ];
 
 const THEMES = [

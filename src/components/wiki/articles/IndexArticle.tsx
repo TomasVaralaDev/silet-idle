@@ -19,7 +19,7 @@ export default function IndexArticle({ setActiveTab }: Props) {
           </span>
         </div>
         <h2 className="text-3xl font-bold text-tx-main uppercase tracking-tight">
-          Nexus Field Manual
+          Nexus Idle Guide
         </h2>
         <p className="text-tx-muted text-sm leading-relaxed mt-4 max-w-2xl">
           Welcome to the official survival and progression guide. Select a

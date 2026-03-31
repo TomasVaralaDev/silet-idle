@@ -414,7 +414,7 @@ export default function Sidebar({
           />
           <NavButton
             view="wiki"
-            label="System Manual"
+            label="Game Guide"
             icon="./assets/extra/system_manual.png"
             isActive={currentView === "wiki"}
             onClick={setView}
@@ -424,13 +424,6 @@ export default function Sidebar({
             label="Patch Notes"
             icon="./assets/extra/patch_notes.png"
             isActive={currentView === "patch_notes"}
-            onClick={setView}
-          />
-          <NavButton
-            view="guide"
-            label="Game Guide"
-            icon="./assets/extra/game_guide.png"
-            isActive={currentView === "guide"}
             onClick={setView}
           />
           <NavButton

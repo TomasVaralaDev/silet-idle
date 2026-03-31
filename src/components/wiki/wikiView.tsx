@@ -26,7 +26,7 @@ export default function WikiView() {
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/80 flex items-center gap-4 md:gap-6 sticky top-0 z-30 backdrop-blur-md shrink-0 shadow-sm">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-warning/10 border border-warning/30 shadow-[0_0_15px_rgba(var(--color-warning)/0.2)] shrink-0">
           <img
-            src="./assets/ui/icon_guide.png"
+            src="./assets/extra/system_manual.png"
             className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain drop-shadow-md"
             alt="Guide"
           />
@@ -61,7 +61,6 @@ export default function WikiView() {
         <nav className="w-full md:w-72 bg-panel/30 border-b md:border-b-0 md:border-r border-border/50 flex shrink-0 z-20 shadow-lg md:shadow-none">
           <div className="flex md:flex-col overflow-x-auto md:overflow-y-auto custom-scrollbar p-2 md:p-6 gap-2 w-full snap-x">
             <div className="hidden md:flex items-center gap-3 text-[10px] font-black text-warning uppercase tracking-[0.2em] mb-4 px-2 opacity-80 border-b border-warning/20 pb-2">
-              <span className="w-2 h-2 rounded-full bg-warning animate-pulse" />
               Table of Contents
             </div>
 

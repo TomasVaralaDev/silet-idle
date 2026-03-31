@@ -15,7 +15,6 @@ import {
   PrivacyPolicyView,
 } from "./meta/MetaViews";
 import WikiView from "./wiki/wikiView";
-import GuideView from "./guide/GuideView";
 
 // Poistettu FullStoreState import, koska sitä ei enää käytetä tässä
 import type { ViewType, SkillType } from "../types";
@@ -42,7 +41,6 @@ export default function ViewRouter({ currentView, onSellClick }: Props) {
   // META SYSTEMS
   if (currentView === "roadmap") return <RoadmapView />;
   if (currentView === "patch_notes") return <PatchNotesView />;
-  if (currentView === "guide") return <GuideView />;
   if (currentView === "faq") return <FaqView />;
   if (currentView === "privacy_policy") return <PrivacyPolicyView />;
   if (currentView === "wiki") return <WikiView />;

@@ -49,8 +49,11 @@ export default function Auth() {
       {/* BACKGROUND WITH VOID EXPANSE IMAGE */}
       <div className="absolute inset-0 z-0">
         <div
-          className="absolute inset-0 bg-[url('./assets/backgrounds/bg_voidexpanse.png')] bg-cover bg-center opacity-20 grayscale scale-110 animate-pulse-slow"
-          style={{ animationDuration: "8s" }}
+          className="absolute inset-0 bg-cover bg-center opacity-20 grayscale scale-110 animate-pulse-slow"
+          style={{
+            animationDuration: "8s",
+            backgroundImage: `url('${import.meta.env.BASE_URL}assets/backgrounds/bg_voidexpanse.png')`,
+          }}
         ></div>
         <div className="absolute inset-0 bg-gradient-to-b from-app-base/40 via-app-base/90 to-app-base"></div>
       </div>

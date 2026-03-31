@@ -21,7 +21,7 @@ import RewardModal from "./components/modals/RewardModal";
 import UserConfigModal from "./components/modals/UserConfigModal";
 import QuestModal from "./components/quests/QuestModal";
 import Auth from "./components/Auth";
-import DevManager from "./components/DevManager";
+// import DevManager from "./components/DevManager";
 import TutorialOverlay from "./components/TutorialOverlay";
 
 import { Menu, X } from "lucide-react";
@@ -38,7 +38,7 @@ const THEMES = [
 ];
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<ViewType>("woodcutting");
+  const [currentView, setCurrentView] = useState<ViewType>("inventory");
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(
     null,
   );
@@ -249,7 +249,7 @@ export default function App() {
       <TutorialOverlay />
 
       <SocialOverlay />
-      <DevManager />
+      {/* <DevManager /> */}
       <ItemTooltip />
     </div>
   );

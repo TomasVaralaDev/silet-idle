@@ -75,7 +75,7 @@ interface PurchaseResponse {
 }
 
 // --- PÄIVITETTY: CLOUD FUNCTION -KUTSU ---
-export const purchaseListing = async (buyerUid: string, listingId: string) => {
+export const purchaseListing = async (_buyerUid: string, listingId: string) => {
   // buyerUid-parametri pidetään tallella, jotta UI-komponenttiesi kutsut
   // eivät mene rikki, vaikka backend hakeekin UID:n turvallisesti auth-tokenista.
 

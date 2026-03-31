@@ -32,7 +32,7 @@ export const createEnchantingSlice: StateCreator<
       emitEvent(
         "error",
         "This Item cannot be enchanted.",
-        "/assets/ui/icon_locked.png",
+        "./assets/ui/icon_locked.png",
       );
       return;
     }
@@ -47,7 +47,7 @@ export const createEnchantingSlice: StateCreator<
       emitEvent(
         "error",
         "You do not have the required scroll.",
-        "/assets/ui/icon_locked.png",
+        "./assets/ui/icon_locked.png",
       );
       return;
     }
@@ -64,7 +64,7 @@ export const createEnchantingSlice: StateCreator<
       emitEvent(
         "error",
         `Not enough coins! Need ${cost}.`,
-        "/assets/ui/coins.png",
+        "./assets/ui/coins.png",
       );
       return;
     }
@@ -104,14 +104,14 @@ export const createEnchantingSlice: StateCreator<
         emitEvent(
           "success",
           "Enchantment successful",
-          "/assets/ui/icon_check.png",
+          "./assets/ui/icon_check.png",
         );
       } else {
         emitEvent("error", "Error finding equipped item to update.");
       }
     } else {
       // --- EPÄONNISTUMINEN ---
-      emitEvent("error", "Enchantment failed", "/assets/ui/icon_fail.png");
+      emitEvent("error", "Enchantment failed", "./assets/ui/icon_fail.png");
     }
   },
 });

@@ -7,7 +7,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w1_sword",
       name: "Guardian's Oak-Blade",
-      icon: "/assets/items/weapons/boss_w1_sword.png",
+      icon: "./assets/items/weapons/boss_w1_sword.png",
       value: 2500,
       rarity: "legendary",
       category: "weapon",
@@ -34,7 +34,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w2_bow",
       name: "Colossus Greatbow",
-      icon: "/assets/items/bows/boss_w2_bow.png",
+      icon: "./assets/items/bows/boss_w2_bow.png",
       value: 6000,
       rarity: "legendary",
       category: "weapon",
@@ -61,7 +61,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w3_sword",
       name: "Inferno Ward's Slicer",
-      icon: "/assets/items/weapons/boss_w3_sword.png",
+      icon: "./assets/items/weapons/boss_w3_sword.png",
       value: 12500,
       rarity: "legendary",
       category: "weapon",
@@ -88,7 +88,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w4_bow",
       name: "Sorcerer's Frost-Stinger",
-      icon: "/assets/items/bows/boss_w4_bow.png",
+      icon: "./assets/items/bows/boss_w4_bow.png",
       value: 25000,
       rarity: "legendary",
       category: "weapon",
@@ -115,7 +115,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w5_sword",
       name: "Dreadwood King's Shadow",
-      icon: "/assets/items/weapons/boss_w5_sword.png",
+      icon: "./assets/items/weapons/boss_w5_sword.png",
       value: 55000,
       rarity: "legendary",
       category: "weapon",
@@ -142,7 +142,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w6_bow",
       name: "Tide-Ruler's Thunder",
-      icon: "/assets/items/bows/boss_w6_bow.png",
+      icon: "./assets/items/bows/boss_w6_bow.png",
       value: 120000,
       rarity: "legendary",
       category: "weapon",
@@ -169,7 +169,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w7_sword",
       name: "Architect's Reality-Cutter",
-      icon: "/assets/items/weapons/boss_w7_sword.png",
+      icon: "./assets/items/weapons/boss_w7_sword.png",
       value: 300000,
       rarity: "legendary",
       category: "weapon",
@@ -196,7 +196,7 @@ export const WORLD_BOSS_DROPS: Record<number, Resource[]> = {
     {
       id: "weapon_boss_w8_sword",
       name: "Nexus Lord's Chrono-Blade",
-      icon: "/assets/items/weapons/boss_w8_sword.png",
+      icon: "./assets/items/weapons/boss_w8_sword.png",
       value: 1000000,
       rarity: "legendary",
       category: "weapon",

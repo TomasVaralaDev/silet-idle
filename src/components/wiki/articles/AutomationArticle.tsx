@@ -22,7 +22,7 @@ export default function AutomationArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_equipment.png"
+            src="./assets/ui/icon_equipment.png"
             alt="Queue"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -53,7 +53,7 @@ export default function AutomationArticle() {
             <div className="flex justify-between items-center text-[11px] bg-panel/20 p-2.5 rounded border border-border">
               <div className="flex items-center gap-3">
                 <img
-                  src="/assets/resources/tree/pine_log.png"
+                  src="./assets/resources/tree/pine_log.png"
                   alt="Log"
                   className="w-4 h-4 pixelated"
                 />
@@ -66,7 +66,7 @@ export default function AutomationArticle() {
             <div className="flex justify-between items-center text-[11px] p-2.5 rounded border border-border/50 opacity-60">
               <div className="flex items-center gap-3">
                 <img
-                  src="/assets/resources/tree/pine_plank.png"
+                  src="./assets/resources/tree/pine_plank.png"
                   alt="Plank"
                   className="w-4 h-4 pixelated grayscale"
                 />
@@ -82,7 +82,7 @@ export default function AutomationArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/items/timeCrystal.png"
+            src="./assets/items/timeCrystal.png"
             alt="Offline"
             className="w-5 h-5 pixelated opacity-80"
           />

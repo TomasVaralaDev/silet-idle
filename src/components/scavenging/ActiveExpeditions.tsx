@@ -16,7 +16,7 @@ export default function ActiveExpeditions() {
     return (
       <div className="p-6 md:p-8 text-center border border-dashed border-border rounded-xl text-tx-muted/70 flex flex-col items-center justify-center bg-app-base/30">
         <img
-          src="/assets/ui/icon_map.png"
+          src="./assets/ui/icon_map.png"
           alt="No Expeditions"
           className="w-8 h-8 md:w-12 md:h-12 mb-2 md:mb-3 opacity-20 pixelated grayscale"
         />

@@ -71,7 +71,7 @@ describe("Enchanting & Scaling System", () => {
       id: "dagger_bronze",
       name: "Bronze Dagger",
       rarity: "common",
-      icon: "/assets/items/weapons/dagger_bronze.png",
+      icon: "./assets/items/weapons/dagger_bronze.png",
       value: 100,
       stats: { attack: 10, defense: 5 },
     };

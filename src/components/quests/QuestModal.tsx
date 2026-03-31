@@ -23,7 +23,7 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
           <div>
             <h2 className="text-2xl font-black text-tx-main flex items-center gap-3">
               <img
-                src="/assets/ui/icon_quest.png"
+                src="./assets/ui/icon_quest.png"
                 className="w-8 h-8 pixelated drop-shadow-md"
                 alt="Quests"
               />

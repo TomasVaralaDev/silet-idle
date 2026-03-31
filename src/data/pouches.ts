@@ -7,7 +7,7 @@ export const MYSTERY_POUCHES: Resource[] = [
     category: "consumable",
     rarity: "uncommon",
     value: 1000,
-    icon: "/assets/items/pouch_basic.png",
+    icon: "./assets/items/pouch_basic.png",
     color: "text-green-400",
     description:
       "A small, tightly tied pouch. Might contain basic resources or a rare surprise.",
@@ -18,7 +18,7 @@ export const MYSTERY_POUCHES: Resource[] = [
     category: "consumable",
     rarity: "rare",
     value: 5000,
-    icon: "/assets/items/pouch_major.png",
+    icon: "./assets/items/pouch_major.png",
     color: "text-blue-400",
     description:
       "A heavy velvet pouch humming with magic. High chance for valuable loot.",
@@ -29,7 +29,7 @@ export const MYSTERY_POUCHES: Resource[] = [
     category: "consumable",
     rarity: "legendary",
     value: 20000,
-    icon: "/assets/items/pouch_legendary.png",
+    icon: "./assets/items/pouch_legendary.png",
     color: "text-yellow-400",
     description:
       "An ethereal bag radiating immense power. Guaranteed to hold something extraordinary.",

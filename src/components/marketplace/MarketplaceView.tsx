@@ -164,7 +164,7 @@ export default function MarketplaceView() {
             className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0`}
           >
             <img
-              src="/assets/ui/icon_market.png"
+              src="./assets/ui/icon_market.png"
               className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
               alt="Marketplace"
             />
@@ -213,7 +213,7 @@ export default function MarketplaceView() {
             title="Mailbox"
           >
             <img
-              src="/assets/ui/icon_mail.png"
+              src="./assets/ui/icon_mail.png"
               className={`w-8 h-8 md:w-10 md:h-10 pixelated transition-all ${
                 tab === "mailbox"
                   ? "brightness-125 scale-110"
@@ -352,7 +352,7 @@ export default function MarketplaceView() {
                       <div className="text-[9px] md:text-[10px] text-warning font-bold font-mono flex items-center justify-center gap-1 truncate">
                         <span>From {item.lowestPrice.toLocaleString()}</span>
                         <img
-                          src="/assets/ui/coins.png"
+                          src="./assets/ui/coins.png"
                           className="w-3 h-3 pixelated inline-block shrink-0"
                           alt="coins"
                         />
@@ -414,7 +414,7 @@ export default function MarketplaceView() {
             {!loading && filteredCatalog.length === 0 && !selectedItemId && (
               <div className="flex flex-col items-center justify-center py-10 md:py-20">
                 <img
-                  src="/assets/ui/icon_market.png"
+                  src="./assets/ui/icon_market.png"
                   className="w-16 h-16 md:w-20 md:h-20 pixelated opacity-10 mb-4 md:mb-6 grayscale"
                   alt="No signals"
                 />

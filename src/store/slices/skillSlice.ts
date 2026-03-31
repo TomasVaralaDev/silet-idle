@@ -54,7 +54,7 @@ export const createSkillSlice: StateCreator<
           state.emitEvent(
             "warning",
             `Missing materials for ${resource.name}`,
-            "/assets/ui/icon_warning.png",
+            "./assets/ui/icon_warning.png",
           );
           return {};
         }
@@ -82,7 +82,7 @@ export const createSkillSlice: StateCreator<
         state.emitEvent(
           "error",
           `Queue full! You only have ${maxSlots} slots available.`,
-          "/assets/ui/icon_warning.png",
+          "./assets/ui/icon_warning.png",
         );
         return {};
       }

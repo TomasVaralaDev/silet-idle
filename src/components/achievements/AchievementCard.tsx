@@ -113,7 +113,7 @@ export default function AchievementCard({
                 title={`${achievement.rewards.coins} Coins`}
               >
                 <img
-                  src="/assets/ui/coins.png"
+                  src="./assets/ui/coins.png"
                   className="w-3 h-3 pixelated"
                   alt="Coins"
                 />

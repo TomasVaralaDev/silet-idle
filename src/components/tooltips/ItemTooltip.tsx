@@ -95,7 +95,11 @@ export default function ItemTooltip() {
         <span className="text-[10px] font-mono text-warning font-bold">
           {item.value}
         </span>
-        <img src="/assets/ui/coins.png" className="w-3 h-3 pixelated" alt="g" />
+        <img
+          src="./assets/ui/coins.png"
+          className="w-3 h-3 pixelated"
+          alt="g"
+        />
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ export default function EnchantingArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_enchanting.png"
+            src="./assets/ui/icon_enchanting.png"
             alt="Magic"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -77,7 +77,7 @@ export default function EnchantingArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/items/enchantingscroll/enchanting_tier4.png"
+            src="./assets/items/enchantingscroll/enchanting_tier4.png"
             alt="Scroll"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -123,7 +123,7 @@ export default function EnchantingArticle() {
       <section className="space-y-4">
         <div className="p-5 border border-danger/30 bg-danger/5 rounded-lg flex gap-4 items-start">
           <img
-            src="/assets/ui/icon_fail.png"
+            src="./assets/ui/icon_fail.png"
             alt="Alert"
             className="w-5 h-5 pixelated opacity-80 mt-0.5 shrink-0"
           />
@@ -148,7 +148,7 @@ export default function EnchantingArticle() {
       {/* STRATEGIC FOOTER */}
       <div className="p-4 border-l border-border bg-panel/10 flex items-center gap-3">
         <img
-          src="/assets/ui/icon_achievements.png"
+          src="./assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-4 h-4 pixelated opacity-60 shrink-0"
         />

@@ -319,7 +319,7 @@ export default function TutorialOverlay() {
     emitEvent(
       "success",
       "Tutorial completed! +5000 Coins awarded.",
-      "/assets/ui/coins.png",
+      "./assets/ui/coins.png",
     );
   };
 

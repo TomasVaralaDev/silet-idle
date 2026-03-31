@@ -53,7 +53,7 @@ export default function ListingCard({ listing, myUid, onPurchase }: Props) {
             Total Cost
           </span>
           <div className="flex items-center gap-1.5">
-            <img src="/assets/ui/coins.png" className="w-4 h-4" alt="" />
+            <img src="./assets/ui/coins.png" className="w-4 h-4" alt="" />
             <span className="font-mono text-amber-500 font-bold">
               {listing.totalPrice.toLocaleString()}
             </span>

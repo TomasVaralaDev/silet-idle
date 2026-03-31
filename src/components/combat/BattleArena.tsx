@@ -179,7 +179,7 @@ export default function BattleArena({
 
           <div className="w-24 h-24 relative flex items-center justify-center">
             <img
-              src={avatar || "/assets/ui/icon_user_avatar.png"}
+              src={avatar || "./assets/ui/icon_user_avatar.png"}
               alt="Player"
               className={`w-20 h-20 object-contain pixelated transform scale-x-[-1] transition-transform ${playerFlash ? "animate-flash-red" : ""}`}
               onError={(e) =>
@@ -254,7 +254,7 @@ export default function BattleArena({
               {!combatStats.respawnTimer && (
                 <>
                   <img
-                    src="/assets/ui/icon_battle.png"
+                    src="./assets/ui/icon_battle.png"
                     className="w-10 h-10 pixelated grayscale"
                     alt=""
                   />

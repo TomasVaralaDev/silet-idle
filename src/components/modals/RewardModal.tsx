@@ -33,7 +33,7 @@ export default function RewardModal() {
             <div className="relative">
               <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full animate-pulse"></div>
               <img
-                src="/assets/ui/icon_reward.png"
+                src="./assets/ui/icon_reward.png"
                 alt="Reward"
                 className="w-16 h-16 object-contain pixelated relative z-10"
               />

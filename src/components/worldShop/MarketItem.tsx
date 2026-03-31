@@ -151,7 +151,7 @@ export default function MarketItem({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-mono font-bold
             ${canAffordCoins ? "bg-warning/5 border-warning/20 text-warning" : "bg-danger/5 border-danger/20 text-danger"}`}
           >
-            <img src="/assets/ui/coins.png" className="w-4 h-4" alt="Coins" />
+            <img src="./assets/ui/coins.png" className="w-4 h-4" alt="Coins" />
             {totalCoinCost.toLocaleString()}
           </div>
 

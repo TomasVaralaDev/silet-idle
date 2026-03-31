@@ -22,7 +22,7 @@ export default function TreasuresArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_reward.png"
+            src="./assets/ui/icon_reward.png"
             alt="Loot"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -37,19 +37,19 @@ export default function TreasuresArticle() {
               label="Gold Coins"
               rate="Common"
               desc="The universal currency used for enchanting and marketplace trades."
-              iconSrc="/assets/ui/coins.png"
+              iconSrc="./assets/ui/coins.png"
             />
             <LootRow
               label="World Currency"
               rate="Uncommon"
               desc="Localized currency specific to the world you are currently fighting in."
-              iconSrc="/assets/lootpoolszones/eternalnexus_basic.png"
+              iconSrc="./assets/lootpoolszones/eternalnexus_basic.png"
             />
             <LootRow
               label="Boss Keys"
               rate="Rare"
               desc="Required to challenge the Zone 10 World Boss. Dropped by standard monsters."
-              iconSrc="/assets/items/bosskey/bosskey_w7.png"
+              iconSrc="./assets/items/bosskey/bosskey_w7.png"
               isCritical
             />
           </div>
@@ -60,7 +60,7 @@ export default function TreasuresArticle() {
       <section className="space-y-4">
         <div className="flex items-center gap-3 mb-4">
           <img
-            src="/assets/items/weapons/boss_w5_sword.png"
+            src="./assets/items/weapons/boss_w5_sword.png"
             alt="Boss Loot"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -89,7 +89,7 @@ export default function TreasuresArticle() {
       {/* ADVENTURER'S TIP (Auto-loot) */}
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
-          src="/assets/ui/icon_achievements.png"
+          src="./assets/ui/icon_achievements.png"
           alt="Bag"
           className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
         />

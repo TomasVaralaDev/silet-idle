@@ -23,7 +23,7 @@ export default function VendorsArticle() {
         <div className="p-6 bg-panel/5 border border-border rounded-lg space-y-3">
           <div className="flex items-center gap-2">
             <img
-              src="/assets/lootpoolszones/eternalnexus_rare.png"
+              src="./assets/lootpoolszones/eternalnexus_rare.png"
               alt="Trade"
               className="w-5 h-5 pixelated opacity-80"
             />
@@ -68,7 +68,7 @@ export default function VendorsArticle() {
           {/* Scrolls */}
           <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
             <img
-              src="/assets/items/enchantingscroll/enchanting_tier3.png"
+              src="./assets/items/enchantingscroll/enchanting_tier3.png"
               alt="Scroll"
               className="w-6 h-6 pixelated mt-1 shrink-0"
             />
@@ -88,7 +88,7 @@ export default function VendorsArticle() {
           {/* Potions */}
           <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
             <img
-              src="/assets/items/alchemy/potion_tier5.png"
+              src="./assets/items/alchemy/potion_tier5.png"
               alt="Potion"
               className="w-6 h-6 pixelated mt-1 shrink-0"
             />
@@ -109,7 +109,7 @@ export default function VendorsArticle() {
           {/* Mystery Bags */}
           <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
             <img
-              src="/assets/items/pouch_legendary.png"
+              src="./assets/items/pouch_legendary.png"
               alt="Mystery Bag"
               className="w-6 h-6 pixelated mt-1 shrink-0"
             />
@@ -130,7 +130,7 @@ export default function VendorsArticle() {
       {/* ADVENTURER'S TIP - Stacking scrolls */}
       <div className="p-4 border-l border-border bg-panel/10 flex gap-4 items-start">
         <img
-          src="/assets/ui/icon_achievements.png"
+          src="./assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-5 h-5 pixelated opacity-80 mt-0.5 shrink-0"
         />

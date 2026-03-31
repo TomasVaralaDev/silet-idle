@@ -87,7 +87,7 @@ export default function EnchantingView() {
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-3 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
-            src="/assets/ui/icon_enchanting.png"
+            src="./assets/ui/icon_enchanting.png"
             className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
             alt="Enchanting"
           />
@@ -125,7 +125,7 @@ export default function EnchantingView() {
 
               <div className="relative h-[320px] md:h-[420px] w-full flex justify-center items-center select-none">
                 <img
-                  src="/assets/ui/character_silhouette.png"
+                  src="./assets/ui/character_silhouette.png"
                   className="absolute h-full opacity-5 contrast-0 brightness-200 pointer-events-none"
                   alt=""
                 />
@@ -324,7 +324,7 @@ export default function EnchantingView() {
                       </span>
                       <div className="flex items-center gap-2">
                         <img
-                          src="/assets/ui/coins.png"
+                          src="./assets/ui/coins.png"
                           className="w-4 h-4 pixelated"
                           alt="Coins"
                         />
@@ -413,23 +413,23 @@ function EnchantSlot({
   const getPlaceholder = (s: string) => {
     switch (s) {
       case "head":
-        return "/assets/ui/slots/slot_head.png";
+        return "./assets/ui/slots/slot_head.png";
       case "body":
-        return "/assets/ui/slots/slot_body.png";
+        return "./assets/ui/slots/slot_body.png";
       case "legs":
-        return "/assets/ui/slots/slot_legs.png";
+        return "./assets/ui/slots/slot_legs.png";
       case "weapon":
-        return "/assets/ui/slots/slot_weapon.png";
+        return "./assets/ui/slots/slot_weapon.png";
       case "shield":
-        return "/assets/ui/slots/slot_shield.png";
+        return "./assets/ui/slots/slot_shield.png";
       case "necklace":
-        return "/assets/ui/slots/slot_necklace.png";
+        return "./assets/ui/slots/slot_necklace.png";
       case "ring":
-        return "/assets/ui/slots/slot_ring.png";
+        return "./assets/ui/slots/slot_ring.png";
       case "rune":
-        return "/assets/ui/slots/slot_rune.png";
+        return "./assets/ui/slots/slot_rune.png";
       default:
-        return "/assets/ui/slots/slot_default.png";
+        return "./assets/ui/slots/slot_default.png";
     }
   };
 

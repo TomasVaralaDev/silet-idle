@@ -213,6 +213,6 @@ export const GUIDE_DATA: GuideSection[] = [
     title: "Gathering & Production",
     content:
       "Collect raw materials using gathering skills like Foraging or Mining, then refine them into gear or potions via Smithing and Alchemy.",
-    icon: "/assets/skills/foraging.png",
+    icon: "./assets/skills/foraging.png",
   },
 ];

@@ -71,7 +71,7 @@ export const createWorldShopSlice: StateCreator<
       emitEvent(
         "warning",
         `Not enough daily limit left!`,
-        "/assets/ui/icon_locked.png",
+        "./assets/ui/icon_locked.png",
       );
       return;
     }
@@ -79,7 +79,7 @@ export const createWorldShopSlice: StateCreator<
     // 2. TARKISTA VALUUTTA
     const totalCoinCost = shopItem.costCoins * amount;
     if (coins < totalCoinCost) {
-      emitEvent("error", "Not enough Fragments!", "/assets/ui/coins.png");
+      emitEvent("error", "Not enough Fragments!", "./assets/ui/coins.png");
       return;
     }
 
@@ -92,7 +92,7 @@ export const createWorldShopSlice: StateCreator<
       emitEvent(
         "error",
         "Missing required materials!",
-        "/assets/ui/icon_locked.png",
+        "./assets/ui/icon_locked.png",
       );
       return;
     }

@@ -66,7 +66,7 @@ export default function DevManager() {
     ];
 
     const foundItem = allItems.find((item) => item.id === id);
-    const iconPath = foundItem?.icon || `/assets/items/bosskey/${id}.png`;
+    const iconPath = foundItem?.icon || `./assets/items/bosskey/${id}.png`;
 
     emitEvent("success", `Injected ${qty}x ${foundItem?.name || id}`, iconPath);
   };
@@ -94,7 +94,7 @@ export default function DevManager() {
     emitEvent(
       "success",
       "GOD MODE: All gear (Base + E1-E5) injected!",
-      "/assets/ui/icon_level_up.png",
+      "./assets/ui/icon_level_up.png",
     );
   };
 
@@ -109,7 +109,7 @@ export default function DevManager() {
     emitEvent(
       "success",
       "MEDICAL RESUPPLY: 999x potions injected!",
-      "/assets/items/alchemy/potion_tier8.png",
+      "./assets/items/alchemy/potion_tier8.png",
     );
   };
 
@@ -124,7 +124,7 @@ export default function DevManager() {
     emitEvent(
       "success",
       "LOOT OVERFLOW: 10x Mystery Pouches injected!",
-      "/assets/items/pouch_legendary.png",
+      "./assets/items/pouch_legendary.png",
     );
   };
 
@@ -161,7 +161,7 @@ export default function DevManager() {
     emitEvent(
       "info",
       `Neural Link: All skills synchronized to level ${lvl}`,
-      "/assets/ui/icon_level_up.png",
+      "./assets/ui/icon_level_up.png",
     );
   };
 
@@ -172,7 +172,7 @@ export default function DevManager() {
     emitEvent(
       "success",
       "MAP OVERRIDE: All 80 zones unlocked!",
-      "/assets/ui/icon_maps.png",
+      "./assets/ui/icon_maps.png",
     );
   };
 

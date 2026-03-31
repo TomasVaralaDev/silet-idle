@@ -10,7 +10,7 @@ const allWeapons: Resource[] = [
     xpReward: 40,
     interval: 3000,
     value: 15,
-    icon: "/assets/items/weapons/weapon_sword_bronze.png",
+    icon: "./assets/items/weapons/weapon_sword_bronze.png",
     color: "text-orange-600",
     description: "Basic sword.",
     inputs: [
@@ -31,7 +31,7 @@ const allWeapons: Resource[] = [
     xpReward: 150,
     interval: 5000,
     value: 50,
-    icon: "/assets/items/weapons/weapon_sword_iron.png",
+    icon: "./assets/items/weapons/weapon_sword_iron.png",
     color: "text-slate-400",
     description: "Sharp and reliable.",
     inputs: [
@@ -52,7 +52,7 @@ const allWeapons: Resource[] = [
     xpReward: 400,
     interval: 6500,
     value: 120,
-    icon: "/assets/items/weapons/weapon_sword_gold.png",
+    icon: "./assets/items/weapons/weapon_sword_gold.png",
     color: "text-yellow-400",
     description: "Shiny and heavy.",
     inputs: [
@@ -73,7 +73,7 @@ const allWeapons: Resource[] = [
     xpReward: 1200,
     interval: 8000,
     value: 250,
-    icon: "/assets/items/weapons/weapon_sword_mithril.png",
+    icon: "./assets/items/weapons/weapon_sword_mithril.png",
     color: "text-cyan-400",
     description: "Lightweight blade.",
     inputs: [
@@ -94,7 +94,7 @@ const allWeapons: Resource[] = [
     xpReward: 3500,
     interval: 9500,
     value: 500,
-    icon: "/assets/items/weapons/weapon_sword_adamantite.png",
+    icon: "./assets/items/weapons/weapon_sword_adamantite.png",
     color: "text-purple-400",
     description: "Extremely hard edge.",
     inputs: [
@@ -115,7 +115,7 @@ const allWeapons: Resource[] = [
     xpReward: 8000,
     interval: 11000,
     value: 1000,
-    icon: "/assets/items/weapons/weapon_sword_emerald.png",
+    icon: "./assets/items/weapons/weapon_sword_emerald.png",
     color: "text-emerald-400",
     description: "Crystalline power.",
     inputs: [
@@ -136,7 +136,7 @@ const allWeapons: Resource[] = [
     xpReward: 20000, // LASKETTU 50k -> 20k
     interval: 13000, // NOPEUTETTU
     value: 2500, // LASKETTU 5000 -> 2500
-    icon: "/assets/items/weapons/weapon_sword_starfallalloy.png",
+    icon: "./assets/items/weapons/weapon_sword_starfallalloy.png",
     color: "text-indigo-400",
     description: "Cosmic destruction.",
     inputs: [
@@ -162,7 +162,7 @@ const allWeapons: Resource[] = [
     xpReward: 50000, // NOSTETTU 20k -> 50k
     interval: 16000, // HIDASTETTU
     value: 5000, // NOSTETTU 2500 -> 5000
-    icon: "/assets/items/weapons/weapon_sword_eternium.png",
+    icon: "./assets/items/weapons/weapon_sword_eternium.png",
     color: "text-red-500",
     description: "Blade out of time.",
     inputs: [
@@ -189,7 +189,7 @@ const allWeapons: Resource[] = [
     xpReward: 20,
     interval: 3000,
     value: 15,
-    icon: "/assets/items/weapons/weapon_sword_excalibur.png",
+    icon: "./assets/items/weapons/weapon_sword_excalibur.png",
     color: "text-red-500",
     description: "super duper dev ultra makee miekka.",
     inputs: [{ id: "ore_copper_smelted", count: 2 }],
@@ -214,7 +214,7 @@ const allWeapons: Resource[] = [
     xpReward: 40,
     interval: 2500,
     value: 40,
-    icon: "/assets/items/bows/bow_copper.png",
+    icon: "./assets/items/bows/bow_copper.png",
     color: "text-orange-400",
     description: "A flexible copper-reinforced bow.",
     inputs: [
@@ -235,7 +235,7 @@ const allWeapons: Resource[] = [
     xpReward: 150,
     interval: 3000,
     value: 100,
-    icon: "/assets/items/bows/bow_iron.png",
+    icon: "./assets/items/bows/bow_iron.png",
     color: "text-slate-400",
     description: "Sturdy iron-limbed bow.",
     inputs: [
@@ -256,7 +256,7 @@ const allWeapons: Resource[] = [
     xpReward: 400,
     interval: 3500,
     value: 250,
-    icon: "/assets/items/bows/bow_gold.png",
+    icon: "./assets/items/bows/bow_gold.png",
     color: "text-yellow-400",
     description: "Heavy draw weight, high impact.",
     inputs: [
@@ -277,7 +277,7 @@ const allWeapons: Resource[] = [
     xpReward: 1200,
     interval: 4000,
     value: 600,
-    icon: "/assets/items/bows/bow_mithril.png",
+    icon: "./assets/items/bows/bow_mithril.png",
     color: "text-blue-300",
     description: "Lightweight and deadly accurate.",
     inputs: [
@@ -298,7 +298,7 @@ const allWeapons: Resource[] = [
     xpReward: 3500,
     interval: 5000,
     value: 1500,
-    icon: "/assets/items/bows/bow_adamantite.png",
+    icon: "./assets/items/bows/bow_adamantite.png",
     color: "text-purple-400",
     description: "Powerful compound construction.",
     inputs: [
@@ -319,7 +319,7 @@ const allWeapons: Resource[] = [
     xpReward: 8000,
     interval: 6000,
     value: 3000,
-    icon: "/assets/items/bows/bow_emerald.png",
+    icon: "./assets/items/bows/bow_emerald.png",
     color: "text-emerald-400",
     description: "Infused with nature energy.",
     inputs: [
@@ -340,7 +340,7 @@ const allWeapons: Resource[] = [
     xpReward: 20000, // LASKETTU 50k -> 20k
     interval: 7500, // NOPEUTETTU
     value: 6000, // LASKETTU 15000 -> 6000
-    icon: "/assets/items/bows/bow_starfall.png",
+    icon: "./assets/items/bows/bow_starfall.png",
     color: "text-indigo-400",
     description: "Forged from starlight itself.",
     inputs: [
@@ -366,7 +366,7 @@ const allWeapons: Resource[] = [
     xpReward: 50000, // NOSTETTU 20k -> 50k
     interval: 10000, // HIDASTETTU (Vaativampi valmistus)
     value: 15000, // NOSTETTU 6000 -> 15000
-    icon: "/assets/items/bows/bow_eternium.png",
+    icon: "./assets/items/bows/bow_eternium.png",
     color: "text-red-500",
     description: "Fires arrows at supersonic speeds.",
     inputs: [
@@ -394,7 +394,7 @@ const allWeapons: Resource[] = [
     xpReward: 40,
     interval: 2500,
     value: 45,
-    icon: "/assets/items/staffs/staff_copper.png",
+    icon: "./assets/items/staffs/staff_copper.png",
     color: "text-orange-400",
     description: "Channels basic magical energy.",
     inputs: [
@@ -415,7 +415,7 @@ const allWeapons: Resource[] = [
     xpReward: 150,
     interval: 3000,
     value: 110,
-    icon: "/assets/items/staffs/staff_iron.png",
+    icon: "./assets/items/staffs/staff_iron.png",
     color: "text-slate-400",
     description: "A sturdy focus for spellcasting.",
     inputs: [
@@ -436,7 +436,7 @@ const allWeapons: Resource[] = [
     xpReward: 400,
     interval: 3500,
     value: 280,
-    icon: "/assets/items/staffs/staff_gold.png",
+    icon: "./assets/items/staffs/staff_gold.png",
     color: "text-yellow-400",
     description: "Highly conductive to mana.",
     inputs: [
@@ -457,7 +457,7 @@ const allWeapons: Resource[] = [
     xpReward: 1200,
     interval: 4000,
     value: 650,
-    icon: "/assets/items/staffs/staff_mithril.png",
+    icon: "./assets/items/staffs/staff_mithril.png",
     color: "text-blue-300",
     description: "Lightweight and powerful.",
     inputs: [
@@ -478,7 +478,7 @@ const allWeapons: Resource[] = [
     xpReward: 3500,
     interval: 5000,
     value: 1600,
-    icon: "/assets/items/staffs/staff_adamantite.png",
+    icon: "./assets/items/staffs/staff_adamantite.png",
     color: "text-purple-400",
     description: "Amplifies spells significantly.",
     inputs: [
@@ -499,7 +499,7 @@ const allWeapons: Resource[] = [
     xpReward: 8000,
     interval: 6000,
     value: 3200,
-    icon: "/assets/items/staffs/staff_emerald.png",
+    icon: "./assets/items/staffs/staff_emerald.png",
     color: "text-emerald-400",
     description: "Pulsates with nature magic.",
     inputs: [
@@ -520,7 +520,7 @@ const allWeapons: Resource[] = [
     xpReward: 20000,
     interval: 7500,
     value: 6200,
-    icon: "/assets/items/staffs/staff_eternium.png",
+    icon: "./assets/items/staffs/staff_eternium.png",
     color: "text-red-500",
     description: "Forged from dragonfire and magic.",
     inputs: [
@@ -541,7 +541,7 @@ const allWeapons: Resource[] = [
     xpReward: 50000,
     interval: 10000,
     value: 15500,
-    icon: "/assets/items/staffs/staff_starfall.png",
+    icon: "./assets/items/staffs/staff_starfall.png",
     color: "text-indigo-400",
     description: "Controls the fabric of the cosmos.",
     inputs: [

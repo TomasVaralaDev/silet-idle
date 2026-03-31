@@ -72,7 +72,7 @@ export default function MailboxView({ userId }: Props) {
       {messages.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 opacity-50">
           <img
-            src="/assets/ui/icon_mail.png"
+            src="./assets/ui/icon_mail.png"
             className="w-12 h-12 sm:w-16 sm:h-16 mb-4 pixelated grayscale opacity-20"
             alt="Empty"
           />
@@ -93,7 +93,7 @@ export default function MailboxView({ userId }: Props) {
               <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 w-full">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-app-base rounded flex items-center justify-center shrink-0 border border-border group-hover:border-accent/30 transition-colors">
                   <img
-                    src="/assets/ui/icon_mail.png"
+                    src="./assets/ui/icon_mail.png"
                     className="w-6 h-6 sm:w-8 sm:h-8 pixelated"
                     alt="Mail"
                   />
@@ -114,7 +114,7 @@ export default function MailboxView({ userId }: Props) {
                     {msg.coinsAttached && (
                       <div className="flex items-center gap-1.5 text-warning font-mono text-[9px] sm:text-[10px] font-bold bg-warning/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded border border-warning/20">
                         <img
-                          src="/assets/ui/coins.png"
+                          src="./assets/ui/coins.png"
                           className="w-2.5 h-2.5 sm:w-3 sm:h-3 pixelated"
                           alt="C"
                         />

@@ -24,7 +24,7 @@ export const createPremiumShopSlice: StateCreator<
 
     // 1. Tarkistetaan onko pelaajalla varaa
     if (gems < item.priceGems) {
-      emitEvent("error", "Not enough Gems!", "/assets/ui/icon_gem.png");
+      emitEvent("error", "Not enough Gems!", "./assets/ui/icon_gem.png");
       return false;
     }
 
@@ -40,7 +40,11 @@ export const createPremiumShopSlice: StateCreator<
     }
 
     try {
-      emitEvent("info", "Processing transaction...", "/assets/ui/icon_gem.png");
+      emitEvent(
+        "info",
+        "Processing transaction...",
+        "./assets/ui/icon_gem.png",
+      );
 
       const functions = getFunctions();
       const purchaseBundle = httpsCallable<
@@ -113,7 +117,7 @@ export const createPremiumShopSlice: StateCreator<
       const message =
         error instanceof Error ? error.message : "Transaction failed.";
       console.error("[PREMIUM SHOP] Purchase error:", error);
-      emitEvent("error", message, "/assets/ui/icon_warning.png");
+      emitEvent("error", message, "./assets/ui/icon_warning.png");
       return false;
     }
   },
@@ -134,7 +138,7 @@ export const createPremiumShopSlice: StateCreator<
         emitEvent(
           "info",
           "Preparing secure checkout...",
-          "/assets/ui/icon_lock.png",
+          "./assets/ui/icon_lock.png",
         );
 
         const functions = getFunctions();
@@ -151,7 +155,7 @@ export const createPremiumShopSlice: StateCreator<
           emitEvent(
             "info",
             "Checkout opened in a new tab.",
-            "/assets/ui/icon_external.png",
+            "./assets/ui/icon_external.png",
           );
         } else {
           throw new Error("No checkout URL received from server.");
@@ -160,7 +164,7 @@ export const createPremiumShopSlice: StateCreator<
         const message =
           error instanceof Error ? error.message : "Payment failed.";
         console.error("[STRIPE] Error:", error);
-        emitEvent("error", message, "/assets/ui/icon_warning.png");
+        emitEvent("error", message, "./assets/ui/icon_warning.png");
       }
     }
   },

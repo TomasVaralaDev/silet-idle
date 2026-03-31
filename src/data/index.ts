@@ -108,7 +108,7 @@ const WorldLootFactory: ItemSubFactory = {
       value: config.val,
       rarity: config.rar,
       color: config.col,
-      icon: `/assets/lootpoolszones/${id}.png`,
+      icon: `./assets/lootpoolszones/${id}.png`,
       description: `${config.rar} energy source from ${worldDisplay}.`,
     };
   },
@@ -125,7 +125,7 @@ const KeyFactory: ItemSubFactory = {
       name: `World ${worldNum} Key`,
       value: 500,
       color: "text-yellow-500",
-      icon: `/assets/items/bosskey/${id}.png`,
+      icon: `./assets/items/bosskey/${id}.png`,
       description: "Provides access to the regional boss.",
       rarity: "rare",
       isUnique: false,
@@ -183,7 +183,7 @@ const ExperienceFactory: ItemSubFactory = {
       value: 0,
       rarity: "uncommon",
       category: "Experience",
-      icon: "/assets/ui/shop.png", // Kaikki XP näyttää tältä ikonilta RewardModalissa
+      icon: "./assets/ui/shop.png", // Kaikki XP näyttää tältä ikonilta RewardModalissa
       description: `Experience points for the ${skillDisplay} skill.`,
     };
   },
@@ -206,7 +206,7 @@ const ChatColorFactory: ItemSubFactory = {
       value: 0,
       rarity: colorData.rarity,
       category: "Cosmetic",
-      icon: "/assets/ui/icon_tavern.png", // Oletetaan että sinulla on jokin paletti-ikoni (voit poistaa tämän rivin jos ei ole)
+      icon: "./assets/ui/icon_tavern.png", // Oletetaan että sinulla on jokin paletti-ikoni (voit poistaa tämän rivin jos ei ole)
       description: `Unlocks the ${colorData.name} nameplate color for the Tavern chat.`,
     };
   },
@@ -223,7 +223,7 @@ const PremiumStatFactory: ItemSubFactory = {
     if (id === "Expedition Slots") {
       return {
         name: "Expedition Slot",
-        icon: "/assets/skills/scavenging.png",
+        icon: "./assets/skills/scavenging.png",
         rarity: "legendary",
         description: "Increases maximum active expeditions.",
       };
@@ -231,7 +231,7 @@ const PremiumStatFactory: ItemSubFactory = {
     if (id === "Max Queue Slots") {
       return {
         name: "Max Queue Slots",
-        icon: "/assets/ui/icon_inventory.png",
+        icon: "./assets/ui/icon_inventory.png",
         rarity: "legendary",
         description: "Unlocks maximum action queue slots.",
       };
@@ -239,7 +239,7 @@ const PremiumStatFactory: ItemSubFactory = {
     if (id === "Max Offline Time") {
       return {
         name: "Max Offline Time",
-        icon: "/assets/items/timeCrystal.png",
+        icon: "./assets/items/timeCrystal.png",
         rarity: "legendary",
         description: "Increases the maximum duration of offline progress.",
       };
@@ -259,7 +259,7 @@ export const getItemDetails = (id: string): Resource | null => {
       id: "coins",
       name: "Coins",
       value: 1,
-      icon: "/assets/ui/coins.png",
+      icon: "./assets/ui/coins.png",
       rarity: "common",
     } as Resource;
   }

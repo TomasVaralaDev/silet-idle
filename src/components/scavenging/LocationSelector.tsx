@@ -66,7 +66,7 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] z-20">
                   <div className="bg-black/80 p-3 rounded-full border border-border/50">
                     <img
-                      src="/assets/ui/icon_locked.png"
+                      src="./assets/ui/icon_locked.png"
                       alt="Locked"
                       className="w-8 h-8 object-contain rendering-pixelated opacity-80 grayscale"
                     />

@@ -8,7 +8,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-cyan-400",
-    icon: "/assets/items/runes/rune_skilling.png",
+    icon: "./assets/items/runes/rune_skilling.png",
     description:
       "Hums with the vibrations of the earth. Decreases mining interval by 10%.",
     slot: "rune",
@@ -20,7 +20,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-cyan-400",
-    icon: "/assets/items/runes/rune_4.png",
+    icon: "./assets/items/runes/rune_4.png",
     description:
       "Resonates with the deep earth. Decreases mining interval by 20%.",
     slot: "rune",
@@ -32,7 +32,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-cyan-400",
-    icon: "/assets/items/runes/rune_7.png",
+    icon: "./assets/items/runes/rune_7.png",
     description:
       "Earth shatters at your mere presence. Decreases mining interval by 40%.",
     slot: "rune",
@@ -44,7 +44,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-cyan-300",
-    icon: "/assets/items/runes/rune_skilling.png",
+    icon: "./assets/items/runes/rune_skilling.png",
     description:
       "Ancient whispers guide your pickaxe. Increases mining XP gain by 10%.",
     slot: "rune",
@@ -56,7 +56,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-cyan-300",
-    icon: "/assets/items/runes/rune_2.png",
+    icon: "./assets/items/runes/rune_2.png",
     description:
       "The stones share their ancient secrets. Increases mining XP gain by 20%.",
     slot: "rune",
@@ -68,7 +68,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-cyan-300",
-    icon: "/assets/items/runes/rune_5.png",
+    icon: "./assets/items/runes/rune_5.png",
     description:
       "You possess the absolute knowledge of the depths. Increases mining XP gain by 40%.",
     slot: "rune",
@@ -82,7 +82,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-emerald-400",
-    icon: "/assets/items/runes/rune_skilling.png",
+    icon: "./assets/items/runes/rune_skilling.png",
     description:
       "Sharpens your focus against the bark. Decreases woodcutting interval by 10%.",
     slot: "rune",
@@ -94,7 +94,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-emerald-400",
-    icon: "/assets/items/runes/rune_1.png",
+    icon: "./assets/items/runes/rune_1.png",
     description:
       "Your axe feels lighter than air. Decreases woodcutting interval by 20%.",
     slot: "rune",
@@ -106,7 +106,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-emerald-400",
-    icon: "/assets/items/runes/rune_6.png",
+    icon: "./assets/items/runes/rune_6.png",
     description:
       "Trees fell themselves before you arrive. Decreases woodcutting interval by 40%.",
     slot: "rune",
@@ -118,7 +118,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-emerald-300",
-    icon: "/assets/items/runes/rune_skilling.png",
+    icon: "./assets/items/runes/rune_skilling.png",
     description:
       "Teaches you the language of the trees. Increases woodcutting XP gain by 10%.",
     slot: "rune",
@@ -130,7 +130,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-emerald-300",
-    icon: "/assets/items/runes/rune_3.png",
+    icon: "./assets/items/runes/rune_3.png",
     description:
       "You hear the old songs of the forest. Increases woodcutting XP gain by 20%.",
     slot: "rune",
@@ -142,7 +142,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-emerald-300",
-    icon: "/assets/items/runes/rune_4.png",
+    icon: "./assets/items/runes/rune_4.png",
     description:
       "The spirit of the woods flows through you. Increases woodcutting XP gain by 40%.",
     slot: "rune",
@@ -156,7 +156,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-lime-400",
-    icon: "/assets/items/runes/rune_skilling.png",
+    icon: "./assets/items/runes/rune_skilling.png",
     description:
       "Lightens your footsteps in the wild. Decreases foraging interval by 10%.",
     slot: "rune",
@@ -168,7 +168,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-lime-400",
-    icon: "/assets/items/runes/rune_5.png",
+    icon: "./assets/items/runes/rune_5.png",
     description:
       "You move like a shadow through the brush. Decreases foraging interval by 20%.",
     slot: "rune",
@@ -180,7 +180,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-lime-400",
-    icon: "/assets/items/runes/rune_2.png",
+    icon: "./assets/items/runes/rune_2.png",
     description:
       "Nature willingly surrenders its bounty to you. Decreases foraging interval by 40%.",
     slot: "rune",
@@ -192,7 +192,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-lime-300",
-    icon: "/assets/items/runes/rune_skilling.png",
+    icon: "./assets/items/runes/rune_skilling.png",
     description:
       "Heightens your senses for rare herbs. Increases foraging XP gain by 10%.",
     slot: "rune",
@@ -204,7 +204,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-lime-300",
-    icon: "/assets/items/runes/rune_7.png",
+    icon: "./assets/items/runes/rune_7.png",
     description:
       "You recognize the rarest blooms instantly. Increases foraging XP gain by 20%.",
     slot: "rune",
@@ -216,7 +216,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-lime-300",
-    icon: "/assets/items/runes/rune_1.png",
+    icon: "./assets/items/runes/rune_1.png",
     description:
       "The flora of the world whispers its secrets. Increases foraging XP gain by 40%.",
     slot: "rune",
@@ -230,7 +230,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-orange-400",
-    icon: "/assets/items/runes/rune_3.png",
+    icon: "./assets/items/runes/rune_3.png",
     description:
       "Heats the forge to the perfect temp. Decreases smithing interval by 10%.",
     slot: "rune",
@@ -242,7 +242,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-orange-400",
-    icon: "/assets/items/runes/rune_6.png",
+    icon: "./assets/items/runes/rune_6.png",
     description:
       "The hammer strikes with unnatural swiftness. Decreases smithing interval by 20%.",
     slot: "rune",
@@ -254,7 +254,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-orange-400",
-    icon: "/assets/items/runes/rune_4.png",
+    icon: "./assets/items/runes/rune_4.png",
     description:
       "Metals bend to your will instantly. Decreases smithing interval by 40%.",
     slot: "rune",
@@ -266,7 +266,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-orange-300",
-    icon: "/assets/items/runes/rune_3.png",
+    icon: "./assets/items/runes/rune_3.png",
     description:
       "Reveals the secrets of the hammer. Increases smithing XP gain by 10%.",
     slot: "rune",
@@ -278,7 +278,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-orange-300",
-    icon: "/assets/items/runes/rune_1.png",
+    icon: "./assets/items/runes/rune_1.png",
     description:
       "You understand the true temper of steel. Increases smithing XP gain by 20%.",
     slot: "rune",
@@ -290,7 +290,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-orange-300",
-    icon: "/assets/items/runes/rune_5.png",
+    icon: "./assets/items/runes/rune_5.png",
     description:
       "You are the undisputed master of the anvil. Increases smithing XP gain by 40%.",
     slot: "rune",
@@ -304,7 +304,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-yellow-400",
-    icon: "/assets/items/runes/rune_7.png",
+    icon: "./assets/items/runes/rune_7.png",
     description:
       "Steadies your hands for fine work. Decreases crafting interval by 10%.",
     slot: "rune",
@@ -316,7 +316,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-yellow-400",
-    icon: "/assets/items/runes/rune_2.png",
+    icon: "./assets/items/runes/rune_2.png",
     description:
       "Your fingers move with magical dexterity. Decreases crafting interval by 20%.",
     slot: "rune",
@@ -328,7 +328,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-yellow-400",
-    icon: "/assets/items/runes/rune_3.png",
+    icon: "./assets/items/runes/rune_3.png",
     description:
       "Creation happens at the speed of thought. Decreases crafting interval by 40%.",
     slot: "rune",
@@ -340,7 +340,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-yellow-300",
-    icon: "/assets/items/runes/rune_7.png",
+    icon: "./assets/items/runes/rune_7.png",
     description:
       "Inspires masterwork creations. Increases crafting XP gain by 10%.",
     slot: "rune",
@@ -352,7 +352,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-yellow-300",
-    icon: "/assets/items/runes/rune_6.png",
+    icon: "./assets/items/runes/rune_6.png",
     description:
       "The threads of creation weave themselves. Increases crafting XP gain by 20%.",
     slot: "rune",
@@ -364,7 +364,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-yellow-300",
-    icon: "/assets/items/runes/rune_1.png",
+    icon: "./assets/items/runes/rune_1.png",
     description:
       "You are the architect of miracles. Increases crafting XP gain by 40%.",
     slot: "rune",
@@ -378,7 +378,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-purple-400",
-    icon: "/assets/items/runes/rune_2.png",
+    icon: "./assets/items/runes/rune_2.png",
     description:
       "Accelerates the chemical reaction. Decreases alchemy interval by 10%.",
     slot: "rune",
@@ -390,7 +390,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-purple-400",
-    icon: "/assets/items/runes/rune_4.png",
+    icon: "./assets/items/runes/rune_4.png",
     description:
       "Potions brew with a rapid frenzy. Decreases alchemy interval by 20%.",
     slot: "rune",
@@ -402,7 +402,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-purple-400",
-    icon: "/assets/items/runes/rune_5.png",
+    icon: "./assets/items/runes/rune_5.png",
     description:
       "Time itself accelerates within the cauldron. Decreases alchemy interval by 40%.",
     slot: "rune",
@@ -414,7 +414,7 @@ export const RUNES_DATA: Resource[] = [
     value: 500,
     rarity: "uncommon",
     color: "text-purple-300",
-    icon: "/assets/items/runes/rune_2.png",
+    icon: "./assets/items/runes/rune_2.png",
     description:
       "Deepens your chemical understanding. Increases alchemy XP gain by 10%.",
     slot: "rune",
@@ -426,7 +426,7 @@ export const RUNES_DATA: Resource[] = [
     value: 2500,
     rarity: "rare",
     color: "text-purple-300",
-    icon: "/assets/items/runes/rune_7.png",
+    icon: "./assets/items/runes/rune_7.png",
     description:
       "The mysteries of transmutation unlock. Increases alchemy XP gain by 20%.",
     slot: "rune",
@@ -438,7 +438,7 @@ export const RUNES_DATA: Resource[] = [
     value: 10000,
     rarity: "legendary",
     color: "text-purple-300",
-    icon: "/assets/items/runes/rune_3.png",
+    icon: "./assets/items/runes/rune_3.png",
     description:
       "You hold the Philosopher's ultimate secret. Increases alchemy XP gain by 40%.",
     slot: "rune",

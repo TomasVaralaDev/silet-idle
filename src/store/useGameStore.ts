@@ -85,7 +85,7 @@ export type FullStoreState = GameState &
 
 export const DEFAULT_STATE: GameState = {
   username: "Player",
-  avatar: "/assets/avatars/avatar_1.png",
+  avatar: "./assets/avatars/avatar_1.png",
   unlockedQueueSlots: 2,
   lastTimestamp: Date.now(),
   events: [],

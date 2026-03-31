@@ -56,7 +56,7 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
         updateLeaderboardEntry(
           user.uid,
           currentStateSnapshot.username,
-          currentStateSnapshot.avatar || "/assets/ui/icon_user_avatar.png",
+          currentStateSnapshot.avatar || "./assets/ui/icon_user_avatar.png",
           currentStateSnapshot.combatStats.maxMapCompleted,
           currentTotalLevel,
         ),

@@ -90,7 +90,7 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
           <span className="text-[9px] text-tx-muted font-mono uppercase tracking-tighter flex items-center gap-1">
             Unit: {listing.pricePerItem}{" "}
             <img
-              src="/assets/ui/coins.png"
+              src="./assets/ui/coins.png"
               className="w-2.5 h-2.5 pixelated"
               alt=""
             />
@@ -121,7 +121,7 @@ export default function ListingRow({ listing, myUid, onPurchase }: Props) {
           </span>
           <div className="flex items-center gap-1.5 md:gap-2">
             <img
-              src="/assets/ui/coins.png"
+              src="./assets/ui/coins.png"
               className="w-3.5 h-3.5 md:w-4 md:h-4 pixelated"
               alt=""
             />

@@ -4,12 +4,12 @@ import { CHAT_COLORS } from "../../data/chatColors";
 import { wordFilter } from "../../utils/wordFilter"; // LISÄTTY IMPORT
 
 const AVAILABLE_AVATARS = [
-  { id: 1, src: "/assets/profilepics/profile_pic_1.png", name: "Standard" },
-  { id: 2, src: "/assets/profilepics/profile_pic_2.png", name: "Cyber" },
-  { id: 3, src: "/assets/profilepics/profile_pic_3.png", name: "Rogue" },
-  { id: 4, src: "/assets/profilepics/profile_pic_4.png", name: "Mage" },
-  { id: 5, src: "/assets/profilepics/profile_pic_5.png", name: "Warrior" },
-  { id: 6, src: "/assets/profilepics/profile_pic_6.png", name: "Construct" },
+  { id: 1, src: "./assets/profilepics/profile_pic_1.png", name: "Standard" },
+  { id: 2, src: "./assets/profilepics/profile_pic_2.png", name: "Cyber" },
+  { id: 3, src: "./assets/profilepics/profile_pic_3.png", name: "Rogue" },
+  { id: 4, src: "./assets/profilepics/profile_pic_4.png", name: "Mage" },
+  { id: 5, src: "./assets/profilepics/profile_pic_5.png", name: "Warrior" },
+  { id: 6, src: "./assets/profilepics/profile_pic_6.png", name: "Construct" },
 ];
 
 const THEMES = [
@@ -135,7 +135,7 @@ export default function UserConfigModal({
         <h2 className="text-xl font-black uppercase tracking-widest text-center mb-6 text-tx-main flex items-center justify-center gap-3">
           {/* EMOJI KORVATTU KUVALLA */}
           <img
-            src="/assets/profile/user_settings.png"
+            src="./assets/profile/user_settings.png"
             alt=""
             className="w-6 h-6 pixelated object-contain"
           />

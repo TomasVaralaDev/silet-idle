@@ -10,7 +10,7 @@ export default function QuestList({ quests }: QuestListProps) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center text-tx-muted/50 border-2 border-dashed border-border/20 rounded-xl">
         <img
-          src="/assets/ui/icon_quest.png"
+          src="./assets/ui/icon_quest.png"
           alt="No quests"
           className="w-12 h-12 mb-3 opacity-20 grayscale pixelated"
         />

@@ -20,13 +20,13 @@ export default function WikiView() {
 
   return (
     <div className="h-full flex flex-col bg-app-base font-sans overflow-hidden text-left relative">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('/assets/ui/paper_texture.jpg')] mix-blend-overlay z-0" />
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('./assets/ui/paper_texture.jpg')] mix-blend-overlay z-0" />
 
       {/* HEADER */}
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/80 flex items-center gap-4 md:gap-6 sticky top-0 z-30 backdrop-blur-md shrink-0 shadow-sm">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-warning/10 border border-warning/30 shadow-[0_0_15px_rgba(var(--color-warning)/0.2)] shrink-0">
           <img
-            src="/assets/ui/icon_guide.png"
+            src="./assets/ui/icon_guide.png"
             className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain drop-shadow-md"
             alt="Guide"
           />

@@ -23,7 +23,7 @@ export default function ExpeditionsArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_scope.png"
+            src="./assets/ui/icon_scope.png"
             alt="Scope"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -65,7 +65,7 @@ export default function ExpeditionsArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_reward.png"
+            src="./assets/ui/icon_reward.png"
             alt="Loot"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -85,7 +85,7 @@ export default function ExpeditionsArticle() {
             <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px] border-b border-border/20 pb-4">
               <div className="flex items-center gap-2">
                 <img
-                  src="/assets/items/bosskey/bosskey_w6.png"
+                  src="./assets/items/bosskey/bosskey_w6.png"
                   className="w-4 h-4 pixelated"
                   alt="Key"
                 />
@@ -108,7 +108,7 @@ export default function ExpeditionsArticle() {
             <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px]">
               <div className="flex items-center gap-2">
                 <img
-                  src="/assets/lootpoolszones/frostreach_basic.png"
+                  src="./assets/lootpoolszones/frostreach_basic.png"
                   className="w-4 h-4 pixelated"
                   alt="Currency"
                 />
@@ -132,7 +132,7 @@ export default function ExpeditionsArticle() {
       <section className="space-y-4">
         <div className="p-5 border border-accent/30 bg-accent/5 rounded-lg flex gap-4 items-start">
           <img
-            src="/assets/items/runes/rune_6.png"
+            src="./assets/items/runes/rune_6.png"
             alt="Rune"
             className="w-6 h-6 pixelated opacity-90 mt-0.5 shrink-0"
           />
@@ -154,7 +154,7 @@ export default function ExpeditionsArticle() {
       {/* ADVENTURER'S TIP */}
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
-          src="/assets/ui/icon_achievements.png"
+          src="./assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
         />

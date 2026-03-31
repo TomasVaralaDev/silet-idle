@@ -106,7 +106,7 @@ export default function SocialOverlay() {
                     }`}
                   >
                     <img
-                      src="/assets/ui/icon_tavern.png"
+                      src="./assets/ui/icon_tavern.png"
                       className="w-4 h-4 rendering-pixelated"
                       alt=""
                     />

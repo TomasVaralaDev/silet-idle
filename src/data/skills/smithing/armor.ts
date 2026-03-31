@@ -11,7 +11,7 @@ export const armor: Resource[] = [
     xpReward: 35,
     interval: 3000,
     value: 10,
-    icon: "/assets/items/armor/armor_head_bronze.png",
+    icon: "./assets/items/armor/armor_head_bronze.png",
     slot: "head",
     stats: { defense: 2, hpBonus: 5 },
     inputs: [{ id: "ore_copper_smelted", count: 4 }],
@@ -25,7 +25,7 @@ export const armor: Resource[] = [
     xpReward: 120,
     interval: 4500,
     value: 40,
-    icon: "/assets/items/armor/armor_head_iron.png",
+    icon: "./assets/items/armor/armor_head_iron.png",
     slot: "head",
     stats: { defense: 5, hpBonus: 10 },
     inputs: [{ id: "ore_iron_smelted", count: 10 }],
@@ -40,7 +40,7 @@ export const armor: Resource[] = [
     xpReward: 300,
     interval: 6000,
     value: 150,
-    icon: "/assets/items/armor/armor_head_gold.png",
+    icon: "./assets/items/armor/armor_head_gold.png",
     slot: "head",
     stats: { defense: 8, hpBonus: 15 },
     inputs: [{ id: "ore_gold_smelted", count: 30 }],
@@ -55,7 +55,7 @@ export const armor: Resource[] = [
     xpReward: 850,
     interval: 7500,
     value: 300,
-    icon: "/assets/items/armor/armor_head_mithril.png",
+    icon: "./assets/items/armor/armor_head_mithril.png",
     slot: "head",
     stats: { defense: 12, hpBonus: 25 },
     inputs: [{ id: "ore_mithril_smelted", count: 75 }],
@@ -70,7 +70,7 @@ export const armor: Resource[] = [
     xpReward: 2500,
     interval: 9000,
     value: 600,
-    icon: "/assets/items/armor/armor_head_adamantite.png",
+    icon: "./assets/items/armor/armor_head_adamantite.png",
     slot: "head",
     stats: { defense: 18, hpBonus: 40 },
     inputs: [{ id: "ore_adamantite_smelted", count: 220 }],
@@ -85,7 +85,7 @@ export const armor: Resource[] = [
     xpReward: 6000,
     interval: 11000,
     value: 1200,
-    icon: "/assets/items/armor/armor_head_emerald.png",
+    icon: "./assets/items/armor/armor_head_emerald.png",
     slot: "head",
     stats: { defense: 28, hpBonus: 60 },
     inputs: [{ id: "ore_emerald_smelted", count: 600 }],
@@ -100,7 +100,7 @@ export const armor: Resource[] = [
     xpReward: 18000, // LASKETTU 50k -> 18k
     interval: 14000,
     value: 2500, // LASKETTU 5000 -> 2500
-    icon: "/assets/items/armor/armor_head_starfallalloy.png",
+    icon: "./assets/items/armor/armor_head_starfallalloy.png",
     slot: "head",
     stats: { defense: 40, hpBonus: 100 }, // STATIT VAIHDETTU
     inputs: [{ id: "ore_starfallalloy_smelted", count: 1500 }], // MÄÄRÄ LASKETTU
@@ -115,7 +115,7 @@ export const armor: Resource[] = [
     xpReward: 50000, // NOSTETTU 18k -> 50k
     interval: 20000, // HIDASTETTU
     value: 5000, // NOSTETTU 2500 -> 5000
-    icon: "/assets/items/armor/armor_head_eternium.png",
+    icon: "./assets/items/armor/armor_head_eternium.png",
     slot: "head",
     stats: { defense: 60, hpBonus: 150 }, // STATIT VAIHDETTU
     inputs: [{ id: "ore_eternium_smelted", count: 4000 }], // MÄÄRÄ NOSTETTU
@@ -132,7 +132,7 @@ export const armor: Resource[] = [
     xpReward: 60,
     interval: 4000,
     value: 25,
-    icon: "/assets/items/armor/armor_chest_bronze.png",
+    icon: "./assets/items/armor/armor_chest_bronze.png",
     slot: "body",
     stats: { defense: 5, hpBonus: 15 },
     inputs: [{ id: "ore_copper_smelted", count: 8 }],
@@ -147,7 +147,7 @@ export const armor: Resource[] = [
     xpReward: 250,
     interval: 6000,
     value: 100,
-    icon: "/assets/items/armor/armor_chest_iron.png",
+    icon: "./assets/items/armor/armor_chest_iron.png",
     slot: "body",
     stats: { defense: 15, hpBonus: 40 },
     inputs: [{ id: "ore_iron_smelted", count: 20 }],
@@ -162,7 +162,7 @@ export const armor: Resource[] = [
     xpReward: 650,
     interval: 8000,
     value: 350,
-    icon: "/assets/items/armor/armor_chest_gold.png",
+    icon: "./assets/items/armor/armor_chest_gold.png",
     slot: "body",
     stats: { defense: 35, hpBonus: 80 },
     inputs: [{ id: "ore_gold_smelted", count: 60 }],
@@ -177,7 +177,7 @@ export const armor: Resource[] = [
     xpReward: 1800,
     interval: 10000,
     value: 750,
-    icon: "/assets/items/armor/armor_chest_mithril.png",
+    icon: "./assets/items/armor/armor_chest_mithril.png",
     slot: "body",
     stats: { defense: 80, hpBonus: 180 },
     inputs: [{ id: "ore_mithril_smelted", count: 150 }],
@@ -192,7 +192,7 @@ export const armor: Resource[] = [
     xpReward: 5000,
     interval: 12000,
     value: 1500,
-    icon: "/assets/items/armor/armor_chest_adamantite.png",
+    icon: "./assets/items/armor/armor_chest_adamantite.png",
     slot: "body",
     stats: { defense: 180, hpBonus: 400 },
     inputs: [{ id: "ore_adamantite_smelted", count: 450 }],
@@ -207,7 +207,7 @@ export const armor: Resource[] = [
     xpReward: 12000,
     interval: 15000,
     value: 3000,
-    icon: "/assets/items/armor/armor_chest_emerald.png",
+    icon: "./assets/items/armor/armor_chest_emerald.png",
     slot: "body",
     stats: { defense: 450, hpBonus: 1000 },
     inputs: [{ id: "ore_emerald_smelted", count: 1200 }],
@@ -222,7 +222,7 @@ export const armor: Resource[] = [
     xpReward: 35000, // LASKETTU 100k -> 35k
     interval: 18000,
     value: 6000, // LASKETTU 12k -> 6k
-    icon: "/assets/items/armor/armor_chest_starfallalloy.png",
+    icon: "./assets/items/armor/armor_chest_starfallalloy.png",
     slot: "body",
     stats: { defense: 1200, hpBonus: 2500 }, // STATIT VAIHDETTU
     inputs: [{ id: "ore_starfallalloy_smelted", count: 3000 }], // MATERIAALIMÄÄRÄ LASKETTU
@@ -237,7 +237,7 @@ export const armor: Resource[] = [
     xpReward: 100000, // NOSTETTU 35k -> 100k
     interval: 25000, // HIDASTETTU (Arvokkaampi takoa)
     value: 12000, // NOSTETTU 6k -> 12k
-    icon: "/assets/items/armor/armor_chest_eternium.png",
+    icon: "./assets/items/armor/armor_chest_eternium.png",
     slot: "body",
     stats: { defense: 3500, hpBonus: 8000 }, // STATIT VAIHDETTU
     inputs: [{ id: "ore_eternium_smelted", count: 8000 }], // MATERIAALIMÄÄRÄ NOSTETTU
@@ -254,7 +254,7 @@ export const armor: Resource[] = [
     xpReward: 45,
     interval: 3500,
     value: 20,
-    icon: "/assets/items/armor/armor_legs_bronze.png",
+    icon: "./assets/items/armor/armor_legs_bronze.png",
     slot: "legs",
     stats: { defense: 4, hpBonus: 10 },
     inputs: [{ id: "ore_copper_smelted", count: 6 }],
@@ -269,7 +269,7 @@ export const armor: Resource[] = [
     xpReward: 180,
     interval: 5000,
     value: 80,
-    icon: "/assets/items/armor/armor_legs_iron.png",
+    icon: "./assets/items/armor/armor_legs_iron.png",
     slot: "legs",
     stats: { defense: 10, hpBonus: 25 },
     inputs: [{ id: "ore_iron_smelted", count: 15 }],
@@ -284,7 +284,7 @@ export const armor: Resource[] = [
     xpReward: 500,
     interval: 7000,
     value: 250,
-    icon: "/assets/items/armor/armor_legs_gold.png",
+    icon: "./assets/items/armor/armor_legs_gold.png",
     slot: "legs",
     stats: { defense: 22, hpBonus: 50 },
     inputs: [{ id: "ore_gold_smelted", count: 45 }],
@@ -299,7 +299,7 @@ export const armor: Resource[] = [
     xpReward: 1350,
     interval: 8500,
     value: 500,
-    icon: "/assets/items/armor/armor_legs_mithril.png",
+    icon: "./assets/items/armor/armor_legs_mithril.png",
     slot: "legs",
     stats: { defense: 50, hpBonus: 120 },
     inputs: [{ id: "ore_mithril_smelted", count: 110 }],
@@ -314,7 +314,7 @@ export const armor: Resource[] = [
     xpReward: 3800,
     interval: 10500,
     value: 1000,
-    icon: "/assets/items/armor/armor_legs_adamantite.png",
+    icon: "./assets/items/armor/armor_legs_adamantite.png",
     slot: "legs",
     stats: { defense: 110, hpBonus: 260 },
     inputs: [{ id: "ore_adamantite_smelted", count: 320 }],
@@ -329,7 +329,7 @@ export const armor: Resource[] = [
     xpReward: 9000,
     interval: 13000,
     value: 2000,
-    icon: "/assets/items/armor/armor_legs_emerald.png",
+    icon: "./assets/items/armor/armor_legs_emerald.png",
     slot: "legs",
     stats: { defense: 280, hpBonus: 650 },
     inputs: [{ id: "ore_emerald_smelted", count: 850 }],
@@ -344,7 +344,7 @@ export const armor: Resource[] = [
     xpReward: 25000, // LASKETTU 75k -> 25k
     interval: 16000,
     value: 4000, // LASKETTU 8k -> 4k
-    icon: "/assets/items/armor/armor_legs_starfallalloy.png",
+    icon: "./assets/items/armor/armor_legs_starfallalloy.png",
     slot: "legs",
     stats: { defense: 750, hpBonus: 1600 }, // STATIT VAIHDETTU
     inputs: [{ id: "ore_starfallalloy_smelted", count: 2200 }], // MÄÄRÄ LASKETTU
@@ -359,7 +359,7 @@ export const armor: Resource[] = [
     xpReward: 75000, // NOSTETTU 25k -> 75k
     interval: 22000,
     value: 8000, // NOSTETTU 4k -> 8k
-    icon: "/assets/items/armor/armor_legs_eternium.png",
+    icon: "./assets/items/armor/armor_legs_eternium.png",
     slot: "legs",
     stats: { defense: 2200, hpBonus: 5000 }, // STATIT VAIHDETTU
     inputs: [{ id: "ore_eternium_smelted", count: 6000 }], // MÄÄRÄ NOSTETTU

@@ -10,7 +10,7 @@ export const ingots: Resource[] = [
     xpReward: 5,
     interval: 2000,
     value: 5,
-    icon: "/assets/resources/ore/ore_copper_smelted.png",
+    icon: "./assets/resources/ore/ore_copper_smelted.png",
     color: "text-orange-500",
     description: "Smelted copper ingot.",
     inputs: [{ id: "ore_copper", count: 1 }],
@@ -25,7 +25,7 @@ export const ingots: Resource[] = [
     xpReward: 10,
     interval: 3000,
     value: 15,
-    icon: "/assets/resources/ore/ore_iron_smelted.png",
+    icon: "./assets/resources/ore/ore_iron_smelted.png",
     color: "text-slate-400",
     description: "Smelted iron ingot.",
     inputs: [{ id: "ore_iron", count: 1 }],
@@ -40,7 +40,7 @@ export const ingots: Resource[] = [
     xpReward: 20,
     interval: 4000,
     value: 45,
-    icon: "/assets/resources/ore/ore_gold_smelted.png",
+    icon: "./assets/resources/ore/ore_gold_smelted.png",
     color: "text-yellow-400",
     description: "Refined gold ingot.",
     inputs: [{ id: "ore_gold", count: 1 }],
@@ -55,7 +55,7 @@ export const ingots: Resource[] = [
     xpReward: 35,
     interval: 5000,
     value: 90,
-    icon: "/assets/resources/ore/ore_mithril_smelted.png",
+    icon: "./assets/resources/ore/ore_mithril_smelted.png",
     color: "text-cyan-400",
     description: "Refined mithril alloy.",
     inputs: [{ id: "ore_mithril", count: 1 }],
@@ -70,7 +70,7 @@ export const ingots: Resource[] = [
     xpReward: 50,
     interval: 6000,
     value: 180,
-    icon: "/assets/resources/ore/ore_adamantite_smelted.png",
+    icon: "./assets/resources/ore/ore_adamantite_smelted.png",
     color: "text-purple-400",
     description: "Hardened adamantite ingot.",
     inputs: [{ id: "ore_adamantite", count: 1 }],
@@ -85,7 +85,7 @@ export const ingots: Resource[] = [
     xpReward: 70,
     interval: 7000,
     value: 300,
-    icon: "/assets/resources/ore/ore_emerald_smelted.png",
+    icon: "./assets/resources/ore/ore_emerald_smelted.png",
     color: "text-emerald-400",
     description: "Pure energy crystal.",
     inputs: [{ id: "ore_emerald", count: 1 }],
@@ -100,7 +100,7 @@ export const ingots: Resource[] = [
     xpReward: 100, // LASKETTU 150 -> 100
     interval: 8000, // NOPEUTETTU 10s -> 8s
     value: 600, // LASKETTU 1500 -> 600
-    icon: "/assets/resources/ore/ore_starfallalloy_smelted.png",
+    icon: "./assets/resources/ore/ore_starfallalloy_smelted.png",
     color: "text-indigo-400",
     description: "Cosmic alloy ingot.",
     inputs: [{ id: "ore_starfallalloy", count: 1 }],
@@ -115,7 +115,7 @@ export const ingots: Resource[] = [
     xpReward: 150, // NOSTETTU 100 -> 150
     interval: 10000, // HIDASTETTU 8s -> 10s
     value: 1500, // NOSTETTU 600 -> 1500
-    icon: "/assets/resources/ore/ore_eternium_smelted.png",
+    icon: "./assets/resources/ore/ore_eternium_smelted.png",
     color: "text-red-500",
     description: "Temporal alloy ingot.",
     inputs: [{ id: "ore_eternium", count: 1 }],

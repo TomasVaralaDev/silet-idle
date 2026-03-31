@@ -199,7 +199,7 @@ export default function Sidebar({
               </div>
               <div className="w-10 h-10 bg-panel rounded border border-border-hover flex items-center justify-center relative overflow-hidden shrink-0">
                 <img
-                  src={avatar || "/assets/ui/icon_user_avatar.png"}
+                  src={avatar || "./assets/ui/icon_user_avatar.png"}
                   alt="User"
                   className="w-full h-full object-cover pixelated"
                   onError={(e) =>
@@ -219,7 +219,7 @@ export default function Sidebar({
                   className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
                   <img
-                    src="/assets/profile/user_settings.png"
+                    src="./assets/profile/user_settings.png"
                     className="w-4 h-4 pixelated"
                     alt=""
                   />{" "}
@@ -233,7 +233,7 @@ export default function Sidebar({
                   className="w-full text-left px-3 py-2 rounded hover:bg-panel-hover text-xs font-bold text-tx-main flex items-center gap-3"
                 >
                   <img
-                    src="/assets/profile/settings.png"
+                    src="./assets/profile/settings.png"
                     className="w-4 h-4 pixelated"
                     alt=""
                   />{" "}
@@ -245,7 +245,7 @@ export default function Sidebar({
                   className="w-full text-left px-3 py-2 rounded hover:bg-danger/10 text-xs font-bold text-danger flex items-center gap-3"
                 >
                   <img
-                    src="/assets/profile/logout.png"
+                    src="./assets/profile/logout.png"
                     className="w-4 h-4 pixelated"
                     alt=""
                   />{" "}
@@ -260,7 +260,7 @@ export default function Sidebar({
           <div className="bg-panel/50 p-2 border border-border/50 flex items-center justify-between flex-1 rounded overflow-hidden shrink-0">
             <div className="flex items-center gap-2 shrink-0">
               <img
-                src="/assets/ui/coins.png"
+                src="./assets/ui/coins.png"
                 className="w-4 h-4 pixelated"
                 alt="Coins"
               />
@@ -278,7 +278,7 @@ export default function Sidebar({
             title="Daily Quests"
           >
             <img
-              src="/assets/ui/icon_quest.png"
+              src="./assets/ui/icon_quest.png"
               className="w-5 h-5 pixelated"
               alt="Quests"
             />
@@ -298,42 +298,42 @@ export default function Sidebar({
           <NavButton
             view="inventory"
             label="Storage"
-            icon="/assets/ui/icon_inventory.png"
+            icon="./assets/ui/icon_inventory.png"
             isActive={currentView === "inventory"}
             onClick={setView}
           />
           <NavButton
             view="enchanting"
             label="Enchanting"
-            icon="/assets/ui/icon_enchanting.png"
+            icon="./assets/ui/icon_enchanting.png"
             isActive={currentView === "enchanting"}
             onClick={setView}
           />
           <NavButton
             view="achievements"
             label="Achievements"
-            icon="/assets/ui/icon_achievements.png"
+            icon="./assets/ui/icon_achievements.png"
             isActive={currentView === "achievements"}
             onClick={setView}
           />
           <NavButton
             view="premium_shop"
             label="Gem Store"
-            icon="/assets/ui/icon_gem.png"
+            icon="./assets/ui/icon_gem.png"
             isActive={currentView === "premium_shop"}
             onClick={setView}
           />
           <NavButton
             view="marketplace"
             label="Marketplace"
-            icon="/assets/ui/icon_market.png"
+            icon="./assets/ui/icon_market.png"
             isActive={currentView === "marketplace"}
             onClick={setView}
           />
           <NavButton
             view="leaderboard"
             label="Leaderboards"
-            icon="/assets/ui/icon_leaderboard.png"
+            icon="./assets/ui/icon_leaderboard.png"
             isActive={currentView === "leaderboard"}
             onClick={setView}
           />
@@ -346,7 +346,7 @@ export default function Sidebar({
           <NavButton
             view="scavenger"
             label="Expeditions"
-            icon="/assets/skills/scavenging.png"
+            icon="./assets/skills/scavenging.png"
             isActive={currentView === "scavenger"}
             onClick={setView}
           />
@@ -373,14 +373,14 @@ export default function Sidebar({
           <NavButton
             view="combat"
             label="Worlds"
-            icon="/assets/skills/combat.png"
+            icon="./assets/skills/combat.png"
             isActive={currentView === "combat"}
             onClick={setView}
           />
           <NavButton
             view="worldmarket"
             label="World Vendors"
-            icon="/assets/ui/icon_market.png"
+            icon="./assets/ui/icon_market.png"
             isActive={currentView === "worldmarket"}
             onClick={setView}
           />
@@ -408,42 +408,42 @@ export default function Sidebar({
           <NavButton
             view="roadmap"
             label="roadmap"
-            icon="/assets/extra/announcements.png"
+            icon="./assets/extra/announcements.png"
             isActive={currentView === "roadmap"}
             onClick={setView}
           />
           <NavButton
             view="wiki"
             label="System Manual"
-            icon="/assets/extra/system_manual.png"
+            icon="./assets/extra/system_manual.png"
             isActive={currentView === "wiki"}
             onClick={setView}
           />
           <NavButton
             view="patch_notes"
             label="Patch Notes"
-            icon="/assets/extra/patch_notes.png"
+            icon="./assets/extra/patch_notes.png"
             isActive={currentView === "patch_notes"}
             onClick={setView}
           />
           <NavButton
             view="guide"
             label="Game Guide"
-            icon="/assets/extra/game_guide.png"
+            icon="./assets/extra/game_guide.png"
             isActive={currentView === "guide"}
             onClick={setView}
           />
           <NavButton
             view="faq"
             label="F.A.Q."
-            icon="/assets/extra/faq.png"
+            icon="./assets/extra/faq.png"
             isActive={currentView === "faq"}
             onClick={setView}
           />
           <NavButton
             view="privacy_policy"
             label="Privacy Policy"
-            icon="/assets/extra/privacy_policy.png"
+            icon="./assets/extra/privacy_policy.png"
             isActive={currentView === "privacy_policy"}
             onClick={setView}
           />

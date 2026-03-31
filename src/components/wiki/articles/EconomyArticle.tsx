@@ -23,7 +23,7 @@ export default function EconomyArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_market.png"
+            src="./assets/ui/icon_market.png"
             alt="Market"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -59,7 +59,7 @@ export default function EconomyArticle() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
             <div className="flex gap-3 items-start p-3 border border-border/30 rounded bg-panel/10">
               <img
-                src="/assets/ui/icon_tax_placeholder.png"
+                src="./assets/ui/icon_tax_placeholder.png"
                 alt="Tax"
                 className="w-4 h-4 pixelated mt-0.5 opacity-60"
               />
@@ -75,7 +75,7 @@ export default function EconomyArticle() {
             </div>
             <div className="flex gap-3 items-start p-3 border border-border/30 rounded bg-panel/10">
               <img
-                src="/assets/ui/icon_list_placeholder.png"
+                src="./assets/ui/icon_list_placeholder.png"
                 alt="List"
                 className="w-4 h-4 pixelated mt-0.5 opacity-60"
               />
@@ -97,7 +97,7 @@ export default function EconomyArticle() {
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
-            src="/assets/ui/icon_gem.png"
+            src="./assets/ui/icon_gem.png"
             alt="Premium"
             className="w-5 h-5 pixelated opacity-80"
           />
@@ -156,7 +156,7 @@ export default function EconomyArticle() {
       {/* STRATEGIC FOOTER */}
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
-          src="/assets/ui/icon_achievements.png"
+          src="./assets/ui/icon_achievements.png"
           alt="Tip"
           className="w-4 h-4 pixelated opacity-60 mt-0.5 shrink-0"
         />

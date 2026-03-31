@@ -109,7 +109,7 @@ export default function App() {
             emitEvent(
               "success",
               `Identity Confirmed: ${name}`,
-              "/assets/ui/icon_check.png",
+              "./assets/ui/icon_check.png",
             );
           }}
           onLogout={() => signOut(auth)}

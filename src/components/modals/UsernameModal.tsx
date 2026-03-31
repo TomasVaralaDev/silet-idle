@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { wordFilter } from "../../utils/wordFilter"; // Varmista, että utility on tässä polussa
 
 const AVAILABLE_AVATARS = [
-  { id: 1, src: "/assets/profilepics/profile_pic_1.png", name: "Standard" },
-  { id: 2, src: "/assets/profilepics/profile_pic_2.png", name: "Cyber" },
-  { id: 3, src: "/assets/profilepics/profile_pic_3.png", name: "Rogue" },
-  { id: 4, src: "/assets/profilepics/profile_pic_4.png", name: "Mage" },
-  { id: 5, src: "/assets/profilepics/profile_pic_5.png", name: "Warrior" },
-  { id: 6, src: "/assets/profilepics/profile_pic_6.png", name: "Construct" },
+  { id: 1, src: "./assets/profilepics/profile_pic_1.png", name: "Standard" },
+  { id: 2, src: "./assets/profilepics/profile_pic_2.png", name: "Cyber" },
+  { id: 3, src: "./assets/profilepics/profile_pic_3.png", name: "Rogue" },
+  { id: 4, src: "./assets/profilepics/profile_pic_4.png", name: "Mage" },
+  { id: 5, src: "./assets/profilepics/profile_pic_5.png", name: "Warrior" },
+  { id: 6, src: "./assets/profilepics/profile_pic_6.png", name: "Construct" },
 ];
 
 const THEMES = [

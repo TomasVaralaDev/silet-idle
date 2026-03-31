@@ -72,7 +72,7 @@ export const createAchievementSlice: StateCreator<
             get().emitEvent(
               "levelUp",
               `${skill.toUpperCase()} reached level ${newLevel}!`,
-              "/assets/ui/icon_star.png",
+              "./assets/ui/icon_star.png",
             );
           }
         }
@@ -96,7 +96,7 @@ export const createAchievementSlice: StateCreator<
     get().emitEvent(
       "success",
       `Claimed reward for: ${achievement.name}`,
-      "/assets/ui/icon_achievements.png",
+      "./assets/ui/icon_achievements.png",
     );
 
     // KORJATTU: Lisätty chatColorId ehtoon, jotta modaali aukeaa myös silloin kun ainoa palkinto on väri

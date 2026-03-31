@@ -164,7 +164,7 @@ WORLD_SHOP_CONFIG.forEach(({ worldId, matName }) => {
     id: `shop_w${worldId}_bosskey`,
     name: `World ${worldId} Boss Key`,
     description: "Provides access to the regional boss. Rare and heavy.",
-    icon: `/assets/items/bosskey/${bossKeyId}.png`,
+    icon: `./assets/items/bosskey/${bossKeyId}.png`,
     costCoins: coinCost,
     costMaterials: [{ itemId: `${matName}_basic`, amount: matAmount }],
     worldId: worldId,

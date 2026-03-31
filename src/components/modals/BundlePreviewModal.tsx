@@ -44,8 +44,8 @@ export default function BundlePreviewModal({
 
   // LOGIIKKA: Haetaan kaikki kuvat suoraan meidän uudesta tehtaasta (getItemById)
   const getIconForReward = (key: string) => {
-    if (key === "gems") return "/assets/ui/icon_gem.png";
-    if (key === "coins") return "/assets/ui/icon_coin.png";
+    if (key === "gems") return "./assets/ui/icon_gem.png";
+    if (key === "coins") return "./assets/ui/icon_coin.png";
     const itemData = getItemById(key);
     if (itemData?.icon) {
       return itemData.icon.startsWith("/")
@@ -53,7 +53,7 @@ export default function BundlePreviewModal({
         : `/${itemData.icon}`;
     }
     // Fallback jos ei jostain syystä löydy tehtaasta
-    return `/assets/items/${key}.png`;
+    return `./assets/items/${key}.png`;
   };
 
   const handleClose = () => {
@@ -87,7 +87,7 @@ export default function BundlePreviewModal({
             className="w-24 h-24 pixelated drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] z-10 animate-pulse-slow"
             alt={item.name}
             onError={(e) => {
-              e.currentTarget.src = "/assets/ui/icon_unknown.png";
+              e.currentTarget.src = "./assets/ui/icon_unknown.png";
             }}
           />
           <h2 className="text-2xl font-black text-tx-main uppercase tracking-widest mt-4 text-center z-10 drop-shadow-md">
@@ -146,7 +146,7 @@ export default function BundlePreviewModal({
                     className="w-6 h-6 pixelated"
                     alt="Offline Time"
                     onError={(e) =>
-                      (e.currentTarget.src = "/assets/ui/icon_gem.png")
+                      (e.currentTarget.src = "./assets/ui/icon_gem.png")
                     }
                   />
                   <span className="font-bold text-tx-main">
@@ -168,7 +168,7 @@ export default function BundlePreviewModal({
                     className="w-6 h-6 pixelated"
                     alt="Expedition Slots"
                     onError={(e) =>
-                      (e.currentTarget.src = "/assets/ui/icon_gem.png")
+                      (e.currentTarget.src = "./assets/ui/icon_gem.png")
                     }
                   />
                   <span className="font-bold text-tx-main">
@@ -190,7 +190,7 @@ export default function BundlePreviewModal({
                     className="w-6 h-6 pixelated"
                     alt="Queue Slots"
                     onError={(e) =>
-                      (e.currentTarget.src = "/assets/ui/icon_gem.png")
+                      (e.currentTarget.src = "./assets/ui/icon_gem.png")
                     }
                   />
                   <span className="font-bold text-tx-main">
@@ -221,7 +221,7 @@ export default function BundlePreviewModal({
                       className="w-6 h-6 pixelated"
                       alt={itemId}
                       onError={(e) => {
-                        e.currentTarget.src = "/assets/ui/icon_gem.png";
+                        e.currentTarget.src = "./assets/ui/icon_gem.png";
                       }}
                     />
                     <span className="font-bold text-tx-main capitalize">
@@ -260,7 +260,7 @@ export default function BundlePreviewModal({
                 <span>Confirm Purchase</span>
                 <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
                   <img
-                    src="/assets/ui/icon_gem.png"
+                    src="./assets/ui/icon_gem.png"
                     className="w-4 h-4 pixelated"
                     alt="gem"
                   />

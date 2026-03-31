@@ -43,7 +43,7 @@ export default function ZoneIntelModal({ zone, onClose }: ZoneIntelModalProps) {
         <div className="bg-panel border border-border rounded-xl p-5 text-center relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-t from-app-base/40 to-transparent pointer-events-none" />
           <img
-            src={zone.image || "/assets/ui/icon_battle.png"}
+            src={zone.image || "./assets/ui/icon_battle.png"}
             className="w-24 h-24 mx-auto mb-4 pixelated drop-shadow-[0_0_20px_rgba(0,0,0,0.6)] group-hover:scale-110 transition-transform duration-700"
             alt={zone.enemyName}
           />

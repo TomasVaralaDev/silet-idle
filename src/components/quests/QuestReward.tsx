@@ -16,12 +16,12 @@ export default function QuestReward({ reward }: QuestRewardProps) {
         className="text-warning font-bold flex items-center gap-1"
       >
         <img
-          src="/assets/ui/coins.png"
+          src="./assets/ui/coins.png"
           className="w-3.5 h-3.5 pixelated"
           alt=""
         />
         {reward.coins.toLocaleString()} Fragments
-      </span>
+      </span>,
     );
   }
 
@@ -31,7 +31,7 @@ export default function QuestReward({ reward }: QuestRewardProps) {
       elements.push(
         <span key={skill} className="text-accent font-bold">
           +{xp} {skill} XP
-        </span>
+        </span>,
       );
     });
   }
@@ -55,7 +55,7 @@ export default function QuestReward({ reward }: QuestRewardProps) {
             </div>
           )}
           {item.amount}x {details?.name || item.itemId}
-        </span>
+        </span>,
       );
     });
   }

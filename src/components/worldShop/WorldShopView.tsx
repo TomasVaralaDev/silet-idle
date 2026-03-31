@@ -27,7 +27,7 @@ export default function WorldShopView() {
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-4 md:gap-6 sticky top-0 z-30 backdrop-blur-md shrink-0">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
-            src="/assets/ui/icon_world_market.png"
+            src="./assets/ui/icon_world_market.png"
             className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
             alt="World Market"
           />
@@ -138,7 +138,7 @@ export default function WorldShopView() {
             className="absolute bottom-6 right-6 z-30 w-12 h-12 flex items-center justify-center bg-panel/80 hover:bg-accent border border-border hover:border-accent/50 rounded-full transition-all shadow-2xl backdrop-blur-sm active:scale-95 group"
           >
             <img
-              src="/assets/ui/icon_question.png"
+              src="./assets/ui/icon_question.png"
               className="w-6 h-6 pixelated group-hover:brightness-200 transition"
               alt="Rates"
             />

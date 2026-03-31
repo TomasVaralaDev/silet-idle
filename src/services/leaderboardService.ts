@@ -31,7 +31,7 @@ export const getTopPlayersByLevel = async (): Promise<LeaderboardEntry[]> => {
       return {
         uid: docSnap.id,
         username: data.username || "Unknown Restorer",
-        avatar: data.avatar || "/assets/ui/icon_user_avatar.png",
+        avatar: data.avatar || "./assets/ui/icon_user_avatar.png",
         maxMapCompleted: data.maxMapCompleted || 0,
         totalLevel: data.totalLevel || 0,
         rank: index + 1,
@@ -68,7 +68,7 @@ export const getMyRankData = async (
     return {
       uid: myDoc.id,
       username: myData.username || "You",
-      avatar: myData.avatar || "/assets/ui/icon_user_avatar.png",
+      avatar: myData.avatar || "./assets/ui/icon_user_avatar.png",
       maxMapCompleted: myData.maxMapCompleted || 0,
       totalLevel: myData.totalLevel || 0,
       rank: higherRankedCount + 1,

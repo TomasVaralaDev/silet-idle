@@ -106,7 +106,11 @@ export default function ItemDetails({
             </span>
             <div className="flex items-center gap-1 text-[9px] md:text-[10px] text-warning shrink-0">
               <span className="font-mono">{item.value}</span>
-              <img src="/assets/ui/coins.png" className="w-3 h-3" alt="coins" />
+              <img
+                src="./assets/ui/coins.png"
+                className="w-3 h-3"
+                alt="coins"
+              />
             </div>
           </div>
         </div>
@@ -219,7 +223,7 @@ export default function ItemDetails({
           className="py-3 md:py-4 text-[10px] md:text-xs font-black uppercase tracking-widest text-[#E43636] hover:bg-[#E43636]/10 transition-colors flex items-center justify-center gap-2 group"
         >
           <img
-            src="/assets/ui/coins.png"
+            src="./assets/ui/coins.png"
             className="w-4 h-4 pixelated group-hover:scale-125 transition-transform"
             alt="Sell"
           />

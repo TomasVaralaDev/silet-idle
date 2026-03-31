@@ -137,25 +137,25 @@ export default function StatsPanel() {
             <StatBox
               label="Damage"
               value={`${playerCombatStats.minHit}-${playerCombatStats.maxHit}`}
-              icon="/assets/ui/icon_damage.png"
+              icon="./assets/ui/icon_damage.png"
               color="text-warning"
             />
             <StatBox
               label="Attack Speed"
               value={formatAttackSpeed(playerCombatStats.attackSpeed)}
-              icon="/assets/ui/icon_attackspeed.png"
+              icon="./assets/ui/icon_attackspeed.png"
               color="text-accent"
             />
             <StatBox
               label="Crit Chance"
               value={`${(playerCombatStats.critChance * 100).toFixed(1)}%`}
-              icon="/assets/ui/icon_critchance.png"
+              icon="./assets/ui/icon_critchance.png"
               color="text-danger"
             />
             <StatBox
               label="Crit Multi"
               value={`${playerCombatStats.critMultiplier.toFixed(1)}x`}
-              icon="/assets/ui/icon_critmulti.png"
+              icon="./assets/ui/icon_critmulti.png"
               color="text-danger"
             />
           </div>
@@ -174,14 +174,14 @@ export default function StatsPanel() {
               label="Vitality"
               value={formatNumber(playerCombatStats.maxHp)}
               subValue={`+${playerCombatStats.gearHpBonus} gear`}
-              icon="/assets/ui/icon_vitality.png"
+              icon="./assets/ui/icon_vitality.png"
               color="text-danger"
             />
             <StatBox
               label="Armor"
               value={formatNumber(playerCombatStats.armor)}
               subValue={`${Math.floor((1 - 1 / (1 + playerCombatStats.armor / 100)) * 100)}% reduction`}
-              icon="/assets/ui/icon_armorstat.png"
+              icon="./assets/ui/icon_armorstat.png"
               color="text-accent"
             />
           </div>

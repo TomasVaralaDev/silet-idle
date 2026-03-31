@@ -42,7 +42,7 @@ export default function MyListingsView({ userId }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-10 md:py-20 h-full px-4">
         <img
-          src="/assets/ui/icon_market.png"
+          src="./assets/ui/icon_market.png"
           className="w-16 h-16 md:w-20 md:h-20 pixelated opacity-10 mb-4 md:mb-6 grayscale"
           alt="No listings"
         />

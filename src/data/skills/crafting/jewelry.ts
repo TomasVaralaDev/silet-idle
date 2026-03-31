@@ -9,7 +9,7 @@ export const jewelry: Resource[] = [
     xpReward: 120,
     interval: 4000,
     value: 60,
-    icon: "/assets/items/necklace/necklace_iron.png",
+    icon: "./assets/items/necklace/necklace_iron.png",
     color: "text-slate-400",
     description: "Basic iron chain.",
     inputs: [{ id: "ore_iron_smelted", count: 5 }],
@@ -26,7 +26,7 @@ export const jewelry: Resource[] = [
     xpReward: 250,
     interval: 5000,
     value: 150,
-    icon: "/assets/items/necklace/necklace_gold.png",
+    icon: "./assets/items/necklace/necklace_gold.png",
     color: "text-yellow-400",
     description: "Shiny gold chain.",
     inputs: [{ id: "ore_gold_smelted", count: 15 }],
@@ -43,7 +43,7 @@ export const jewelry: Resource[] = [
     xpReward: 800,
     interval: 7000,
     value: 600,
-    icon: "/assets/items/necklace/necklace_adamantite.png",
+    icon: "./assets/items/necklace/necklace_adamantite.png",
     color: "text-purple-400",
     description: "Strong adamantite link.",
     inputs: [{ id: "ore_adamantite_smelted", count: 60 }],
@@ -60,7 +60,7 @@ export const jewelry: Resource[] = [
     xpReward: 2000,
     interval: 9000,
     value: 1200,
-    icon: "/assets/items/necklace/necklace_emerald.png",
+    icon: "./assets/items/necklace/necklace_emerald.png",
     color: "text-emerald-400",
     description: "Glowing emerald pendant.",
     inputs: [{ id: "ore_emerald_smelted", count: 120 }],
@@ -77,7 +77,7 @@ export const jewelry: Resource[] = [
     xpReward: 5000, // LASKETTU 12k -> 5k
     interval: 12000, // NOPEUTETTU
     value: 3000, // LASKETTU 6k -> 3k
-    icon: "/assets/items/necklace/necklace_starfallalloy.png",
+    icon: "./assets/items/necklace/necklace_starfallalloy.png",
     color: "text-indigo-400",
     description: "Cosmic starfall relic.",
     inputs: [
@@ -97,7 +97,7 @@ export const jewelry: Resource[] = [
     xpReward: 12000, // NOSTETTU 5k -> 12k
     interval: 15000, // HIDASTETTU
     value: 6000, // NOSTETTU 3k -> 6k
-    icon: "/assets/items/necklace/necklace_eternium.png",
+    icon: "./assets/items/necklace/necklace_eternium.png",
     color: "text-red-500",
     description: "Timeless eternium charm.",
     inputs: [

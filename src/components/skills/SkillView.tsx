@@ -263,7 +263,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                             <img
                               src={
                                 itemDetails?.icon ||
-                                "/assets/ui/icon_missing.png"
+                                "./assets/ui/icon_missing.png"
                               }
                               className="w-5 h-5 pixelated object-contain"
                               alt={drop.itemId}
@@ -394,7 +394,7 @@ export default function SkillView({ skill }: SkillViewProps) {
                         {isQueueFull ? (
                           <>
                             <img
-                              src="/assets/ui/icon_locked.png"
+                              src="./assets/ui/icon_locked.png"
                               className="w-3.5 h-3.5 pixelated opacity-50"
                               alt=""
                             />

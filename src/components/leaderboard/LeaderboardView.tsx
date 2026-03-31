@@ -64,7 +64,7 @@ export default function LeaderboardView() {
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
-            src="/assets/ui/icon_leaderboard.png"
+            src="./assets/ui/icon_leaderboard.png"
             className="w-8 h-8 md:w-10 md:h-10 pixelated"
             alt="Hall of Legends"
           />

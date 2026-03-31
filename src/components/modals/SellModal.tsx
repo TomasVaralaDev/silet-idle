@@ -111,7 +111,7 @@ export default function SellModal({
           <span className="text-xl font-mono font-bold text-warning flex items-center gap-2">
             {totalValue.toLocaleString()}{" "}
             <img
-              src="/assets/ui/coins.png"
+              src="./assets/ui/coins.png"
               className="w-4 h-4 pixelated"
               alt="g"
             />

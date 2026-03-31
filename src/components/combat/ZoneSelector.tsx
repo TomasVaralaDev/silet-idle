@@ -121,7 +121,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
           const hasKey = !map.keyRequired || keyCount > 0;
           const isProgressionLocked = map.id > combatStats.maxMapCompleted + 1;
           const isLocked = isProgressionLocked || (map.isBoss && !hasKey);
-          const keyImage = `/assets/items/bosskey/bosskey_w${selectedWorldId}.png`;
+          const keyImage = `./assets/items/bosskey/bosskey_w${selectedWorldId}.png`;
 
           return (
             <button
@@ -214,7 +214,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                 >
                   {isProgressionLocked ? (
                     <img
-                      src="/assets/ui/icon_locked.png"
+                      src="./assets/ui/icon_locked.png"
                       className="w-3.5 h-3.5 md:w-4 md:h-4 object-contain pixelated opacity-30"
                       alt="Locked"
                     />
@@ -236,7 +236,7 @@ export default function ZoneSelector({ selectedWorldId }: Props) {
                     />
                   ) : (
                     <img
-                      src="/assets/ui/icon_battle.png"
+                      src="./assets/ui/icon_battle.png"
                       className="w-4 h-4 md:w-5 md:h-5 object-contain pixelated opacity-30"
                       alt="Battle"
                     />

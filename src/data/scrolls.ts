@@ -8,7 +8,7 @@ export const SCROLLS_DATA: Resource[] = [
     rarity: "common",
     value: 500,
     color: "text-slate-400",
-    icon: "/assets/items/enchantingscroll/enchanting_tier1.png",
+    icon: "./assets/items/enchantingscroll/enchanting_tier1.png",
     description: "Standard enchanting scroll. Max 5% success on final level.",
   },
   {
@@ -18,7 +18,7 @@ export const SCROLLS_DATA: Resource[] = [
     rarity: "uncommon",
     value: 2000,
     color: "text-green-400",
-    icon: "/assets/items/enchantingscroll/enchanting_tier2.png",
+    icon: "./assets/items/enchantingscroll/enchanting_tier2.png",
     description: "Better quality scroll. Max 12% success on final level.",
   },
   {
@@ -28,7 +28,7 @@ export const SCROLLS_DATA: Resource[] = [
     rarity: "rare",
     value: 8000,
     color: "text-blue-400",
-    icon: "/assets/items/enchantingscroll/enchanting_tier3.png",
+    icon: "./assets/items/enchantingscroll/enchanting_tier3.png",
     description: "High quality magical scroll. Max 20% success on final level.",
   },
   {
@@ -38,7 +38,7 @@ export const SCROLLS_DATA: Resource[] = [
     rarity: "legendary",
     value: 25000,
     color: "text-yellow-400",
-    icon: "/assets/items/enchantingscroll/enchanting_tier4.png",
+    icon: "./assets/items/enchantingscroll/enchanting_tier4.png",
     description:
       "The ultimate catalyst. Guarantees 30% success on final level.",
   },

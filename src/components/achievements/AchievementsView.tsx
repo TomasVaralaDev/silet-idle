@@ -46,7 +46,7 @@ export default function AchievementsView() {
           className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-warning/20 border border-warning/30 shadow-lg shrink-0`}
         >
           <img
-            src="/assets/ui/icon_achievements.png"
+            src="./assets/ui/icon_achievements.png"
             className="w-8 h-8 md:w-10 md:h-10 pixelated object-contain"
             alt="Milestones"
           />

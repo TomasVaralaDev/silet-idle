@@ -35,7 +35,7 @@ export const createCombatSlice: StateCreator<
       state.emitEvent(
         "warning",
         `You were defeated... Wait ${seconds}s`,
-        "/assets/ui/icon_death.png",
+        "./assets/ui/icon_death.png",
       );
       return;
     }

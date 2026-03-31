@@ -6,42 +6,42 @@ export const WORLD_INFO: Record<
 > = {
   1: {
     name: "Greenvale",
-    image: "/assets/backgrounds/bg_greenvale.png",
+    image: "./assets/backgrounds/bg_greenvale.png",
     description: "A lush forest teeming with basic life.",
   },
   2: {
     name: "Stonefall",
-    image: "/assets/backgrounds/bg_stonefall.png",
+    image: "./assets/backgrounds/bg_stonefall.png",
     description: "Rocky terrain and deep mines.",
   },
   3: {
     name: "Ashridge",
-    image: "/assets/backgrounds/bg_ashbridge.png",
+    image: "./assets/backgrounds/bg_ashbridge.png",
     description: "Volcanic lands filled with fire.",
   },
   4: {
     name: "Frostreach",
-    image: "/assets/backgrounds/bg_frostreach.png",
+    image: "./assets/backgrounds/bg_frostreach.png",
     description: "Frozen wastelands and icy peaks.",
   },
   5: {
     name: "Duskwood",
-    image: "/assets/backgrounds/bg_duskwood.png",
+    image: "./assets/backgrounds/bg_duskwood.png",
     description: "A cursed forest consumed by shadow.",
   },
   6: {
     name: "Stormcoast",
-    image: "/assets/backgrounds/bg_stormcoast.png",
+    image: "./assets/backgrounds/bg_stormcoast.png",
     description: "Treacherous cliffs and raging seas.",
   },
   7: {
     name: "Void Expanse",
-    image: "/assets/backgrounds/bg_voidexpanse.png",
+    image: "./assets/backgrounds/bg_voidexpanse.png",
     description: "The fabric of reality is thin here.",
   },
   8: {
     name: "Eternal Nexus",
-    image: "/assets/backgrounds/bg_eternalnexus.png",
+    image: "./assets/backgrounds/bg_eternalnexus.png",
     description: "The center of all timelines.",
   },
 };

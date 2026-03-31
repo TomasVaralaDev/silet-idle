@@ -33,7 +33,7 @@ export default function ScavengingView() {
       <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-success/20 border border-success/30 shadow-lg shrink-0">
           <img
-            src="/assets/skills/scavenging.png"
+            src="./assets/skills/scavenging.png"
             className="w-10 h-10 pixelated object-contain"
             alt="Scavenging"
           />

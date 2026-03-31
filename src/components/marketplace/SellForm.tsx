@@ -196,7 +196,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
                       className="w-full h-full bg-app-base border border-border rounded-sm px-3 py-2 md:py-2.5 text-xs md:text-sm text-tx-main focus:outline-none focus:border-warning transition-colors pl-9 font-mono disabled:opacity-50"
                     />
                     <img
-                      src="/assets/ui/coins.png"
+                      src="./assets/ui/coins.png"
                       className="w-4 h-4 absolute left-2.5 opacity-70 pixelated"
                       alt=""
                     />
@@ -232,7 +232,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
                   </p>
                   <div className="flex items-center gap-2">
                     <img
-                      src="/assets/ui/coins.png"
+                      src="./assets/ui/coins.png"
                       className="w-4 h-4 md:w-5 md:h-5 pixelated"
                       alt=""
                     />
@@ -259,7 +259,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center py-10 md:p-6 space-y-4 md:space-y-6">
               <img
-                src="/assets/ui/icon_reward.png"
+                src="./assets/ui/icon_reward.png"
                 className="w-16 h-16 md:w-20 md:h-20 pixelated opacity-20 grayscale"
                 alt="Awaiting Selection"
               />

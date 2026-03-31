@@ -58,7 +58,7 @@ export const createQuestSlice: StateCreator<
       emitEvent(
         "info",
         "New Daily Quests available!",
-        "/assets/ui/icon_quest.png",
+        "./assets/ui/icon_quest.png",
       );
     } else {
       console.log("✅ [QUEST-SYNC] Tehtävät ovat jo ajan tasalla.");

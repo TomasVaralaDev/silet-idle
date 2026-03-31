@@ -21,11 +21,6 @@ export default function QuestsArticle() {
       {/* THE RESET SYSTEM */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <img
-            src="/assets/ui/icon_clock_placeholder.png"
-            alt="Time"
-            className="w-5 h-5 pixelated opacity-80"
-          />
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
             The Midnight Reset
           </h3>

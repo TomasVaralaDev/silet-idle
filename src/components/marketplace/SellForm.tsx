@@ -205,25 +205,46 @@ export default function SellForm({ myUid, onComplete }: Props) {
               </div>
 
               {
-                // Live potential revenue calculation
+                // Live potential revenue calculation with 5% Tax
               }
               <div
                 className={`mt-2 md:mt-auto p-3 md:p-4 bg-app-base rounded-sm border border-border border-dashed ${selectedItem.isUnique ? "opacity-50" : ""}`}
               >
-                <p className="text-[8px] md:text-[9px] text-tx-muted font-black uppercase tracking-widest mb-1.5 md:mb-2 text-left">
-                  Estimated Revenue
-                </p>
-                <div className="flex items-center gap-2">
-                  <img
-                    src="/assets/ui/coins.png"
-                    className="w-4 h-4 md:w-5 md:h-5 pixelated"
-                    alt=""
-                  />
-                  <span className="text-xl md:text-2xl font-black font-mono text-warning tracking-tighter truncate">
-                    {selectedItem.isUnique
-                      ? 0
-                      : (amount * price).toLocaleString()}
+                <div className="flex justify-between items-end mb-2 border-b border-border/30 pb-2">
+                  <span className="text-[9px] text-tx-muted font-black uppercase tracking-widest">
+                    Gross Revenue
                   </span>
+                  <span className="text-[10px] font-mono text-tx-main">
+                    {(amount * price).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-end mb-3 border-b border-border/30 pb-2">
+                  <span className="text-[9px] text-danger/80 font-black uppercase tracking-widest">
+                    Market Tax (5%)
+                  </span>
+                  <span className="text-[10px] font-mono text-danger">
+                    -{Math.floor(amount * price * 0.05).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-end">
+                  <p className="text-[9px] text-tx-muted font-black uppercase tracking-widest">
+                    You Will Receive
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/assets/ui/coins.png"
+                      className="w-4 h-4 md:w-5 md:h-5 pixelated"
+                      alt=""
+                    />
+                    <span className="text-xl md:text-2xl font-black font-mono text-warning tracking-tighter truncate">
+                      {selectedItem.isUnique
+                        ? 0
+                        : (
+                            amount * price -
+                            Math.floor(amount * price * 0.05)
+                          ).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
 

@@ -43,11 +43,6 @@ export default function VendorsArticle() {
 
         <div className="p-6 bg-panel/5 border border-border rounded-lg space-y-3">
           <div className="flex items-center gap-2">
-            <img
-              src="/assets/ui/icon_clock_placeholder.png"
-              alt="Time"
-              className="w-5 h-5 pixelated opacity-80"
-            />
             <h4 className="text-xs font-bold text-tx-main uppercase tracking-wide">
               Daily Restocks (00:00 UTC)
             </h4>

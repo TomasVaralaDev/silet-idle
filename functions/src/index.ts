@@ -301,6 +301,107 @@ export const scheduledShopReset = onSchedule("0 0 * * *", async () => {
   }
 });
 
+// --- UUSI: TURVALLINEN MARKETIN OSTO (5% VERO) ---
+export const purchaseListing = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "You must be logged in to purchase items.",
+    );
+  }
+
+  const buyerUid = request.auth.uid;
+  const { listingId } = request.data;
+
+  if (!listingId) {
+    throw new HttpsError("invalid-argument", "Missing listing ID.");
+  }
+
+  const db = admin.firestore();
+  const listingRef = db.collection("listings").doc(listingId);
+  const buyerRef = db.collection("users").doc(buyerUid);
+
+  try {
+    return await db.runTransaction(async (transaction) => {
+      const listSnap = await transaction.get(listingRef);
+      const buyerSnap = await transaction.get(buyerRef);
+
+      if (!listSnap.exists || listSnap.data()?.status !== "active") {
+        throw new HttpsError(
+          "failed-precondition",
+          "Listing is no longer available.",
+        );
+      }
+
+      interface ListingData {
+        sellerUid: string;
+        itemId: string;
+        amount: number;
+        totalPrice: number;
+        status: string;
+      }
+
+      const listing = listSnap.data() as ListingData;
+      const buyerData = buyerSnap.data() || {};
+
+      if (listing.sellerUid === buyerUid) {
+        throw new HttpsError(
+          "invalid-argument",
+          "You cannot buy your own listings.",
+        );
+      }
+
+      if ((buyerData.coins || 0) < listing.totalPrice) {
+        throw new HttpsError("failed-precondition", "Not enough coins.");
+      }
+
+      // 1. OSTAJAN PÄIVITYS
+      const newBuyerCoins = buyerData.coins - listing.totalPrice;
+      const currentItemAmount = buyerData.inventory?.[listing.itemId] || 0;
+
+      transaction.update(buyerRef, {
+        coins: newBuyerCoins,
+        [`inventory.${listing.itemId}`]: currentItemAmount + listing.amount,
+      });
+
+      // 2. MYYJÄN MAILBOX (5% Vero)
+      const grossTotal = listing.totalPrice;
+      const taxAmount = Math.floor(grossTotal * 0.05); // 5%
+      const netProfit = grossTotal - taxAmount;
+
+      const mailboxRef = db
+        .collection("users")
+        .doc(listing.sellerUid)
+        .collection("mailbox")
+        .doc();
+
+      transaction.set(mailboxRef, {
+        type: "market_sale",
+        title: "Marketplace Sale",
+        message: `Your listing for ${listing.amount}x item sold for ${grossTotal} coins. A 5% tax was applied.`,
+        coinsAttached: netProfit,
+        timestamp: Date.now(),
+        isClaimed: false,
+      });
+
+      // 3. MERKITÄÄN MYYDYKSI
+      transaction.update(listingRef, { status: "sold" });
+
+      return {
+        success: true,
+        itemId: listing.itemId,
+        amount: listing.amount,
+        totalPrice: listing.totalPrice,
+      };
+    });
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error during purchase.";
+    throw new HttpsError("internal", errorMessage);
+  }
+});
+// -----------------------------------------------
+
 // --- UUSI: Käyttäjänimen vaihto cooldownilla ---
 export const changeUsername = onCall(async (request) => {
   // 1. Tarkista että käyttäjä on kirjautunut

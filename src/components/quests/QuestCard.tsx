@@ -11,7 +11,7 @@ export default function QuestCard({ quest }: QuestCardProps) {
 
   const progressPercent = Math.min(
     100,
-    Math.max(0, (quest.progress / quest.targetAmount) * 100)
+    Math.max(0, (quest.progress / quest.targetAmount) * 100),
   );
   const canClaim = quest.isCompleted && !quest.isClaimed;
 
@@ -22,12 +22,14 @@ export default function QuestCard({ quest }: QuestCardProps) {
           quest.isClaimed
             ? "bg-app-base/40 border-border/50 opacity-50 grayscale"
             : canClaim
-            ? "bg-success/10 border-success/50 shadow-[0_0_15px_rgb(var(--color-success)/0.15)]"
-            : "bg-panel/40 border-border hover:border-border-hover"
+              ? "bg-success/10 border-success/50 shadow-[0_0_15px_rgb(var(--color-success)/0.15)]"
+              : "bg-panel/40 border-border hover:border-border-hover"
         }
       `}
     >
-      {/* Progress background bar - Dynaaminen warning-väri */}
+      {
+        // Dynamic progress background bar
+      }
       {!quest.isClaimed && (
         <div
           className="absolute left-0 bottom-0 h-1 bg-warning/40 transition-all duration-500 ease-out"
@@ -42,8 +44,8 @@ export default function QuestCard({ quest }: QuestCardProps) {
               canClaim
                 ? "text-success"
                 : quest.isClaimed
-                ? "text-tx-muted"
-                : "text-tx-main"
+                  ? "text-tx-muted"
+                  : "text-tx-main"
             }`}
           >
             {quest.title}

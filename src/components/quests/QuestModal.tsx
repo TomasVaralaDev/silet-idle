@@ -7,18 +7,16 @@ interface QuestModalProps {
 }
 
 export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
-  // Haetaan vain quests-tila. Poistettu checkDailyReset.
   const quests = useGameStore((state) => state.quests);
-
-  // POISTETTU: useEffect ja checkDailyReset kutsu.
-  // Synkronointi hoidetaan nyt globaalisti pelin latautuessa.
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-app-base/80 backdrop-blur-sm p-4 animate-in fade-in duration-300 text-left">
       <div className="bg-panel border border-border rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 overflow-hidden">
-        {/* HEADER */}
+        {
+          // HEADER
+        }
         <div className="p-6 border-b border-border flex justify-between items-center bg-panel-hover/50 shrink-0">
           <div>
             <h2 className="text-2xl font-black text-tx-main flex items-center gap-3">
@@ -41,7 +39,9 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
           </button>
         </div>
 
-        {/* CONTENT */}
+        {
+          // CONTENT
+        }
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-app-base/20">
           <QuestList quests={quests?.dailyQuests || []} />
         </div>

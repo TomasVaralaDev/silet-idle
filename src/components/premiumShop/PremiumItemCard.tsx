@@ -20,7 +20,7 @@ export default function PremiumItemCard({
   const isMaxedOut =
     item.maxPurchases !== undefined && purchaseCount >= item.maxPurchases;
 
-  // Tuote on poissa pelistä, jos se on OneTime ja jo ostettu, TAI jos sen maksimiostomäärä on saavutettu
+  // Item is disabled if it's a one-time purchase already owned or if max stock is reached
   const isDisabled = isOwned || isMaxedOut || isPurchasing;
 
   return (
@@ -49,7 +49,9 @@ export default function PremiumItemCard({
           {item.description}
         </p>
 
-        {/* Kauppamaiset rajoitus-indikaattorit napin yläpuolella (yksinkertaistettu tyyli) */}
+        {
+          // Purchase restriction and stock indicators
+        }
         <div className="mb-3 md:mb-4 flex flex-col gap-1.5 mt-auto">
           {item.isOneTime ? (
             <div className="text-[9px] md:text-[10px] font-bold text-warning uppercase tracking-wider">

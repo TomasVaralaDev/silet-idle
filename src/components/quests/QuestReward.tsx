@@ -8,7 +8,7 @@ interface QuestRewardProps {
 export default function QuestReward({ reward }: QuestRewardProps) {
   const elements = [];
 
-  // Fragments / Kolikot -> Warning (Kulta)
+  // Fragments / Coins
   if (reward.coins) {
     elements.push(
       <span
@@ -25,7 +25,7 @@ export default function QuestReward({ reward }: QuestRewardProps) {
     );
   }
 
-  // XP -> Accent (Teeman korostusväri)
+  // XP Rewards
   if (reward.xpMap) {
     Object.entries(reward.xpMap).forEach(([skill, xp]) => {
       elements.push(
@@ -36,7 +36,7 @@ export default function QuestReward({ reward }: QuestRewardProps) {
     });
   }
 
-  // Esineet -> Success (Vihreä)
+  // Item Rewards
   if (reward.items) {
     reward.items.forEach((item) => {
       const details = getItemDetails(item.itemId);

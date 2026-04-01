@@ -5,7 +5,7 @@ import type { PremiumShopItem, RewardEntry } from "../../types";
 import GemsModal from "../modals/GemsModal";
 import PurchaseSuccessModal from "../modals/PurchaseSuccessModal";
 import BundlePreviewModal from "../modals/BundlePreviewModal";
-import PremiumItemCard from "./PremiumItemCard"; // TUODAAN UUSI KOMPONENTTI
+import PremiumItemCard from "./PremiumItemCard";
 import { auth, db } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -16,7 +16,7 @@ export default function PremiumShopView() {
     buyPremiumItem,
     startGemsPurchase,
     upgrades,
-    premiumPurchases, // LISÄTTY STORESTA!
+    premiumPurchases,
     emitEvent,
     openRewardModal,
   } = useGameStore();
@@ -43,6 +43,7 @@ export default function PremiumShopView() {
   useEffect(() => {
     let pollInterval: ReturnType<typeof setInterval> | null = null;
 
+    // Fetch latest gem and purchase data from firestore to sync across sessions
     const refreshGemsFromServer = async () => {
       const user = auth.currentUser;
       if (!user) return false;
@@ -59,7 +60,7 @@ export default function PremiumShopView() {
             upgrades: data.upgrades || state.upgrades,
             inventory: data.inventory || state.inventory,
             scavenger: data.scavenger || state.scavenger,
-            premiumPurchases: data.premiumPurchases || state.premiumPurchases, // Varmistetaan että myös tämä päivittyy serveriltä!
+            premiumPurchases: data.premiumPurchases || state.premiumPurchases,
           }));
           return true;
         }
@@ -144,7 +145,7 @@ export default function PremiumShopView() {
           }
           if (item.rewards.stats?.offlineHoursIncrement) {
             rewardsList.push({
-              itemId: "Offline Time", // Tämä on se teksti, joka tulostuu modaaliin
+              itemId: "Offline Time",
               amount: item.rewards.stats.offlineHoursIncrement,
             });
           }
@@ -195,7 +196,9 @@ export default function PremiumShopView() {
         isProcessing={!!purchasingItem}
       />
 
-      {/* HEADER */}
+      {
+        // HEADER
+      }
       <div className="p-6 border-b border-border/50 bg-panel/50 flex flex-col sm:flex-row items-center justify-between gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div className="flex items-center gap-6 w-full sm:w-auto">
           <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
@@ -237,7 +240,9 @@ export default function PremiumShopView() {
         </div>
       </div>
 
-      {/* PROGRESS BAR */}
+      {
+        // PROGRESS BAR
+      }
       <div className="h-1 bg-panel w-full shrink-0 overflow-hidden">
         <div
           className={`h-full bg-accent transition-all duration-1000 shadow-[0_0_10px_rgb(var(--color-accent)/0.5)] ${isWaitingForPurchase || purchasingItem ? "animate-pulse" : ""}`}
@@ -271,7 +276,6 @@ export default function PremiumShopView() {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative bg-app-base/30 pb-24 md:pb-8">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6 max-w-7xl mx-auto relative z-10">
-            {/* KÄYTETÄÄN UUTTA KOMPONENTTIA */}
             {filteredItems.map((item) => (
               <PremiumItemCard
                 key={item.id}

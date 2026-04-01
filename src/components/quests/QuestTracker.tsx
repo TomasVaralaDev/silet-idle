@@ -1,10 +1,9 @@
-// src/components/quests/QuestTracker.tsx
 import { useGameStore } from "../../store/useGameStore";
 
 export default function QuestTracker() {
   const { dailyQuests } = useGameStore((state) => state.quests);
 
-  // Näytetään vain ne questit, jotka eivät ole vielä valmiina (tai ovat valmiita mutta lunastamatta)
+  // Filter to show quests that are not yet claimed
   const activeQuests = dailyQuests.filter((q) => !q.isClaimed);
 
   if (activeQuests.length === 0) return null;

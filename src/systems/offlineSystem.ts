@@ -9,22 +9,32 @@ export interface OfflineSummary {
   itemsGained: Record<string, number>;
 }
 
+/**
+ * calculateOfflineProgress
+ * Simulates game progression that occurred while the user was logged off or away.
+ * Efficiently computes queue completion and endless task repetition without running
+ * a full tick-by-tick simulation (except for combat, which requires tight iterative processing).
+ *
+ * @param initialState - The GameState exactly as it was when the user logged off
+ * @param elapsedSeconds - The total time the user was away
+ * @returns Object containing the updated GameState and a summary of all gains for the UI
+ */
 export const calculateOfflineProgress = (
   initialState: GameState,
   elapsedSeconds: number,
 ): { updatedState: GameState; summary: OfflineSummary } => {
-  // --- UUSI LASKENTA: Offline aikaraja ---
-  const baseOfflineHours = 12; // Perusaika on 12 tuntia
-  const extraOfflineHours = initialState.maxOfflineHoursIncrement || 0; // Luetaan ostettu lisäaika statesta
-  const maxSeconds = (baseOfflineHours + extraOfflineHours) * 3600; // Muutetaan tunnit sekunneiksi
+  // Determine offline time limit based on base allowance + premium expansions
+  const baseOfflineHours = 12;
+  const extraOfflineHours = initialState.maxOfflineHoursIncrement || 0;
+  const maxSeconds = (baseOfflineHours + extraOfflineHours) * 3600;
 
-  // Rajoitetaan pelaajan poissaoloaika maksimiaikaan
+  // Cap elapsed time to prevent infinite grinding exploits
   let remainingSeconds = Math.min(elapsedSeconds, maxSeconds);
   const simulatedSeconds = remainingSeconds;
 
   const currentState: GameState = JSON.parse(JSON.stringify(initialState));
 
-  // TURVA: Varmistetaan että queue on olemassa (estää vanhojen testien ja savejen kaatumisen)
+  // SAFETY: Ensure queue array exists to prevent legacy saves from crashing
   currentState.queue = currentState.queue || [];
 
   const summary: OfflineSummary = {
@@ -33,12 +43,14 @@ export const calculateOfflineProgress = (
     itemsGained: {},
   };
 
+  // If the player left with no active tasks, return immediately with empty summary
   if (!currentState.activeAction && currentState.queue.length === 0) {
     return { updatedState: currentState, summary };
   }
 
   // =====================================================================
-  // SKENAARIO 1: JONON KÄSITTELY (Pelaaja on jonottanut asioita)
+  // SCENARIO 1: QUEUE PROCESSING
+  // Player left tasks in the automated sequence queue.
   // =====================================================================
   if (currentState.queue.length > 0) {
     while (remainingSeconds > 0 && currentState.queue.length > 0) {
@@ -49,11 +61,11 @@ export const calculateOfflineProgress = (
       );
 
       if (!resource) {
-        currentState.queue.shift(); // Viallinen item, siirrytään seuraavaan
+        currentState.queue.shift(); // Invalid item in queue, drop it and proceed
         continue;
       }
 
-      // --- MATERIAALITARKISTUS ---
+      // --- RESOURCE VALIDATION ---
       let maxByMaterials = Infinity;
       if (resource.inputs && resource.inputs.length > 0) {
         resource.inputs.forEach((input: Ingredient) => {
@@ -64,8 +76,8 @@ export const calculateOfflineProgress = (
       }
 
       if (maxByMaterials === 0 && resource.inputs) {
-        // Materiaalit loppu, tätä ei voi tehdä enää yhtään.
-        // Pysäytetään jono tähän (ei poisteta, jotta pelaaja näkee mihin se jäi).
+        // Out of materials. Halt the queue processing but leave the item in the queue
+        // so the player can see exactly where the automation stopped.
         break;
       }
 
@@ -78,7 +90,7 @@ export const calculateOfflineProgress = (
       const todoCount = currentItem.amount - currentItem.completed;
       const possibleByTime = Math.floor(remainingSeconds / intervalSeconds);
 
-      // Valmistetaan niin monta kuin aika JA materiaalit sallivat
+      // Determine actual number of crafts completed by comparing constraints
       const actualCompletions = Math.min(
         todoCount,
         possibleByTime,
@@ -86,7 +98,7 @@ export const calculateOfflineProgress = (
       );
 
       if (actualCompletions > 0) {
-        // 1. KULUTETAAN MATERIAALIT
+        // 1. DEDUCT MATERIALS
         if (resource.inputs) {
           resource.inputs.forEach((input: Ingredient) => {
             currentState.inventory[input.id] -= input.count * actualCompletions;
@@ -96,7 +108,7 @@ export const calculateOfflineProgress = (
         const xpReward = actualCompletions * (resource.xpReward || 0);
         const skillId = currentItem.skill;
 
-        // 2. Päivitetään XP
+        // 2. UPDATE XP
         const sd = currentState.skills[skillId];
         currentState.skills[skillId] = calculateXpGain(
           sd.level,
@@ -105,26 +117,26 @@ export const calculateOfflineProgress = (
         );
         summary.xpGained[skillId] = (summary.xpGained[skillId] || 0) + xpReward;
 
-        // 3. Päivitetään Tavarat (tuotokset)
+        // 3. ADD CRAFTED ITEMS
         currentState.inventory[resource.id] =
           (currentState.inventory[resource.id] || 0) + actualCompletions;
         summary.itemsGained[resource.id] =
           (summary.itemsGained[resource.id] || 0) + actualCompletions;
 
-        // 4. Kulutetaan aika
+        // 4. CONSUME TIME
         remainingSeconds -= actualCompletions * intervalSeconds;
         currentItem.completed += actualCompletions;
       }
 
-      // Jos tehtävä tuli täyteen, poistetaan se
+      // Advance queue if current task is fully complete
       if (currentItem.completed >= currentItem.amount) {
         currentState.queue.shift();
       } else {
-        break; // Aika tai materiaalit loppui kesken
+        break; // Out of time or materials
       }
     }
 
-    // Synkronoidaan activeAction uuden jonon tilan mukaiseksi
+    // Synchronize activeAction to reflect the final state of the queue
     if (currentState.queue.length > 0) {
       const next = currentState.queue[0];
       const skillData = GAME_DATA[next.skill as keyof typeof GAME_DATA];
@@ -142,12 +154,13 @@ export const calculateOfflineProgress = (
     }
   }
   // =====================================================================
-  // SKENAARIO 2: LOPUTON TOIMINTO (Pelaaja painoi "START", ei käyttänyt jonoa)
+  // SCENARIO 2: ENDLESS ACTION (Player clicked "START" manually, no queue)
   // =====================================================================
   else if (currentState.activeAction) {
     const { skill, resourceId } = currentState.activeAction;
 
     if (skill !== "combat") {
+      // Gather/Craft calculation via simple math multiplication
       const skillData = GAME_DATA[skill as keyof typeof GAME_DATA];
       const resource = skillData?.find((r: Resource) => r.id === resourceId);
 
@@ -176,10 +189,14 @@ export const calculateOfflineProgress = (
         }
       }
     } else {
-      // COMBAT SIMULAATIO
+      // COMBAT SIMULATION
+      // Combat requires iterative tick processing because drops are randomized
+      // and death interrupts the loop based on live health tracking.
       const xpAtStart = { ...initialState.skills };
+
       for (let i = 0; i < remainingSeconds; i++) {
         if (!currentState.activeAction) break;
+        // Simulate 1 second of combat at a time
         const updates = processCombatTick(currentState, 1000);
         Object.assign(currentState, updates);
 
@@ -205,11 +222,13 @@ export const calculateOfflineProgress = (
     }
   }
 
+  // Finalize processing by updating the clock
   currentState.lastTimestamp = Date.now();
   return { updatedState: currentState, summary };
 };
 
-// Apufunktiot
+// --- HELPER FUNCTIONS ---
+
 function calculateXpDifference(
   oldSkills: GameState["skills"],
   newSkills: GameState["skills"],

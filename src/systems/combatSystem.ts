@@ -18,6 +18,16 @@ import { useGameStore } from "../store/useGameStore";
 
 const DEFAULT_ATTACK_SPEED = 2400;
 
+/**
+ * processCombatTick
+ * The core simulation function for the combat subsystem.
+ * Handles attack timers, damage calculation, auto-eating, respawns, loot generation, and death penalties.
+ * Designed to be called rapidly (e.g., every 100ms) to ensure smooth gameplay and accurate attack speeds.
+ *
+ * @param state - The current GameState
+ * @param tickMs - The delta time in milliseconds since the last tick
+ * @returns Partial GameState containing only the modifications made during this tick
+ */
 export const processCombatTick = (
   state: GameState,
   tickMs: number,
@@ -34,11 +44,13 @@ export const processCombatTick = (
     coins,
   } = state;
 
+  // Abort if the player is not actively in combat or if no map is selected
   if (activeAction?.skill !== "combat" || !combatStats.currentMapId) return {};
 
   const map = COMBAT_DATA.find((m) => m.id === combatStats.currentMapId);
   if (!map) return {};
 
+  // Maintain a rolling history of the last 50 combat events
   const currentLog = [...(combatStats.combatLog || [])];
   const addLog = (msg: string) => {
     currentLog.unshift(msg);
@@ -50,7 +62,7 @@ export const processCombatTick = (
   let newEquippedFood = equippedFood ? { ...equippedFood } : null;
   let newCoins = coins || 0;
 
-  // Cleanup old damage pop-ups (> 500ms)
+  // Cleanup expired damage pop-ups (visual floating numbers lasting > 500ms)
   const now = Date.now();
   extendedStats.damagePopUps = (extendedStats.damagePopUps || []).filter(
     (p) => now - p.createdAt < 500,
@@ -65,6 +77,7 @@ export const processCombatTick = (
   };
 
   // 1. GATHER EQUIPMENT STATS
+  // Aggregate offensive and defensive stats from currently equipped gear
   const gearStats = (Object.values(equipment) as (string | null)[]).reduce(
     (acc, itemId) => {
       if (!itemId) return acc;
@@ -88,7 +101,7 @@ export const processCombatTick = (
       armor: 0,
       hpBonus: 0,
       critChance: 0,
-      critMulti: 1.5,
+      critMulti: 1.5, // Default critical multiplier
       attackSpeed: DEFAULT_ATTACK_SPEED,
     },
   );
@@ -100,6 +113,7 @@ export const processCombatTick = (
   let pHP = Math.min(maxHp, extendedStats.hp);
   extendedStats.hp = pHP;
 
+  // Decrease food cooldown timer
   extendedStats.foodTimer = Math.max(
     0,
     (extendedStats.foodTimer || 0) - tickMs,
@@ -108,6 +122,7 @@ export const processCombatTick = (
   const hpPercent = (pHP / maxHp) * 100;
   const threshold = combatSettings.autoEatThreshold || 0;
 
+  // Execute Auto-Eat if health drops below user-defined threshold and potion is off cooldown
   if (
     newEquippedFood &&
     pHP > 0 &&
@@ -120,9 +135,10 @@ export const processCombatTick = (
       const oldHp = pHP;
       pHP = Math.min(maxHp, pHP + foodItem.healing);
       extendedStats.hp = pHP;
-      extendedStats.foodTimer = 10000;
+      extendedStats.foodTimer = 10000; // Apply 10s cooldown
       newEquippedFood.count -= 1;
 
+      // Generate green healing popup
       extendedStats.damagePopUps.push({
         id: `heal_${now}`,
         amount: `+${pHP - oldHp}`,
@@ -141,18 +157,21 @@ export const processCombatTick = (
   }
 
   // 3. RESPAWN LOGIC
+  // If waiting for the next enemy to spawn
   if (extendedStats.respawnTimer > 0) {
     const nextTimer = Math.max(0, extendedStats.respawnTimer - tickMs);
+
     if (nextTimer === 0) {
       const currentMapNow =
         COMBAT_DATA.find((m) => m.id === extendedStats.currentMapId) || map;
 
+      // Enforce Boss Key requirements before spawning a boss
       if (currentMapNow.isBoss && currentMapNow.keyRequired) {
         const keyCount = newInventory[currentMapNow.keyRequired] || 0;
         if (keyCount < 1) {
           addLog(`Out of keys! Combat stopped.`);
           return {
-            activeAction: null,
+            activeAction: null, // Abort combat
             enemy: null,
             coins: newCoins,
             combatStats: {
@@ -166,9 +185,11 @@ export const processCombatTick = (
             inventory: cleanInventory(newInventory),
           };
         }
+        // Consume one boss key
         newInventory[currentMapNow.keyRequired]--;
       }
 
+      // Initialize fresh enemy stats based on map data
       const enemyStatsInit = getEnemyStats({
         attack: currentMapNow.enemyAttack,
         level: currentMapNow.id,
@@ -188,6 +209,7 @@ export const processCombatTick = (
         xpReward: currentMapNow.xpReward,
       };
 
+      // Spawning completed, engage combat
       return {
         inventory: cleanInventory(newInventory),
         enemy: newEnemy,
@@ -198,12 +220,14 @@ export const processCombatTick = (
           hp: pHP,
           respawnTimer: 0,
           enemyCurrentHp: enemyStatsInit.hp,
-          playerAttackTimer: Math.min(1000, gearStats.attackSpeed),
+          playerAttackTimer: Math.min(1000, gearStats.attackSpeed), // Initial attack delay
           enemyAttackTimer: Math.min(1500, enemyStatsInit.attackSpeed),
           combatLog: currentLog,
         },
       };
     }
+
+    // Still waiting for respawn timer
     return {
       combatStats: {
         ...extendedStats,
@@ -243,10 +267,14 @@ export const processCombatTick = (
     attack: map.enemyAttack,
   });
 
+  // ---------------------------------------------------------
   // PLAYER STRIKES ENEMY
+  // ---------------------------------------------------------
   if (extendedStats.playerAttackTimer <= 0 && currentEnemyHp > 0) {
     const playerHit = calculateHit(playerStats, enemyStats);
     currentEnemyHp = Math.max(0, currentEnemyHp - playerHit.finalDamage);
+
+    // Reset attack timer based on weapon speed
     extendedStats.playerAttackTimer = playerStats.attackSpeed;
 
     if (playerHit.finalDamage > 0) {
@@ -254,13 +282,14 @@ export const processCombatTick = (
         id: `p_hit_${now}_${Math.random()}`,
         amount: playerHit.finalDamage,
         isCrit: playerHit.isCrit,
-        type: "enemy",
+        type: "enemy", // Float above enemy
         createdAt: now,
       });
       addLog(
         `Hit ${map.enemyName} for ${playerHit.finalDamage} DMG${playerHit.isCrit ? " (Critical!)" : ""}`,
       );
     } else {
+      // Complete miss / fully blocked
       extendedStats.damagePopUps.push({
         id: `p_miss_${now}`,
         amount: "MISS",
@@ -271,10 +300,14 @@ export const processCombatTick = (
     }
   }
 
+  // ---------------------------------------------------------
   // ENEMY DEFEATED -> LOOT & XP
+  // ---------------------------------------------------------
   if (currentEnemyHp <= 0) {
     addLog(`Victory! Defeated ${map.enemyName}.`);
     const safeXpReward = map.xpReward || 1;
+
+    // Distribute XP across relevant combat skills
     const skillList: SkillType[] = [
       "hitpoints",
       "attack",
@@ -285,6 +318,7 @@ export const processCombatTick = (
     skillList.forEach((s) => {
       if (!newSkills[s]) newSkills[s] = { level: 1, xp: 0 };
       const mult = getXpMultiplier(s, upgrades);
+      // Hitpoints receive a smaller cut of the total XP
       const rawReward = s === "hitpoints" ? safeXpReward * 0.4 : safeXpReward;
       const res = calculateXpGain(
         newSkills[s].level,
@@ -295,6 +329,7 @@ export const processCombatTick = (
       newSkills[s].xp = res.xp;
     });
 
+    // Roll for loot drops using weighted probabilities
     const dropResult = rollWeightedDrop(map.drops);
     if (dropResult) {
       if (dropResult.itemId === "coins") {
@@ -309,6 +344,7 @@ export const processCombatTick = (
       }
     }
 
+    // Update kill quests
     const store = useGameStore.getState();
     store.updateQuestProgress("KILL", map.id.toString(), 1);
 
@@ -316,24 +352,25 @@ export const processCombatTick = (
 
     let nextMapId: number | null = extendedStats.currentMapId;
     let nextActiveAction: GameState["activeAction"] = activeAction;
-    let nextRespawnTimer = 2000;
+    let nextRespawnTimer = 2000; // 2 seconds between fights by default
     let nextDamagePopUps = extendedStats.damagePopUps;
 
-    // Handle Automation Settings
+    // Handle User-Defined Automation Settings
     if (combatSettings.autoRetreat) {
-      // 1-Kill Farming: Automatically stop combat cleanly after victory
+      // One-Time Kill: Automatically stop combat cleanly after victory
       nextMapId = null;
       nextActiveAction = null;
-      nextRespawnTimer = 0; // CLEAR TIMER SO UI REMOVES BADGE
-      nextDamagePopUps = []; // CLEAR FLOATING NUMBERS
+      nextRespawnTimer = 0;
+      nextDamagePopUps = [];
       addLog("Auto-Retreat successful. Returning to camp.");
     } else if (combatSettings.autoProgress) {
-      // Auto Push: Proceed to next level if available
+      // Auto Push: Proceed to the next harder zone if unlocked and keys permit
       const nextMap = COMBAT_DATA.find((m) => m.id === map.id + 1);
       if (
         nextMap &&
         (!nextMap.isBoss || (newInventory[nextMap.keyRequired || ""] || 0) > 0)
       ) {
+        // Consume key immediately if pushing into a boss room
         if (nextMap.isBoss && nextMap.keyRequired)
           newInventory[nextMap.keyRequired]--;
         nextMapId = nextMap.id;
@@ -362,7 +399,9 @@ export const processCombatTick = (
     };
   }
 
+  // ---------------------------------------------------------
   // ENEMY STRIKES PLAYER
+  // ---------------------------------------------------------
   if (extendedStats.enemyAttackTimer <= 0 && pHP > 0) {
     const enemyHit = calculateHit(enemyStats, playerStats);
     pHP = Math.max(0, pHP - enemyHit.finalDamage);
@@ -373,7 +412,7 @@ export const processCombatTick = (
         id: `e_hit_${now}_${Math.random()}`,
         amount: enemyHit.finalDamage,
         isCrit: false,
-        type: "player",
+        type: "player", // Float above player
         createdAt: now,
       });
 
@@ -382,6 +421,7 @@ export const processCombatTick = (
         logMsg += ` (${enemyHit.mitigationPercent}% mitigated)`;
       addLog(logMsg);
     } else {
+      // Player successfully blocked the entire attack via high defense
       extendedStats.damagePopUps.push({
         id: `e_miss_${now}`,
         amount: "BLOCK",
@@ -393,11 +433,13 @@ export const processCombatTick = (
     }
   }
 
+  // ---------------------------------------------------------
   // DEATH PENALTY
+  // ---------------------------------------------------------
   if (pHP <= 0) {
     addLog("Defeated! Returning to safety. 1 min to heal up...");
     return {
-      activeAction: null,
+      activeAction: null, // Abort combat action
       enemy: null,
       coins: newCoins,
       combatStats: {
@@ -408,17 +450,19 @@ export const processCombatTick = (
         playerAttackTimer: 0,
         enemyAttackTimer: 0,
         combatLog: currentLog,
-        cooldownUntil: Date.now() + 60000,
+        cooldownUntil: Date.now() + 60000, // 60s death penalty timeout
         damagePopUps: [],
         cooldownReason: "death",
-        respawnTimer: 0, // CLEAR ON DEATH AS WELL
+        respawnTimer: 0,
       },
       equippedFood: newEquippedFood,
       inventory: cleanInventory(newInventory),
     };
   }
 
-  // NORMAL STATE (Combat continues)
+  // ---------------------------------------------------------
+  // NORMAL TICK END (Combat continues next frame)
+  // ---------------------------------------------------------
   return {
     inventory: cleanInventory(newInventory),
     equippedFood: newEquippedFood,

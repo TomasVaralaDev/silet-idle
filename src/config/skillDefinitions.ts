@@ -8,11 +8,11 @@ export interface SkillDefinition {
   category: "gathering" | "production" | "combat";
   color: string;
   bgColor: string;
-  description?: string; // Lisätty valinnainen kuvaus, koska SkillView käyttää tätä
+  description?: string; // Optional description for SkillView usage
 }
 
 export const SKILL_DEFINITIONS: SkillDefinition[] = [
-  // --- GATHERING ---
+  // GATHERING
   {
     id: "woodcutting",
     label: "Woodcutting",
@@ -55,7 +55,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     description: "Gather wild herbs, berries, and fibers.",
   },
 
-  // --- PRODUCTION ---
+  // PRODUCTION
   {
     id: "smithing",
     label: "Smithing",
@@ -87,7 +87,7 @@ export const SKILL_DEFINITIONS: SkillDefinition[] = [
     description: "Transmute matter and brew potions.",
   },
 
-  // --- COMBAT ---
+  // COMBAT
   {
     id: "hitpoints",
     label: "Integrity",

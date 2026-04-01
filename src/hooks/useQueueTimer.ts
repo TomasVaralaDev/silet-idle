@@ -3,12 +3,18 @@ import { useGameStore } from "../store/useGameStore";
 import { GAME_DATA, getItemDetails } from "../data";
 import { calculateQueueTimeLeft } from "../utils/queueUtils";
 
+/**
+ * useQueueTimer Hook
+ * Calculates the total estimated time remaining for all tasks currently
+ * in the action queue. Reads directly from the store to avoid dependency loops.
+ */
 export const useQueueTimer = () => {
   const [totalTimeLeftMs, setTotalTimeLeftMs] = useState(0);
 
   useEffect(() => {
     const updateTimer = () => {
-      // Haetaan tila tässä hetkessä suoraan, estää loopin kaatumisen!
+      // Fetching state directly bypasses React's render cycle dependencies,
+      // preventing infinite loops caused by rapid queue updates.
       const state = useGameStore.getState();
 
       const ms = calculateQueueTimeLeft(
@@ -23,11 +29,14 @@ export const useQueueTimer = () => {
       setTotalTimeLeftMs(ms);
     };
 
-    updateTimer(); // Ajetaan kerran heti komponentin latautuessa
-    const interval = setInterval(updateTimer, 1000); // Päivitetään tasan sekunnin välein
+    // Initial execution
+    updateTimer();
+
+    // Update the UI timer every 1 second
+    const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, []); // Tyhjä array on kriittinen! Se takaa, että ajastinta ei nollata 100ms välein.
+  }, []); // Empty dependency array ensures timer runs independently
 
   return totalTimeLeftMs;
 };

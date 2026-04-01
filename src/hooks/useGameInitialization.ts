@@ -1,4 +1,3 @@
-// src/hooks/useGameInitialization.ts
 import { useEffect, useState } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -7,26 +6,27 @@ import { calculateOfflineProgress } from "../systems/offlineSystem";
 import type { GameState } from "../types";
 import type { User } from "firebase/auth";
 
+/**
+ * useGameInitialization Hook
+ * Handles the initial load sequence when a user logs in.
+ * Fetches data from Firestore, synchronizes daily resets (Quests/Shop),
+ * and triggers the offline progression calculation if the user was away.
+ */
 export const useGameInitialization = (user: User | null) => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // KORJAUS 1: Tuodaan myös syncQuestsWithServer storesta!
   const { setState, syncWorldShopWithServer, syncQuestsWithServer } =
     useGameStore();
 
   useEffect(() => {
     const initializeGame = async () => {
-      //   console.log(
-      //    "[INIT] Alustus käynnistyy. User:",
-      //   user?.uid || "Ei käyttäjää",
-      //  );
       if (!user) return;
 
       try {
         const userDocRef = doc(db, "users", user.uid);
         const globalDocRef = doc(db, "global", "status");
 
-        //   console.log("[INIT] Haetaan dokumentteja Firebasesta...");
+        // Fetch user data and global server status simultaneously
         const [userSnap, globalSnap] = await Promise.all([
           getDoc(userDocRef),
           getDoc(globalDocRef),
@@ -36,10 +36,8 @@ export const useGameInitialization = (user: User | null) => {
           ? globalSnap.data().lastWorldShopReset
           : 0;
 
-        //  console.log("[INIT] Palvelimen reset-aika haettu:", serverResetTime);
-
         if (userSnap.exists()) {
-          // console.log("[INIT] Pelaajan tallennus löytyi.");
+          // Existing user: Merge saved data with default settings to prevent crashes from missing fields
           const rawSavedData = userSnap.data() as GameState;
 
           const savedData = {
@@ -50,28 +48,19 @@ export const useGameInitialization = (user: User | null) => {
             },
           };
 
-          // 1. Asetetaan tila storeen
+          // 1. Inject data into global store
           setState(savedData);
-          //  console.log("[INIT] Tila asetettu storeen.");
 
-          // 2. Kutsutaan reset-tarkistuksia
-          //  console.log("[INIT] Synkronoidaan World Shop ja Daily Quests...");
+          // 2. Execute midnight reset validations based on server timestamp
           syncWorldShopWithServer(serverResetTime);
-
-          // KORJAUS 2: Kutsutaan questien reset-tarkistusta!
           syncQuestsWithServer(serverResetTime);
 
-          // 3. Offline progress
+          // 3. Process Offline Progression if away for > 1 minute
           const lastSave = savedData.lastTimestamp || Date.now();
           const now = Date.now();
           const elapsedSeconds = Math.floor((now - lastSave) / 1000);
 
           if (elapsedSeconds > 60) {
-            //   console.log(
-            //    "[INIT] Lasketaan offline-progress:",
-            //     elapsedSeconds,
-            //    "sekuntia.",
-            //  );
             const { updatedState, summary } = calculateOfflineProgress(
               useGameStore.getState(),
               elapsedSeconds,
@@ -80,20 +69,19 @@ export const useGameInitialization = (user: User | null) => {
             useGameStore.getState().setOfflineSummary(summary);
           }
         } else {
-          //    console.log("[INIT] Pelaajalla ei tallennusta. Luodaan uusi.");
+          // New user: Create fresh document with default state
           await setDoc(userDocRef, DEFAULT_STATE);
           setState(DEFAULT_STATE);
         }
       } catch (error) {
         console.error("[INIT] ERR:", error);
       } finally {
-        //    console.log("[INIT] Alustus valmis.");
         setIsDataLoaded(true);
       }
     };
 
     initializeGame();
-  }, [user, setState, syncWorldShopWithServer, syncQuestsWithServer]); // KORJAUS 3: Lisätty riippuvuuksiin
+  }, [user, setState, syncWorldShopWithServer, syncQuestsWithServer]);
 
   return { isDataLoaded };
 };

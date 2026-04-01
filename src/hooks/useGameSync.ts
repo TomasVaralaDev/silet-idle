@@ -2,10 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { saveGameData } from "../services/gameService";
 import { updateLeaderboardEntry } from "../services/leaderboardService";
-import { calculateTotalLevel } from "../utils/gameUtils"; // LISÄTTY: Tuodaan laskentatyökalu
+import { calculateTotalLevel } from "../utils/gameUtils";
 import type { User } from "firebase/auth";
 import type { GameState } from "../types";
 
+/**
+ * useGameSync Hook
+ * Manages all Cloud Save operations. Includes manual force saves,
+ * 2-minute auto-saves, and triggers saves on page exit/visibility loss.
+ * Also cleans up transient data (like active chat messages) before uploading.
+ */
 export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -22,35 +28,37 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
 
     const currentTotalLevel = calculateTotalLevel(currentStateSnapshot.skills);
 
-    // Päivitetään aikaleima storeen
+    // Update the last saved timestamp in the local store
     setState((prev: GameState) => ({ ...prev, lastTimestamp: now }));
 
-    // 1. POIMITAAN DATA JA EROTETAAN FUNKTIOT
+    // 1. STRIP FUNCTIONS FROM PAYLOAD
+    // Zustand store contains action functions, we must remove them before JSON serialization
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
       setState: _ss,
       emitEvent: _ee,
       clearEvent: _ce,
       updateQuestProgress: _uqp,
-      updateUserProfile: _uup, // Lisätty tämä uusi funktio poistolistalle
+      updateUserProfile: _uup,
       ...dataToSave
     } = currentStateSnapshot;
 
-    // 2. PUHDISTETAAN SOCIAL-OBJEKTI (Kriittinen vaihe!)
-    // Emme halua tallentaa globalMessages-listaa pelaajan dokumenttiin.
+    // 2. SANITIZE TRANSIENT DATA
+    // We do not save live chat feeds to the user's permanent save file
     const sanitizedSocial = {
       ...dataToSave.social,
-      globalMessages: [], // Pakotetaan tyhjäksi ennen lähetystä
+      globalMessages: [],
     };
 
-    // 3. MUODOSTETAAN LOPULLINEN PAYLOAD
+    // 3. CONSTRUCT FINAL PAYLOAD
     const finalPayload = {
       ...dataToSave,
-      social: sanitizedSocial, // Käytetään puhdistettua versiota
+      social: sanitizedSocial,
       lastTimestamp: now,
     };
 
     try {
+      // Execute Cloud Save and Leaderboard update concurrently
       await Promise.all([
         saveGameData(user.uid, finalPayload),
         updateLeaderboardEntry(
@@ -70,7 +78,7 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
     }
   }, [user, isDataLoaded, setState]);
 
-  // Tapahtumakuuntelijat (Exit & Visibility)
+  // Window Lifecycle Event Listeners (Emergency Saves)
   useEffect(() => {
     if (!user || !isDataLoaded) return;
 
@@ -90,14 +98,16 @@ export const useGameSync = (user: User | null, isDataLoaded: boolean) => {
     };
   }, [user, isDataLoaded, handleForceSave]);
 
-  // Intervallit
+  // Automated Background Intervals
   useEffect(() => {
     if (!user || !isDataLoaded) return;
 
+    // Full Cloud Save every 2 minutes
     const autoSaveInterval = setInterval(() => {
       handleForceSave();
     }, 120000);
 
+    // Update local timestamp every 10s to ensure accurate offline calculations
     const timestampInterval = setInterval(() => {
       if (document.visibilityState === "visible") {
         setState((prev: GameState) => ({ ...prev, lastTimestamp: Date.now() }));

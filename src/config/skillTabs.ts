@@ -3,12 +3,12 @@ import type { Resource, SkillType } from "../types";
 export interface TabConfig {
   id: string;
   label: string;
-  // Filter-funktio saa resurssin ja palauttaa true, jos se kuuluu tähän tabiin
+  // Predicate function to determine if a resource belongs to this tab
   filter: (item: Resource) => boolean;
 }
 
 export const SKILL_TABS: Partial<Record<SkillType, TabConfig[]>> = {
-  // FOUNDRY (Smithing)
+  // SMITHING TABS
   smithing: [
     {
       id: "all",
@@ -18,7 +18,7 @@ export const SKILL_TABS: Partial<Record<SkillType, TabConfig[]>> = {
     {
       id: "smelting",
       label: "Smelting",
-      // KORJAUS: Nyt hyväksyy sekä 'ingot' että 'bar' nimen perusteella
+      // Match smelted materials/ingots by ID
       filter: (r) => r.id.includes("smelted"),
     },
     {
@@ -38,7 +38,7 @@ export const SKILL_TABS: Partial<Record<SkillType, TabConfig[]>> = {
     },
   ],
 
-  // ASSEMBLY (Crafting)
+  // CRAFTING TABS
   crafting: [
     {
       id: "all",
@@ -48,25 +48,25 @@ export const SKILL_TABS: Partial<Record<SkillType, TabConfig[]>> = {
     {
       id: "refining",
       label: "Wood Refining",
-      // Oletus: lankut sisältävät id:ssä 'plank'
+      // Filter for wood planks
       filter: (r) => r.id.includes("plank"),
     },
     {
       id: "swords",
       label: "Swords",
-      // Oletus: miekat sisältävät id:ssä 'sword'
+      // Filter for sword-type items
       filter: (r) => r.id.includes("sword"),
     },
     {
       id: "bows",
       label: "Bows",
-      // Oletus: jouset sisältävät id:ssä 'bow' (shortbow, longbow jne.)
+      // Filter for all bow variants
       filter: (r) => r.id.includes("bow"),
     },
     {
       id: "necklaces",
       label: "Necklaces",
-      // Tässä voidaan käyttää slottia, koska se on luotettava
+      // Use equipment slot for precise identification
       filter: (r) => r.slot === "necklace",
     },
   ],

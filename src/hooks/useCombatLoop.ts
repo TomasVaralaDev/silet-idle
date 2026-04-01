@@ -4,8 +4,10 @@ import { processCombatTick } from "../systems/combatSystem";
 import type { GameState } from "../types";
 
 /**
- * useCombatLoop: Erillinen hook taistelun tikitykselle,
- * joka pyörii nyt nopealla 100ms syklillä itsenäisten hyökkäysnopeuksien tukemiseksi.
+ * useCombatLoop Hook
+ * Separated dedicated loop specifically for handling combat mechanics.
+ * Runs on a fast 100ms interval to ensure smooth progress bar animations
+ * and accurate execution of fast attack speeds.
  */
 export const useCombatLoop = () => {
   const setState = useGameStore((s) => s.setState);
@@ -14,13 +16,18 @@ export const useCombatLoop = () => {
 
   useEffect(() => {
     let intervalId: number | undefined;
-    const TICK_RATE = 100; // UUSI: 100ms välein, jotta progress bar ja speed toimivat sileästi!
 
+    // Fast tick rate (100ms) for high-resolution combat updates
+    const TICK_RATE = 100;
+
+    // Only start the loop if combat is the currently active action
     if (activeAction?.skill === "combat" && currentMapId) {
       intervalId = window.setInterval(() => {
         setState((prev: GameState) => {
+          // Process a single combat frame
           const updates = processCombatTick(prev, TICK_RATE);
 
+          // Apply calculated updates to the global store
           return {
             ...prev,
             ...updates,
@@ -29,6 +36,7 @@ export const useCombatLoop = () => {
       }, TICK_RATE);
     }
 
+    // Cleanup interval when combat stops or component unmounts
     return () => {
       if (intervalId) window.clearInterval(intervalId);
     };

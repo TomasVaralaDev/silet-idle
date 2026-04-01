@@ -9,7 +9,7 @@ import { useGameStore, DEFAULT_STATE } from "../../src/store/useGameStore";
 import { httpsCallable } from "firebase/functions";
 
 // ============================================================================
-// HILJENNETÄÄN ZUSTANDIN PERSIST-VAROITUS (Testiympäristöstä puuttuu selain)
+// SILENCE ZUSTAND PERSIST WARNING (Missing browser environment)
 // ============================================================================
 const originalConsoleWarn = console.warn;
 console.warn = (...args) => {
@@ -22,7 +22,7 @@ console.warn = (...args) => {
 };
 
 // ============================================================================
-// 1. MOCKATAAN FIREBASE FIRESTORE (Lokaaleja transaktioita varten)
+// 1. MOCK FIREBASE FIRESTORE (For local transactions & queries)
 // ============================================================================
 vi.mock("firebase/firestore", () => {
   return {
@@ -32,13 +32,15 @@ vi.mock("firebase/firestore", () => {
     where: vi.fn(),
     orderBy: vi.fn(),
     limit: vi.fn(),
-    getDocs: vi.fn(),
+    getDocs: vi.fn(async () => ({
+      docs: [], // MOCK: Return empty active listings so the listing limit is never reached in these tests
+    })),
     runTransaction: vi.fn(async (db, cb) => {
       const mockTransaction = {
         get: vi.fn(async (refStr: string) => {
           const path = String(refStr);
 
-          // HUOM! "poorbuyer" pitää tarkistaa ENNEN "buyer":ia,
+          // NOTE: "poorbuyer" must be checked BEFORE "buyer"
           if (path.includes("poorbuyer")) {
             return {
               exists: (): boolean => true,
@@ -84,11 +86,11 @@ vi.mock("firebase/firestore", () => {
 });
 
 // ============================================================================
-// 2. MOCKATAAN FIREBASE CLOUD FUNCTIONS
+// 2. MOCK FIREBASE CLOUD FUNCTIONS
 // ============================================================================
 vi.mock("firebase/functions", () => ({
   getFunctions: vi.fn(() => ({})),
-  httpsCallable: vi.fn(), // Tätä manipuloimme testeissä
+  httpsCallable: vi.fn(),
 }));
 
 vi.mock("../../src/firebase", () => ({
@@ -96,11 +98,11 @@ vi.mock("../../src/firebase", () => ({
 }));
 
 // ============================================================================
-// 3. TESTIT
+// 3. TESTS
 // ============================================================================
 describe("Market Service Logic", () => {
   beforeEach(() => {
-    // Nollataan store ja annetaan testaajalle (buyer) aluksi 1000 kolikkoa
+    // Reset store and provide test buyer with initial 1000 coins
     useGameStore.setState({
       ...DEFAULT_STATE,
       coins: 1000,
@@ -125,7 +127,7 @@ describe("Market Service Logic", () => {
 
   describe("purchaseListing()", () => {
     it("onnistuu osto: vähentää ostajan rahat ja lisää itemit reppuun", async () => {
-      // MOCK: Kerrotaan, että Cloud Function palauttaa onnistuneen vastauksen
+      // MOCK: Cloud Function returns success payload
       (httpsCallable as Mock).mockReturnValue(async () => ({
         data: { success: true, itemId: "wood", amount: 10, totalPrice: 500 },
       }));
@@ -134,14 +136,12 @@ describe("Market Service Logic", () => {
 
       const store = useGameStore.getState();
 
-      // Ostajalla oli 1000 kolikkoa storessa. Tuote maksaa 500.
       expect(store.coins).toBe(500);
-      // Ostaja sai 10 puuta
       expect(store.inventory["wood"]).toBe(10);
     });
 
     it("estää oston, jos rahat eivät riitä", async () => {
-      // MOCK: Kerrotaan, että Cloud Function heittääkin virheen (kuvaa backendin suojelua)
+      // MOCK: Cloud Function throws error to simulate backend validation failure
       (httpsCallable as Mock).mockReturnValue(async () => {
         throw new Error("Not enough coins");
       });

@@ -33,15 +33,20 @@ import type {
 } from "../types";
 
 // ==========================================
-// --- KAVEREIDEN HALLINTA (FIRESTORE) ---
+// --- FRIEND MANAGEMENT (FIRESTORE) ---
 // ==========================================
 
+/**
+ * sendFriendRequest
+ * Creates a pending friend request document in Firestore.
+ */
 export const sendFriendRequest = async (
   myUid: string,
   myUsername: string,
   targetUid: string,
 ) => {
   if (myUid === targetUid) throw new Error(`You can't add yourself.`);
+
   const targetRef = doc(db, "users", targetUid);
   const targetSnap = await getDoc(targetRef);
   if (!targetSnap.exists()) throw new Error("Operative not found.");
@@ -55,6 +60,11 @@ export const sendFriendRequest = async (
   });
 };
 
+/**
+ * acceptFriendRequest
+ * Updates the user's friend array and flags the request as accepted
+ * so the sender's client can finalize the connection.
+ */
 export const acceptFriendRequest = async (
   myUid: string,
   request: FriendRequest,
@@ -67,10 +77,10 @@ export const acceptFriendRequest = async (
     };
     const myRef = doc(db, "users", myUid);
 
-    // Päivitetään oma kaverilista Firebasessa
+    // Update local Firebase array
     await updateDoc(myRef, { "social.friends": arrayUnion(newFriend) });
 
-    // Merkataan pyyntö hyväksytyksi, jotta vastapuoli voi viimeistellä sen
+    // Mark as accepted for the other party to process
     const reqRef = doc(db, "friend_requests", request.id);
     await updateDoc(reqRef, { status: "accepted" });
   } catch (error) {
@@ -79,10 +89,19 @@ export const acceptFriendRequest = async (
   }
 };
 
+/**
+ * rejectFriendRequest
+ * Deletes the pending request document.
+ */
 export const rejectFriendRequest = async (requestId: string) => {
   await deleteDoc(doc(db, "friend_requests", requestId));
 };
 
+/**
+ * finalizeFriendship
+ * Called by the sender once the receiver accepts the request.
+ * Adds the receiver to the sender's list and deletes the request document.
+ */
 export const finalizeFriendship = async (
   myUid: string,
   request: FriendRequest,
@@ -102,10 +121,10 @@ export const finalizeFriendship = async (
 
     const myRef = doc(db, "users", myUid);
 
-    // Lisätään kaveri omaan dokumenttiin
+    // Append to local friends array
     await updateDoc(myRef, { "social.friends": arrayUnion(newFriend) });
 
-    // Poistetaan pyyntö, kun se on käsitelty molemmin puolin
+    // Clean up the completed request
     await deleteDoc(doc(db, "friend_requests", request.id));
 
     return newFriend;
@@ -114,6 +133,11 @@ export const finalizeFriendship = async (
     return null;
   }
 };
+
+/**
+ * removeFriend
+ * Removes a specific friend from the user's Firestore document.
+ */
 export const removeFriend = async (myUid: string, targetUid: string) => {
   try {
     const myRef = doc(db, "users", myUid);
@@ -121,11 +145,10 @@ export const removeFriend = async (myUid: string, targetUid: string) => {
 
     if (!mySnap.exists()) return;
 
-    // Haetaan nykyinen lista, jotta saamme tarkan objektin poistoa varten
+    // Fetch exact object reference for arrayRemove
     const myFriends: Friend[] = mySnap.data().social?.friends || [];
     const friendToRemove = myFriends.find((f) => f.uid === targetUid);
 
-    // Poistetaan kohde omalta listalta arrayRemove-komennolla
     if (friendToRemove) {
       await updateDoc(myRef, {
         "social.friends": arrayRemove(friendToRemove),
@@ -138,15 +161,17 @@ export const removeFriend = async (myUid: string, targetUid: string) => {
 };
 
 /**
- * Kuuntelee kaveripyyntöjä.
- * onFriendAdded on kriittinen: se päivittää storen heti kun vastapuoli hyväksyy pyynnön.
+ * subscribeToFriendRequests
+ * Attaches real-time listeners to incoming and outgoing friend requests.
+ * Handles the auto-finalization of accepted outgoing requests.
  */
 export const subscribeToFriendRequests = (
   myUid: string,
   onIncoming: (reqs: FriendRequest[]) => void,
   onOutgoing: (reqs: FriendRequest[]) => void,
-  onFriendAdded: (friend: Friend) => void, // UUSI CALLBACK
+  onFriendAdded: (friend: Friend) => void,
 ) => {
+  // Listen for requests sent TO the user
   const incomingQ = firestoreQuery(
     collection(db, "friend_requests"),
     where("toUid", "==", myUid),
@@ -159,6 +184,7 @@ export const subscribeToFriendRequests = (
     );
   });
 
+  // Listen for requests sent BY the user
   const outgoingQ = firestoreQuery(
     collection(db, "friend_requests"),
     where("fromUid", "==", myUid),
@@ -169,12 +195,12 @@ export const subscribeToFriendRequests = (
       (d) => ({ id: d.id, ...d.data() }) as FriendRequest,
     );
 
+    // Process accepted requests to finalize the link
     for (const req of reqs) {
       if (req.status === "accepted") {
-        // Viimeistellään kaveruus Firebasessa ja poistetaan pyyntö
         const newFriend = await finalizeFriendship(myUid, req);
 
-        // Päivitetään paikallinen store VÄLITTÖMÄSTI, jotta automaattitallennus ei poista kaveria
+        // Update Zustand store immediately to prevent auto-save overwrites
         if (newFriend) {
           onFriendAdded(newFriend);
         }
@@ -191,11 +217,16 @@ export const subscribeToFriendRequests = (
 };
 
 // ==========================================
-// --- YKSITYISVIESTIT (REALTIME DATABASE) ---
+// --- PRIVATE MESSAGES (REALTIME DATABASE) ---
 // ==========================================
 
+// Generates a consistent, unique chat ID between two users
 const getChatId = (uid1: string, uid2: string) => [uid1, uid2].sort().join("_");
 
+/**
+ * sendMessage
+ * Pushes a new private message to the Realtime Database.
+ */
 export const sendMessage = async (
   senderUid: string,
   receiverUid: string,
@@ -212,6 +243,10 @@ export const sendMessage = async (
   });
 };
 
+/**
+ * subscribeToChat
+ * Attaches a listener to a specific private chat node, retrieving the last 100 messages.
+ */
 export const subscribeToChat = (
   uid1: string,
   uid2: string,
@@ -236,14 +271,18 @@ export const subscribeToChat = (
 };
 
 // ==========================================
-// --- TAVERN / GLOBAL CHAT (REALTIME DATABASE) ---
+// --- GLOBAL TAVERN CHAT (REALTIME DATABASE) ---
 // ==========================================
 
+/**
+ * sendGlobalMessage
+ * Broadcasts a message to the specified public channel.
+ */
 export const sendGlobalMessage = async (
   uid: string,
   username: string,
   text: string,
-  chatColor: string, // UUSI PARAMETRI
+  chatColor: string,
   channel: "global" | "beginner" = "global",
 ) => {
   if (!text.trim()) return;
@@ -254,12 +293,16 @@ export const sendGlobalMessage = async (
   await push(chatRef, {
     senderUid: uid,
     senderUsername: username,
-    senderColor: chatColor, // Tallennetaan väri-ID viestiin
+    senderColor: chatColor,
     text: text.trim(),
     timestamp: rtdbTimestamp(),
   });
 };
 
+/**
+ * subscribeToGlobalChat
+ * Streams the 50 most recent messages from the selected public channel.
+ */
 export const subscribeToGlobalChat = (
   channel: "global" | "beginner",
   callback: (msgs: GlobalChatMessage[]) => void,

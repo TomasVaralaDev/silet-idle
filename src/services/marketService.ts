@@ -13,6 +13,13 @@ import { db } from "../firebase";
 import { useGameStore } from "../store/useGameStore";
 import type { MarketListing } from "../types";
 
+/**
+ * getActiveListings
+ * Fetches the global pool of currently active player market listings.
+ *
+ * @param limitCount - Max number of results to fetch (default 50)
+ * @returns Promise resolving to an array of MarketListing objects
+ */
 export const getActiveListings = async (limitCount = 50) => {
   const q = query(
     collection(db, "listings"),
@@ -26,6 +33,17 @@ export const getActiveListings = async (limitCount = 50) => {
   );
 };
 
+/**
+ * createListing
+ * Validates inventory capacity and listing limits before committing
+ * a new market listing via a Firestore Transaction.
+ *
+ * @param sellerUid - User ID of the listing creator
+ * @param sellerName - Display name of the creator
+ * @param itemId - The ID of the resource being sold
+ * @param amount - Quantity being listed
+ * @param pricePerItem - Cost per unit in coins
+ */
 export const createListing = async (
   sellerUid: string,
   sellerName: string,
@@ -33,21 +51,20 @@ export const createListing = async (
   amount: number,
   pricePerItem: number,
 ) => {
-  // 1. TARKISTUS: Haetaan käyttäjän nykyiset aktiiviset ilmoitukset
+  // 1. LIMIT VALIDATION: Count existing active listings for this user
   const activeListings = await getMyActiveListings(sellerUid);
 
   const userRef = doc(db, "users", sellerUid);
   const listingRef = doc(collection(db, "listings"));
 
   return await runTransaction(db, async (transaction) => {
-    // KAIKKI READIT ALUKSI
+    // ALL READS MUST PRECEED WRITES
     const userSnap = await transaction.get(userRef);
     if (!userSnap.exists()) throw new Error("User not found");
 
     const userData = userSnap.data();
 
-    // 2. LISÄTTY LIMIITIN TARKISTUS
-    // Haetaan limiitti tietokannasta (tai käytetään oletusta 5)
+    // 2. CAPACITY CHECK
     const currentLimit = userData.marketListingLimit ?? 5;
     if (activeListings.length >= currentLimit) {
       throw new Error(
@@ -55,13 +72,14 @@ export const createListing = async (
       );
     }
 
+    // 3. INVENTORY CHECK
     const inv = userData.inventory || {};
     const currentAmount = inv[itemId] || 0;
     if (currentAmount < amount) throw new Error("Not enough items");
 
     const newAmount = currentAmount - amount;
 
-    // SITTEN KAIKKI WRITET
+    // ALL WRITES
     transaction.update(userRef, { [`inventory.${itemId}`]: newAmount });
     transaction.set(listingRef, {
       sellerUid,
@@ -74,13 +92,12 @@ export const createListing = async (
       createdAt: Date.now(),
     });
 
-    // Päivitä store
+    // Synchronize local store immediately
     const store = useGameStore.getState();
     store.setState({ inventory: { ...store.inventory, [itemId]: newAmount } });
   });
 };
 
-// --- UUSI TYYPPI CLOUD FUNCTIONIN VASTAUKSELLE (ESLint-turvallinen) ---
 interface PurchaseResponse {
   success: boolean;
   itemId: string;
@@ -88,11 +105,15 @@ interface PurchaseResponse {
   totalPrice: number;
 }
 
-// --- PÄIVITETTY: CLOUD FUNCTION -KUTSU ---
+/**
+ * purchaseListing
+ * Executes a marketplace purchase via a secure Firebase Cloud Function.
+ * The backend handles all tax calculations and safe data transfer.
+ *
+ * @param _buyerUid - Retained for API compatibility, backend extracts UID from auth token
+ * @param listingId - The document ID of the target listing
+ */
 export const purchaseListing = async (_buyerUid: string, listingId: string) => {
-  // buyerUid-parametri pidetään tallella, jotta UI-komponenttiesi kutsut
-  // eivät mene rikki, vaikka backend hakeekin UID:n turvallisesti auth-tokenista.
-
   const functions = getFunctions();
   const purchaseFn = httpsCallable<{ listingId: string }, PurchaseResponse>(
     functions,
@@ -100,17 +121,16 @@ export const purchaseListing = async (_buyerUid: string, listingId: string) => {
   );
 
   try {
-    // Kutsutaan backendia
+    // Execute secure backend transaction
     const result = await purchaseFn({ listingId });
     const data = result.data;
 
-    // Jos osto onnistui, päivitetään lokaali store backendin palauttamilla tiedoilla
+    // Sync local store using the validated data returned from the server
     if (data.success) {
       const store = useGameStore.getState();
       const currentInvAmount = store.inventory[data.itemId] || 0;
 
       store.setState({
-        // Varmistetaan, ettei UI väläytä miinusmerkkisiä rahoja vahingossa
         coins: Math.max(0, store.coins - data.totalPrice),
         inventory: {
           ...store.inventory,
@@ -119,18 +139,25 @@ export const purchaseListing = async (_buyerUid: string, listingId: string) => {
       });
     }
   } catch (error: unknown) {
-    // Napataan Firebase HttpsErrorit tai verkkoyhteysvirheet tyyppiturvallisesti
     const errorMessage =
       error instanceof Error
         ? error.message
         : "An unknown error occurred during purchase.";
     console.error("Purchase failed:", errorMessage);
 
-    // Heitetään virhe eteenpäin, jotta esim. MarketplaceView osaa näyttää punaisen virheilmoituksen pelaajalle
+    // Bubble error to UI for user feedback
     throw new Error(errorMessage);
   }
 };
 
+/**
+ * cancelListing
+ * Aborts an active market listing via a Firestore Transaction,
+ * returning the held inventory to the seller.
+ *
+ * @param listingId - The document ID to cancel
+ * @param sellerUid - The UID of the requesting user (must match listing owner)
+ */
 export const cancelListing = async (listingId: string, sellerUid: string) => {
   const listingRef = doc(db, "listings", listingId);
   const sellerRef = doc(db, "users", sellerUid);
@@ -142,6 +169,8 @@ export const cancelListing = async (listingId: string, sellerUid: string) => {
 
     if (!listSnap.exists()) throw new Error("Not found");
     const listing = listSnap.data() as MarketListing;
+
+    // Security validation
     if (listing.sellerUid !== sellerUid || listing.status !== "active")
       throw new Error("Invalid");
 
@@ -154,7 +183,7 @@ export const cancelListing = async (listingId: string, sellerUid: string) => {
     });
     transaction.update(listingRef, { status: "cancelled" });
 
-    // Store sync
+    // Synchronize local store
     const store = useGameStore.getState();
     store.setState({
       inventory: { ...store.inventory, [listing.itemId]: newAmount },
@@ -162,8 +191,14 @@ export const cancelListing = async (listingId: string, sellerUid: string) => {
   });
 };
 
+/**
+ * getMyActiveListings
+ * Fetches all currently active listings owned by a specific user.
+ *
+ * @param uid - The Firebase UID of the target seller
+ * @returns Promise resolving to an array of MarketListing objects
+ */
 export const getMyActiveListings = async (uid: string) => {
-  // Haemme vain omat aktiiviset ilmoitukset
   const q = query(
     collection(db, "listings"),
     where("sellerUid", "==", uid),
@@ -175,6 +210,6 @@ export const getMyActiveListings = async (uid: string) => {
     (doc) => ({ id: doc.id, ...doc.data() }) as MarketListing,
   );
 
-  // Lajitellaan lokaalisti, jottei Firebasessa tarvita uutta composite indexiä
+  // Local sorting avoids requiring complex composite indexes in Firestore
   return listings.sort((a, b) => b.createdAt - a.createdAt);
 };

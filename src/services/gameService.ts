@@ -1,31 +1,37 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-import { DEFAULT_STATE } from '../store/useGameStore';
-import type { GameState } from '../types';
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import { DEFAULT_STATE } from "../store/useGameStore";
+import type { GameState } from "../types";
 
-// Avain LocalStorage-tallennukselle, jos pilveä ei käytetä tai se on alhaalla
+// Key used for LocalStorage backup when offline or cloud is unavailable
 const getLocalKey = (uid: string) => `melvor_clone_save_${uid}`;
 
 /**
- * Lataa pelin tilan joko Firebasesta tai LocalStoragesta.
+ * loadGameData
+ * Retrieves the user's game state from Firestore.
+ * If the cloud fetch fails or no document exists, it attempts to load from LocalStorage.
+ * Validates and sanitizes loaded data against the DEFAULT_STATE to prevent crashes from missing keys.
+ *
+ * @param userId - The Firebase UID of the player
+ * @returns Promise resolving to the validated GameState
  */
 export const loadGameData = async (userId: string): Promise<GameState> => {
   try {
-    const docRef = doc(db, 'users', userId);
+    const docRef = doc(db, "users", userId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       const cloudData = docSnap.data() as Partial<GameState>;
 
-      // Yhdistetään cloudData ja DEFAULT_STATE, jotta uudet kentät eivät puutu
-      // Tehdään myös equipment-tarkistukset (ammo/food cleanup)
+      // Merge cloudData with DEFAULT_STATE to ensure structural integrity.
+      // Legacy cleanup: remove deprecated 'ammo' and 'food' keys from equipment.
       const safeEquipment = {
         ...DEFAULT_STATE.equipment,
         ...(cloudData.equipment || {}),
       };
-      if ('ammo' in safeEquipment)
+      if ("ammo" in safeEquipment)
         delete (safeEquipment as { ammo?: unknown }).ammo;
-      if ('food' in safeEquipment) delete safeEquipment.food;
+      if ("food" in safeEquipment) delete safeEquipment.food;
 
       return {
         ...DEFAULT_STATE,
@@ -49,35 +55,38 @@ export const loadGameData = async (userId: string): Promise<GameState> => {
         settings: { ...DEFAULT_STATE.settings, ...(cloudData.settings || {}) },
       };
     } else {
-      // Jos ei löydy pilvestä, kokeillaan LocalStoragea
+      // Cloud document missing, attempt to restore from local backup
       const localSaved = localStorage.getItem(getLocalKey(userId));
       if (localSaved) {
         return JSON.parse(localSaved);
       }
     }
   } catch (err) {
-    console.error('Error loading data:', err);
+    console.error("Error loading data:", err);
   }
 
-  // Jos mitään ei löydy tai tapahtuu virhe, palautetaan oletustila
+  // Fallback to fresh state if all loading methods fail
   return DEFAULT_STATE;
 };
 
 /**
- * Tallentaa pelin tilan Firebaseen.
+ * saveGameData
+ * Persists the current game state to both Firestore and LocalStorage.
+ * Strips out large, transient data (like combat logs) to save database space and bandwidth.
+ *
+ * @param userId - The Firebase UID of the player
+ * @param state - The current GameState to save
+ * @returns Promise resolving to a boolean indicating success
  */
 export const saveGameData = async (
   userId: string,
   state: GameState,
 ): Promise<boolean> => {
   try {
-    // Poistetaan turhat tiedot tallennuksesta (kuten funktiot tai logit, jos niitä ei haluta kantaan)
-    // Tässä tapauksessa combatLog voi olla suuri, joten se saatetaan haluta jättää pois,
-    // mutta pidetään logiikka samana kuin aiemmin App.tsx:ssä.
-
+    // Separate transient UI states that do not need cloud persistence
     const { combatStats, ...otherState } = state;
 
-    // Poistetaan combatLog combatStatsista tilan säästämiseksi
+    // Strip out the massive combatLog array to save database capacity
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { combatLog, ...statsWithoutLog } = combatStats;
 
@@ -86,31 +95,37 @@ export const saveGameData = async (
       combatStats: statsWithoutLog,
     };
 
+    // Commit to Firestore (JSON parsing ensures no undefined/function values crash the SDK)
     await setDoc(
-      doc(db, 'users', userId),
+      doc(db, "users", userId),
       JSON.parse(JSON.stringify(dataToSave)),
     );
 
-    // Varmuuskopio LocalStorageen
+    // Commit to LocalStorage as a fallback mechanism
     localStorage.setItem(getLocalKey(userId), JSON.stringify(dataToSave));
 
     return true;
   } catch (e) {
-    console.error('Save error:', e);
+    console.error("Save error:", e);
     return false;
   }
 };
 
 /**
- * Nollaa pelitilanteen (Hard Reset)
+ * resetGameData
+ * Performs a hard reset on the player's account, wiping Firestore and LocalStorage
+ * and returning them to the default starting state.
+ *
+ * @param userId - The Firebase UID of the player
+ * @returns Promise resolving to the DEFAULT_STATE
  */
 export const resetGameData = async (userId: string) => {
   try {
-    await setDoc(doc(db, 'users', userId), DEFAULT_STATE);
+    await setDoc(doc(db, "users", userId), DEFAULT_STATE);
     localStorage.removeItem(getLocalKey(userId));
     return DEFAULT_STATE;
   } catch (e) {
-    console.error('Reset error:', e);
+    console.error("Reset error:", e);
     return null;
   }
 };

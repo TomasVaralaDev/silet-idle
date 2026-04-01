@@ -16,12 +16,14 @@ import type { LeaderboardEntry } from "../types";
 const db = getFirestore();
 
 /**
- * Hakee TOP 50 pelaajaa KORKEIMMAN KOKONAISTASON (Total Level) mukaan.
+ * getTopPlayersByLevel
+ * Fetches the top 50 players globally, ranked strictly by their Total Level.
+ *
+ * @returns Promise resolving to an array of LeaderboardEntry objects
  */
 export const getTopPlayersByLevel = async (): Promise<LeaderboardEntry[]> => {
   try {
     const lbRef = collection(db, "leaderboard");
-    // Vaihdettu orderBy maxMapCompleted -> totalLevel
     const q = query(lbRef, orderBy("totalLevel", "desc"), limit(50));
 
     const querySnapshot = await getDocs(q);
@@ -42,8 +44,14 @@ export const getTopPlayersByLevel = async (): Promise<LeaderboardEntry[]> => {
     throw error;
   }
 };
+
 /**
- * Hakee nykyisen pelaajan sijoitustiedot Total Levelin perusteella.
+ * getMyRankData
+ * Retrieves the current player's global ranking by counting how many
+ * players in the database have a strictly higher totalLevel.
+ *
+ * @param uid - The Firebase UID of the requesting player
+ * @returns Promise resolving to the player's specific LeaderboardEntry, or null
  */
 export const getMyRankData = async (
   uid: string,
@@ -55,7 +63,7 @@ export const getMyRankData = async (
     if (!myDoc.exists()) return null;
     const myData = myDoc.data();
 
-    // Lasketaan sijoitus: kuinka monella pelaajalla on korkeampi totalLevel
+    // Calculate rank: Count how many documents have a higher totalLevel
     const lbRef = collection(db, "leaderboard");
     const qCount = query(
       lbRef,
@@ -71,7 +79,7 @@ export const getMyRankData = async (
       avatar: myData.avatar || "./assets/ui/icon_user_avatar.png",
       maxMapCompleted: myData.maxMapCompleted || 0,
       totalLevel: myData.totalLevel || 0,
-      rank: higherRankedCount + 1,
+      rank: higherRankedCount + 1, // Rank is # of players above you + 1
     };
   } catch (error) {
     console.error("Failed to fetch personal rank:", error);
@@ -80,14 +88,22 @@ export const getMyRankData = async (
 };
 
 /**
- * PÄIVITETTY: Tallentaa nyt myös totalLevel-tiedon Firebaseen.
+ * updateLeaderboardEntry
+ * Upserts the player's stats into the dedicated leaderboard collection.
+ * This is separated from the main user document to optimize query performance.
+ *
+ * @param uid - The Firebase UID of the player
+ * @param username - Player's display name
+ * @param avatar - Player's portrait URL
+ * @param maxMapCompleted - Highest zone cleared
+ * @param totalLevel - Sum of all skill levels
  */
 export const updateLeaderboardEntry = async (
   uid: string,
   username: string,
   avatar: string,
   maxMapCompleted: number,
-  totalLevel: number, // LISÄTTY
+  totalLevel: number,
 ) => {
   try {
     const lbRef = doc(db, "leaderboard", uid);
@@ -97,7 +113,7 @@ export const updateLeaderboardEntry = async (
         username,
         avatar,
         maxMapCompleted,
-        totalLevel, // LISÄTTY
+        totalLevel,
         lastUpdated: Date.now(),
       },
       { merge: true },

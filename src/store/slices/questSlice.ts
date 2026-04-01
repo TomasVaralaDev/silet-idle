@@ -33,17 +33,15 @@ export const createQuestSlice: StateCreator<
 
     if (!serverResetTime) return;
 
-    console.log(
-      "🔍 [QUEST-SYNC] Tarkistetaan reset: Server:",
-      serverResetTime,
-      "Player:",
-      quests.lastResetTime,
-    );
+    //  console.log(
+    //    "🔍 [QUEST-SYNC] Tarkistetaan reset: Server:",
+    //   "Player:",
+    //    quests.lastResetTime,
+    //  );
 
     if (serverResetTime > quests.lastResetTime) {
-      console.log(
-        "🔥 [QUEST-SYNC] Uusi päivä havaittu! Arvotaan uudet tehtävät.",
-      );
+      ////  "🔥 [QUEST-SYNC] Uusi päivä havaittu! Arvotaan uudet tehtävät.",
+      //  );
 
       // Arvotaan uudet tehtävät pelaajan taitotasojen perusteella
       const newQuests = rollDailyQuests(skills);
@@ -61,7 +59,7 @@ export const createQuestSlice: StateCreator<
         "./assets/ui/icon_quest.png",
       );
     } else {
-      console.log("✅ [QUEST-SYNC] Tehtävät ovat jo ajan tasalla.");
+      //   console.log("✅ [QUEST-SYNC] Tehtävät ovat jo ajan tasalla.");
     }
   },
 

@@ -421,6 +421,7 @@ export interface GameState {
   avatar: string;
   unlockedQueueSlots: number;
   settings: GameSettings;
+  marketListingLimit: number;
   inventory: Record<string, number>;
   skills: Record<SkillType, SkillData>;
   equipment: Record<Exclude<EquipmentSlot, "food">, string | null>;

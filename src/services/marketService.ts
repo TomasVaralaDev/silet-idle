@@ -33,6 +33,9 @@ export const createListing = async (
   amount: number,
   pricePerItem: number,
 ) => {
+  // 1. TARKISTUS: Haetaan käyttäjän nykyiset aktiiviset ilmoitukset
+  const activeListings = await getMyActiveListings(sellerUid);
+
   const userRef = doc(db, "users", sellerUid);
   const listingRef = doc(collection(db, "listings"));
 
@@ -41,7 +44,18 @@ export const createListing = async (
     const userSnap = await transaction.get(userRef);
     if (!userSnap.exists()) throw new Error("User not found");
 
-    const inv = userSnap.data().inventory || {};
+    const userData = userSnap.data();
+
+    // 2. LISÄTTY LIMIITIN TARKISTUS
+    // Haetaan limiitti tietokannasta (tai käytetään oletusta 5)
+    const currentLimit = userData.marketListingLimit ?? 5;
+    if (activeListings.length >= currentLimit) {
+      throw new Error(
+        `Market capacity reached. You can only have ${currentLimit} active listings.`,
+      );
+    }
+
+    const inv = userData.inventory || {};
     const currentAmount = inv[itemId] || 0;
     if (currentAmount < amount) throw new Error("Not enough items");
 

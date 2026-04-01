@@ -31,17 +31,17 @@ export const createWorldShopSlice: StateCreator<
 
     if (!serverResetTime) return;
 
-    console.log(
-      "🔍 [SHOP-SYNC] Tarkistetaan reset: Server:",
-      serverResetTime,
-      "Player:",
-      worldShop.lastResetTime,
-    );
+    //  console.log(
+    //    "🔍 [SHOP-SYNC] Tarkistetaan reset: Server:",
+    ////   "Player:",
+    //   worldShop.lastResetTime,
+    //  );
 
     if (serverResetTime > worldShop.lastResetTime) {
-      console.log(
-        "🔥 [SHOP-SYNC] Päivä vaihtunut! Nollataan kauppa ja tehtävät.",
-      );
+      console
+        .log
+        //   "🔥 [SHOP-SYNC] Päivä vaihtunut! Nollataan kauppa ja tehtävät.",
+        ();
 
       set((state) => ({
         worldShop: {
@@ -51,7 +51,7 @@ export const createWorldShopSlice: StateCreator<
         },
       }));
     } else {
-      console.log("✅ [SHOP-SYNC] Pelaaja on jo synkassa palvelimen kanssa.");
+      //  console.log("✅ [SHOP-SYNC] Pelaaja on jo synkassa palvelimen kanssa.");
     }
   },
 

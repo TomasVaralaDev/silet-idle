@@ -87,6 +87,7 @@ export const DEFAULT_STATE: GameState = {
   username: "Player",
   avatar: "./assets/avatars/avatar_1.png",
   unlockedQueueSlots: 2,
+  marketListingLimit: 15,
   lastTimestamp: Date.now(),
   events: [],
   settings: {
@@ -198,6 +199,7 @@ export const customMerge = (
     unlockedQueueSlots: typedPersisted.unlockedQueueSlots ?? 2,
     premiumPurchases: typedPersisted.premiumPurchases || {},
     maxOfflineHoursIncrement: typedPersisted.maxOfflineHoursIncrement || 0,
+    marketListingLimit: typedPersisted.marketListingLimit ?? 15,
     unlockedAchievements: typedPersisted.unlockedAchievements || [],
     claimedAchievements: typedPersisted.claimedAchievements || [],
     settings: {

@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { getItemById } from "../../utils/itemUtils";
-import { createListing } from "../../services/marketService";
+import {
+  createListing,
+  getMyActiveListings,
+} from "../../services/marketService";
 import InventorySelector from "./InventorySelector";
 
 interface Props {
@@ -14,14 +17,46 @@ export default function SellForm({ myUid, onComplete }: Props) {
   const inventory = useGameStore((state) => state.inventory);
   const emitEvent = useGameStore((state) => state.emitEvent);
 
+  // UUSI: Haetaan pelaajan ilmoitusraja statesta
+  const marketListingLimit = useGameStore((state) => state.marketListingLimit);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [amount, setAmount] = useState<number>(1);
   const [price, setPrice] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // UUSI: Tilamuuttujat ilmoitusten määrän seuraamiseen
+  const [activeListingsCount, setActiveListingsCount] = useState<number>(0);
+  const [isLoadingListings, setIsLoadingListings] = useState(true);
+
   // Retrieve full item metadata safely
   const selectedItem = selectedId ? getItemById(selectedId) : null;
   const maxAmount = selectedId ? inventory[selectedId] || 0 : 0;
+
+  // UUSI: Haetaan aktiivisten ilmoitusten määrä kun komponentti ladataan
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchListings = async () => {
+      setIsLoadingListings(true);
+      try {
+        const listings = await getMyActiveListings(myUid);
+        if (isMounted) {
+          setActiveListingsCount(listings.length);
+        }
+      } catch (error) {
+        console.error("Failed to fetch active listings:", error);
+      } finally {
+        if (isMounted) setIsLoadingListings(false);
+      }
+    };
+
+    fetchListings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [myUid]);
 
   useEffect(() => {
     // Improve mobile UX by automatically scrolling to options panel when an item is picked
@@ -41,10 +76,21 @@ export default function SellForm({ myUid, onComplete }: Props) {
     }
   }, [selectedId, selectedItem, emitEvent]);
 
+  // Tarkistetaan onko raja tullut vastaan
+  const isLimitReached = activeListingsCount >= marketListingLimit;
+
   // Handle market listing submission with validation logic
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedId || !selectedItem || isSubmitting) return;
+
+    if (isLimitReached) {
+      emitEvent(
+        "error",
+        `Market capacity reached. Max ${marketListingLimit} listings.`,
+      );
+      return;
+    }
 
     if (selectedItem.isUnique) {
       emitEvent("error", "Unique items cannot be sold on the market.");
@@ -77,6 +123,8 @@ export default function SellForm({ myUid, onComplete }: Props) {
         `Listing created: ${amount}x ${selectedItem.name}`,
         selectedItem.icon,
       );
+      // Päivitetään lokaali lukumäärä onnistuneen luonnin jälkeen, jottei tarvitse hakea heti uudestaan
+      setActiveListingsCount((prev) => prev + 1);
       onComplete();
     } catch (err: unknown) {
       emitEvent("error", err instanceof Error ? err.message : String(err));
@@ -94,7 +142,25 @@ export default function SellForm({ myUid, onComplete }: Props) {
         <h3 className="text-[10px] md:text-xs font-black text-tx-muted uppercase tracking-[0.2em] mb-2 md:mb-4 px-1 md:px-0">
           Select Resource
         </h3>
-        <div className="flex-1 overflow-hidden bg-panel/30 border border-border/50 rounded-sm">
+        <div className="flex-1 overflow-hidden bg-panel/30 border border-border/50 rounded-sm relative">
+          {/* UUSI: Näytetään selkeä lukko ja peitto, jos limiitti on täynnä */}
+          {isLimitReached && (
+            <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+              <div className="w-16 h-16 bg-danger/20 border border-danger/50 rounded-full flex items-center justify-center mb-4">
+                <span className="text-3xl">🔒</span>
+              </div>
+              <h4 className="text-danger font-black uppercase tracking-widest mb-2">
+                Market Capacity Full
+              </h4>
+              <p className="text-tx-muted text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                You have reached your limit of {marketListingLimit} active
+                listings.
+                <br />
+                Cancel or wait for items to sell.
+              </p>
+            </div>
+          )}
+
           <InventorySelector selectedId={selectedId} onSelect={setSelectedId} />
         </div>
       </div>
@@ -106,16 +172,39 @@ export default function SellForm({ myUid, onComplete }: Props) {
         id="sell-options-panel"
         className="w-full md:w-80 lg:w-96 shrink-0 flex flex-col gap-4"
       >
-        <div className="bg-panel/80 md:bg-panel/50 border border-border rounded-sm p-4 md:p-5 flex flex-col md:h-full shadow-xl backdrop-blur-sm">
-          <h3 className="text-[10px] md:text-xs font-black text-accent uppercase tracking-[0.2em] mb-4 border-b border-border/30 pb-3 text-left">
-            Listing Options
-          </h3>
+        <div className="bg-panel/80 md:bg-panel/50 border border-border rounded-sm p-4 md:p-5 flex flex-col md:h-full shadow-xl backdrop-blur-sm relative overflow-hidden">
+          {/* UUSI: Progress bar / mittari ilmoituksille yläreunaan */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-panel">
+            <div
+              className={`h-full transition-all duration-1000 ${isLimitReached ? "bg-danger" : "bg-accent"}`}
+              style={{
+                width: `${Math.min(100, (activeListingsCount / marketListingLimit) * 100)}%`,
+              }}
+            />
+          </div>
+
+          <div className="flex justify-between items-center mb-4 border-b border-border/30 pb-3 pt-1">
+            <h3 className="text-[10px] md:text-xs font-black text-accent uppercase tracking-[0.2em] text-left">
+              Listing Options
+            </h3>
+
+            {/* UUSI: Ilmoitusten määrän näyttö */}
+            <div
+              className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-sm ${isLimitReached ? "bg-danger/10 text-danger border border-danger/30" : "bg-panel border border-border/50 text-tx-muted"}`}
+            >
+              {isLoadingListings ? (
+                <span className="animate-pulse">...</span>
+              ) : (
+                `Slots: ${activeListingsCount} / ${marketListingLimit}`
+              )}
+            </div>
+          </div>
 
           {selectedId && selectedItem ? (
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="flex flex-col gap-4 md:gap-6 flex-1"
+              className="flex flex-col gap-4 md:gap-6 flex-1 relative z-10"
             >
               {
                 // Item Preview Summary
@@ -153,7 +242,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
               }
               <div className="flex flex-col sm:flex-row gap-4">
                 <div
-                  className={`flex-1 flex flex-col ${selectedItem.isUnique ? "opacity-50 pointer-events-none" : ""}`}
+                  className={`flex-1 flex flex-col ${selectedItem.isUnique || isLimitReached ? "opacity-50 pointer-events-none" : ""}`}
                 >
                   <div className="flex justify-between mb-1.5 md:mb-2 items-center">
                     <label className="text-[9px] md:text-[10px] font-black text-tx-muted uppercase tracking-widest">
@@ -162,7 +251,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
                     <button
                       type="button"
                       onClick={() => setAmount(maxAmount)}
-                      disabled={selectedItem.isUnique}
+                      disabled={selectedItem.isUnique || isLimitReached}
                       className="text-[8px] md:text-[9px] text-accent hover:text-accent-hover font-black uppercase tracking-tighter transition-colors disabled:opacity-50 px-2 py-0.5 rounded bg-accent/10"
                     >
                       Max
@@ -171,7 +260,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
                   <input
                     type="number"
                     value={amount}
-                    disabled={selectedItem.isUnique}
+                    disabled={selectedItem.isUnique || isLimitReached}
                     onChange={(e) =>
                       setAmount(Math.max(0, parseInt(e.target.value) || 0))
                     }
@@ -180,7 +269,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 </div>
 
                 <div
-                  className={`flex-1 flex flex-col ${selectedItem.isUnique ? "opacity-50 pointer-events-none" : ""}`}
+                  className={`flex-1 flex flex-col ${selectedItem.isUnique || isLimitReached ? "opacity-50 pointer-events-none" : ""}`}
                 >
                   <label className="text-[9px] md:text-[10px] font-black text-tx-muted uppercase tracking-widest block mb-1.5 md:mb-2">
                     Unit Price
@@ -189,7 +278,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
                     <input
                       type="number"
                       value={price}
-                      disabled={selectedItem.isUnique}
+                      disabled={selectedItem.isUnique || isLimitReached}
                       onChange={(e) =>
                         setPrice(Math.max(0, parseInt(e.target.value) || 0))
                       }
@@ -208,7 +297,7 @@ export default function SellForm({ myUid, onComplete }: Props) {
                 // Live potential revenue calculation with 5% Tax
               }
               <div
-                className={`mt-2 md:mt-auto p-3 md:p-4 bg-app-base rounded-sm border border-border border-dashed ${selectedItem.isUnique ? "opacity-50" : ""}`}
+                className={`mt-2 md:mt-auto p-3 md:p-4 bg-app-base rounded-sm border border-border border-dashed ${selectedItem.isUnique || isLimitReached ? "opacity-50" : ""}`}
               >
                 <div className="flex justify-between items-end mb-2 border-b border-border/30 pb-2">
                   <span className="text-[9px] text-tx-muted font-black uppercase tracking-widest">
@@ -250,10 +339,27 @@ export default function SellForm({ myUid, onComplete }: Props) {
 
               <button
                 type="submit"
-                disabled={isSubmitting || selectedItem.isUnique}
-                className="w-full mt-2 py-3 md:py-4 rounded-sm font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/20 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:hover:bg-accent disabled:cursor-not-allowed"
+                disabled={
+                  isSubmitting ||
+                  selectedItem.isUnique ||
+                  isLimitReached ||
+                  isLoadingListings
+                }
+                className={`w-full mt-2 py-3 md:py-4 rounded-sm font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed
+                  ${
+                    isLimitReached
+                      ? "bg-danger text-white hover:bg-danger disabled:hover:bg-danger"
+                      : "bg-accent hover:bg-accent-hover text-white shadow-accent/20 disabled:hover:bg-accent"
+                  }
+                `}
               >
-                {isSubmitting ? "Listing item..." : "Sell Item"}
+                {isLoadingListings
+                  ? "Checking capacity..."
+                  : isLimitReached
+                    ? "Capacity Full"
+                    : isSubmitting
+                      ? "Listing item..."
+                      : "Sell Item"}
               </button>
             </form>
           ) : (

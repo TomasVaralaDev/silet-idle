@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { wordFilter } from "../../utils/wordFilter"; // Varmista, että utility on tässä polussa
+import { wordFilter } from "../../utils/wordFilter";
 
 const AVAILABLE_AVATARS = [
   { id: 1, src: "./assets/profilepics/profile_pic_1.png", name: "Standard" },
@@ -43,7 +43,7 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
   const [error, setError] = useState("");
   const [showNameHelp, setShowNameHelp] = useState(false);
 
-  // Teeman esikatselu livenä
+  // Live theme preview effect
   useEffect(() => {
     document.body.classList.remove(...THEMES.map((t) => t.id));
     document.body.classList.add(selectedTheme);
@@ -53,30 +53,27 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
     e.preventDefault();
     const trimmedName = name.trim();
 
-    // 1. Perusvalidointi
     if (!trimmedName) {
       setError("Hero name required");
       return;
     }
-
     if (trimmedName.length > 12) {
       setError("Name too long (max 12 chars)");
       return;
     }
-
-    // 2. Banni-lista validointi
     if (wordFilter.isProfane(trimmedName)) {
       setError("Name contains restricted words");
       return;
     }
 
-    // Jos kaikki kunnossa, vahvistetaan
     onConfirm(trimmedName, selectedAvatar, selectedTheme);
   };
 
   return (
     <div className="bg-panel/60 backdrop-blur-xl p-8 rounded-3xl border border-border/50 shadow-2xl w-full max-w-md relative overflow-hidden animate-in fade-in zoom-in-95 duration-500 text-left">
-      {/* GLOW EFFECT */}
+      {
+        // Decorative glow effect
+      }
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-40"></div>
 
       <header className="text-center mb-8">
@@ -89,7 +86,9 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
       </header>
 
       <div className="space-y-8 max-h-[65vh] overflow-y-auto custom-scrollbar pr-2">
-        {/* PORTRAIT SELECTION */}
+        {
+          // PORTRAIT SELECTION
+        }
         <section>
           <label className="block text-[10px] font-black uppercase tracking-widest text-tx-muted mb-4 text-center">
             Select Portrait
@@ -121,7 +120,9 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
           </div>
         </section>
 
-        {/* INTERFACE THEME */}
+        {
+          // INTERFACE THEME
+        }
         <section>
           <label className="block text-[10px] font-black uppercase tracking-widest text-tx-muted mb-4 text-center">
             Interface Theme
@@ -152,7 +153,9 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
           </div>
         </section>
 
-        {/* HERO NAME INPUT */}
+        {
+          // HERO NAME INPUT
+        }
         <form
           onSubmit={handleSubmit}
           className="space-y-6 pt-4 border-t border-border/20"
@@ -163,7 +166,9 @@ export default function UsernameModal({ onConfirm, onLogout }: Props) {
                 Hero Name
               </label>
 
-              {/* HELP ICON & TOOLTIP */}
+              {
+                // Help icon & tooltip logic
+              }
               <div
                 className="relative flex items-center group cursor-help"
                 onMouseEnter={() => setShowNameHelp(true)}

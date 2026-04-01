@@ -1,13 +1,11 @@
-// Käytetään 'type' -avainsanaa RoadmapItemin kohdalla
 import {
   PATCH_NOTES,
   FAQ_DATA,
   ROADMAP_DATA,
-  type RoadmapItem, // TÄMÄ ON KORJAUS
+  type RoadmapItem,
 } from "../../data/metaData";
 
-// --- GENERIC CONTAINER ---
-// Poistettu vilkkuva neliö ja raskaat animaatiot.
+// GENERIC CONTAINER
 const MetaContainer = ({
   title,
   children,
@@ -25,7 +23,7 @@ const MetaContainer = ({
   </div>
 );
 
-// --- PATCH NOTES ---
+// PATCH NOTES
 export const PatchNotesView = () => (
   <MetaContainer title="Update Logs">
     {PATCH_NOTES.map((patch) => (
@@ -60,7 +58,7 @@ export const PatchNotesView = () => (
   </MetaContainer>
 );
 
-// --- FAQ ---
+// FAQ
 export const FaqView = () => (
   <MetaContainer title="Knowledge Base">
     {FAQ_DATA.map((faq, i) => (
@@ -79,7 +77,7 @@ export const FaqView = () => (
   </MetaContainer>
 );
 
-// --- ROADMAP VIEW ---
+// ROADMAP VIEW
 export const RoadmapView = () => (
   <MetaContainer title="Development Roadmap">
     <div className="space-y-4">
@@ -88,7 +86,9 @@ export const RoadmapView = () => (
         represent current internal progress.
       </p>
 
-      {/* 2. Lisää item-parametrille tyyppi : RoadmapItem */}
+      {
+        // Iterating through roadmap items with strongly typed structure
+      }
       {ROADMAP_DATA.map((item: RoadmapItem) => (
         <div
           key={item.id}
@@ -133,7 +133,7 @@ export const RoadmapView = () => (
   </MetaContainer>
 );
 
-// --- PRIVACY POLICY VIEW ---
+// PRIVACY POLICY VIEW
 export const PrivacyPolicyView = () => (
   <MetaContainer title="Privacy Policy">
     <div className="prose prose-invert max-w-none font-sans text-sm leading-relaxed text-tx-muted space-y-8">
@@ -261,7 +261,7 @@ export const PrivacyPolicyView = () => (
   </MetaContainer>
 );
 
-// --- SIMPLE TEXT VIEW ---
+// SIMPLE TEXT VIEW
 export const SimpleTextView = ({
   title,
   content,

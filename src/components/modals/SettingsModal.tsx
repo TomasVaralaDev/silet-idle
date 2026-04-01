@@ -3,7 +3,7 @@ import {
   X,
   Trash2,
   LogOut,
-  MessageSquare, // Vaihdettu Bug -> MessageSquare
+  MessageSquare,
   RefreshCcw,
   AlertTriangle,
 } from "lucide-react";
@@ -25,7 +25,7 @@ export default function SettingsModal({
   onReportBug,
   onLogout,
 }: SettingsModalProps) {
-  // Tila, joka kertoo näytetäänkö vahvistusikkunaa ja kummalle toiminnolle
+  // Toggle between main view and specific confirmation view
   const [confirmState, setConfirmState] = useState<"reset" | "delete" | null>(
     null,
   );
@@ -46,7 +46,6 @@ export default function SettingsModal({
       <div className="bg-panel p-8 rounded-2xl border border-border shadow-2xl w-full max-w-md relative overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200 min-h-[400px] flex flex-col">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"></div>
 
-        {/* Jos olemme vahvistusnäkymässä, X-nappi palauttaa päävalikkoon. Muuten se sulkee koko ikkunan. */}
         <button
           onClick={() => (confirmState ? setConfirmState(null) : onClose())}
           className="absolute top-4 right-4 text-tx-muted hover:text-danger transition-colors p-1 z-20"
@@ -55,7 +54,7 @@ export default function SettingsModal({
         </button>
 
         {confirmState ? (
-          // --- VAHVISTUSNÄKYMÄ (CONFIRMATION MODAL) ---
+          // CONFIRMATION VIEW
           <div className="flex flex-col h-full justify-center flex-1 animate-in fade-in slide-in-from-bottom-4 duration-200 pt-4">
             <div className="flex justify-center mb-4">
               <AlertTriangle
@@ -98,7 +97,7 @@ export default function SettingsModal({
             </div>
           </div>
         ) : (
-          // --- PÄÄVALIKKO (MAIN SETTINGS VIEW) ---
+          // MAIN SETTINGS VIEW
           <>
             <h2 className="text-xl font-black uppercase tracking-widest text-center mb-1 text-tx-main flex items-center justify-center gap-3">
               <img

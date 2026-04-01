@@ -42,7 +42,7 @@ export default function BundlePreviewModal({
   const isPurchaseDisabled =
     !canAfford || isProcessing || isMaxedOut || isOwned;
 
-  // LOGIIKKA: Haetaan kaikki kuvat suoraan meidän uudesta tehtaasta (getItemById)
+  // Fetch icons directly from the item factory (getItemById)
   const getIconForReward = (key: string) => {
     if (key === "gems") return "./assets/ui/icon_gem.png";
     if (key === "coins") return "./assets/ui/icon_coin.png";
@@ -52,7 +52,7 @@ export default function BundlePreviewModal({
         ? itemData.icon
         : `/${itemData.icon}`;
     }
-    // Fallback jos ei jostain syystä löydy tehtaasta
+    // Fallback icon if not found in the factory
     return `./assets/items/${key}.png`;
   };
 
@@ -69,7 +69,9 @@ export default function BundlePreviewModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-panel border-2 border-border/50 rounded-xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-200">
-        {/* SULJE-NAPPI */}
+        {
+          // Close Button
+        }
         <button
           onClick={handleClose}
           disabled={isProcessing}
@@ -78,7 +80,9 @@ export default function BundlePreviewModal({
           ✕
         </button>
 
-        {/* HEADER & KUVA */}
+        {
+          // Header & Image
+        }
         <div className="bg-app-base/80 p-6 flex flex-col items-center justify-center border-b border-border/30 relative overflow-hidden">
           <div className="absolute inset-0 bg-accent/10 blur-xl rounded-full scale-150"></div>
 
@@ -113,19 +117,23 @@ export default function BundlePreviewModal({
           </div>
         </div>
 
-        {/* SISÄLTÖ / PALKINNOT */}
+        {
+          // Bundle Contents & Rewards
+        }
         <div className="p-6 bg-panel max-h-[50vh] overflow-y-auto custom-scrollbar">
           <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4 text-center">
             Bundle Contents
           </h3>
 
           <div className="space-y-2">
-            {/* Gemit */}
+            {
+              // Gems
+            }
             {item.rewards?.rewardGems && (
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src={getIconForReward("gems")} // LOGIIKKA KÄYTÖSSÄ
+                    src={getIconForReward("gems")}
                     className="w-6 h-6 pixelated"
                     alt="Gems"
                   />
@@ -137,12 +145,14 @@ export default function BundlePreviewModal({
               </div>
             )}
 
-            {/* Offline Time Stats */}
+            {
+              // Offline Time Stats
+            }
             {item.rewards?.stats?.offlineHoursIncrement && (
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src={getIconForReward("Max Offline Time")} // LOGIIKKA KÄYTÖSSÄ!
+                    src={getIconForReward("Max Offline Time")}
                     className="w-6 h-6 pixelated"
                     alt="Offline Time"
                     onError={(e) =>
@@ -159,12 +169,14 @@ export default function BundlePreviewModal({
               </div>
             )}
 
-            {/* Expedition Stats */}
+            {
+              // Expedition Stats
+            }
             {item.rewards?.stats?.expeditionSlotsIncrement && (
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src={getIconForReward("Expedition Slots")} // LOGIIKKA KÄYTÖSSÄ!
+                    src={getIconForReward("Expedition Slots")}
                     className="w-6 h-6 pixelated"
                     alt="Expedition Slots"
                     onError={(e) =>
@@ -181,12 +193,14 @@ export default function BundlePreviewModal({
               </div>
             )}
 
-            {/* Queue Stats */}
+            {
+              // Queue Stats
+            }
             {item.rewards?.stats?.queueSlotsSet && (
               <div className="flex items-center justify-between p-3 bg-app-base/50 rounded-lg border border-border/30">
                 <div className="flex items-center gap-3">
                   <img
-                    src={getIconForReward("Max Queue Slots")} // LOGIIKKA KÄYTÖSSÄ!
+                    src={getIconForReward("Max Queue Slots")}
                     className="w-6 h-6 pixelated"
                     alt="Queue Slots"
                     onError={(e) =>
@@ -203,7 +217,9 @@ export default function BundlePreviewModal({
               </div>
             )}
 
-            {/* Tavarat */}
+            {
+              // Items
+            }
             {item.rewards?.items &&
               Object.entries(item.rewards.items).map(([itemId, amount]) => (
                 <div
@@ -217,7 +233,7 @@ export default function BundlePreviewModal({
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={getIconForReward(itemId)} // LOGIIKKA KÄYTÖSSÄ
+                      src={getIconForReward(itemId)}
                       className="w-6 h-6 pixelated"
                       alt={itemId}
                       onError={(e) => {
@@ -234,7 +250,9 @@ export default function BundlePreviewModal({
           </div>
         </div>
 
-        {/* ALATUNNISTE / OSTONAPPI */}
+        {
+          // Footer & Purchase Button
+        }
         <div className="p-4 border-t border-border/50 bg-app-base/80">
           <button
             disabled={isPurchaseDisabled}

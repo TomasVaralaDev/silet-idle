@@ -14,12 +14,21 @@ export default function PouchRatesModal({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      {
+        // Background Overlay
+      }
       <div
         className="absolute inset-0 bg-app-base/90 backdrop-blur-md"
         onClick={onClose}
       />
 
+      {
+        // Main Container
+      }
       <div className="relative bg-panel border border-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        {
+          // Header
+        }
         <div className="p-6 border-b border-border flex justify-between items-center bg-panel/50">
           <div>
             <h2 className="text-xl font-black uppercase tracking-widest text-tx-main">
@@ -37,7 +46,13 @@ export default function PouchRatesModal({ isOpen, onClose }: Props) {
           </button>
         </div>
 
+        {
+          // Content Area
+        }
         <div className="p-6 overflow-x-auto">
+          {
+            // Rates Table
+          }
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-[10px] uppercase tracking-widest text-tx-muted border-b border-border">
@@ -70,6 +85,9 @@ export default function PouchRatesModal({ isOpen, onClose }: Props) {
             </tbody>
           </table>
 
+          {
+            // Info Box
+          }
           <div className="mt-6 space-y-2 bg-app-base/40 p-4 rounded-xl border border-border/50">
             <p className="text-[10px] text-tx-muted leading-relaxed">
               <span className="text-accent font-bold">INFO:</span> Minor pouches
@@ -84,6 +102,9 @@ export default function PouchRatesModal({ isOpen, onClose }: Props) {
           </div>
         </div>
 
+        {
+          // Footer Button
+        }
         <button
           onClick={onClose}
           className="w-full py-4 bg-panel-hover hover:bg-accent hover:text-white text-tx-main font-black uppercase text-[10px] tracking-widest border-t border-border transition-all"

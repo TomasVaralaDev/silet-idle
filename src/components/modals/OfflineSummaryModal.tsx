@@ -38,8 +38,9 @@ export default function OfflineSummaryModal({
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-base/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
       <div className="bg-panel border-2 border-border rounded-xl max-w-md w-full shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden animate-in zoom-in-95 duration-200 text-left">
-        {/* HEADER - Suora teksti, hohtava gradientti */}
-
+        {
+          // HEADER
+        }
         <div className="p-6 border-b border-border/50 bg-panel-hover/30 text-center relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-16 bg-accent/10 blur-3xl rounded-full"></div>
 
@@ -54,8 +55,9 @@ export default function OfflineSummaryModal({
         </div>
 
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar bg-base/20">
-          {/* XP GAINS - Ei desimaaleja */}
-
+          {
+            // XP GAINS
+          }
           {Object.keys(results.xpGained).length > 0 && (
             <div>
               <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-3 opacity-50">
@@ -81,8 +83,9 @@ export default function OfflineSummaryModal({
             </div>
           )}
 
-          {/* ITEM GAINS - Ei desimaaleja */}
-
+          {
+            // ITEM GAINS
+          }
           {Object.keys(results.itemsGained).length > 0 && (
             <div>
               <h3 className="text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-3 opacity-50">
@@ -138,8 +141,9 @@ export default function OfflineSummaryModal({
             )}
         </div>
 
-        {/* FOOTER */}
-
+        {
+          // FOOTER
+        }
         <div className="p-4 border-t border-border bg-panel-hover/30">
           <button
             onClick={onClose}

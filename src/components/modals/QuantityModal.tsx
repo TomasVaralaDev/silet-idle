@@ -26,7 +26,6 @@ export default function QuantityModal({
 
   const item = getItemDetails(itemId);
   const inputRef = useRef<HTMLInputElement>(null);
-
   const upgrades = useGameStore((state) => state.upgrades);
 
   // Focus input automatically when opened
@@ -43,13 +42,13 @@ export default function QuantityModal({
 
     if (isNaN(val) || val <= 0 || val > maxAmount) {
       setIsError(true);
-      return; // Estetään lähetys!
+      return;
     }
 
     onConfirm(val);
   };
 
-  // --- LASKENTA LIVENÄ ---
+  // Live calculation logic
   const numericAmount = parseInt(amount) || 0;
   const isOverMax = numericAmount > maxAmount;
 
@@ -116,7 +115,7 @@ export default function QuantityModal({
                 value={amount}
                 onChange={(e) => {
                   setAmount(e.target.value);
-                  if (isError) setIsError(false); // KORJAUS: Nollataan virhe heti kirjoittaessa!
+                  if (isError) setIsError(false);
                 }}
                 className={`w-full bg-app-base border-2 rounded-lg px-4 py-3 text-tx-main font-mono text-lg outline-none transition-colors shadow-inner ${
                   isError || isOverMax
@@ -128,7 +127,7 @@ export default function QuantityModal({
                 type="button"
                 onClick={() => {
                   setAmount(maxAmount.toString());
-                  if (isError) setIsError(false); // Nollataan virhe myös tässä
+                  if (isError) setIsError(false);
                 }}
                 className="bg-panel-hover border border-border hover:border-accent hover:text-accent px-4 rounded-lg text-xs font-black text-tx-main transition-all uppercase tracking-wider"
               >

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { CHAT_COLORS } from "../../data/chatColors";
 import { wordFilter } from "../../utils/wordFilter";
-import { ChevronDown } from "lucide-react"; // LISÄTTY IMPORT NUOLTA VARTEN
+import { ChevronDown } from "lucide-react";
 
 const AVAILABLE_AVATARS = [
   { id: 1, src: "./assets/profilepics/profile_pic_1.png", name: "Standard" },
@@ -44,7 +44,7 @@ interface Props {
   onClose: () => void;
 }
 
-const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 tuntia
+const COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 export default function UserConfigModal({
   currentUsername,
@@ -65,11 +65,9 @@ export default function UserConfigModal({
   );
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // UUSI: Tila profiilikuvien näkyvyydelle (oletuksena kiinni)
   const [showAvatars, setShowAvatars] = useState(false);
 
-  // --- COOLDOWN LOGIIKKA ---
+  // Name change cooldown logic
   const lastNameChange = settings?.lastNameChange || 0;
   const [timeLeft, setTimeLeft] = useState(() =>
     Math.max(0, COOLDOWN_MS - (Date.now() - lastNameChange)),
@@ -97,7 +95,7 @@ export default function UserConfigModal({
     return `${hours}h ${minutes}m`;
   };
 
-  // Live preview teemalle
+  // Live theme preview
   useEffect(() => {
     document.body.classList.remove(...THEMES.map((t) => t.id));
     document.body.classList.add(selectedTheme);
@@ -111,7 +109,6 @@ export default function UserConfigModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const trimmedName = name.trim();
 
     if (!trimmedName) {
@@ -122,7 +119,6 @@ export default function UserConfigModal({
       setError("Identity too long (max 12 chars)");
       return;
     }
-
     if (wordFilter.isProfane(trimmedName)) {
       setError("Inappropriate identity detected");
       return;
@@ -153,7 +149,9 @@ export default function UserConfigModal({
         </h2>
 
         <div className="space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
-          {/* Nimen esikatselu chatissa */}
+          {
+            // Chat identity preview
+          }
           <div className="p-3 bg-app-base/50 rounded-xl border border-border/50 text-center">
             <p className="text-[9px] uppercase font-black text-tx-muted mb-1 tracking-widest">
               Chat Preview
@@ -172,7 +170,9 @@ export default function UserConfigModal({
             </p>
           </div>
 
-          {/* AVATARS - NYT PIILOTETTAVISSA */}
+          {
+            // Collapsible Portrait Selection
+          }
           <div className="border border-border/50 bg-panel/30 rounded-xl overflow-hidden">
             <button
               type="button"
@@ -202,7 +202,7 @@ export default function UserConfigModal({
                     type="button"
                     onClick={() => {
                       setSelectedAvatar(avatar.src);
-                      setShowAvatars(false); // Vapaaehtoinen: sulkee valikon kun kuva on valittu
+                      setShowAvatars(false);
                     }}
                     className={`
                       relative group rounded-xl overflow-hidden border-2 transition-all duration-200 p-1
@@ -222,7 +222,9 @@ export default function UserConfigModal({
             )}
           </div>
 
-          {/* CHAT COLORS */}
+          {
+            // Tavern Color Options
+          }
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-tx-muted mb-3 text-center">
               Tavern Name Color
@@ -264,7 +266,9 @@ export default function UserConfigModal({
             </div>
           </div>
 
-          {/* THEMES */}
+          {
+            // System Interface Themes
+          }
           <div>
             <label className="block text-[10px] font-black uppercase tracking-wider text-tx-muted mb-3 text-center">
               System Interface
@@ -291,7 +295,9 @@ export default function UserConfigModal({
             </div>
           </div>
 
-          {/* NAME & SAVE */}
+          {
+            // Identity Input & Submission
+          }
           <form
             onSubmit={handleSubmit}
             className="space-y-6 pt-2 border-t border-border/50"

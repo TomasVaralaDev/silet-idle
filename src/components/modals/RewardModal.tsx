@@ -47,7 +47,7 @@ export default function RewardModal() {
         <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-3">
           {rewards.map((reward, index) => {
             const item = getItemDetails(reward.itemId);
-            // Jos itemiä ei ole, käytetään neutraalia tyyliä
+            // Default to common style if item details are not found
             const rarityTheme = getRarityStyle(item?.rarity || "common");
 
             return (
@@ -66,7 +66,9 @@ export default function RewardModal() {
                     : "border-border bg-app-base/30"
                 }`}
               >
-                {/* NÄYTETÄÄN IKONI VAIN JOS SE ON OLEMASSA */}
+                {
+                  // Display item icon if available
+                }
                 {item?.icon && (
                   <div
                     className={`w-12 h-12 bg-app-base rounded-lg border ${rarityTheme.border} flex items-center justify-center shrink-0 relative overflow-hidden`}
@@ -86,7 +88,9 @@ export default function RewardModal() {
                     {item?.name || reward.itemId}
                   </div>
 
-                  {/* NÄYTETÄÄN RARITY-RIVI VAIN JOS ITEM LÖYTYY */}
+                  {
+                    // Display rarity and category metadata if item exists
+                  }
                   {item && (
                     <div className="text-[10px] opacity-70 uppercase font-bold tracking-wider text-tx-muted">
                       {item.rarity} {item.category}

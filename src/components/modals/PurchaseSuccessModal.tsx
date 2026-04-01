@@ -13,17 +13,22 @@ export default function PurchaseSuccessModal({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      {/* Tumma tausta teeman mukaisella blurrilla */}
+      {
+        // Dark theme-consistent backdrop with blur
+      }
       <div
         className="absolute inset-0 bg-base/90 backdrop-blur-md transition-opacity"
         onClick={onClose}
       ></div>
 
-      {/* Modalin sisältö: RPG-paneeli teeman reunuksilla */}
+      {
+        // Modal Content: RPG-style panel with themed borders
+      }
       <div className="relative bg-panel border-2 border-border w-full max-w-sm rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-        {/* Koristeellinen yläosa hohteella */}
         <div className="p-8 text-center relative">
-          {/* Taustahohde joka käyttää teeman accent-väriä */}
+          {
+            // Decorative top glow using theme accent color
+          }
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-accent/20 blur-[50px] rounded-full"></div>
 
           <div className="relative inline-block mb-6">
@@ -41,9 +46,10 @@ export default function PurchaseSuccessModal({
             Transaction Complete
           </p>
 
-          {/* Saatu määrä -laatikko */}
+          {
+            // Received Amount Display
+          }
           <div className="bg-base/50 rounded-lg p-5 border border-border/50 mb-8 shadow-inner relative overflow-hidden">
-            {/* Koristekulmat */}
             <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent/30"></div>
             <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-accent/30"></div>
 
@@ -62,7 +68,6 @@ export default function PurchaseSuccessModal({
             </div>
           </div>
 
-          {/* RPG-tyylinen painike */}
           <button
             onClick={onClose}
             className="w-full py-4 bg-panel-hover hover:bg-accent text-accent hover:text-white font-black rounded-lg uppercase tracking-[0.3em] transition-all active:scale-95 shadow-lg border border-accent/30 hover:border-accent"
@@ -71,7 +76,9 @@ export default function PurchaseSuccessModal({
           </button>
         </div>
 
-        {/* Alareunan koristeellinen viiva */}
+        {
+          // Decorative bottom gradient line
+        }
         <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"></div>
       </div>
     </div>

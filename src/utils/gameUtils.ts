@@ -2,17 +2,21 @@ import type { SkillType, WeightedDrop } from "../types";
 
 export const MAX_LEVEL = 99;
 
+/**
+ * getRequiredXpForLevel
+ * Mathematical curve dictating the experience required for the *next* level.
+ */
 export const getRequiredXpForLevel = (level: number): number => {
   const numLevel = Number(level);
   if (isNaN(numLevel) || numLevel < 1) return 40;
-  // Tasolla 99 ei tarvita enää lisää XP:tä seuraavaan tasoon,
-  // mutta pidetään kaava vakaana UI-palkkia varten.
+  // Keeps formula intact even past 99 to ensure UI progress bars calculate properly
   return Math.floor(40 * Math.pow(numLevel, 2));
 };
 
 /**
- * POMMINKESTÄVÄ XP-LASKURI.
- * Korjattu Level 99 "Ping-Pong" looppi ja estetty turhat state-päivitykset.
+ * calculateXpGain
+ * Robust XP calculator that safely resolves multiple level-ups from massive XP injections
+ * (e.g., from long offline progress). Prevents infinite loops at the level cap.
  */
 export const calculateXpGain = (
   currentLevel: number | string,
@@ -27,27 +31,25 @@ export const calculateXpGain = (
 
   const reward = Number(xpReward);
 
-  // 1. Jos ollaan jo katossa, palautetaan vakioarvot.
+  // Return maxed values immediately if already at the level cap
   if (cLevel >= MAX_LEVEL) {
     return { level: MAX_LEVEL, xp: getRequiredXpForLevel(MAX_LEVEL) };
   }
 
-  // Jos palkintoa ei ole, palautetaan nykyiset, jotta vältytään NaN-virheiltä.
   if (isNaN(reward) || reward <= 0) return { level: cLevel, xp: cXp };
 
   let totalXp = cXp + reward;
   let newLevel = cLevel;
   let reqXp = getRequiredXpForLevel(newLevel);
 
-  // 2. XP:n laskenta loopilla, mutta VAIN jos ollaan alle maksimitason.
-  // Tämä estää ikuisen loopin tason 99 kohdalla.
+  // Iteratively deduct required XP and increment level until remaining XP cannot trigger a level up
   while (totalXp >= reqXp && newLevel < MAX_LEVEL) {
     totalXp -= reqXp;
     newLevel++;
 
     if (newLevel >= MAX_LEVEL) {
       newLevel = MAX_LEVEL;
-      totalXp = getRequiredXpForLevel(MAX_LEVEL); // Lukitaan XP maksimiin
+      totalXp = getRequiredXpForLevel(MAX_LEVEL); // Lock XP at the required threshold
       break;
     }
 
@@ -59,10 +61,10 @@ export const calculateXpGain = (
     xp: Math.max(0, totalXp),
   };
 };
+
 /**
- * Laskee pelaajan kokonaistason (Account Level) summaamalla kaikkien taitojen tasot.
- * @param skills Pelaajan skills-objekti
- * @returns Kokonaistaso numerona
+ * calculateTotalLevel
+ * Aggregates all individual skill levels into a single Account Level score.
  */
 export const calculateTotalLevel = (
   skills: Record<string, { level: number }>,
@@ -74,8 +76,11 @@ export const calculateTotalLevel = (
     0,
   );
 };
+
 /**
- * Optimoitu Speed Multiplier.
+ * getSpeedMultiplier
+ * Calculates action interval reductions based on unlocked permanent upgrades.
+ * Capped at 5.0x speed.
  */
 export const getSpeedMultiplier = (skill: SkillType, upgrades: string[]) => {
   if (!upgrades || upgrades.length === 0) return 1.0;
@@ -89,7 +94,7 @@ export const getSpeedMultiplier = (skill: SkillType, upgrades: string[]) => {
       upgrade.startsWith(speedPrefix) ||
       (upgrade.includes("speed") && upgrade.includes(skill))
     ) {
-      multiplier += 0.2;
+      multiplier += 0.2; // 20% speed increase per upgrade
     }
   }
 
@@ -102,6 +107,10 @@ export const getXpMultiplier = (skill: SkillType, upgrades: string[]) => {
   return hasTome ? 1.5 : 1;
 };
 
+/**
+ * pickWeightedItem
+ * RNG generator that selects a single item from a loot pool based on individual item weights.
+ */
 export const pickWeightedItem = (
   drops: WeightedDrop[],
 ): WeightedDrop | null => {
@@ -115,9 +124,10 @@ export const pickWeightedItem = (
     randomWeight -= drop.weight;
   }
 
-  return drops[0];
+  return drops[0]; // Fallback
 };
 
+// Type guard for ensuring a string represents a valid equipment slot
 export const isEquipmentSlot = (
   slot: string,
 ): slot is
@@ -144,8 +154,9 @@ export const isEquipmentSlot = (
 };
 
 /**
- * Optimoitu inventorion siivous.
- * Käyttää 'changed' muuttujaa välttääkseen turhat renderöinnit.
+ * sanitizeInventory
+ * Optimized garbage collection for the inventory object. Removes keys with a value of 0.
+ * Utilizes a 'changed' flag to return the original reference if no mutations occurred, preventing unnecessary React renders.
  */
 export const sanitizeInventory = (
   inventory: Record<string, number>,
@@ -160,6 +171,5 @@ export const sanitizeInventory = (
     }
   });
 
-  // Jos mitään ei muutettu, palautetaan alkuperäinen objekti-viittaus (Shallow comparison benefit)
   return changed ? cleanInv : inventory;
 };

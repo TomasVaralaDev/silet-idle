@@ -1,36 +1,39 @@
-// src/utils/skillScaling.ts
-
 import type { Resource } from "../types";
 
 export const MAX_LEVEL = 99;
 
 /**
- * Laskee resurssin perus-XP:n sen vaatiman tason perusteella.
- * Tavoite: Kun tason nousu hidastuu (40 * L^2), resurssien antama XP kasvaa.
- * Kaava: 10 + (Level * 1.5) -> Lvl 1 = 11 XP | Lvl 50 = 85 XP | Lvl 99 = 158 XP
+ * calculateResourceXp
+ * Dictates the base XP granted by an action.
+ * Scales upward so higher-tier actions yield better progression.
+ * Formula: 10 + (Level * 1.5)
  */
 export const calculateResourceXp = (level: number): number => {
   return Math.floor(10 + level * 1.5);
 };
 
 /**
- * Laskee toiminnon oletusajan (ms) tason perusteella.
- * Kaava: 3000ms + (Level * 100ms) -> Lvl 1 = 3.1s | Lvl 99 = ~13s
+ * calculateResourceInterval
+ * Determines how long an action takes to complete (in milliseconds) before multipliers are applied.
+ * Formula: 3000ms + (Level * 100ms)
  */
 export const calculateResourceInterval = (level: number): number => {
   return Math.floor(3000 + level * 100);
 };
 
 /**
- * Laskee raaka-aineen oletusarvon (myyntihinta) tason perusteella.
- * Kaava: 1 + (Level^1.2) -> Lvl 1 = 2g | Lvl 50 = ~110g | Lvl 99 = ~249g
+ * calculateResourceValue
+ * Computes the baseline monetary value of an item for marketplace or vendor trades.
+ * Formula: 1 + (Level^1.2)
  */
 export const calculateResourceValue = (level: number): number => {
   return Math.floor(1 + Math.pow(level, 1.2));
 };
 
 /**
- * APUFUNKTIO: Automaattisesti täyttää puuttuvat statsit resurssille sen tason perusteella.
+ * autoScaleResource
+ * Utility to programmatically populate missing properties on a resource definition
+ * based on its assigned level, preventing the need to manually hardcode redundant stats.
  */
 export const autoScaleResource = (resource: Resource): Resource => {
   const level = resource.level || 1;

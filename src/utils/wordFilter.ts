@@ -1,8 +1,4 @@
-// src/utils/wordFilter.ts
-
-// Tuodaan lista. Jos käytät Viteä, voit käyttää ?raw importtia.
-// Jos tiedosto on public-kansiossa, se pitäisi ladata asyncronisesti.
-// Tässä esimerkissä oletetaan, että lista on tuotu koodiin:
+// Importing the raw banned word dictionary
 import enWordsRaw from "../../banWords/en.txt?raw";
 
 const bannedWords = enWordsRaw
@@ -10,25 +6,38 @@ const bannedWords = enWordsRaw
   .map((word) => word.trim().toLowerCase())
   .filter((word) => word.length > 0);
 
+/**
+ * wordFilter
+ * Subsystem handling chat and username sanitization to maintain a safe environment.
+ */
 export const wordFilter = {
   /**
-   * Tarkistaa sisältääkö teksti kiellettyjä sanoja.
-   * Palauttaa true, jos teksti on kielletty.
+   * isProfane
+   * Checks if an input string contains any blacklisted sequences.
+   * Primarily used to block inappropriate username creation.
+   *
+   * @param text - The string to evaluate
+   * @returns Boolean indicating if the text contains profanity
    */
   isProfane: (text: string): boolean => {
     const lowerInput = text.toLowerCase();
-    // Tarkistetaan sisältääkö syöte jonkin kielletyn sanan
     return bannedWords.some((banned) => lowerInput.includes(banned));
   },
 
   /**
-   * Vaihtaa kielletyt sanat tähdiksi.
-   * Käytettäväksi myöhemmin chatissa.
+   * censor
+   * Replaces offensive words with asterisk characters (*).
+   * Ensures that regular words containing banned substrings are not accidentally censored.
+   * Used heavily in processing the Global Chat feed.
+   *
+   * @param text - The raw chat message
+   * @returns Cleaned string suitable for public display
    */
   censor: (text: string): string => {
     let filteredText = text;
     bannedWords.forEach((word) => {
-      const regex = new RegExp(`\\b${word}\\b`, "gi"); // \b hakee vain kokonaisia sanoja
+      // The \b boundaries ensure we only match standalone whole words
+      const regex = new RegExp(`\\b${word}\\b`, "gi");
       filteredText = filteredText.replace(regex, "*".repeat(word.length));
     });
     return filteredText;

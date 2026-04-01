@@ -5,9 +5,9 @@ export interface GeneratedEnemyStats {
 }
 
 /**
- * HARDKOODATUT BOSSIT (Manuaalinen tasapainotus)
- * Täältä voit säätää jokaisen pomon statsit täysin vapaasti ilman,
- * että se vaikuttaa muihin maailmoihin tai perusvihollisiin.
+ * WORLD BOSS CONFIGURATION (Manual Balancing)
+ * Boss stats are entirely hardcoded here to allow for precise difficulty spikes
+ * without disrupting the mathematical flow of standard enemies.
  */
 const BOSS_STATS: Record<number, GeneratedEnemyStats> = {
   1: { enemyHp: 400, enemyAttack: 18, xpReward: 250 },
@@ -21,9 +21,10 @@ const BOSS_STATS: Record<number, GeneratedEnemyStats> = {
 };
 
 /**
- * Vihollisten skaalaus.
- * Perusviholliset (Zonet 1-9) käyttävät edelleen eksponentiaalista kaavaa,
- * mutta Bossit (Zone 10) haetaan yllä olevasta taulukosta.
+ * calculateEnemyStats
+ * Generates health, damage, and XP values for a given combat zone.
+ * Standard enemies (Zones 1-9) scale exponentially.
+ * Zone 10 triggers the hardcoded World Boss stats.
  */
 export const calculateEnemyStats = (
   world: number,
@@ -31,9 +32,8 @@ export const calculateEnemyStats = (
 ): GeneratedEnemyStats => {
   const isBoss = zone === 10;
 
-  // Jos vihollinen on pomo, palautetaan suoraan hardkoodatut statsit!
   if (isBoss) {
-    // Fallback: Jos world on yli 8 (esim. tulevat päivitykset), luodaan placeholder
+    // Fallback block for future expansions beyond the currently mapped worlds
     return (
       BOSS_STATS[world] || {
         enemyHp: 200000,
@@ -43,20 +43,20 @@ export const calculateEnemyStats = (
     );
   }
 
-  // --- PERUSVIHOLLISTEN (Zonet 1-9) LASKENTA ---
+  // --- STANDARD ENEMY SCALING (Zones 1-9) ---
   const HP_BASE = 100;
   const DMG_BASE = 10;
   const XP_BASE = 15;
 
-  // HP kasvaa maltillisesti 2.2x per maailma
+  // HP scales moderately (2.2x per world)
   const worldBaseHp = HP_BASE * Math.pow(2.2, world - 1);
 
-  // Damage kasvaa kovempaa (3.4x per maailma) vastatakseen pelaajan armoria
+  // Damage scales aggressively (3.4x per world) to counter exponential player armor scaling
   const worldBaseDmg = DMG_BASE * Math.pow(3.4, world - 1);
 
   const worldBaseXp = XP_BASE * Math.pow(2.2, world - 1);
 
-  // Zonet 1-9 vaikeutuvat maltilliset 8% kerrallaan maailman sisällä
+  // Zones 1-9 increase difficulty by a flat 8% per zone within the current world
   const zoneMultiplier = 1 + (zone - 1) * 0.08;
 
   return {

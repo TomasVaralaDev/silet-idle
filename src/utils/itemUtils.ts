@@ -2,13 +2,12 @@ import { getItemDetails } from "../data";
 import type { Resource } from "../types";
 
 /**
- * Hakee esineen tiedot ID:n perusteella.
- * Käyttää pelin dynaamista päätehdasta (getItemDetails),
- * jotta myös generoidut esineet (avaimet, lootit, lumotut varusteet) otetaan huomioon.
+ * getItemById
+ * Serves as a wrapper around the dynamic central factory (getItemDetails).
+ * Ensures that generated items (like enchanted gear or randomized keys) are
+ * resolved correctly, converting nulls to undefined to maintain type safety.
  */
 export const getItemById = (id: string): Resource | undefined => {
   const item = getItemDetails(id);
-
-  // Palautetaan undefined nullin sijaan, jotta tyypitys säilyy samana kuin aiemmin
   return item !== null ? item : undefined;
 };

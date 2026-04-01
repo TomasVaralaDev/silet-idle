@@ -1,6 +1,9 @@
 export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
-// Määritellään värit kerran ja käytetään kaikkialla
+/**
+ * Global styling configuration for Item Rarities.
+ * Centralized mapping to ensure UI consistency across tooltips, inventory grids, and modals.
+ */
 export const RARITY_STYLES: Record<
   Rarity,
   {
@@ -54,7 +57,7 @@ export const RARITY_STYLES: Record<
   },
 };
 
-// Apufunktio tyylien hakemiseen (oletuksena common)
+// Safety wrapper to prevent UI crashes if an item lacks a defined rarity
 export const getRarityStyle = (rarity?: string) => {
   const key = (rarity || "common") as Rarity;
   return RARITY_STYLES[key] || RARITY_STYLES.common;

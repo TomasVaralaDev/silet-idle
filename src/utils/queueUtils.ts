@@ -1,6 +1,11 @@
 import { getSpeedMultiplier } from "./gameUtils";
 import type { QueueItem, ActiveAction, GameState, Resource } from "../types";
 
+/**
+ * calculateQueueTimeLeft
+ * Parses the entire action queue and calculates the total estimated real-world time (in MS)
+ * required to complete all pending tasks. Accounts for dynamic speed multipliers from gear and upgrades.
+ */
 export const calculateQueueTimeLeft = (
   queue: QueueItem[],
   activeAction: ActiveAction | null,
@@ -14,7 +19,6 @@ export const calculateQueueTimeLeft = (
   let totalMs = 0;
 
   queue.forEach((item, index) => {
-    // Haetaan kategoria ja etsitään sieltä oikea resurssi
     const skillData = gameData[item.skill];
     const resource = skillData?.find((r: Resource) => r.id === item.resourceId);
 
@@ -23,11 +27,11 @@ export const calculateQueueTimeLeft = (
     const baseInterval = resource.interval || 3000;
     const upgradeMultiplier = getSpeedMultiplier(item.skill, upgrades);
 
+    // Apply specific Rune speed bonuses
     let runeSpeedBonus = 0;
     if (equipment?.rune) {
       const runeDetails = getItemDetailsData(equipment.rune);
       if (runeDetails?.skillModifiers) {
-        // Turvallinen tyyppimuunnos, jotta TS ymmärtää dynaamisen avaimen
         const modKey = `${item.skill}Speed` as keyof NonNullable<
           Resource["skillModifiers"]
         >;
@@ -40,13 +44,13 @@ export const calculateQueueTimeLeft = (
 
     const remainingCompletions = item.amount - item.completed;
 
+    // Deduct time already spent processing the currently active task
     if (
       index === 0 &&
       activeAction &&
       activeAction.resourceId === item.resourceId
     ) {
       if (remainingCompletions > 0) {
-        // Vähennetään jo tehty progress
         const timeForCurrentItem = Math.max(
           0,
           activeAction.targetTime - activeAction.progress,

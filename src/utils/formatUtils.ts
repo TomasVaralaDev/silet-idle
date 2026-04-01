@@ -1,7 +1,7 @@
-// src/utils/formatUtils.ts
-
 /**
- * Muotoilee suuret luvut luettavaan muotoon (k, M, B, T...)
+ * formatNumber
+ * Converts large integers into human-readable shorthand (k, M, B, T).
+ * E.g., 1500000 -> "1.5M"
  */
 export const formatNumber = (num: number): string => {
   if (num < 1000) return Math.floor(num).toString();
@@ -13,6 +13,7 @@ export const formatNumber = (num: number): string => {
     { value: 1e3, symbol: "k" },
   ];
 
+  // Fallback to scientific notation for numbers beyond Trillions
   if (num >= 1e15) {
     return num.toExponential(2).replace("+", "");
   }
@@ -21,6 +22,7 @@ export const formatNumber = (num: number): string => {
 
   if (suffix) {
     const formatted = (num / suffix.value).toFixed(1);
+    // Remove trailing ".0" for cleaner UI
     return formatted.endsWith(".0")
       ? formatted.slice(0, -2) + suffix.symbol
       : formatted + suffix.symbol;
@@ -30,8 +32,9 @@ export const formatNumber = (num: number): string => {
 };
 
 /**
- * Muotoilee taistelun hyökkäysnopeuden millisekunneista sekunneiksi.
- * Esim. 2400 -> "2.4s"
+ * formatAttackSpeed
+ * Converts raw millisecond intervals into readable seconds.
+ * E.g., 2400 -> "2.4s"
  */
 export const formatAttackSpeed = (ms: number | undefined): string => {
   if (!ms) return "0s";
@@ -39,10 +42,9 @@ export const formatAttackSpeed = (ms: number | undefined): string => {
 };
 
 /**
- * Muotoilee jäljellä olevan ajan tyylikkäästi queue-paneeliin:
- * - >1h: "1h 15m 30s"
- * - <1h: "15m 30s"
- * - <1m: "30s"
+ * formatRemainingTime
+ * Formats a millisecond duration into a clean, hierarchical string (h/m/s).
+ * Adapts formatting based on the remaining duration length.
  */
 export const formatRemainingTime = (ms: number): string => {
   if (ms <= 0) return "Ready";

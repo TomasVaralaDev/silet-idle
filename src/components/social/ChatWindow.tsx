@@ -37,7 +37,9 @@ export default function ChatWindow({ myUid, friendUid }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-transparent border-l border-border/50 text-left font-sans overflow-hidden">
-      {/* Chat Header */}
+      {
+        // CHAT HEADER
+      }
       <div className="bg-panel/50 p-3 flex items-center gap-3 border-b border-border/50 backdrop-blur-sm shrink-0">
         <button
           onClick={() => setActiveChat(null)}
@@ -50,7 +52,9 @@ export default function ChatWindow({ myUid, friendUid }: Props) {
         </span>
       </div>
 
-      {/* Messages Area */}
+      {
+        // MESSAGES AREA
+      }
       <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
         {messages.map((msg) => {
           const isMe = msg.senderId === myUid;
@@ -74,7 +78,9 @@ export default function ChatWindow({ myUid, friendUid }: Props) {
         <div ref={dummyScrollRef} />
       </div>
 
-      {/* Input Area - MUOKATTU TÄSMÄÄMÄÄN GLOBAL CHATTIIN */}
+      {
+        // INPUT AREA
+      }
       <form
         onSubmit={handleSend}
         className="p-3 border-t border-border/50 bg-panel/20 shrink-0"

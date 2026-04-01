@@ -1,7 +1,9 @@
 export default function CombatArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja selkeä */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function CombatArticle() {
         </p>
       </header>
 
-      {/* BATTLE MECHANICS */}
+      {
+        // BATTLE MECHANICS
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -43,7 +47,9 @@ export default function CombatArticle() {
         </div>
       </section>
 
-      {/* COMBAT SETTINGS (UUSI OSIO: Auto Push & One Time Kill) */}
+      {
+        // ENGAGEMENT SETTINGS
+      }
       <section className="space-y-6">
         <h3 className="text-xs font-bold text-tx-muted uppercase tracking-[0.2em]">
           Engagement Settings
@@ -77,7 +83,9 @@ export default function CombatArticle() {
         </div>
       </section>
 
-      {/* WEAPON STYLES */}
+      {
+        // COMBAT STYLES
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -129,7 +137,9 @@ export default function CombatArticle() {
         </div>
       </section>
 
-      {/* COMBAT LEVELS & STATS */}
+      {
+        // COMBAT LEVELS & STATS
+      }
       <section className="space-y-6">
         <h3 className="text-xs font-bold text-tx-muted uppercase tracking-[0.2em]">
           Combat Disciplines & Attributes
@@ -159,7 +169,9 @@ export default function CombatArticle() {
         </div>
       </section>
 
-      {/* ENEMY INTEL & LOOT */}
+      {
+        // ENEMY INTEL & LOOT
+      }
       <section className="space-y-6 pt-4">
         <div className="flex items-center gap-3">
           <img
@@ -202,7 +214,9 @@ export default function CombatArticle() {
         </div>
       </section>
 
-      {/* RETREAT VS DEATH (UUSI OSIO: Cooldownien ero) */}
+      {
+        // RETREAT VS DEATH
+      }
       <section className="space-y-4">
         <h3 className="text-lg font-bold text-danger/80 uppercase tracking-wider">
           Retreating vs. Death
@@ -237,7 +251,9 @@ export default function CombatArticle() {
         </div>
       </section>
 
-      {/* ADVENTURER'S TIP */}
+      {
+        // ADVENTURER'S TIP
+      }
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
           src="./assets/ui/icon_achievements.png"
@@ -261,7 +277,9 @@ export default function CombatArticle() {
   );
 }
 
-// Apukomponentti
+{
+  // Helper Component
+}
 function StatDetail({
   label,
   desc,

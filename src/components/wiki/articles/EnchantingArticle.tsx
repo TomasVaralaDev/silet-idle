@@ -1,7 +1,9 @@
 export default function EnchantingArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja selkeä */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function EnchantingArticle() {
         </p>
       </header>
 
-      {/* LAWS OF ENCHANTING - Säännöt roolipelimuodossa */}
+      {
+        // LAWS OF ENCHANTING
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -33,7 +37,6 @@ export default function EnchantingArticle() {
 
         <div className="bg-panel/5 border border-border rounded-lg overflow-hidden">
           <div className="divide-y divide-border/30">
-            {/* Rule 1: The 20% Boost */}
             <div className="p-6 flex gap-6 group">
               <div className="text-xs font-bold text-border group-hover:text-accent transition-colors pt-1">
                 01
@@ -53,7 +56,6 @@ export default function EnchantingArticle() {
               </div>
             </div>
 
-            {/* Rule 2: Scaling Costs */}
             <div className="p-6 flex gap-6 group">
               <div className="text-xs font-bold text-border group-hover:text-accent transition-colors pt-1">
                 02
@@ -73,7 +75,9 @@ export default function EnchantingArticle() {
         </div>
       </section>
 
-      {/* SCROLLS & SUCCESS RATES (UUSI OSIO: T1-T4 ja prosentit) */}
+      {
+        // SCROLL TIERS & SUCCESS RATES
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -119,7 +123,9 @@ export default function EnchantingArticle() {
         </div>
       </section>
 
-      {/* BOSS WEAPON RESTRICTION */}
+      {
+        // BOSS WEAPON RESTRICTION
+      }
       <section className="space-y-4">
         <div className="p-5 border border-danger/30 bg-danger/5 rounded-lg flex gap-4 items-start">
           <img
@@ -145,7 +151,9 @@ export default function EnchantingArticle() {
         </div>
       </section>
 
-      {/* STRATEGIC FOOTER */}
+      {
+        // STRATEGIC FOOTER
+      }
       <div className="p-4 border-l border-border bg-panel/10 flex items-center gap-3">
         <img
           src="./assets/ui/icon_achievements.png"
@@ -162,7 +170,9 @@ export default function EnchantingArticle() {
   );
 }
 
-// Apukomponentti T1-T4 scrolleille
+{
+  // Helper Component for Scroll Tiers
+}
 function ScrollTierCard({
   tier,
   name,

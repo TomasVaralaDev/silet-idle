@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { WIKI_TABS, type WikiTabId } from "./wikiConfig";
-import { Home, ArrowLeft, ArrowRight, BookOpen } from "lucide-react"; // LISÄTTY IKONIT
+import { Home, ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
 
 export default function WikiView() {
   const [activeTab, setActiveTab] = useState<WikiTabId>("index");
@@ -9,7 +9,9 @@ export default function WikiView() {
     (tab) => tab.id === activeTab,
   )?.component;
 
-  // LASKETAAN SEURAAVA JA EDELLINEN LUKU
+  {
+    // Logic to determine previous and next chapters
+  }
   const sequence = WIKI_TABS.filter((t) => t.id !== "index");
   const currentIndex = sequence.findIndex((t) => t.id === activeTab);
   const prevChapter = currentIndex > 0 ? sequence[currentIndex - 1] : null;
@@ -22,7 +24,9 @@ export default function WikiView() {
     <div className="h-full flex flex-col bg-app-base font-sans overflow-hidden text-left relative">
       <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('./assets/ui/paper_texture.jpg')] mix-blend-overlay z-0" />
 
-      {/* HEADER */}
+      {
+        // HEADER
+      }
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/80 flex items-center gap-4 md:gap-6 sticky top-0 z-30 backdrop-blur-md shrink-0 shadow-sm">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-warning/10 border border-warning/30 shadow-[0_0_15px_rgba(var(--color-warning)/0.2)] shrink-0">
           <img
@@ -57,10 +61,12 @@ export default function WikiView() {
       </div>
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden relative z-10">
-        {/* NAVIGATION SIDEBAR / TOP BAR */}
+        {
+          // NAVIGATION SIDEBAR / TOP BAR
+        }
         <nav className="w-full md:w-72 bg-panel/30 border-b md:border-b-0 md:border-r border-border/50 flex shrink-0 z-20 shadow-lg md:shadow-none">
           <div className="flex md:flex-col overflow-x-auto md:overflow-y-auto custom-scrollbar p-2 md:p-6 gap-2 w-full snap-x">
-            <div className="hidden md:flex items-center gap-3 text-[10px] font-black text-warning uppercase tracking-[0.2em] mb-4 px-2 opacity-80 border-b border-warning/20 pb-2">
+            <div className="hidden md:block text-[10px] font-black text-tx-muted uppercase tracking-[0.2em] mb-4 px-2 opacity-80 border-b border-warning/20 pb-2">
               Table of Contents
             </div>
 
@@ -109,18 +115,26 @@ export default function WikiView() {
           </div>
         </nav>
 
-        {/* DYNAMIC CONTENT AREA */}
+        {
+          // DYNAMIC CONTENT AREA
+        }
         <div className="flex-1 overflow-y-auto custom-scrollbar p-5 md:p-10 bg-app-base/50 pb-32 md:pb-12">
           <div className="max-w-3xl mx-auto bg-panel/30 rounded-2xl md:rounded-3xl border border-border/50 p-6 md:p-10 shadow-2xl backdrop-blur-sm relative">
             <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/20 to-transparent pointer-events-none rounded-l-2xl md:rounded-l-3xl" />
 
-            {/* RENDER ACTIVE ARTICLE */}
+            {
+              // RENDER ACTIVE ARTICLE
+            }
             {ActiveComponent && <ActiveComponent setActiveTab={setActiveTab} />}
 
-            {/* --- CHAPTER NAVIGATION (NÄKYY ARTIKKELIN LOPUSSA) --- */}
+            {
+              // CHAPTER NAVIGATION
+            }
             {activeTab !== "index" && (
               <div className="mt-16 pt-8 border-t border-border/50 flex flex-col sm:flex-row gap-4 justify-between items-center relative z-10">
-                {/* PREV BUTTON */}
+                {
+                  // PREV BUTTON
+                }
                 {prevChapter ? (
                   <button
                     onClick={() => setActiveTab(prevChapter.id)}
@@ -140,10 +154,12 @@ export default function WikiView() {
                     </div>
                   </button>
                 ) : (
-                  <div className="hidden sm:block" /> // Täyte, jos ei ole edellistä
+                  <div className="hidden sm:block" />
                 )}
 
-                {/* NEXT BUTTON */}
+                {
+                  // NEXT BUTTON
+                }
                 {nextChapter ? (
                   <button
                     onClick={() => setActiveTab(nextChapter.id)}

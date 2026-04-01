@@ -1,7 +1,9 @@
 export default function ExpeditionsArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja selkeä */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -19,7 +21,9 @@ export default function ExpeditionsArticle() {
         </p>
       </header>
 
-      {/* DEPLOYMENT MECHANICS */}
+      {
+        // DEPLOYMENT MECHANICS
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -61,7 +65,9 @@ export default function ExpeditionsArticle() {
         </div>
       </section>
 
-      {/* REGIONAL LOOT (Keys & Currency) */}
+      {
+        // REGIONAL SPOILS
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -128,7 +134,9 @@ export default function ExpeditionsArticle() {
         </div>
       </section>
 
-      {/* ANCIENT RUNES (TÄRKEÄ ERIKOISUUS) */}
+      {
+        // EXCLUSIVE REWARDS: RUNES
+      }
       <section className="space-y-4">
         <div className="p-5 border border-accent/30 bg-accent/5 rounded-lg flex gap-4 items-start">
           <img
@@ -151,7 +159,9 @@ export default function ExpeditionsArticle() {
         </div>
       </section>
 
-      {/* ADVENTURER'S TIP */}
+      {
+        // ADVENTURER'S TIP
+      }
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
           src="./assets/ui/icon_achievements.png"

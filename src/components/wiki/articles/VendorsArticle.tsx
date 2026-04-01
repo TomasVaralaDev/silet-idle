@@ -1,7 +1,9 @@
 export default function VendorsArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function VendorsArticle() {
         </p>
       </header>
 
-      {/* HOW TO TRADE */}
+      {
+        // HOW TO TRADE
+      }
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-6 bg-panel/5 border border-border rounded-lg space-y-3">
           <div className="flex items-center gap-2">
@@ -58,14 +62,18 @@ export default function VendorsArticle() {
         </div>
       </section>
 
-      {/* VENDOR INVENTORY (Scrolls, Potions, Mystery Bags) */}
+      {
+        // VENDOR INVENTORY
+      }
       <section className="space-y-6">
         <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
           Vendor Inventory
         </h3>
 
         <div className="space-y-4">
-          {/* Scrolls */}
+          {
+            // Scrolls
+          }
           <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
             <img
               src="./assets/items/enchantingscroll/enchanting_tier3.png"
@@ -85,7 +93,9 @@ export default function VendorsArticle() {
             </div>
           </div>
 
-          {/* Potions */}
+          {
+            // Potions
+          }
           <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
             <img
               src="./assets/items/alchemy/potion_tier5.png"
@@ -106,7 +116,9 @@ export default function VendorsArticle() {
             </div>
           </div>
 
-          {/* Mystery Bags */}
+          {
+            // Mystery Bags
+          }
           <div className="bg-panel/5 border border-border p-5 rounded-lg flex gap-4 items-start">
             <img
               src="./assets/items/pouch_legendary.png"
@@ -127,7 +139,9 @@ export default function VendorsArticle() {
         </div>
       </section>
 
-      {/* ADVENTURER'S TIP - Stacking scrolls */}
+      {
+        // ADVENTURER'S TIP
+      }
       <div className="p-4 border-l border-border bg-panel/10 flex gap-4 items-start">
         <img
           src="./assets/ui/icon_achievements.png"

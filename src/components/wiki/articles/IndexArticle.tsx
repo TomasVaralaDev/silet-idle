@@ -6,12 +6,16 @@ interface Props {
 }
 
 export default function IndexArticle({ setActiveTab }: Props) {
-  // Suodatetaan pois tämä etusivu itse
+  {
+    // Filter out index tab from the list
+  }
   const chapters = WIKI_TABS.filter((tab) => tab.id !== "index");
 
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-3xl mx-auto relative z-10">
-      {/* WELCOME HEADER - Minimalistinen ja asiallinen */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -28,7 +32,9 @@ export default function IndexArticle({ setActiveTab }: Props) {
         </p>
       </header>
 
-      {/* CHAPTER GRID - Puhdas, ilman neon-taustoja */}
+      {
+        // CHAPTER SELECTION
+      }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {chapters.map((chapter, index) => (
           <button
@@ -36,13 +42,17 @@ export default function IndexArticle({ setActiveTab }: Props) {
             onClick={() => setActiveTab(chapter.id)}
             className="bg-panel/5 border border-border/50 hover:bg-panel/10 hover:border-border transition-all p-5 rounded-lg flex flex-col text-left group relative overflow-hidden"
           >
-            {/* Luvun numero taustalla (hyvin himmeä ja tyylikäs) */}
+            {
+              // Chapter number background display
+            }
             <div className="absolute right-4 bottom-2 text-6xl font-black text-tx-muted/5 group-hover:text-tx-muted/10 transition-colors pointer-events-none select-none">
               {String(index + 1).padStart(2, "0")}
             </div>
 
             <div className="flex items-start gap-4 relative z-10">
-              {/* Ikonin säiliö rauhoitettu */}
+              {
+                // Icon container
+              }
               <div className="w-12 h-12 bg-panel/10 border border-border/50 rounded flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                 <img
                   src={chapter.icon}
@@ -63,7 +73,9 @@ export default function IndexArticle({ setActiveTab }: Props) {
               </div>
             </div>
 
-            {/* Alapalkki */}
+            {
+              // Footer link
+            }
             <div className="mt-4 pt-3 border-t border-border/20 flex justify-end relative z-10">
               <span className="text-[10px] font-bold uppercase tracking-widest text-tx-muted group-hover:text-tx-main flex items-center gap-2 transition-colors">
                 Open Chapter{" "}

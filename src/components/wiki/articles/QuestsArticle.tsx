@@ -1,7 +1,9 @@
 export default function QuestsArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja selkeä */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function QuestsArticle() {
         </p>
       </header>
 
-      {/* THE RESET SYSTEM */}
+      {
+        // RESET SYSTEM
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
@@ -36,7 +40,9 @@ export default function QuestsArticle() {
         </div>
       </section>
 
-      {/* QUEST CATEGORIES */}
+      {
+        // QUEST CATEGORIES
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -103,7 +109,9 @@ export default function QuestsArticle() {
         </div>
       </section>
 
-      {/* ADVENTURER'S TIP */}
+      {
+        // ADVENTURER'S TIP
+      }
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
           src="./assets/ui/icon_achievements.png"

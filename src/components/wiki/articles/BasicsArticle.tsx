@@ -1,7 +1,9 @@
 export default function BasicsArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - Roolipelihenkinen mutta selkeä */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function BasicsArticle() {
         </p>
       </header>
 
-      {/* THE CORE LOOP - Päivitetty RPG-looppi (Gather -> Craft -> Enchant -> Combat) */}
+      {
+        // CORE LOOP
+      }
       <section className="space-y-6">
         <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
           The Core Loop
@@ -98,7 +102,9 @@ export default function BasicsArticle() {
         </div>
       </section>
 
-      {/* WORLD STRUCTURE - Boss avaimet ja unlockit nostettu esiin */}
+      {
+        // WORLD PROGRESSION
+      }
       <section className="space-y-4">
         <h3 className="text-lg font-bold text-tx-main uppercase tracking-wider">
           World Progression
@@ -139,7 +145,9 @@ export default function BasicsArticle() {
           </div>
         </div>
 
-        {/* Mitä bossin kaataminen tekee */}
+        {
+          // Boss Defeat Rewards
+        }
         <div className="bg-panel/5 border border-border p-4 rounded-lg mt-2">
           <p className="text-[11px] text-tx-muted leading-relaxed">
             Defeating a World Boss requires a{" "}
@@ -153,7 +161,9 @@ export default function BasicsArticle() {
         </div>
       </section>
 
-      {/* STRATEGIC NOTE */}
+      {
+        // ADVENTURER'S NOTE
+      }
       <div className="p-4 border-l border-warning bg-warning/5 flex gap-4 items-start">
         <img
           src="./assets/ui/icon_achievements.png"

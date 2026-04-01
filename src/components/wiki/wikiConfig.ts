@@ -32,7 +32,9 @@ export interface WikiTabDef {
   component: React.FC<{ setActiveTab: (id: WikiTabId) => void }>;
 }
 
-// JÄRJESTETTY PROGRESSION MUKAAN:
+{
+  // Wiki tabs ordered by game progression
+}
 export const WIKI_TABS: WikiTabDef[] = [
   {
     id: "index",

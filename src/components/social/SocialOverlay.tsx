@@ -47,7 +47,9 @@ export default function SocialOverlay() {
 
   return (
     <>
-      {/* AVAUSPAINIKE */}
+      {
+        // TOGGLE BUTTON
+      }
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -59,7 +61,9 @@ export default function SocialOverlay() {
         </button>
       )}
 
-      {/* OIKEAN REUNAN PANEELI */}
+      {
+        // SIDEBAR PANEL
+      }
       <div
         style={{
           width: isOpen ? `${width}px` : "0px",
@@ -67,7 +71,9 @@ export default function SocialOverlay() {
         }}
         className="fixed top-0 right-0 h-screen z-50 bg-app-base/80 backdrop-blur-md border-border/50 flex flex-col shadow-[-10px_0_30px_rgba(0,0,0,0.6)] transition-[width] duration-300 ease-in-out"
       >
-        {/* RESIZE-KAHVA */}
+        {
+          // RESIZE HANDLE
+        }
         {isOpen && (
           <div
             onMouseDown={startResizing}
@@ -75,17 +81,20 @@ export default function SocialOverlay() {
           />
         )}
 
-        {/* PANEELIN SISÄLTÖ */}
+        {
+          // PANEL CONTENT
+        }
         {isOpen && (
           <div className="flex flex-col h-full w-full min-w-[280px] animate-in fade-in duration-500">
-            {/* HEADER & TABS */}
+            {
+              // HEADER AND NAVIGATION
+            }
             <div className="bg-panel/60 border-b border-border/50 flex flex-col shrink-0">
               <div className="p-3 flex justify-between items-center bg-app-base/30">
                 <h3 className="font-bold text-tx-main text-sm uppercase tracking-widest truncate mr-2">
                   {activeChatId ? "Private" : "Social Hub"}
                 </h3>
                 <div className="flex items-center gap-3 shrink-0">
-                  {/* ID SPAN POISTETTU TÄSTÄ */}
                   <button
                     onClick={() => setIsOpen(false)}
                     className="text-tx-muted hover:text-danger hover:bg-danger/10 w-6 h-6 rounded flex items-center justify-center transition-colors"
@@ -126,7 +135,9 @@ export default function SocialOverlay() {
               )}
             </div>
 
-            {/* SISÄLTÖALUE */}
+            {
+              // CONTENT AREA
+            }
             <div className="flex-1 overflow-hidden relative">
               {activeChatId ? (
                 <ChatWindow myUid={user.uid} friendUid={activeChatId} />

@@ -1,7 +1,9 @@
 export default function TreasuresArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja selkeä */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function TreasuresArticle() {
         </p>
       </header>
 
-      {/* STANDARD DROPS */}
+      {
+        // STANDARD DROPS
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -56,7 +60,9 @@ export default function TreasuresArticle() {
         </div>
       </section>
 
-      {/* BOSS DROPS (10% Chance) */}
+      {
+        // BOSS ARTIFACTS
+      }
       <section className="space-y-4">
         <div className="flex items-center gap-3 mb-4">
           <img
@@ -86,7 +92,9 @@ export default function TreasuresArticle() {
         </div>
       </section>
 
-      {/* ADVENTURER'S TIP (Auto-loot) */}
+      {
+        // ADVENTURER'S TIP
+      }
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
           src="./assets/ui/icon_achievements.png"
@@ -109,7 +117,9 @@ export default function TreasuresArticle() {
   );
 }
 
-// Apukomponentti (Päivitetty tukemaan kuva-ikonia)
+{
+  // Helper Component for Loot Rows
+}
 function LootRow({
   label,
   rate,

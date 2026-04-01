@@ -6,10 +6,9 @@ import {
 } from "../../services/socialServices";
 import { calculateTotalLevel } from "../../utils/gameUtils";
 import { wordFilter } from "../../utils/wordFilter";
-import { CHAT_COLORS } from "../../data/chatColors"; // Tuodaan väridata
+import { CHAT_COLORS } from "../../data/chatColors";
 
 export default function GlobalChat({ myUid }: { myUid: string }) {
-  // Haetaan asetukset storesta
   const { social, setGlobalMessages, username, skills, settings } =
     useGameStore();
 
@@ -65,7 +64,6 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
       const filteredText = wordFilter.censor(input.trim());
       const displayName = `[Lv.${totalLevel}] ${username}`;
 
-      // Lähetetään viesti ja lisätään mukaan pelaajan valitsema chatColor ID
       await sendGlobalMessage(
         myUid,
         displayName,
@@ -83,7 +81,9 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
 
   return (
     <div className="flex flex-col h-full bg-transparent text-tx-main font-sans text-left overflow-hidden">
-      {/* KANAVAVALITSIN */}
+      {
+        // CHANNEL SELECTOR
+      }
       <div className="flex gap-1 p-2 bg-panel/30 border-b border-border/50 shrink-0">
         {(["global", "beginner"] as const).map((ch) => (
           <button
@@ -100,7 +100,9 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
         ))}
       </div>
 
-      {/* VIESTIALUE */}
+      {
+        // MESSAGES AREA
+      }
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-1 custom-scrollbar">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
@@ -118,13 +120,10 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
                 minute: "2-digit",
               });
 
-              // Etsitään väri datatiedostosta
               const colorData = CHAT_COLORS.find(
                 (c) => c.id === msg.senderColor,
               );
 
-              // LUETTAVUUDEN PARANNUS:
-              // Lisätään drop-shadow, jotta gradientit ja tummat värit erottuvat tummalla taustalla.
               const nameStyle: React.CSSProperties = {
                 ...(colorData?.style || {
                   color: isMe ? "var(--color-accent)" : "var(--color-warning)",
@@ -179,7 +178,9 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
         )}
       </div>
 
-      {/* KIRJOITUSKENTTÄ */}
+      {
+        // INPUT AREA
+      }
       <form
         onSubmit={handleSend}
         className="p-3 bg-transparent border-t border-border/50 shrink-0"
@@ -188,7 +189,7 @@ export default function GlobalChat({ myUid }: { myUid: string }) {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            maxLength={300} // LISÄÄ TÄMÄ RIVI
+            maxLength={300}
             placeholder={
               cooldownRemaining > 0
                 ? `Waiting... (${cooldownRemaining}s)`

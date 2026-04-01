@@ -66,15 +66,10 @@ export default function FriendList({ myUid }: { myUid: string }) {
     }
   };
 
-  const handleRemoveFriend = async (
-    friendUid: string,
-    //friendName: string,
-    e: React.MouseEvent,
-  ) => {
+  const handleRemoveFriend = async (friendUid: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveMenuId(null);
 
-    // Ei enää alerttia, poistetaan suoraan!
     try {
       removeFriendLocally(friendUid);
       await removeFriend(myUid, friendUid);
@@ -85,7 +80,9 @@ export default function FriendList({ myUid }: { myUid: string }) {
 
   return (
     <div className="flex flex-col h-full bg-transparent text-tx-main font-sans">
-      {/* Tabs */}
+      {
+        // NAVIGATION TABS
+      }
       <div className="flex border-b border-border/50 shrink-0">
         <button
           onClick={() => setActiveTab("friends")}
@@ -110,7 +107,9 @@ export default function FriendList({ myUid }: { myUid: string }) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
-        {/* VIEW: FRIENDS */}
+        {
+          // FRIENDS LIST VIEW
+        }
         {activeTab === "friends" && (
           <>
             <div className="p-2 mb-2 bg-panel/30 rounded border border-border">
@@ -144,6 +143,7 @@ export default function FriendList({ myUid }: { myUid: string }) {
 
             {friends.map((friend) => (
               <div
+                // Individual friend entry with chat navigation
                 key={friend.uid}
                 onClick={() => setActiveChat(friend.uid)}
                 className="relative p-3 bg-panel/50 hover:bg-panel-hover/80 rounded cursor-pointer flex justify-between items-center transition-all border border-border group"
@@ -189,7 +189,9 @@ export default function FriendList({ myUid }: { myUid: string }) {
           </>
         )}
 
-        {/* VIEW: PENDING */}
+        {
+          // PENDING REQUESTS VIEW
+        }
         {activeTab === "pending" && (
           <>
             {incoming.length > 0 && (

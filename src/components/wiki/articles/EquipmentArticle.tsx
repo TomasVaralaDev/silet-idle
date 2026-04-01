@@ -1,7 +1,9 @@
 export default function EquipmentArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja selkeä */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function EquipmentArticle() {
         </p>
       </header>
 
-      {/* EQUIPMENT SLOTS */}
+      {
+        // EQUIPMENT SLOTS
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -32,7 +36,9 @@ export default function EquipmentArticle() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Armor */}
+          {
+            // Armor
+          }
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
@@ -50,7 +56,9 @@ export default function EquipmentArticle() {
             </p>
           </div>
 
-          {/* Weapons */}
+          {
+            // Weapons
+          }
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
@@ -69,7 +77,9 @@ export default function EquipmentArticle() {
             </p>
           </div>
 
-          {/* Accessories */}
+          {
+            // Accessories
+          }
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
@@ -87,7 +97,9 @@ export default function EquipmentArticle() {
             </p>
           </div>
 
-          {/* Consumables */}
+          {
+            // Consumables
+          }
           <div className="bg-panel/5 border border-border p-5 rounded-lg space-y-2">
             <div className="flex items-center gap-2 text-tx-main">
               <img
@@ -107,7 +119,9 @@ export default function EquipmentArticle() {
         </div>
       </section>
 
-      {/* GEAR REQUIREMENTS & LIMITS (TÄRKEIN OSIO) */}
+      {
+        // REQUIREMENTS & AUGMENTATION
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -122,7 +136,9 @@ export default function EquipmentArticle() {
 
         <div className="bg-panel/10 border border-border/50 p-6 rounded-lg space-y-4">
           <ul className="space-y-4">
-            {/* Level Lock */}
+            {
+              // Level Lock
+            }
             <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px] border-b border-border/20 pb-4">
               <span className="text-tx-main font-bold uppercase tracking-wider">
                 Skill-Based Level Locks
@@ -144,7 +160,9 @@ export default function EquipmentArticle() {
               </div>
             </li>
 
-            {/* Enchanting Limit */}
+            {
+              // Enchanting Limit
+            }
             <li className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-[11px]">
               <span className="text-tx-main font-bold uppercase tracking-wider">
                 Maximum Enchantment
@@ -162,7 +180,9 @@ export default function EquipmentArticle() {
         </div>
       </section>
 
-      {/* TIP BOX */}
+      {
+        // ADVENTURER'S TIP
+      }
       <div className="flex gap-4 items-start p-4 border border-border/50 bg-panel/5 rounded-lg">
         <img
           src="./assets/ui/icon_achievements.png"

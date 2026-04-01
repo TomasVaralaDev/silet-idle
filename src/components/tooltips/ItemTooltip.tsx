@@ -12,25 +12,25 @@ export default function ItemTooltip() {
 
   const theme = getRarityStyle(item.rarity);
 
-  // Oletetaan, että item.rarity on esim. "Arcane", jolloin luodaan luokka "theme-arcane".
-  // Tämä vaaditaan, jotta div osaa lukea CSS-tiedostosi muuttujat.
+  // Apply rarity-specific theme class for dynamic CSS variable injection
   const themeClass = `theme-${item.rarity.toLowerCase()}`;
 
-  // Offset, jotta hiiri ei peitä tooltipin kulmaa
+  // Apply coordinate offsets to prevent the cursor from obstructing the tooltip view
   const tooltipX = x + 15;
   const tooltipY = y + 15;
 
   return (
     <div
-      // Lisätty themeClass ja vaihdettu taustaväriksi bg-[rgb(var(--color-panel)/0.95)]
       className={`fixed z-[9999] pointer-events-none w-64 ${themeClass} bg-[rgb(var(--color-panel)/0.95)] backdrop-blur-sm border ${theme.border} rounded-lg shadow-2xl p-3 flex flex-col gap-2`}
       style={{
         left: tooltipX,
         top: tooltipY,
-        // Voit lisätä myöhemmin logiikan, joka siirtää tooltipin vasemmalle/ylös, jos se menee ruudun ulkopuolelle
+        // Boundary check logic for screen edges can be implemented here
       }}
     >
-      {/* Header */}
+      {
+        // HEADER
+      }
       <div className="flex items-center gap-3 border-b border-slate-800 pb-2">
         <img src={item.icon} alt={item.name} className="w-8 h-8 pixelated" />
         <div>
@@ -44,21 +44,27 @@ export default function ItemTooltip() {
         </div>
       </div>
 
-      {/* Description */}
+      {
+        // DESCRIPTION
+      }
       {item.description && (
         <p className="text-[10px] text-slate-400 italic">
           "{item.description}"
         </p>
       )}
 
-      {/* Level Cap Varoitus (Nyt suoraan tooltipissä!) */}
+      {
+        // REQUIREMENTS
+      }
       {item.level && item.level > 1 && (
         <div className="text-[10px] font-bold text-amber-500/80 uppercase">
           Requires Lv. {item.level}
         </div>
       )}
 
-      {/* Stats - Näytetään lennosta */}
+      {
+        // STATS
+      }
       {(item.stats || item.healing) && (
         <div className="grid grid-cols-2 gap-1 mt-1">
           {item.stats?.attack && (
@@ -76,7 +82,6 @@ export default function ItemTooltip() {
           {item.stats?.attackSpeed && (
             <div className="text-[10px]">
               <span className="text-slate-500">SPD:</span>{" "}
-              {/* Muunnos sekunneiksi lisätty tähän! */}
               <span className="text-white">
                 {(item.stats.attackSpeed / 1000).toFixed(1)}s
               </span>
@@ -90,7 +95,9 @@ export default function ItemTooltip() {
         </div>
       )}
 
-      {/* Value */}
+      {
+        // VALUE
+      }
       <div className="flex items-center justify-end gap-1 mt-1">
         <span className="text-[10px] font-mono text-warning font-bold">
           {item.value}

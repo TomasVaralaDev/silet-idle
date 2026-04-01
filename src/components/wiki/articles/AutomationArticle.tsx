@@ -1,7 +1,9 @@
 export default function AutomationArticle() {
   return (
     <div className="animate-in fade-in duration-500 space-y-12 text-left font-sans max-w-2xl mx-auto">
-      {/* HEADER - RPG-henkinen ja asiallinen */}
+      {
+        // HEADER
+      }
       <header className="border-b border-border pb-8">
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-border text-tx-main text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
@@ -18,7 +20,9 @@ export default function AutomationArticle() {
         </p>
       </header>
 
-      {/* THE ACTION QUEUE - RPG-termit */}
+      {
+        // ACTION QUEUE
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img
@@ -36,7 +40,9 @@ export default function AutomationArticle() {
           the next task without requiring manual input.
         </p>
 
-        {/* Example Queue - Simuloitu UI-elementti */}
+        {
+          // Example Queue UI Simulation
+        }
         <div className="border border-border rounded-lg overflow-hidden max-w-md bg-panel/5">
           <div className="bg-panel/10 p-2 border-b border-border flex justify-between items-center">
             <span className="text-[9px] font-bold text-tx-muted uppercase tracking-widest pl-2">
@@ -78,7 +84,9 @@ export default function AutomationArticle() {
         </div>
       </section>
 
-      {/* OFFLINE PROGRESSION - Scifi vaihdettu fantasiaan */}
+      {
+        // OFFLINE PROGRESSION
+      }
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <img

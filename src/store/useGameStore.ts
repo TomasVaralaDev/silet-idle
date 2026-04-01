@@ -37,7 +37,7 @@ import {
   createAchievementSlice,
   type AchievementSlice,
 } from "./slices/achievementSlice";
-import { getFunctions, httpsCallable } from "firebase/functions"; // PUUTTUVAT TUONNIT LISÄTTY TÄNNE!
+import { getFunctions, httpsCallable } from "firebase/functions";
 import type { OfflineSummary } from "../systems/offlineSystem";
 
 interface RewardModalState {
@@ -46,6 +46,11 @@ interface RewardModalState {
   rewards: RewardEntry[];
 }
 
+/**
+ * FullStoreState
+ * Defines the complete boundary of the Zustand global state,
+ * uniting every localized slice interface into a single typed tree.
+ */
 export type FullStoreState = GameState &
   InventorySlice &
   SkillSlice &
@@ -78,11 +83,16 @@ export type FullStoreState = GameState &
       chatColor: string,
     ) => Promise<boolean>;
 
-    // --- TUTORIAALIN FUNKTIOT ---
+    // Tutorial hooks
     nextTutorialStep: () => void;
     completeTutorial: () => void;
   };
 
+/**
+ * DEFAULT_STATE
+ * Blueprint for creating fresh accounts. Defines every expected key
+ * to ensure undefined variables do not crash the engine during runtime.
+ */
 export const DEFAULT_STATE: GameState = {
   username: "Player",
   avatar: "./assets/avatars/avatar_1.png",
@@ -97,7 +107,7 @@ export const DEFAULT_STATE: GameState = {
     particles: true,
     theme: "theme-neon",
     chatColor: "default",
-    lastNameChange: 0, // UUSI: Jotta tiedämme frontendissä, onko nappi harmaana
+    lastNameChange: 0,
   },
   social: {
     friends: [],
@@ -169,9 +179,15 @@ export const DEFAULT_STATE: GameState = {
     enemyAttackTimer: 0,
   },
   enemy: null,
-  tutorial: { step: 0, isActive: true, isComplete: false }, // UUSI
+  tutorial: { step: 0, isActive: true, isComplete: false },
 };
 
+/**
+ * customMerge
+ * Deep-merging reconciliation function for handling loaded persistent state.
+ * Bridges the gap between old save versions and new patches, ensuring new keys
+ * are successfully injected into outdated saves without overwriting valid data.
+ */
 export const customMerge = (
   persistedState: unknown,
   currentState: FullStoreState,
@@ -179,6 +195,7 @@ export const customMerge = (
   const typedPersisted = persistedState as Partial<FullStoreState> | undefined;
   if (!typedPersisted) return currentState;
 
+  // Deep merge skills array to prevent null-reference crashes when new skills are added to patches
   const mergedSkills = { ...DEFAULT_STATE.skills };
   if (typedPersisted.skills) {
     (Object.keys(DEFAULT_STATE.skills) as SkillType[]).forEach((skillKey) => {
@@ -189,7 +206,7 @@ export const customMerge = (
     });
   }
 
-  // Vanhoille pelaajille ei pakoteta tutoriaalia
+  // Gracefully handle older saves that never experienced the tutorial update
   const isOldPlayer =
     typedPersisted.username && typedPersisted.username !== "Player";
 
@@ -223,7 +240,7 @@ export const customMerge = (
       activeChatFriendId: null,
       incomingRequests: typedPersisted.social?.incomingRequests || [],
       outgoingRequests: typedPersisted.social?.outgoingRequests || [],
-      globalMessages: [], // <--- TÄMÄ RIVI ON TÄRKEÄ! Älä lähetä näitä Firebaseen!
+      globalMessages: [], // CRITICAL: Prevent syncing large global chat array into permanent localstorage
       unlockedChatColors: typedPersisted.social?.unlockedChatColors || [
         "default",
       ],
@@ -233,7 +250,7 @@ export const customMerge = (
       ...(typedPersisted.quests || {}),
       dailyQuests: typedPersisted.quests?.dailyQuests || [],
     },
-    // UUSI TUTORIAL MERGE: Jos vanha pelaaja, tutoriaali on valmis
+    // Assign completed tutorial flag to older legacy players dynamically
     tutorial:
       typedPersisted.tutorial ||
       (isOldPlayer
@@ -248,6 +265,7 @@ export const customMerge = (
   } as FullStoreState;
 };
 
+// Global Initialization
 export const useGameStore = create<FullStoreState>()(
   persist(
     (set, get, ...args) => ({
@@ -255,6 +273,7 @@ export const useGameStore = create<FullStoreState>()(
       offlineSummary: null,
       rewardModal: { isOpen: false, title: "", rewards: [] },
 
+      // Inject logical subsystems
       ...createInventorySlice(set, get, ...args),
       ...createSkillSlice(set, get, ...args),
       ...createCombatSlice(set, get, ...args),
@@ -266,7 +285,7 @@ export const useGameStore = create<FullStoreState>()(
       ...createPremiumShopSlice(set, get, ...args),
       ...createAchievementSlice(set, get, ...args),
 
-      // --- TUTORIAL LOGIIKKA ---
+      // --- TUTORIAL LOGIC ---
       nextTutorialStep: () =>
         set((state) => ({
           tutorial: { ...state.tutorial, step: state.tutorial.step + 1 },
@@ -274,13 +293,18 @@ export const useGameStore = create<FullStoreState>()(
       completeTutorial: () =>
         set((state) => ({
           tutorial: { ...state.tutorial, isActive: false, isComplete: true },
-          coins: state.coins + 5000, // Starttibonus!
+          coins: state.coins + 5000, // Finishing tutorial reward
         })),
+
+      /**
+       * updateUserProfile
+       * Pushes profile setting modifications to Firebase, enforcing cooldowns and name validation
+       */
       updateUserProfile: async (newName, newAvatar, newTheme, newChatColor) => {
         const state = get();
         const currentName = state.username;
 
-        // Vaikka nimi ei muuttuisikaan, tallennetaan teema, avatar ja väri lokaalisti
+        // Visual and local data changes apply instantly
         set({
           avatar: newAvatar,
           settings: {
@@ -290,16 +314,17 @@ export const useGameStore = create<FullStoreState>()(
           },
         });
 
-        // Jos nimeä ei edes yritetty muuttaa, lopetetaan tähän ja palautetaan true (onnistui)
+        // Abort early if the display name was not actually altered
         if (newName === currentName) {
           get().emitEvent("success", "Profile updated!");
           return true;
         }
 
-        // Jos nimeä yritettiin muuttaa, tehdään Firebase Cloud Function kutsu
         try {
           get().emitEvent("info", "Updating identity...");
           const functions = getFunctions();
+
+          // Server-side validation handles profanity checks and cooldown timers
           const changeNameFn = httpsCallable<
             { newName: string },
             { success: boolean; lastNameChange: number }
@@ -308,7 +333,6 @@ export const useGameStore = create<FullStoreState>()(
           const result = await changeNameFn({ newName });
 
           if (result.data.success) {
-            // Backend hyväksyi! Päivitetään storeen uusi nimi ja serverin antama aikaleima
             set((prevState) => ({
               username: newName,
               settings: {
@@ -319,18 +343,21 @@ export const useGameStore = create<FullStoreState>()(
             get().emitEvent("success", "Identity updated successfully!");
             return true;
           } else {
-            // Jos backend palauttaa false jostain syystä
             get().emitEvent("error", "Could not update identity.");
             return false;
           }
         } catch (error: unknown) {
-          // KORJATTU ANY-VIRHE
           const message =
             error instanceof Error ? error.message : "Failed to change name.";
           get().emitEvent("error", message);
           return false;
         }
       },
+
+      /**
+       * emitEvent
+       * Generates a unique UI notification payload that disappears automatically.
+       */
       emitEvent: (type, message, icon) =>
         set((state) => {
           const newEvent: GameEvent = {
@@ -340,6 +367,7 @@ export const useGameStore = create<FullStoreState>()(
             icon,
             timestamp: Date.now(),
           };
+          // Truncate the queue to 50 to prevent memory bloating
           return { events: [newEvent, ...state.events].slice(0, 50) };
         }),
 
@@ -367,9 +395,11 @@ export const useGameStore = create<FullStoreState>()(
     {
       name: "ggez-idle-storage",
       version: 1,
+      // Pass retrieved local storage payload through the deep-merge reconciler
       merge: (persisted, current) =>
         customMerge(persisted, current as FullStoreState),
       onRehydrateStorage: () => (state) => {
+        // Enforce active visual theme immediately upon initialization
         if (state && state.settings?.theme) {
           const theme = state.settings.theme;
           const themes = [
@@ -387,6 +417,7 @@ export const useGameStore = create<FullStoreState>()(
         }
       },
       partialize: (state) => {
+        // Omit transient or volatile variables from being cached in LocalStorage
         const rest = { ...state };
         delete (rest as Partial<FullStoreState>).offlineSummary;
         delete (rest as Partial<FullStoreState>).rewardModal;
@@ -394,7 +425,7 @@ export const useGameStore = create<FullStoreState>()(
         delete (rest as Partial<FullStoreState>).upgrades;
         if (rest.social) {
           const socialCopy = { ...rest.social };
-          socialCopy.globalMessages = []; // Tyhjennetään tallennuksesta
+          socialCopy.globalMessages = [];
           rest.social = socialCopy;
         }
         return rest;

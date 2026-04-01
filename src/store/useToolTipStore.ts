@@ -8,6 +8,12 @@ interface TooltipState {
   hideTooltip: () => void;
 }
 
+/**
+ * useTooltipStore
+ * An independent, lightweight Zustand store specifically managing the highly volatile
+ * X/Y screen coordinates of the mouse-following UI tooltips.
+ * Kept separate from the main GameStore to prevent heavy re-renders across the app.
+ */
 export const useTooltipStore = create<TooltipState>((set) => ({
   itemId: null,
   x: 0,

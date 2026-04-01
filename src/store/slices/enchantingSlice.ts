@@ -13,6 +13,10 @@ export interface EnchantingSlice {
   attemptEnchant: (targetItemId: string, scrollId: string) => void;
 }
 
+/**
+ * createEnchantingSlice
+ * Handles the logic, cost deduction, and RNG required to augment equipment.
+ */
 export const createEnchantingSlice: StateCreator<
   FullStoreState,
   [],
@@ -22,12 +26,13 @@ export const createEnchantingSlice: StateCreator<
   attemptEnchant: (targetItemId, scrollId) => {
     const { inventory, coins, equipment, emitEvent } = get();
 
-    // 1. VALIDIOINTI
+    // 1. VALIDATION
     const itemDetails = getItemDetails(targetItemId);
     if (!itemDetails) {
       emitEvent("error", "Item data not found.");
       return;
     }
+    // Prevent breaking the game by enchanting raw materials or boss weapons
     if (itemDetails.nonEnchantable) {
       emitEvent(
         "error",
@@ -55,6 +60,7 @@ export const createEnchantingSlice: StateCreator<
     const nextLevel = currentLevel + 1;
     const cost = getEnchantCost(nextLevel, itemDetails.value || 100);
 
+    // Extract numerical tier from the scroll ID string (e.g. "enchanting_tier4" -> 4)
     const scrollTier = parseInt(
       scrollId.split("_").pop()?.replace("w", "") || "0",
     );
@@ -69,27 +75,28 @@ export const createEnchantingSlice: StateCreator<
       return;
     }
 
-    // 2. KULUTETAAN RESURSSIT
+    // 2. RESOURCE CONSUMPTION (Executed before the roll!)
     const newInventory = { ...inventory };
     newInventory[scrollId] -= 1;
     if (newInventory[scrollId] <= 0) delete newInventory[scrollId];
 
     const newCoins = coins - cost;
 
-    // 3. NOPANHEITTO (RNG Logic)
+    // 3. THE RNG ROLL
     const roll = Math.random() * 100;
     const isSuccess = roll <= successChance;
 
-    // Päivitetään resurssit heti
+    // Apply resource deductions immediately
     set({ inventory: newInventory, coins: newCoins });
 
-    // 4. TULOSKÄSITTELY
+    // 4. OUTCOME HANDLING
     if (isSuccess) {
-      // --- ONNISTUMINEN ---
+      // Create upgraded item identifier
       const newId = getNextEnchantId(targetItemId);
       const newEquipment = { ...equipment };
 
       let updated = false;
+      // We must scan the equipment object to find where this item is currently worn
       (Object.keys(newEquipment) as Array<keyof typeof equipment>).forEach(
         (slot) => {
           if (newEquipment[slot] === targetItemId) {
@@ -107,10 +114,11 @@ export const createEnchantingSlice: StateCreator<
           "./assets/ui/icon_check.png",
         );
       } else {
+        // Fallback catch if the UI allowed an enchantment on an unequipped item (should not happen currently)
         emitEvent("error", "Error finding equipped item to update.");
       }
     } else {
-      // --- EPÄONNISTUMINEN ---
+      // Item breaks/fails, resources were already consumed above
       emitEvent("error", "Enchantment failed", "./assets/ui/icon_fail.png");
     }
   },

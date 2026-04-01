@@ -11,6 +11,11 @@ export interface ScavengerSlice {
   processScavengerTick: () => void;
 }
 
+/**
+ * createScavengerSlice
+ * Handles the logic for sending background scouts on long-term missions.
+ * Generates highly randomized drop tables heavily skewed by mission duration.
+ */
 export const createScavengerSlice: StateCreator<
   FullStoreState,
   [],
@@ -19,6 +24,7 @@ export const createScavengerSlice: StateCreator<
 > = (set, get) => ({
   startExpedition: (worldId, durationMinutes) => {
     const { scavenger } = get();
+    // Prevent deployment if player has exhausted their allowed slots
     if (scavenger.activeExpeditions.length >= scavenger.unlockedSlots) return;
 
     const newExpedition: Expedition = {
@@ -47,62 +53,57 @@ export const createScavengerSlice: StateCreator<
     if (!expedition) return;
 
     const elapsed = Date.now() - expedition.startTime;
-    if (elapsed < expedition.duration) return;
+    if (elapsed < expedition.duration) return; // Prevent early claims
 
     const worldLootTable = WORLD_LOOT[expedition.mapId];
     const newInventory = { ...inventory };
+
+    // Scale drops dynamically: 1 loot roll per real-world minute elapsed
     const minutes = Math.floor(expedition.duration / 1000 / 60);
     const rolls = Math.max(1, minutes);
 
     const rewardsMap: Record<string, number> = {};
-    let coinsGained = 0; // UUSI: Pidetään kirjaa saaduista kolikoista
+    let coinsGained = 0;
 
     if (worldLootTable) {
       for (let i = 0; i < rolls; i++) {
-        // 1. Normaali maailman lootti
+        // 1. STANDARD REGIONAL LOOT ROLL
         const result = rollWeightedDrop(worldLootTable);
         if (result) {
-          // TARKISTETAAN ONKO KYSEESSÄ KOLIKOT
           if (result.itemId === "coins") {
             coinsGained += result.amount;
           } else {
-            // Jos ei ole kolikko, menee inventoryyn
             newInventory[result.itemId] =
               (newInventory[result.itemId] || 0) + result.amount;
           }
 
-          // Lisätään molemmat silti rewardsMapiin, jotta ne näkyvät UI:ssa
+          // Buffer drops for UI presentation
           rewardsMap[result.itemId] =
             (rewardsMap[result.itemId] || 0) + result.amount;
         }
 
-        // 2. --- HARVINAINEN RUNE DROP ---
-        // 0.5% mahdollisuus per minuutti, että jokin rune tippuu
+        // 2. RARE SYSTEM: ANCIENT RUNES
+        // Expeditions are the sole source of runes. 0.5% base chance per minute.
         if (Math.random() < 0.005 && RUNES_DATA.length > 0) {
-          // Arvotaan riimun harvinaisuus (Secondary roll)
+          // Secondary roll determining the tier quality of the spawned rune
           const rarityRoll = Math.random();
           let targetTier = "minor";
 
           if (rarityRoll < 0.02) {
-            // 2% mahdollisuus, että droppi on Legendary (todella harvinainen!)
-            targetTier = "legendary";
+            targetTier = "legendary"; // 2% chance for highest tier
           } else if (rarityRoll < 0.12) {
-            // 10% mahdollisuus, että droppi on Major
-            targetTier = "major";
+            targetTier = "major"; // 10% chance for middle tier
           } else {
-            // 88% mahdollisuus, että droppi pysyy perinteisenä Minorina
-            targetTier = "minor";
+            targetTier = "minor"; // 88% chance for basic tier
           }
 
-          // Suodatetaan RUNES_DATA valitun tierin mukaan
           const availableRunes = RUNES_DATA.filter((r) =>
             r.id.endsWith(`_${targetTier}`),
           );
 
-          // Fallback: Jos suodatus menisi tyhjäksi, käytetään kaikkia runeja
+          // Fallback preventing errors if filter returns empty
           const pool = availableRunes.length > 0 ? availableRunes : RUNES_DATA;
 
-          // Valitaan satunnainen rune filtteröidystä listasta
           const randomRune = pool[Math.floor(Math.random() * pool.length)];
           const runeId = randomRune.id;
 
@@ -120,12 +121,12 @@ export const createScavengerSlice: StateCreator<
     );
 
     set((state) => ({
-      coins: state.coins + coinsGained, // TÄMÄ KORJAA ONGELMAN
+      coins: state.coins + coinsGained,
       inventory: newInventory,
       scavenger: {
         ...state.scavenger,
         activeExpeditions: state.scavenger.activeExpeditions.filter(
-          (e) => e.id !== expeditionId,
+          (e) => e.id !== expeditionId, // Remove completed mission from tracker
         ),
       },
     }));
@@ -151,5 +152,6 @@ export const createScavengerSlice: StateCreator<
     }));
   },
 
+  // Retained for interface compliance, logic shifted elsewhere
   processScavengerTick: () => {},
 });

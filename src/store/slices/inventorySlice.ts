@@ -20,6 +20,11 @@ export interface InventorySlice {
   openPouch: (itemId: string) => void;
 }
 
+/**
+ * createInventorySlice
+ * The central hub for item management. Handles equipping logic,
+ * selling, consuming pouches, and upgrading core components.
+ */
 export const createInventorySlice: StateCreator<
   FullStoreState,
   [],
@@ -49,6 +54,7 @@ export const createInventorySlice: StateCreator<
 
       if (!item || currentCount <= 0) return {};
 
+      // Handle the "Sell All" UI toggle safely
       let parsedAmount = 0;
       if (amount === "all") {
         parsedAmount = currentCount;
@@ -58,6 +64,7 @@ export const createInventorySlice: StateCreator<
 
       if (parsedAmount <= 0) return {};
 
+      // Prevent selling more than owned due to UI race conditions
       const actualSellAmount = Math.min(parsedAmount, currentCount);
       const itemValue = item.value || 0;
       const profit = actualSellAmount * itemValue;
@@ -65,14 +72,13 @@ export const createInventorySlice: StateCreator<
       const newInventory = { ...state.inventory };
       newInventory[itemId] = currentCount - actualSellAmount;
 
+      // Garbage collection
       if (newInventory[itemId] <= 0) {
         delete newInventory[itemId];
       }
 
-      const currentCoins = state.coins || 0;
-
       return {
-        coins: currentCoins + profit,
+        coins: (state.coins || 0) + profit,
         inventory: newInventory,
       };
     }),
@@ -91,6 +97,7 @@ export const createInventorySlice: StateCreator<
   gamble: (amount, callback) => {
     set((state) => {
       if (state.coins < amount) return {};
+      // Strict 50/50 RNG
       const isWin = Math.random() >= 0.5;
       callback(isWin);
       return {
@@ -104,44 +111,57 @@ export const createInventorySlice: StateCreator<
       const item = getItemDetails(itemId);
       if (!item || !item.slot) return {};
 
+      // 1. Validating Level Locks
       if (item.level && item.level > 1) {
+        // Derive required skill context dynamically based on item nature
         let requiredSkill: keyof typeof state.skills = "smithing";
         if (item.combatStyle === "ranged") requiredSkill = "crafting";
         if (item.combatStyle === "magic") requiredSkill = "alchemy";
         if (item.slot === "food" || item.healing) requiredSkill = "alchemy";
 
         const playerSkillLevel = state.skills[requiredSkill]?.level || 1;
-        if (playerSkillLevel < item.level) return {};
+        if (playerSkillLevel < item.level) return {}; // Block equipping
       }
 
       const newInventory = { ...state.inventory };
       const currentCount = newInventory[itemId] || 0;
       if (currentCount <= 0) return {};
 
+      // 2. Food Slot Management (Handles Stacking)
       if (item.slot === "food") {
         let newEquippedCount = currentCount;
         if (state.equippedFood) {
           if (state.equippedFood.itemId === itemId) {
+            // Merge stacks of the same potion
             newEquippedCount += state.equippedFood.count;
           } else {
+            // Swap out old potion entirely
             const oldId = state.equippedFood.itemId;
             newInventory[oldId] =
               (newInventory[oldId] || 0) + state.equippedFood.count;
           }
         }
         delete newInventory[itemId];
+
         return {
           inventory: newInventory,
           equippedFood: { itemId, count: newEquippedCount },
         };
-      } else {
+      }
+      // 3. Standard Armor/Weapon Slot Management
+      else {
         const slot = item.slot as Exclude<EquipmentSlot, "food">;
         const currentEquipId = state.equipment[slot];
+
+        // Return previously equipped item back to the inventory
         if (currentEquipId)
           newInventory[currentEquipId] =
             (newInventory[currentEquipId] || 0) + 1;
+
+        // Deduct the newly equipped item from inventory
         if (currentCount > 1) newInventory[itemId] = currentCount - 1;
         else delete newInventory[itemId];
+
         return {
           inventory: newInventory,
           equipment: { ...state.equipment, [slot]: itemId },
@@ -152,6 +172,8 @@ export const createInventorySlice: StateCreator<
   unequipItem: (slot) =>
     set((state) => {
       const newInventory = { ...state.inventory };
+
+      // Handled distinctly because Food is stored as a custom object with a quantity
       if (slot === "food") {
         if (!state.equippedFood) return {};
         const { itemId, count } = state.equippedFood;
@@ -169,6 +191,7 @@ export const createInventorySlice: StateCreator<
       }
     }),
 
+  // Legacy fallback method for direct enchanting, mainly retained for old save compatibility
   enchantItem: (originalId, newId, cost) =>
     set((state) => {
       if (state.coins < cost) return {};
@@ -198,7 +221,6 @@ export const createInventorySlice: StateCreator<
       };
     }),
 
-  // Pussukoiden avausmekanismi
   openPouch: (itemId) => {
     const { inventory, openRewardModal } = get();
     const currentCount = inventory[itemId] || 0;
@@ -209,7 +231,8 @@ export const createInventorySlice: StateCreator<
     if (!lootTable) return;
 
     const rewardsMap: Record<string, number> = {};
-    // Arvotaan enemmän loottia paremmista pusseista
+
+    // Scale number of items generated based on the tier of the pouch
     const rolls = itemId.includes("legendary")
       ? 5
       : itemId.includes("major")
@@ -226,11 +249,10 @@ export const createInventorySlice: StateCreator<
     set((state) => {
       const newInventory = { ...state.inventory };
 
-      // Poistetaan pussi
       newInventory[itemId] -= 1;
       if (newInventory[itemId] <= 0) delete newInventory[itemId];
 
-      // Lisätään lootti
+      // Inject the generated loot into the player's inventory
       Object.entries(rewardsMap).forEach(([id, amount]) => {
         newInventory[id] = (newInventory[id] || 0) + amount;
       });
@@ -238,7 +260,7 @@ export const createInventorySlice: StateCreator<
       return { inventory: newInventory };
     });
 
-    // Avataan UI palkinto-ikkuna
+    // Translate the raw ID map into the structure required by the generic UI Modal
     const rewardEntries = Object.entries(rewardsMap).map(([id, amount]) => ({
       itemId: id,
       amount,

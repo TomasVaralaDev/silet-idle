@@ -19,10 +19,15 @@ export interface SkillSlice {
   toggleAction: (skill: SkillType, resourceId: string) => void;
   addToQueue: (skill: SkillType, resourceId: string, amount: number) => void;
   removeFromQueue: (queueId: string) => void;
-  cancelResourceFromQueue: (resourceId: string) => void; // UUSI FUNKTIO
+  cancelResourceFromQueue: (resourceId: string) => void;
   clearQueue: () => void;
 }
 
+/**
+ * createSkillSlice
+ * Manages the player's core continuous actions (woodcutting, crafting, etc.).
+ * Includes integration with the automation queue system.
+ */
 export const createSkillSlice: StateCreator<
   FullStoreState,
   [],
@@ -35,6 +40,7 @@ export const createSkillSlice: StateCreator<
 
   toggleAction: (skill, resourceId) =>
     set((state: FullStoreState) => {
+      // Toggle off if currently running the exact same action
       if (state.activeAction?.resourceId === resourceId) {
         return { activeAction: null };
       }
@@ -45,6 +51,7 @@ export const createSkillSlice: StateCreator<
 
       if (!resource) return {};
 
+      // Material validation before initiating crafting actions
       if (resource.inputs) {
         const canAfford = resource.inputs.every(
           (req: Ingredient) => (state.inventory[req.id] || 0) >= req.count,
@@ -56,12 +63,14 @@ export const createSkillSlice: StateCreator<
             `Missing materials for ${resource.name}`,
             "./assets/ui/icon_warning.png",
           );
-          return {};
+          return {}; // Abort
         }
       }
 
       const speedMult = getSpeedMultiplier(skill, state.upgrades);
       const baseInterval = resource.interval || 3000;
+
+      // Hard floor of 200ms processing time to prevent infinite division crash
       const finalTargetTime = Math.max(200, baseInterval / speedMult);
 
       return {
@@ -102,14 +111,15 @@ export const createSkillSlice: StateCreator<
       queue: state.queue.filter((item) => item.id !== queueId),
     })),
 
-  // UUSI FUNKTIO: Poistaa kaikki tietyt resurssit jonosta kerralla
+  // Targets all instances of a specific resource in the queue, regardless of ID,
+  // making it easier for users to bulk cancel actions.
   cancelResourceFromQueue: (resourceId) =>
     set((state) => {
       const newQueue = state.queue.filter(
         (item) => item.resourceId !== resourceId,
       );
 
-      // Jos aktiivinen toiminto on tämä poistettava resurssi, nollataan myös se
+      // If the action being canceled was actively processing, halt it as well
       const newActiveAction =
         state.activeAction?.resourceId === resourceId
           ? null

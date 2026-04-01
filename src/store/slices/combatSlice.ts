@@ -19,6 +19,11 @@ export interface CombatSlice {
   updateCombatSettings: (settings: Partial<CombatSettings>) => void;
 }
 
+/**
+ * createCombatSlice
+ * Provides action dispatches specific to the combat subsystem.
+ * Handles the initiation, termination, and state updates of combat encounters.
+ */
 export const createCombatSlice: StateCreator<
   FullStoreState,
   [],
@@ -26,10 +31,10 @@ export const createCombatSlice: StateCreator<
   CombatSlice
 > = (set, get) => ({
   startCombat: (mapId: number) => {
-    // Check for cooldown before starting combat
     const state = get();
-    const cooldownLeft = (state.combatStats.cooldownUntil || 0) - Date.now();
 
+    // Prevent engaging in combat if the player recently died (Death Penalty)
+    const cooldownLeft = (state.combatStats.cooldownUntil || 0) - Date.now();
     if (cooldownLeft > 0) {
       const seconds = Math.ceil(cooldownLeft / 1000);
       state.emitEvent(
@@ -43,13 +48,14 @@ export const createCombatSlice: StateCreator<
     const map = COMBAT_DATA.find((m) => m.id === mapId);
     if (!map) return;
 
-    // Boss key requirement validation and consumption
+    // Validate and consume World Boss keys
     if (map.isBoss && map.keyRequired) {
       const currentInventory = state.inventory;
       const keyCount = currentInventory[map.keyRequired] || 0;
 
-      if (keyCount < 1) return;
+      if (keyCount < 1) return; // Silent abort if no key
 
+      // Immediately deduct the key
       set((state) => ({
         inventory: {
           ...state.inventory,
@@ -58,6 +64,7 @@ export const createCombatSlice: StateCreator<
       }));
     }
 
+    // Initialize enemy object instance
     const newEnemy: Enemy = {
       id: `enemy_${map.id}_${Date.now()}`,
       name: map.enemyName,
@@ -76,8 +83,9 @@ export const createCombatSlice: StateCreator<
       currentMapId: mapId,
       enemyCurrentHp: map.enemyHp,
       respawnTimer: 0,
-      playerAttackTimer: 1000,
-      enemyAttackTimer: 1500,
+      playerAttackTimer: 1000, // Initial delay before the player's first strike
+      enemyAttackTimer: 1500, // Initial delay before the enemy's first strike
+      // Ensure the player doesn't start dead (e.g. from an old bugged save)
       hp:
         currentStats.hp > 0
           ? currentStats.hp
@@ -85,6 +93,7 @@ export const createCombatSlice: StateCreator<
       cooldownReason: null,
     };
 
+    // Override activeAction to flag the engine that combat is running
     set({
       activeAction: {
         skill: "combat",
@@ -97,6 +106,11 @@ export const createCombatSlice: StateCreator<
     });
   },
 
+  /**
+   * processCombatTick
+   * Wraps the complex calculateCombatSystem function, applies it to the store,
+   * and handles dynamic enemy generation between kills.
+   */
   processCombatTick: () => {
     const currentState = get() as unknown as GameState;
     const updates = calculateCombatSystem(currentState, 100);
@@ -105,9 +119,11 @@ export const createCombatSlice: StateCreator<
       const nextState: Partial<FullStoreState> = { ...updates };
       const nextStats = updates.combatStats || get().combatStats;
 
+      // Handle the visual transition between dead enemies and respawning enemies
       if (nextStats.respawnTimer > 0) {
-        nextState.enemy = null;
+        nextState.enemy = null; // Clear the visual while waiting
       } else if (nextStats.enemyCurrentHp > 0 && !get().enemy) {
+        // Timer elapsed, inject new enemy
         const map = COMBAT_DATA.find((m) => m.id === nextStats.currentMapId);
         if (map) {
           nextState.enemy = {
@@ -139,12 +155,13 @@ export const createCombatSlice: StateCreator<
         respawnTimer: 0,
         playerAttackTimer: 0,
         enemyAttackTimer: 0,
-        cooldownUntil: Date.now() + 30000,
+        cooldownUntil: Date.now() + 30000, // 30s tactical retreat penalty
         cooldownReason: "retreat",
-        damagePopUps: [], // CLEAR FLOATING NUMBERS ON MANUAL RETREAT
+        damagePopUps: [], // Instantly wipe visual floating numbers
       },
     }),
 
+  // UI Setting Toggles (Ensure mutual exclusivity)
   toggleAutoProgress: () =>
     set((state) => ({
       combatSettings: {
@@ -176,6 +193,7 @@ export const createCombatSlice: StateCreator<
     set({
       combatStats: {
         ...get().combatStats,
+        // Prepend new messages and slice to maintain max array length of 20
         combatLog: [message, ...get().combatStats.combatLog].slice(0, 20),
       },
     }),

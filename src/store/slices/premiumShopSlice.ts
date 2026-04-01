@@ -8,31 +8,33 @@ export interface PremiumShopSlice {
   startGemsPurchase: (packId: string) => void;
 }
 
+/**
+ * createPremiumShopSlice
+ * Interfaces with the external Stripe payment provider via Firebase Cloud Functions.
+ * Handles the secure deduction of premium currency (Gems) and the application of upgrades.
+ */
 export const createPremiumShopSlice: StateCreator<
   FullStoreState,
   [],
   [],
   PremiumShopSlice
 > = (set, get) => ({
-  /**
-   * OSTAMINEN TIMANTEILLA (CLOUD FUNCTION)
-   * Kutsuu Firebase backendia, joka vähentää timantit ja lisää palkinnot.
-   * Tukee sekä kertaluonteisia (Unique) että toistuvia ostoksia.
-   */
   buyPremiumItem: async (item: PremiumShopItem) => {
     const { gems, upgrades, premiumPurchases, emitEvent } = get();
 
-    // 1. Tarkistetaan onko pelaajalla varaa
+    // 1. Soft local validation (prevents unnecessary cloud function calls)
     if (gems < item.priceGems) {
       emitEvent("error", "Not enough Gems!", "./assets/ui/icon_gem.png");
       return false;
     }
 
-    // 2. Tarkistetaan "Unique" status
+    // "Unique" meaning it is an infinitely persisting account upgrade (e.g., ad-free, slot expansions)
     if (item.isOneTime && upgrades.includes(item.id)) {
       emitEvent("warning", "Already owned!", item.icon);
       return false;
     }
+
+    // Validate custom purchase limits (e.g., "max 5 per account")
     const currentPurchases = premiumPurchases?.[item.id] || 0;
     if (item.maxPurchases && currentPurchases >= item.maxPurchases) {
       emitEvent("warning", "Maximum purchase limit reached!", item.icon);
@@ -46,6 +48,7 @@ export const createPremiumShopSlice: StateCreator<
         "./assets/ui/icon_gem.png",
       );
 
+      // Invoke the secure backend transaction logic
       const functions = getFunctions();
       const purchaseBundle = httpsCallable<
         { bundleId: string },
@@ -54,11 +57,12 @@ export const createPremiumShopSlice: StateCreator<
 
       const result = await purchaseBundle({ bundleId: item.id });
 
+      // If backend confirms, update local store state immediately
       if (result.data.success) {
         emitEvent("success", `Acquired: ${item.name}`, item.icon);
 
-        // Päivitetään Zustand-store HETI onnistumisen jälkeen
         set((state) => {
+          // Deduct gems and refund any bonus gems provided by the package
           const newGems =
             state.gems - item.priceGems + (item.rewards?.rewardGems || 0);
 
@@ -122,17 +126,15 @@ export const createPremiumShopSlice: StateCreator<
     }
   },
 
-  /**
-   * TIMANTTIEN OSTAMINEN (STRIPE)
-   */
   startGemsPurchase: async (packId: string) => {
     const { emitEvent } = get();
 
-    // KORJATTU: Tarkistetaan SteamApi ilman 'any'-valitusta
+    // Check if the game is running within the Steam Electron wrapper
     const isSteam = typeof window !== "undefined" && "SteamApi" in window;
 
     if (isSteam) {
       emitEvent("info", `Initiating Steam Purchase for ${packId}...`);
+      // Future Steam Overlay integration goes here
     } else {
       try {
         emitEvent(
@@ -141,6 +143,7 @@ export const createPremiumShopSlice: StateCreator<
           "./assets/ui/icon_lock.png",
         );
 
+        // Fetch a secure, one-time Stripe checkout URL from the backend
         const functions = getFunctions();
         const createStripeCheckout = httpsCallable<
           { packId: string },

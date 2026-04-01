@@ -8,7 +8,6 @@ import {
 import { calculateXpGain } from "../../utils/gameUtils";
 
 export interface QuestSlice {
-  // Päivitetty funktio ottamaan palvelimen reset-aika vastaan
   syncQuestsWithServer: (serverResetTime: number) => void;
   updateQuestProgress: (
     type: "GATHER" | "KILL" | "CRAFT",
@@ -18,6 +17,10 @@ export interface QuestSlice {
   claimQuestReward: (questId: string) => void;
 }
 
+/**
+ * createQuestSlice
+ * Manages the logic for daily quests, including generation, tracking, and claiming.
+ */
 export const createQuestSlice: StateCreator<
   FullStoreState,
   [],
@@ -25,31 +28,23 @@ export const createQuestSlice: StateCreator<
   QuestSlice
 > = (set, get) => ({
   /**
-   * Synkronoi päivittäiset tehtävät palvelimen reset-aikataulun kanssa.
-   * Arpoo uudet tehtävät vain, jos palvelimen reset-aika on uudempi kuin pelaajan tallennus.
+   * syncQuestsWithServer
+   * Executed on initial login. Compares the global server timestamp with the player's
+   * local save to determine if the midnight wipe has occurred.
    */
   syncQuestsWithServer: (serverResetTime: number) => {
     const { quests, skills, emitEvent } = get();
 
     if (!serverResetTime) return;
 
-    //  console.log(
-    //    "🔍 [QUEST-SYNC] Tarkistetaan reset: Server:",
-    //   "Player:",
-    //    quests.lastResetTime,
-    //  );
-
     if (serverResetTime > quests.lastResetTime) {
-      ////  "🔥 [QUEST-SYNC] Uusi päivä havaittu! Arvotaan uudet tehtävät.",
-      //  );
-
-      // Arvotaan uudet tehtävät pelaajan taitotasojen perusteella
+      // The day has rolled over. Generate 3 new quests tailored to player levels.
       const newQuests = rollDailyQuests(skills);
 
       set({
         quests: {
           dailyQuests: newQuests,
-          lastResetTime: serverResetTime, // Päivitetään pelaajan reset-aika palvelimen aikaan
+          lastResetTime: serverResetTime, // Sync local clock
         },
       });
 
@@ -58,13 +53,13 @@ export const createQuestSlice: StateCreator<
         "New Daily Quests available!",
         "./assets/ui/icon_quest.png",
       );
-    } else {
-      //   console.log("✅ [QUEST-SYNC] Tehtävät ovat jo ajan tasalla.");
     }
   },
 
   /**
-   * Päivittää aktiivisten tehtävien edistymistä.
+   * updateQuestProgress
+   * Dispatched continuously during gameplay by the skill and combat systems.
+   * Modifies the local progress integer without querying the database.
    */
   updateQuestProgress: (type, targetId, amount) => {
     const state = get();
@@ -75,14 +70,15 @@ export const createQuestSlice: StateCreator<
       amount,
     );
 
-    // Päivitetään tila vain, jos edistymistä tapahtui
+    // Strict equality check optimizes React render loops
     if (updatedQuests !== state.quests.dailyQuests) {
       set({ quests: { ...state.quests, dailyQuests: updatedQuests } });
     }
   },
 
   /**
-   * Lunastaa tehtävän palkinnon ja päivittää pelaajan resurssit/taidot.
+   * claimQuestReward
+   * Marks a finished quest as claimed and parses the complex reward object into local state variables.
    */
   claimQuestReward: (questId) => {
     const state = get();
@@ -92,19 +88,19 @@ export const createQuestSlice: StateCreator<
 
     if (!quest || !quest.isCompleted || quest.isClaimed) return;
 
-    // --- PALKINTOJEN LASKENTA ---
+    // --- PARSE AND APPLY REWARDS ---
     const newCoins = state.coins + (quest.reward.coins || 0);
     const newInventory = { ...state.inventory };
     const newSkills = { ...state.skills };
 
     const modalRewards: RewardEntry[] = [];
 
-    // 1. Kolikot
+    // 1. Generic Currency
     if (quest.reward.coins) {
       modalRewards.push({ itemId: "coins", amount: quest.reward.coins });
     }
 
-    // 2. Esineet (Inventory)
+    // 2. Physical Item Injections
     if (quest.reward.items) {
       quest.reward.items.forEach((item: { itemId: string; amount: number }) => {
         newInventory[item.itemId] =
@@ -113,7 +109,7 @@ export const createQuestSlice: StateCreator<
       });
     }
 
-    // 3. Kokemuspisteet (XP)
+    // 3. Base Experience Injection
     if (quest.reward.xpMap) {
       Object.entries(quest.reward.xpMap).forEach(([skill, xp]) => {
         const s = skill as SkillType;
@@ -127,7 +123,7 @@ export const createQuestSlice: StateCreator<
       });
     }
 
-    // Päivitetään tehtävälistan tila (merkitään lunastetuksi)
+    // Flag the object to prevent duplicate claims
     const updatedQuests = state.quests.dailyQuests.map((q: ActiveQuest) =>
       q.id === questId ? { ...q, isClaimed: true } : q,
     );
@@ -139,7 +135,6 @@ export const createQuestSlice: StateCreator<
       quests: { ...state.quests, dailyQuests: updatedQuests },
     });
 
-    // Avataan palkintoikkuna pelaajalle
     get().openRewardModal(`Quest Completed: ${quest.title}`, modalRewards);
   },
 });

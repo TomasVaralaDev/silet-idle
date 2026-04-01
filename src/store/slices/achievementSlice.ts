@@ -11,6 +11,12 @@ export interface AchievementSlice {
   claimAchievement: (id: string) => void;
 }
 
+/**
+ * createAchievementSlice
+ * Manages the state and logic for claiming achievements.
+ * Evaluates the rewards associated with the achievement and safely injects them
+ * into the player's inventory, skills, or cosmetic unlocks.
+ */
 export const createAchievementSlice: StateCreator<
   FullStoreState,
   [],
@@ -23,6 +29,7 @@ export const createAchievementSlice: StateCreator<
   claimAchievement: (id: string) => {
     const state = get();
 
+    // Validations: Prevent double-claiming and ensure the achievement is actually unlocked
     if (state.claimedAchievements.includes(id)) return;
     if (!state.unlockedAchievements.includes(id)) return;
 
@@ -34,10 +41,12 @@ export const createAchievementSlice: StateCreator<
       claimedAchievements: [...state.claimedAchievements, id],
     };
 
+    // 1. Process Coin Rewards
     if (rewards?.coins) {
       updates.coins = state.coins + rewards.coins;
     }
 
+    // 2. Process Item/Material Rewards
     if (rewards?.items && rewards.items.length > 0) {
       updates.inventory = { ...state.inventory };
       rewards.items.forEach((item: { itemId: string; amount: number }) => {
@@ -46,6 +55,7 @@ export const createAchievementSlice: StateCreator<
       });
     }
 
+    // 3. Process Direct XP Rewards (Calculates dynamic level-ups safely)
     if (rewards?.xpMap) {
       updates.skills = { ...state.skills };
       Object.entries(rewards.xpMap).forEach(([skillStr, xpAmount]) => {
@@ -56,6 +66,7 @@ export const createAchievementSlice: StateCreator<
           const currentLevel = updates.skills![skill].level;
           const currentXp = updates.skills![skill].xp;
 
+          // Safe calculation ensuring we don't accidentally bypass level caps
           const { level: newLevel, xp: newXp } = calculateXpGain(
             currentLevel,
             currentXp,
@@ -68,6 +79,7 @@ export const createAchievementSlice: StateCreator<
             xp: newXp,
           };
 
+          // Trigger a global UI notification if a level up occurred
           if (newLevel > currentLevel) {
             get().emitEvent(
               "levelUp",
@@ -79,10 +91,10 @@ export const createAchievementSlice: StateCreator<
       });
     }
 
-    // UUSI: Chat Color logiikka
+    // 4. Process Cosmetic Rewards (Chat Colors)
     if (rewards?.chatColorId) {
       const currentColors = state.social?.unlockedChatColors || ["default"];
-      // Varmistetaan ettei väriä ole jo lisätty
+      // Ensure idempotency to prevent duplicating the color array
       if (!currentColors.includes(rewards.chatColorId)) {
         updates.social = {
           ...state.social,
@@ -91,15 +103,18 @@ export const createAchievementSlice: StateCreator<
       }
     }
 
+    // Commit all calculated state changes atomically
     set(updates);
 
+    // Global Notification
     get().emitEvent(
       "success",
       `Claimed reward for: ${achievement.name}`,
       "./assets/ui/icon_achievements.png",
     );
 
-    // KORJATTU: Lisätty chatColorId ehtoon, jotta modaali aukeaa myös silloin kun ainoa palkinto on väri
+    // 5. Trigger the visual UI Reward Modal
+    // Ensures the modal opens even if the only reward was a cosmetic chat color
     if (
       rewards &&
       (rewards.coins || rewards.items || rewards.xpMap || rewards.chatColorId)
@@ -123,11 +138,10 @@ export const createAchievementSlice: StateCreator<
         });
       }
 
-      // UUSI: Lisätään väri modaaliin näytettäväksi
       if (rewards.chatColorId) {
         displayRewards.push({
           itemId: `color_${rewards.chatColorId}`,
-          amount: 1, // Määrällä ei ole visuaalista merkitystä värille, mutta vaaditaan tyypin vuoksi
+          amount: 1, // Visual placeholder required by the modal's prop interface
         });
       }
 

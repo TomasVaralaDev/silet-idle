@@ -130,7 +130,9 @@ export default function SkillView({ skill }: SkillViewProps) {
 
   return (
     <div className="h-full flex flex-col bg-app-base text-tx-main relative overflow-hidden">
-      {/* HEADER - Skaalattu mobiiliin ja yhtenäistetty muiden näkymien tyyliin */}
+      {
+        // HEADER
+      }
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-4 md:gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0 text-left">
         <div
           className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center ${definition.bgColor} border border-white/10 shadow-lg shrink-0`}
@@ -172,9 +174,13 @@ export default function SkillView({ skill }: SkillViewProps) {
         ></div>
       </div>
 
-      {/* FILTERIT JA NAPIT - Pinoituu mobiilissa allekkain */}
+      {
+        // FILTERS AND CONTROLS
+      }
       <div className="px-4 md:px-6 pt-3 md:pt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-border/20 pb-3">
-        {/* TABS - Scrollaa sivuttain mobiilissa */}
+        {
+          // TABS
+        }
         <div className="flex gap-2 overflow-x-auto custom-scrollbar w-full pb-1 snap-x">
           {categories?.map((cat) => (
             <button
@@ -191,7 +197,9 @@ export default function SkillView({ skill }: SkillViewProps) {
           ))}
         </div>
 
-        {/* TOGGLE BUTTON - Venyy koko leveyteen mobiilissa */}
+        {
+          // TOGGLE BUTTON
+        }
         {["smithing", "crafting", "alchemy"].includes(skill) && (
           <button
             onClick={() => setShowAffordableOnly(!showAffordableOnly)}
@@ -206,7 +214,9 @@ export default function SkillView({ skill }: SkillViewProps) {
         )}
       </div>
 
-      {/* ESINERUUDUKKO - Skaalattu mobiiliin sm:grid-cols-2 */}
+      {
+        // RESOURCE GRID
+      }
       <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredResources.map((resource) => {

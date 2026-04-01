@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 interface Props {
-  value: number; // Minuutteina
+  value: number; // In minutes
   onChange: (val: number) => void;
 }
 

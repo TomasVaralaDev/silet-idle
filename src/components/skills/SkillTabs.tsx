@@ -11,6 +11,9 @@ export default function SkillTabs({ tabs, activeTab, onTabChange }: Props) {
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-4 custom-scrollbar mb-2">
+      {
+        // Rendering navigation tabs based on provided configuration
+      }
       {tabs.map((tab) => (
         <button
           key={tab.id}

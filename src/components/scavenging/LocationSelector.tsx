@@ -44,7 +44,9 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
                 }
               `}
             >
-              {/* Taustakuva */}
+              {
+                // Background Image and Overlay
+              }
               <div className="absolute inset-0 bg-black">
                 <img
                   src={world.image}
@@ -57,11 +59,15 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
                 />
               </div>
 
-              {/* Gradientit paremman luettavuuden takaamiseksi */}
+              {
+                // Gradients for improved readability
+              }
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
 
-              {/* Lukon ikoni */}
+              {
+                // Locked State Indicator
+              }
               {isLocked && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] z-20">
                   <div className="bg-black/80 p-3 rounded-full border border-border/50">
@@ -74,7 +80,9 @@ export default function LocationSelector({ selectedWorldId, onSelect }: Props) {
                 </div>
               )}
 
-              {/* Sisältö */}
+              {
+                // Sector Content
+              }
               <div className="relative z-10 h-full flex flex-col p-4">
                 <div className="flex justify-between items-start mb-auto">
                   <div

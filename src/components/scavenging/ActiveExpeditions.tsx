@@ -45,7 +45,9 @@ export default function ActiveExpeditions() {
                 : "border-border hover:border-border-hover shadow-lg"
             }`}
           >
-            {/* Taustakuva (Isompi koko ja overlay) */}
+            {
+              // Background Visuals
+            }
             <div className="h-24 md:h-28 w-full relative overflow-hidden bg-black">
               {worldInfo?.image && (
                 <img
@@ -56,10 +58,14 @@ export default function ActiveExpeditions() {
                   }`}
                 />
               )}
-              {/* Gradientit tekstin luettavuutta varten */}
+              {
+                // Gradients for text readability
+              }
               <div className="absolute inset-0 bg-gradient-to-t from-panel via-panel/40 to-transparent" />
 
-              {/* Tekstit kuvan päällä */}
+              {
+                // Overlay Information
+              }
               <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end">
                 <div>
                   <div className="text-[10px] text-tx-muted uppercase font-black tracking-widest mb-0.5">
@@ -82,10 +88,11 @@ export default function ActiveExpeditions() {
               </div>
             </div>
 
-            {/* Sisältöalue (Napit ja edistyminen) */}
+            {
+              // Content Area: Actions and Progress
+            }
             <div className="p-4 bg-panel/80 backdrop-blur-sm relative z-10">
               <div className="flex justify-between items-center gap-4">
-                {/* Progress prosentti pienenä */}
                 <div className="text-[10px] font-mono font-bold text-tx-muted uppercase">
                   Progress: {progress.toFixed(0)}%
                 </div>
@@ -110,7 +117,9 @@ export default function ActiveExpeditions() {
               </div>
             </div>
 
-            {/* Progress Bar (Sijoitettu pohjaan) */}
+            {
+              // Bottom Progress Bar
+            }
             <div className="absolute bottom-0 left-0 w-full h-1.5 bg-black/40">
               <div
                 className={`h-full transition-all duration-1000 ${

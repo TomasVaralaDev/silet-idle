@@ -29,7 +29,9 @@ export default function ScavengingView() {
 
   return (
     <div className="h-full w-full flex flex-col bg-app-base text-tx-main font-sans overflow-hidden text-left">
-      {/* HEADER */}
+      {
+        // HEADER
+      }
       <div className="p-6 border-b border-border/50 bg-panel/50 flex items-center gap-6 sticky top-0 z-20 backdrop-blur-sm shrink-0">
         <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-success/20 border border-success/30 shadow-lg shrink-0">
           <img
@@ -60,9 +62,13 @@ export default function ScavengingView() {
         <div className="h-full bg-success w-full opacity-80"></div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
+      {
+        // MAIN CONTENT AREA
+      }
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-app-base/30">
-        {/* WORLD SELECTOR - Levennetty 350 -> 400px työpöydällä jotta kortit loistavat */}
+        {
+          // World Selection Sidebar
+        }
         <div className="w-full md:w-[400px] flex-shrink-0 bg-panel/30 border-b md:border-b-0 md:border-r border-border/50 flex flex-col z-10 shadow-xl">
           <LocationSelector
             selectedWorldId={selectedWorldId}
@@ -70,16 +76,22 @@ export default function ScavengingView() {
           />
         </div>
 
-        {/* OIKEA PUOLI: Config & Active */}
+        {
+          // Configuration and Active Expeditions
+        }
         <div className="flex-1 flex flex-col p-4 md:p-8 min-w-0 overflow-y-auto custom-scrollbar">
-          {/* CONFIGURE NEW */}
+          {
+            // PREPARE NEW EXPEDITION
+          }
           <div className="bg-panel/60 border border-border rounded-xl p-6 mb-8 flex flex-col gap-6 shadow-lg backdrop-blur-sm">
             <h2 className="text-xs font-black text-tx-muted uppercase tracking-[0.2em] border-b border-border/50 pb-3">
               Prepare Expedition
             </h2>
 
             <div className="flex flex-col xl:flex-row gap-6">
-              {/* Kohde Info Maailman kuvalla */}
+              {
+                // Destination preview with world imagery
+              }
               <div
                 className={`relative border border-border rounded-lg flex-1 flex flex-col justify-center overflow-hidden transition-all duration-300 ${selectedWorld ? "h-32 xl:h-auto shadow-inner" : "bg-black/50 p-6"}`}
               >
@@ -117,7 +129,9 @@ export default function ScavengingView() {
                 </div>
               </div>
 
-              {/* Slider & Nappi */}
+              {
+                // Configuration Controls
+              }
               <div className="flex-1 flex flex-col gap-4 justify-end">
                 <DurationSlider value={duration} onChange={setDuration} />
 
@@ -149,7 +163,9 @@ export default function ScavengingView() {
             </div>
           </div>
 
-          {/* ACTIVE EXPEDITIONS */}
+          {
+            // ACTIVE SCOUTING PARTIES
+          }
           <div className="flex flex-col flex-1">
             <h2 className="text-[11px] font-black uppercase text-tx-muted mb-6 tracking-[0.2em] border-b border-border/50 pb-3">
               Active Scouting Parties

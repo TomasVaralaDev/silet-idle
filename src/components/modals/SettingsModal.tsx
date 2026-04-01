@@ -1,203 +1,163 @@
 import { useState } from "react";
-import type { GameSettings } from "../../types";
+import {
+  X,
+  Trash2,
+  LogOut,
+  MessageSquare, // Vaihdettu Bug -> MessageSquare
+  RefreshCcw,
+  AlertTriangle,
+} from "lucide-react";
 
 interface SettingsModalProps {
-  settings: GameSettings;
   username: string;
-  onUpdateSettings: (newSettings: GameSettings) => void;
   onClose: () => void;
-  onForceSave: () => void;
   onReset: () => void;
+  onDeleteAccount: () => void;
+  onReportBug: () => void;
   onLogout: () => void;
 }
 
-const ToggleSwitch = ({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) => (
-  <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-lg hover:border-slate-700 transition-colors">
-    <span className="text-sm font-bold text-slate-300 uppercase tracking-wide">
-      {label}
-    </span>
-    <button
-      onClick={onClick}
-      className={`w-12 h-6 rounded-full relative transition-colors duration-200 border ${active ? "bg-emerald-600 border-emerald-500" : "bg-slate-800 border-slate-600"}`}
-    >
-      <div
-        className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-all duration-200 ${active ? "left-7" : "left-1"}`}
-      ></div>
-    </button>
-  </div>
-);
-
 export default function SettingsModal({
-  settings,
   username,
-  onUpdateSettings,
   onClose,
-  onForceSave,
   onReset,
+  onDeleteAccount,
+  onReportBug,
   onLogout,
 }: SettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<"general" | "audio" | "account">(
-    "general",
+  // Tila, joka kertoo näytetäänkö vahvistusikkunaa ja kummalle toiminnolle
+  const [confirmState, setConfirmState] = useState<"reset" | "delete" | null>(
+    null,
   );
 
-  const toggleSetting = (key: keyof GameSettings) => {
-    onUpdateSettings({
-      ...settings,
-      [key]: !settings[key],
-    });
+  const handleConfirm = () => {
+    if (confirmState === "reset") onReset();
+    if (confirmState === "delete") onDeleteAccount();
+    setConfirmState(null);
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-950 border-2 border-slate-800 rounded-xl w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[80vh]">
-        <div className="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-900/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-900 rounded-lg border border-slate-700 flex items-center justify-center">
-              <span className="text-xl">⚙️</span>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+
+      <div className="bg-panel p-8 rounded-2xl border border-border shadow-2xl w-full max-w-md relative overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200 min-h-[400px] flex flex-col">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"></div>
+
+        {/* Jos olemme vahvistusnäkymässä, X-nappi palauttaa päävalikkoon. Muuten se sulkee koko ikkunan. */}
+        <button
+          onClick={() => (confirmState ? setConfirmState(null) : onClose())}
+          className="absolute top-4 right-4 text-tx-muted hover:text-danger transition-colors p-1 z-20"
+        >
+          <X size={20} />
+        </button>
+
+        {confirmState ? (
+          // --- VAHVISTUSNÄKYMÄ (CONFIRMATION MODAL) ---
+          <div className="flex flex-col h-full justify-center flex-1 animate-in fade-in slide-in-from-bottom-4 duration-200 pt-4">
+            <div className="flex justify-center mb-4">
+              <AlertTriangle
+                size={48}
+                className={
+                  confirmState === "delete" ? "text-danger" : "text-warning"
+                }
+              />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-100 uppercase tracking-widest">
-                System Config
-              </h2>
-              <p className="text-[10px] text-cyan-500 font-mono">
-                TERMINAL_ID: {username}
-              </p>
+
+            <h2
+              className={`text-lg font-black uppercase tracking-widest text-center mb-4 ${confirmState === "delete" ? "text-danger" : "text-warning"}`}
+            >
+              {confirmState === "delete" ? "Delete Account" : "Reset Progress"}
+            </h2>
+
+            <p className="text-xs text-tx-muted text-center leading-relaxed mb-8 px-2 font-medium">
+              {confirmState === "delete"
+                ? "WARNING: Account deletion is permanent. All purchases, progress, and data will be lost forever. This action cannot be undone. Are you absolutely sure?"
+                : "Are you sure you want to reset all progress? Your account and purchases will remain intact, but all game progress will be wiped. This cannot be undone."}
+            </p>
+
+            <div className="flex gap-3 mt-auto">
+              <button
+                onClick={() => setConfirmState(null)}
+                className="flex-1 py-3 bg-panel border border-border rounded-xl text-[10px] font-black text-tx-main uppercase tracking-widest hover:bg-panel-hover transition-colors shadow-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${
+                  confirmState === "delete"
+                    ? "bg-danger hover:bg-danger/80 text-white border border-danger/50"
+                    : "bg-warning hover:bg-warning/80 text-black border border-warning/50"
+                }`}
+              >
+                {confirmState === "delete" ? "Confirm Delete" : "Confirm Reset"}
+              </button>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-slate-500 hover:text-white transition-colors text-2xl leading-none"
-          >
-            &times;
-          </button>
-        </div>
+        ) : (
+          // --- PÄÄVALIKKO (MAIN SETTINGS VIEW) ---
+          <>
+            <h2 className="text-xl font-black uppercase tracking-widest text-center mb-1 text-tx-main flex items-center justify-center gap-3">
+              <img
+                src="./assets/profile/user_settings.png"
+                alt=""
+                className="w-6 h-6 pixelated object-contain"
+              />
+              System Config
+            </h2>
+            <p className="text-[10px] text-accent font-mono uppercase tracking-widest text-center mb-8">
+              User: {username}
+            </p>
 
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-1/3 bg-slate-900/30 border-r border-slate-800 p-4 space-y-2">
-            <button
-              onClick={() => setActiveTab("general")}
-              className={`w-full text-left px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all
-                ${activeTab === "general" ? "bg-slate-800 text-white border border-slate-700" : "text-slate-500 hover:text-slate-300 hover:bg-slate-900"}`}
-            >
-              General
-            </button>
-            <button
-              onClick={() => setActiveTab("audio")}
-              className={`w-full text-left px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all
-                ${activeTab === "audio" ? "bg-slate-800 text-white border border-slate-700" : "text-slate-500 hover:text-slate-300 hover:bg-slate-900"}`}
-            >
-              Audio & Visuals
-            </button>
-            <button
-              onClick={() => setActiveTab("account")}
-              className={`w-full text-left px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all
-                ${activeTab === "account" ? "bg-slate-800 text-white border border-slate-700" : "text-slate-500 hover:text-slate-300 hover:bg-slate-900"}`}
-            >
-              Account & Data
-            </button>
-          </div>
-
-          <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-            {activeTab === "general" && (
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-500 uppercase border-b border-slate-800 pb-2 mb-4">
-                  Interface
-                </h3>
-                <ToggleSwitch
-                  label="Notifications"
-                  active={settings.notifications}
-                  onClick={() => toggleSetting("notifications")}
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2 pb-2">
+              <button
+                onClick={onReportBug}
+                className="w-full py-4 bg-panel hover:bg-panel-hover border border-border rounded-xl text-[10px] font-black text-tx-main uppercase tracking-widest transition-all flex items-center justify-center gap-3 group shadow-sm"
+              >
+                <MessageSquare
+                  size={16}
+                  className="text-accent group-hover:scale-110 transition-transform"
                 />
+                Support & Bug Report
+              </button>
 
-                <div className="p-4 bg-blue-900/10 border border-blue-900/30 rounded-lg mt-4">
-                  <p className="text-xs text-blue-200">
-                    <span className="font-bold block mb-1">ℹ️ Game Info</span>
-                    Version: Alpha 1.0.4
-                    <br />
-                    Server: EU-West (Simulated)
-                  </p>
-                </div>
+              <button
+                onClick={onLogout}
+                className="w-full py-4 bg-panel hover:bg-panel-hover border border-border rounded-xl text-[10px] font-black text-tx-muted hover:text-tx-main uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-sm"
+              >
+                <LogOut size={16} />
+                Sign Out
+              </button>
+
+              <div className="pt-4 mt-4 border-t border-border/50 space-y-4">
+                <button
+                  onClick={() => setConfirmState("reset")}
+                  className="w-full py-4 bg-warning/5 hover:bg-warning/10 border border-warning/30 rounded-xl text-[10px] font-black text-warning uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-sm group"
+                >
+                  <RefreshCcw
+                    size={16}
+                    className="group-hover:-rotate-90 transition-transform duration-300"
+                  />
+                  Reset Progress
+                </button>
+
+                <button
+                  onClick={() => setConfirmState("delete")}
+                  className="w-full py-4 bg-danger/5 hover:bg-danger hover:text-white border border-danger/30 hover:border-danger rounded-xl text-[10px] font-black text-danger uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-sm group"
+                >
+                  <Trash2
+                    size={16}
+                    className="group-hover:scale-110 transition-transform"
+                  />
+                  Delete Account
+                </button>
               </div>
-            )}
-
-            {activeTab === "audio" && (
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-500 uppercase border-b border-slate-800 pb-2 mb-4">
-                  Audio
-                </h3>
-                <ToggleSwitch
-                  label="Master Sound"
-                  active={settings.sound}
-                  onClick={() => toggleSetting("sound")}
-                />
-                <ToggleSwitch
-                  label="Music"
-                  active={settings.music}
-                  onClick={() => toggleSetting("music")}
-                />
-
-                <h3 className="text-xs font-bold text-slate-500 uppercase border-b border-slate-800 pb-2 mb-4 mt-8">
-                  Performance
-                </h3>
-                <ToggleSwitch
-                  label="Particle Effects"
-                  active={settings.particles}
-                  onClick={() => toggleSetting("particles")}
-                />
-              </div>
-            )}
-
-            {activeTab === "account" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-500 uppercase border-b border-slate-800 pb-2 mb-4">
-                    Data Management
-                  </h3>
-                  <div className="grid gap-3">
-                    <button
-                      onClick={onForceSave}
-                      className="w-full py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded text-xs font-bold text-emerald-400 uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
-                    >
-                      <span>💾</span> Force Cloud Save
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (
-                          confirm("Are you sure? This will wipe all progress.")
-                        )
-                          onReset();
-                      }}
-                      className="w-full py-3 bg-red-950/20 hover:bg-red-950/40 border border-red-900/50 rounded text-xs font-bold text-red-400 uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
-                    >
-                      <span>⚠️</span> Hard Reset Data
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-xs font-bold text-slate-500 uppercase border-b border-slate-800 pb-2 mb-4">
-                    Session
-                  </h3>
-                  <button
-                    onClick={onLogout}
-                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 uppercase tracking-widest transition-colors"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

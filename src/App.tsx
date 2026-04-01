@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "./firebase";
+import { signOut, deleteUser } from "firebase/auth";
+import { doc, deleteDoc } from "firebase/firestore";
+import { FirebaseError } from "firebase/app"; // LISÄTTY: Tyyppiturvallisuutta varten
+import { auth, db } from "./firebase";
 import { useGameStore, DEFAULT_STATE } from "./store/useGameStore";
 import ItemTooltip from "./components/tooltips/ItemTooltip";
 import { useAuth } from "./hooks/useAuth";
@@ -8,7 +10,8 @@ import { useGameInitialization } from "./hooks/useGameInitialization";
 import { useGameSync } from "./hooks/useGameSync";
 import { useGameEngine } from "./hooks/useGameEngine";
 
-import type { ViewType, GameSettings } from "./types";
+// POISTETTU: GameSettings
+import type { ViewType } from "./types";
 import SocialOverlay from "./components/social/SocialOverlay";
 import Sidebar from "./components/Sidebar";
 import ViewRouter from "./components/ViewRouter";
@@ -21,7 +24,6 @@ import RewardModal from "./components/modals/RewardModal";
 import UserConfigModal from "./components/modals/UserConfigModal";
 import QuestModal from "./components/quests/QuestModal";
 import Auth from "./components/Auth";
-// import DevManager from "./components/DevManager";
 import TutorialOverlay from "./components/TutorialOverlay";
 
 import { Menu, X } from "lucide-react";
@@ -74,6 +76,42 @@ export default function App() {
 
   useGameEngine();
 
+  const handleReportBug = () => {
+    window.open("https://forms.gle/SdJ7jWvqD3m6FFgd9", "_blank");
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await deleteDoc(userRef);
+      await deleteUser(user);
+
+      setState(DEFAULT_STATE);
+      setShowSettings(false);
+    } catch (error: unknown) {
+      console.error("Error deleting account:", error);
+
+      if (
+        error instanceof FirebaseError &&
+        error.code === "auth/requires-recent-login"
+      ) {
+        emitEvent(
+          "error",
+          "Security requirement: Please log out and log back in to delete your account.",
+          "./assets/ui/icon_error.png", // Varmista, että sinulla on joku järkevä ikoni tälle, esim warning
+        );
+      } else {
+        emitEvent(
+          "error",
+          "Account deletion failed. Please contact support.",
+          "./assets/ui/icon_error.png",
+        );
+      }
+    }
+  };
+
   if (loadingAuth)
     return (
       <div className="min-h-[100dvh] bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
@@ -124,7 +162,6 @@ export default function App() {
       <RewardModal />
       <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
 
-      {/* --- KÄYTTÄJÄPROFIILIN ASETUKSET PÄIVITETTY --- */}
       {showUserConfig && (
         <UserConfigModal
           currentUsername={username}
@@ -135,15 +172,12 @@ export default function App() {
             newTheme: string,
             newChatColor: string,
           ) => {
-            // TÄSSÄ KUTSUTAAN NYT UUTTA TURVALLISTA FUNKTIOTA (Ja odotetaan sitä)
             const success = await updateUserProfile(
               name,
               avatarUrl,
               newTheme,
               newChatColor,
             );
-
-            // Suljetaan ikkuna vain, jos toiminto onnistui (eli cooldown ei estänyt nimen vaihtoa)
             if (success) {
               setShowUserConfig(false);
             }
@@ -217,17 +251,14 @@ export default function App() {
 
         {showSettings && (
           <SettingsModal
-            settings={settings}
             username={username}
-            onUpdateSettings={(s: GameSettings) => setState({ settings: s })}
             onClose={() => setShowSettings(false)}
-            onForceSave={handleForceSave}
             onReset={() => {
-              if (confirm("This will PERMANENTLY wipe your save. Continue?")) {
-                setState(DEFAULT_STATE);
-                setShowSettings(false);
-              }
+              setState(DEFAULT_STATE);
+              setShowSettings(false);
             }}
+            onDeleteAccount={handleDeleteAccount}
+            onReportBug={handleReportBug}
             onLogout={() => signOut(auth)}
           />
         )}
@@ -245,11 +276,8 @@ export default function App() {
         />
       </main>
 
-      {/* --- LISÄTTY TUTORIAALI TÄHÄN --- */}
       <TutorialOverlay />
-
       <SocialOverlay />
-      {/* <DevManager /> */}
       <ItemTooltip />
     </div>
   );

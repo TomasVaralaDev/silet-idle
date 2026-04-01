@@ -125,9 +125,9 @@ const StatRow = ({
 export default function Sidebar({
   currentView,
   setView,
-  onReset,
+  // onReset,
   onLogout,
-  onStopAction,
+  // onStopAction,
   onForceSave,
   onOpenSettings,
   onOpenUserConfig,
@@ -447,28 +447,26 @@ export default function Sidebar({
       <div className="shrink-0 max-h-[30vh] overflow-y-auto custom-scrollbar border-t border-border/50 bg-panel/30 relative z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
         <QueuePanel />
       </div>
-
       {/* FOOTER AREA - Kiinteä pohjassa */}
       <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20 shrink-0">
+        {/* Kommentoitu Stop Action pois myöhempää käyttöä varten
         <button
           onClick={onStopAction}
           className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase shrink-0"
         >
           Stop Action
         </button>
-        <div className="grid grid-cols-2 gap-2 shrink-0">
-          <button
-            onClick={onReset}
-            className="py-2 text-[10px] font-bold text-danger border border-danger/20 hover:bg-danger/10 rounded-sm uppercase shrink-0"
-          >
-            Reset
-          </button>
+        */}
+
+        <div className="grid grid-cols-1 gap-2 shrink-0">
           <button
             onClick={handleForceSaveClick}
             disabled={saveCooldown > 0}
-            className={`py-2 text-[10px] font-bold border rounded-sm uppercase shrink-0 ${saveCooldown > 0 ? "text-tx-muted/60 border-border cursor-not-allowed" : "text-success border-success/20 hover:bg-success/10"}`}
+            className={`w-full py-3 text-[10px] font-bold border rounded-sm uppercase tracking-widest transition-all shrink-0 ${saveCooldown > 0 ? "text-tx-muted/60 border-border cursor-not-allowed" : "text-success border-success/20 hover:bg-success/10 shadow-sm"}`}
           >
-            {saveCooldown > 0 ? `${saveCooldown}s` : "Save"}
+            {saveCooldown > 0
+              ? `Saving disabled (${saveCooldown}s)`
+              : "Force Cloud Save"}
           </button>
         </div>
       </div>

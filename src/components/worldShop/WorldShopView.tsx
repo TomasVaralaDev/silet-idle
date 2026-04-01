@@ -23,7 +23,9 @@ export default function WorldShopView() {
         onClose={() => setIsRatesOpen(false)}
       />
 
-      {/* HEADER: Skaalattu mobiiliin */}
+      {
+        // HEADER
+      }
       <div className="p-4 md:p-6 border-b border-border/50 bg-panel/50 flex items-center gap-4 md:gap-6 sticky top-0 z-30 backdrop-blur-md shrink-0">
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center bg-accent/20 border border-accent/30 shadow-lg shrink-0">
           <img
@@ -43,7 +45,9 @@ export default function WorldShopView() {
       </div>
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden relative">
-        {/* MAAILMAN VALINTA (MOBILE: Horisontaalinen, DESKTOP: Vertikaalinen Sidebar) */}
+        {
+          // WORLD SELECTION SIDEBAR
+        }
         <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-border/50 overflow-x-auto md:overflow-y-auto bg-app-base/80 backdrop-blur-sm z-20 custom-scrollbar flex md:flex-col shrink-0 snap-x">
           {Object.entries(WORLD_INFO).map(([id, info]) => {
             const isSelected = selectedWorld === Number(id);
@@ -55,7 +59,9 @@ export default function WorldShopView() {
                   isSelected ? "bg-accent/15" : "hover:bg-panel"
                 }`}
               >
-                {/* Taustakuva häivytyksellä */}
+                {
+                  // Background Image with Fade Overlay
+                }
                 <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
                   <img
                     src={info.image}
@@ -77,7 +83,9 @@ export default function WorldShopView() {
                   </div>
                 </div>
 
-                {/* Valintaindikaattori (Mobiilissa alhaalla, työpöydällä vasemmalla) */}
+                {
+                  // Selection Indicator
+                }
                 {isSelected && (
                   <>
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_10px_#E43636] hidden md:block"></div>
@@ -89,9 +97,13 @@ export default function WorldShopView() {
           })}
         </aside>
 
-        {/* TUOTEALUE */}
+        {
+          // ITEM DISPLAY AREA
+        }
         <main className="flex-1 relative overflow-hidden">
-          {/* Taustagradientti ja maailman kuva */}
+          {
+            // Background Gradient and World Imagery
+          }
           <div className="absolute inset-0 z-0">
             <div
               className="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-105 opacity-20 md:opacity-40"
@@ -132,7 +144,9 @@ export default function WorldShopView() {
             </div>
           </div>
 
-          {/* HELP BUTTON: Kelluva mobiilissa, siirtyy tieltä pois */}
+          {
+            // HELP BUTTON
+          }
           <button
             onClick={() => setIsRatesOpen(true)}
             className="absolute bottom-6 right-6 z-30 w-12 h-12 flex items-center justify-center bg-panel/80 hover:bg-accent border border-border hover:border-accent/50 rounded-full transition-all shadow-2xl backdrop-blur-sm active:scale-95 group"

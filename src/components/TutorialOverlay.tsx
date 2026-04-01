@@ -161,12 +161,12 @@ export default function TutorialOverlay() {
 
   const currentData = TUTORIAL_STEPS[tutorial?.step];
 
-  // Estää tooltipin roikkumisen näytöllä kun vaihe vaihtuu
+  // Prevent tooltips from sticking during step transition
   useEffect(() => {
     hideTooltip();
   }, [tutorial?.step, hideTooltip]);
 
-  // Highlightin päivitys reaaliajassa ja elementin näkyvyyden tarkistus
+  // Real-time highlight position update and visibility check
   useEffect(() => {
     let animationFrameId: number;
 
@@ -178,12 +178,11 @@ export default function TutorialOverlay() {
         if (el) {
           const rect = el.getBoundingClientRect();
 
-          // Tarkistetaan onko nappi oikeasti näkyvissä, eikä esim. skrollattu headerin alle!
+          // Checking if the target element is truly visible and not obscured by headers
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
           const topEl = document.elementFromPoint(centerX, centerY);
 
-          // Jos napin päällä on jotain muuta (kuten header), piilotetaan hohto
           const isVisible = topEl && (el.contains(topEl) || el === topEl);
 
           if (isVisible) {
@@ -200,7 +199,7 @@ export default function TutorialOverlay() {
               return prev;
             });
           } else {
-            setHighlightRect(null); // Piilota jos se jäi skrollatessa jumiin tai katosi
+            setHighlightRect(null);
           }
         } else {
           setHighlightRect(null);
@@ -216,7 +215,7 @@ export default function TutorialOverlay() {
     };
   }, [currentData?.highlightElementId, tutorial?.isActive]);
 
-  // Edistymisen tiskuri
+  // Logic for progress label display
   const getProgressText = () => {
     if (!currentData) return null;
 
@@ -258,7 +257,7 @@ export default function TutorialOverlay() {
     return null;
   };
 
-  // Auto-advance logic
+  // Auto-advance trigger logic
   useEffect(() => {
     if (!tutorial?.isActive || tutorial?.isComplete || !currentData) return;
 
@@ -329,7 +328,9 @@ export default function TutorialOverlay() {
 
   return (
     <>
-      {/* HOHTAVA NELIÖ (Tarkasti napin kokoinen, ei nuolta) */}
+      {
+        // HIGHLIGHT OVERLAY: Accurate pulsing border around the targeted element
+      }
       {highlightRect && (
         <div
           className="fixed z-[150] pointer-events-none"
@@ -340,12 +341,13 @@ export default function TutorialOverlay() {
             height: highlightRect.height,
           }}
         >
-          {/* Pulssiva kehys - tiiviisti napin reunoilla */}
           <div className="absolute inset-0 border-[3px] border-accent rounded-lg animate-pulse shadow-[0_0_15px_rgba(228,54,54,0.6)]" />
         </div>
       )}
 
-      {/* TUTORIAALI-IKKUNA (Vasemmalla) */}
+      {
+        // TUTORIAL WINDOW
+      }
       <div className="fixed bottom-6 left-6 md:left-[312px] z-[200] w-[calc(100%-3rem)] md:w-96 pointer-events-auto animate-in slide-in-from-bottom-10 duration-500">
         <div className="bg-panel border-2 border-accent p-6 rounded-xl shadow-[0_10px_40px_rgba(228,54,54,0.2)]">
           <div className="flex items-center gap-3 mb-3">
@@ -381,7 +383,6 @@ export default function TutorialOverlay() {
                 <div className="absolute inset-0 bg-warning/5 animate-pulse" />
                 <span className="relative z-10 flex items-center gap-2">
                   Task in progress...
-                  {/* Progress Counter */}
                   {progressText && (
                     <span className="bg-warning/20 text-warning px-1.5 py-0.5 rounded font-mono text-[9px]">
                       {progressText}

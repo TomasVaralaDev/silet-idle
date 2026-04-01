@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { auth, googleProvider } from "../firebase";
-import { FirebaseError } from "firebase/app"; // Lisätty tämä tuonti
+import { FirebaseError } from "firebase/app";
 import {
   signInWithPopup,
   createUserWithEmailAndPassword,
@@ -25,9 +25,8 @@ export default function Auth() {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err: unknown) {
-      // Vaihdettu any -> unknown
       if (err instanceof FirebaseError) {
-        // Tarkistetaan onko virhe Firebasen tyyppiä
+        // Handling specific Firebase authentication error codes
         if (err.code === "auth/user-not-found") setError("User not found.");
         else if (err.code === "auth/wrong-password")
           setError("Incorrect password.");
@@ -46,7 +45,9 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-app-base text-tx-main relative overflow-hidden font-sans p-6">
-      {/* BACKGROUND WITH VOID EXPANSE IMAGE */}
+      {
+        // BACKGROUND WITH VOID EXPANSE VISUALS
+      }
       <div className="absolute inset-0 z-0">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20 grayscale scale-110 animate-pulse-slow"

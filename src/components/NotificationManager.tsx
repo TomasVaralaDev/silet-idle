@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { useGameStore } from "../store/useGameStore";
 import type { GameEvent } from "../types";
 
-/**
- * Yksittäinen ilmoituskomponentti, joka hoitaa oman ajastimensa.
- */
+{
+  // Individual notification component that manages its own lifecycle
+}
 function NotificationItem({
   event,
   onClear,
@@ -19,7 +19,7 @@ function NotificationItem({
     return () => clearTimeout(timer);
   }, [event.id, onClear]);
 
-  // Dynaaminen tyylitys eventin tyypin mukaan
+  // Dynamic styling based on event severity
   const getStyles = () => {
     switch (event.type) {
       case "warning":
@@ -79,9 +79,9 @@ function NotificationItem({
   );
 }
 
-/**
- * Pääkomponentti, joka listaa ilmoitukset.
- */
+{
+  // Main notification overlay
+}
 export default function NotificationManager() {
   const { events, clearEvent } = useGameStore();
 

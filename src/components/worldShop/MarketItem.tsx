@@ -19,27 +19,27 @@ export default function MarketItem({
 }: Props) {
   const [selectedAmount, setSelectedAmount] = useState(1);
 
-  // 1. LASKETAAN RAJOITUKSET
+  // Calculating purchase limits
   const remainingLimit = item.dailyLimit
     ? item.dailyLimit - purchaseCount
     : 999;
   const isLimitReached =
     item.dailyLimit !== undefined && purchaseCount >= item.dailyLimit;
 
-  // 2. LASKETAAN MAKSIMIMÄÄRÄ (Affordability + Limit)
+  // Calculating maximum purchase amount based on affordability and limits
   const maxByCoins = Math.floor(playerCoins / item.costCoins);
   const maxByMats = item.costMaterials.map((m) => {
     const current = playerInventory[m.itemId] || 0;
     return Math.floor(current / m.amount);
   });
 
-  // Todellinen maksimi on pienin näistä kaikista
+  // Determine the absolute maximum amount possible to purchase
   const absoluteMax = Math.max(
     1,
     Math.min(maxByCoins, ...maxByMats, remainingLimit),
   );
 
-  // Kokonaiskustannukset valitulle määrälle
+  // Total costs for the selected quantity
   const totalCoinCost = item.costCoins * selectedAmount;
   const canAffordCoins = playerCoins >= totalCoinCost;
   const canAffordMats = item.costMaterials.every(
@@ -64,7 +64,9 @@ export default function MarketItem({
       className={`relative group flex flex-col bg-panel/60 backdrop-blur-sm border transition-all duration-300 rounded-2xl overflow-hidden
       ${canAffordAll ? "border-border hover:border-accent/50" : "border-danger/20 opacity-80"}`}
     >
-      {/* DAILY LIMIT */}
+      {
+        // DAILY LIMIT INDICATOR
+      }
       {item.dailyLimit && (
         <div
           className={`absolute top-3 right-3 px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider border z-10
@@ -74,7 +76,9 @@ export default function MarketItem({
         </div>
       )}
 
-      {/* Yläosa: Tiedot */}
+      {
+        // ITEM INFORMATION
+      }
       <div className="p-5 flex gap-4">
         <div className="relative shrink-0">
           <div
@@ -104,7 +108,9 @@ export default function MarketItem({
         </div>
       </div>
 
-      {/* Keskiosa: Määrän valinta + MAX-nappi */}
+      {
+        // QUANTITY SELECTION
+      }
       {!isLimitReached && (
         <div className="px-5 mb-4 flex items-center gap-3">
           <div className="flex-1 flex items-center justify-between bg-black/20 py-2 px-3 rounded-lg border border-white/5">
@@ -144,7 +150,9 @@ export default function MarketItem({
         </div>
       )}
 
-      {/* Kustannukset */}
+      {
+        // PURCHASE COSTS
+      }
       <div className="px-5 pb-4 space-y-2">
         <div className="flex flex-wrap gap-2">
           <div
@@ -180,7 +188,9 @@ export default function MarketItem({
         </div>
       </div>
 
-      {/* Ostonappi */}
+      {
+        // PURCHASE BUTTON
+      }
       <button
         onClick={() => onBuy(item.id, selectedAmount)}
         disabled={!canAffordAll}

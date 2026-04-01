@@ -125,9 +125,7 @@ const StatRow = ({
 export default function Sidebar({
   currentView,
   setView,
-  // onReset,
   onLogout,
-  // onStopAction,
   onForceSave,
   onOpenSettings,
   onOpenUserConfig,
@@ -172,7 +170,9 @@ export default function Sidebar({
 
   return (
     <nav className="w-full max-w-[300px] md:max-w-none bg-app-base border-r border-border/50 flex-shrink-0 flex flex-col h-full z-10 shadow-2xl md:shadow-none overflow-hidden">
-      {/* HEADER AREA - Kiinteä korkeus */}
+      {
+        // HEADER AREA
+      }
       <div className="p-5 border-b border-border/50 bg-app-base relative z-20 shrink-0">
         <div className="flex justify-between items-center mb-4">
           <div className="hidden md:flex flex-col text-left">
@@ -289,7 +289,9 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* SCROLLABLE NAVIGATION AREA - MUUTETTU: Lisätty min-h-[30vh] ja poistettu vanha pb-32 -kikka */}
+      {
+        // SCROLLABLE NAVIGATION AREA
+      }
       <div className="p-4 space-y-8 overflow-y-auto flex-1 custom-scrollbar relative z-10 min-h-[30vh] pb-4">
         <div>
           <p className="text-[10px] font-bold text-tx-muted/80 uppercase px-2 mb-3 tracking-[0.2em] border-b border-border/50 pb-1 text-left">
@@ -443,21 +445,17 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* QUEUE AREA - UUSI LAATIKKO: Rajoitettu max-h ja oma scrolli, jottei se litistä navigointia */}
+      {
+        // QUEUE AREA: Scrollable actions overview
+      }
       <div className="shrink-0 max-h-[30vh] overflow-y-auto custom-scrollbar border-t border-border/50 bg-panel/30 relative z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
         <QueuePanel />
       </div>
-      {/* FOOTER AREA - Kiinteä pohjassa */}
-      <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20 shrink-0">
-        {/* Kommentoitu Stop Action pois myöhempää käyttöä varten
-        <button
-          onClick={onStopAction}
-          className="w-full py-3 text-xs font-bold text-warning hover:bg-warning/10 border border-warning/30 mb-3 transition-colors rounded-sm uppercase shrink-0"
-        >
-          Stop Action
-        </button>
-        */}
 
+      {
+        // FOOTER AREA
+      }
+      <div className="p-4 border-t border-border/50 bg-app-base/50 relative z-20 shrink-0">
         <div className="grid grid-cols-1 gap-2 shrink-0">
           <button
             onClick={handleForceSaveClick}

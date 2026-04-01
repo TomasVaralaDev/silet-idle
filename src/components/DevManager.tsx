@@ -3,8 +3,6 @@ import { useGameStore } from "../store/useGameStore";
 import type { SkillType } from "../types";
 import { getRequiredXpForLevel } from "../utils/gameUtils";
 import BattleSimView from "./battleSim/BattleSimView";
-
-// --- DATA IMPORTS ---
 import { weapons } from "../data/skills/crafting/weapons";
 import { armor } from "../data/skills/smithing/armor";
 import { jewelry } from "../data/skills/crafting/jewelry";
@@ -27,11 +25,9 @@ const THEMES = [
 export default function DevManager() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
-
   const [coinAmount, setCoinAmount] = useState<number>(10000);
   const [targetLevel, setTargetLevel] = useState<number>(99);
   const [itemAmount] = useState<number>(1);
-
   const [selectedGear, setSelectedGear] = useState<string>(
     "pouch_mystery_minor",
   );
@@ -42,12 +38,10 @@ export default function DevManager() {
   const currentCoins = useGameStore((state) => state.coins);
 
   const bossKeys = Array.from({ length: 8 }, (_, i) => `bosskey_w${i + 1}`);
-
-  // Yhdistetään bossi-aseet perusaseisiin
   const bossUniqueWeapons = Object.values(WORLD_BOSS_DROPS).flat();
   const allWeaponsCombined = [...weapons, ...bossUniqueWeapons];
 
-  // --- LOGIIKKA: ITEMIEN LISÄYS ---
+  // ITEM INJECTION LOGIC
   const addItems = (id: string, qty: number) => {
     setState((state) => ({
       inventory: {
@@ -78,7 +72,7 @@ export default function DevManager() {
 
       allGear.forEach((item) => {
         newInventory[item.id] = (newInventory[item.id] || 0) + gearAmount;
-        // Enchantit vain perusesineille (ei boss-aseille)
+        // Apply enchants only for base gear, exclude boss artifacts
         if (!item.id.includes("boss")) {
           for (let i = 1; i <= 5; i++) {
             const enchantedId = `${item.id}_e${i}`;
@@ -195,7 +189,9 @@ export default function DevManager() {
             <span className="animate-pulse">_</span>
           </h3>
 
-          {/* RESOURCE MANAGER */}
+          {
+            // RESOURCE MANAGER
+          }
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest flex justify-between">
               <span>Resource Manager</span>
@@ -225,7 +221,9 @@ export default function DevManager() {
             </div>
           </section>
 
-          {/* GEAR & ITEMS INJECTION */}
+          {
+            // GEAR & ITEMS INJECTION
+          }
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               Items & Gear Injection
@@ -324,7 +322,9 @@ export default function DevManager() {
             </button>
           </section>
 
-          {/* PROGRESSION OVERRIDES */}
+          {
+            // PROGRESSION OVERRIDES
+          }
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               Progression Overrides
@@ -355,7 +355,9 @@ export default function DevManager() {
             </button>
           </section>
 
-          {/* NEURAL-LINK / SKILLS */}
+          {
+            // NEURAL-LINK OVERWRITE (SKILLS)
+          }
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               Neural-Link Overwrite
@@ -376,7 +378,9 @@ export default function DevManager() {
             </div>
           </section>
 
-          {/* COMBAT SIMULATOR */}
+          {
+            // COMBAT SIMULATOR
+          }
           <section className="space-y-2 pt-2 border-t border-green-500/30">
             <button
               onClick={() => {
@@ -385,11 +389,13 @@ export default function DevManager() {
               }}
               className="w-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 py-2 text-[10px] uppercase font-black hover:bg-yellow-500 hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)]"
             >
-              🚀 Launch Combat Simulator
+              Launch Combat Simulator
             </button>
           </section>
 
-          {/* UI SUBSYSTEM (THEMES) */}
+          {
+            // UI SUBSYSTEM (THEMES)
+          }
           <section className="space-y-2">
             <div className="text-green-800 font-black text-[9px] uppercase tracking-widest">
               UI_Subsystem

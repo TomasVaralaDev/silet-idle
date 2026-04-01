@@ -15,19 +15,17 @@ import {
   PrivacyPolicyView,
 } from "./meta/MetaViews";
 import WikiView from "./wiki/wikiView";
-
-// Poistettu FullStoreState import, koska sitä ei enää käytetä tässä
 import type { ViewType, SkillType } from "../types";
 
 interface Props {
   currentView: ViewType;
-  // KORJATTU: 'state' poistettu propeista
   onSellClick: (id: string) => void;
 }
 
-// KORJATTU: 'state' poistettu argumenteista
 export default function ViewRouter({ currentView, onSellClick }: Props) {
-  // CORE SYSTEMS
+  {
+    // CORE SYSTEMS
+  }
   if (currentView === "combat") return <CombatView />;
   if (currentView === "scavenger") return <ScavengingView />;
   if (currentView === "inventory")
@@ -38,19 +36,25 @@ export default function ViewRouter({ currentView, onSellClick }: Props) {
   if (currentView === "marketplace") return <MarketplaceView />;
   if (currentView === "premium_shop") return <PremiumShopView />;
 
-  // META SYSTEMS
+  {
+    // META SYSTEMS
+  }
   if (currentView === "roadmap") return <RoadmapView />;
   if (currentView === "patch_notes") return <PatchNotesView />;
   if (currentView === "faq") return <FaqView />;
   if (currentView === "privacy_policy") return <PrivacyPolicyView />;
   if (currentView === "wiki") return <WikiView />;
 
-  // MILESTONES
+  {
+    // MILESTONES
+  }
   if (currentView === "achievements") {
     return <AchievementsView />;
   }
 
-  // SKILLS (Gathering & Production)
+  {
+    // SKILLS (Gathering & Production)
+  }
   const skillList: SkillType[] = [
     "woodcutting",
     "mining",

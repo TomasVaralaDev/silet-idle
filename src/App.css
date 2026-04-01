@@ -41,7 +41,9 @@
   color: #888;
 }
 
-/* --- LENTÄVÄT VAHINKONUMEROT --- */
+/* * COMBAT VFX: FLYING DAMAGE NUMBERS 
+ * Controls the vertical rise, scale bump, and fade out of combat text 
+ */
 @keyframes damage-pop {
   0% {
     transform: translate(-50%, 0) scale(0.5);
@@ -62,13 +64,13 @@
 }
 
 .animate-damage-pop {
-  /* MUUTETTU: 0.9s -> 0.45s */
+  /* Fast 450ms animation optimized for high attack speed limits */
   animation: damage-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-/* --- COMBAT VFX --- */
-
-/* Screen Shake: Pieni ja nopea tärinä */
+/* * COMBAT VFX: SCREEN SHAKE 
+ * Small, rapid camera shake triggered on critical hits or boss attacks 
+ */
 @keyframes shake {
   0% {
     transform: translate(0, 0);
@@ -91,7 +93,9 @@
   animation: shake 0.15s ease-in-out;
 }
 
-/* Valkoinen välähdys (Osumat viholliseen) */
+/* * COMBAT VFX: HIT FLASH (WHITE) 
+ * Used when the player successfully strikes an enemy 
+ */
 @keyframes flash-white {
   0% {
     filter: brightness(1);
@@ -108,7 +112,9 @@
   animation: flash-white 0.15s ease-in-out;
 }
 
-/* Punainen välähdys (Osumat pelaajaan / Kritit) */
+/* * COMBAT VFX: DAMAGE FLASH (RED) 
+ * Used when the player takes damage or lands a critical hit 
+ */
 @keyframes flash-red {
   0% {
     filter: brightness(1) sepia(0);
@@ -125,7 +131,9 @@
   animation: flash-red 0.2s ease-in-out;
 }
 
-/* --- UI ERROR SHAKE --- */
+/* * UI ERROR SHAKE 
+ * Horizontal vibration applied to invalid inputs or failed purchases 
+ */
 @keyframes shake-horizontal {
   0%,
   100% {

@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // UUSI
-import { getDatabase } from "firebase/database"; // UUSI: RTDB Import
+import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,8 +13,15 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Initialize Firebase Application
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase Authentication
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-export const db = getFirestore(app); // UUSI: Tietokantayhteys
-export const rtdb = getDatabase(app); // UUSI: Yhteys Realtime Databaseen
+
+// Initialize Cloud Firestore (Database for permanent persistent data, market, player saves)
+export const db = getFirestore(app);
+
+// Initialize Realtime Database (Database optimized for fast, transient data like live chat)
+export const rtdb = getDatabase(app);

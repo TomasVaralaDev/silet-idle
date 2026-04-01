@@ -1,4 +1,12 @@
+/**
+ * Global Type Definitions
+ * Centralizes all data structures, enums, and state interfaces used across the game engine.
+ */
+
+// --- CORE IDENTIFIERS ---
+
 export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+
 export type AchievementCategory =
   | "general"
   | "combat"
@@ -23,6 +31,7 @@ export type SkillType =
   | "combat"
   | "scavenging";
 
+// Routing enumerator determining the active viewport component
 export type ViewType =
   | SkillType
   | "inventory"
@@ -42,6 +51,7 @@ export type ViewType =
   | "wiki"
   | "premium_shop";
 
+// Hardware equipping restrictions
 export type EquipmentSlot =
   | "head"
   | "body"
@@ -66,6 +76,7 @@ export type GameEventType =
   | "combat"
   | "levelUp";
 
+// Defines transient notifications that appear globally over the UI
 export interface GameEvent {
   id: string;
   type: GameEventType;
@@ -81,9 +92,10 @@ export interface GameSettings {
   particles: boolean;
   theme: string;
   chatColor: string;
-  lastNameChange?: number; // LISÄÄ TÄMÄ RIVI!
+  lastNameChange?: number;
 }
 
+// Describes a continuous, time-based task the player is currently executing
 export interface ActiveAction {
   skill: SkillType;
   resourceId: string;
@@ -105,13 +117,14 @@ export interface Enemy {
   xpReward: number;
 }
 
+// History feed used in the Combat View
 export interface CombatLogEntry {
   message: string;
   timestamp: string;
   type?: "damage" | "heal" | "info" | "loot";
 }
 
-// Taistelun hetkellinen tila
+// The active, tick-by-tick state of the combat engine
 export interface CombatState {
   hp: number;
   currentMapId: number | null;
@@ -120,13 +133,14 @@ export interface CombatState {
   respawnTimer: number;
   foodTimer: number;
   combatLog: string[];
-  playerAttackTimer: number; // UUSI: Pelaajan oma ajastin (ms)
-  enemyAttackTimer: number; // UUSI: Vihollisen oma ajastin (ms)
+  playerAttackTimer: number;
+  enemyAttackTimer: number;
   cooldownUntil: number;
   damagePopUps: DamagePopUp[];
-  cooldownReason?: "death" | "retreat" | null; // UUSI: Tieto rangaistuksen syystä
+  cooldownReason?: "death" | "retreat" | null;
 }
 
+// Mathematical combat profile compiled from skills and equipment
 export interface CalculatedStats {
   attackDamage: number;
   armor: number;
@@ -143,6 +157,7 @@ export interface Ingredient {
   count: number;
 }
 
+// Base definition for practically every physical item in the game database
 export interface Resource {
   id: string;
   name: string;
@@ -195,6 +210,7 @@ export interface Drop {
   amount: [number, number];
 }
 
+// Used for complex drop tables where items compete against each other via probability weights
 export interface WeightedDrop {
   itemId: string;
   weight: number;
@@ -232,7 +248,7 @@ export interface AchievementReward {
   coins?: number;
   xpMap?: Partial<Record<SkillType, number>>;
   items?: { itemId: string; amount: number }[];
-  chatColorId?: string; // UUSI PALKINTO: Chatin nimen väri
+  chatColorId?: string;
 }
 
 export interface Achievement {
@@ -241,6 +257,7 @@ export interface Achievement {
   category: AchievementCategory;
   icon: string;
   description: string;
+  // Function evaluated against the global state to verify completion
   condition: (state: GameState) => boolean;
   rewards?: AchievementReward;
 }
@@ -251,7 +268,7 @@ export interface Expedition {
   id: string;
   mapId: number;
   startTime: number;
-  duration: number;
+  duration: number; // in milliseconds
   rewards?: { itemId: string; amount: number }[];
 }
 
@@ -302,7 +319,7 @@ export interface ActiveQuest extends QuestTemplate {
 
 export interface QuestState {
   dailyQuests: ActiveQuest[];
-  lastResetTime: number;
+  lastResetTime: number; // Used to track 00:00 UTC resets
 }
 
 // --- REWARDS ---
@@ -323,6 +340,7 @@ export interface MaterialRequirement {
   amount: number;
 }
 
+// Used for vendor items requiring regional currency and materials
 export interface WorldShopItem {
   id: string;
   name: string;
@@ -343,12 +361,12 @@ export interface WorldShopState {
 
 export interface ResourceDrop {
   itemId: string;
-  chance: number; // 0-100%
+  chance: number;
   amountMin: number;
   amountMax: number;
 }
 
-// --- Social features
+// --- SOCIAL FEATURES ---
 export interface Friend {
   uid: string;
   username: string;
@@ -375,11 +393,12 @@ export interface GlobalChatMessage {
   id: string;
   senderUid: string;
   senderUsername: string;
-  senderColor?: string; // UUSI: Lähettäjän nimen väri-ID
+  senderColor?: string;
   text: string;
   timestamp: number;
 }
 
+// Aggregates all live Firebase DB feeds into local state
 export interface SocialState {
   friends: Friend[];
   incomingRequests: FriendRequest[];
@@ -387,9 +406,10 @@ export interface SocialState {
   globalMessages: GlobalChatMessage[];
   activeChatFriendId: string | null;
   unreadMessages: Record<string, number>;
-  unlockedChatColors: string[]; // UUSI: Lista ID:istä, jotka pelaaja omistaa
+  unlockedChatColors: string[];
 }
 
+// Marketplace transaction record
 export interface MarketListing {
   id: string;
   sellerUid: string;
@@ -402,9 +422,9 @@ export interface MarketListing {
   status: "active" | "sold" | "expired" | "cancelled";
 }
 
-// Mail system
+// Mail system structure for payouts
 export interface MailMessage {
-  id: string; // Firestore doc ID
+  id: string;
   type: "market_sale" | "system_gift";
   title: string;
   message: string;
@@ -414,7 +434,10 @@ export interface MailMessage {
   isClaimed: boolean;
 }
 
+// ==========================================
 // --- ROOT GAME STATE ---
+// The master interface defining the entire payload saved to Firestore
+// ==========================================
 
 export interface GameState {
   username: string;
@@ -422,7 +445,7 @@ export interface GameState {
   unlockedQueueSlots: number;
   settings: GameSettings;
   marketListingLimit: number;
-  inventory: Record<string, number>;
+  inventory: Record<string, number>; // ID -> Count
   skills: Record<SkillType, SkillData>;
   equipment: Record<Exclude<EquipmentSlot, "food">, string | null>;
   equippedFood: { itemId: string; count: number } | null;
@@ -439,8 +462,8 @@ export interface GameState {
   combatStats: CombatState;
   enemy: Enemy | null;
   lastTimestamp: number;
-  events: GameEvent[];
-  social: SocialState;
+  events: GameEvent[]; // Transient UI notifications
+  social: SocialState; // Live RTDB feeds
   quests: QuestState;
   worldShop: WorldShopState;
   queue: QueueItem[];
@@ -461,10 +484,10 @@ export interface DamagePopUp {
   amount: number | string;
   isCrit: boolean;
   type: "player" | "enemy";
-  createdAt: number;
+  createdAt: number; // Used for cleanup
 }
 
-// --- META Vew DATA ---
+// --- META VIEW DATA ---
 export interface PatchNote {
   version: string;
   date: string;
@@ -483,7 +506,6 @@ export interface GuideSection {
   icon?: string;
 }
 
-// Lisää 'export' alkuun ja varmista että maxMapCompleted on oikein
 export type LeaderboardFilter = "totalLevel" | "maxMapCompleted";
 
 export interface LeaderboardEntry {
@@ -501,7 +523,7 @@ export interface PremiumShopRewards {
     expeditionSlotsIncrement?: number;
     queueSlotsSet?: number;
     inventorySlots?: number;
-    offlineHoursIncrement?: number; // LISÄTTY TÄNNE
+    offlineHoursIncrement?: number;
   };
   items?: Record<string, number>;
 }
@@ -514,8 +536,8 @@ export interface PremiumShopItem {
   icon: string;
   category: "Boosts" | "Cosmetics" | "Utility" | "Bundles";
   isOneTime?: boolean;
-  maxPurchases?: number; // LISÄTTY
-  rewards?: PremiumShopRewards; // LISÄTTY
+  maxPurchases?: number;
+  rewards?: PremiumShopRewards;
 }
 
 // --- TUTORIAL ---

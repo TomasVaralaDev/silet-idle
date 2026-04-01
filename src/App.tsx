@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { signOut, deleteUser } from "firebase/auth";
 import { doc, deleteDoc } from "firebase/firestore";
-import { FirebaseError } from "firebase/app"; // LISÄTTY: Tyyppiturvallisuutta varten
+import { FirebaseError } from "firebase/app";
 import { auth, db } from "./firebase";
 import { useGameStore, DEFAULT_STATE } from "./store/useGameStore";
 import ItemTooltip from "./components/tooltips/ItemTooltip";
@@ -10,7 +10,6 @@ import { useGameInitialization } from "./hooks/useGameInitialization";
 import { useGameSync } from "./hooks/useGameSync";
 import { useGameEngine } from "./hooks/useGameEngine";
 
-// POISTETTU: GameSettings
 import type { ViewType } from "./types";
 import SocialOverlay from "./components/social/SocialOverlay";
 import Sidebar from "./components/Sidebar";
@@ -40,6 +39,7 @@ const THEMES = [
 ];
 
 export default function App() {
+  // Global UI States
   const [currentView, setCurrentView] = useState<ViewType>("inventory");
   const [selectedItemForSale, setSelectedItemForSale] = useState<string | null>(
     null,
@@ -49,10 +49,12 @@ export default function App() {
   const [showQuests, setShowQuests] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Hook-driven Subsystems
   const { user, loadingAuth } = useAuth();
   const { isDataLoaded } = useGameInitialization(user);
   const { saveStatus, handleForceSave } = useGameSync(user, isDataLoaded);
 
+  // Global Game Store mapping
   const {
     username,
     avatar,
@@ -66,6 +68,7 @@ export default function App() {
     updateUserProfile,
   } = useGameStore();
 
+  // Apply visual theme to document body
   useEffect(() => {
     const currentTheme = settings?.theme || "theme-neon";
     if (!document.body.classList.contains(currentTheme)) {
@@ -74,12 +77,17 @@ export default function App() {
     }
   }, [settings?.theme]);
 
+  // Boot up the main 100ms game loop
   useGameEngine();
 
   const handleReportBug = () => {
     window.open("https://forms.gle/SdJ7jWvqD3m6FFgd9", "_blank");
   };
 
+  /**
+   * handleDeleteAccount
+   * Securely purges user document from Firestore and deletes the Firebase Auth identity.
+   */
   const handleDeleteAccount = async () => {
     if (!user) return;
 
@@ -93,6 +101,7 @@ export default function App() {
     } catch (error: unknown) {
       console.error("Error deleting account:", error);
 
+      // Firebase mandates fresh credentials for destructive actions
       if (
         error instanceof FirebaseError &&
         error.code === "auth/requires-recent-login"
@@ -100,7 +109,7 @@ export default function App() {
         emitEvent(
           "error",
           "Security requirement: Please log out and log back in to delete your account.",
-          "./assets/ui/icon_error.png", // Varmista, että sinulla on joku järkevä ikoni tälle, esim warning
+          "./assets/ui/icon_error.png",
         );
       } else {
         emitEvent(
@@ -112,13 +121,19 @@ export default function App() {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // INITIALIZATION GUARDS
+  // Prevent rendering the UI until Auth and Cloud Data are completely resolved
+  // ---------------------------------------------------------------------------
   if (loadingAuth)
     return (
       <div className="min-h-[100dvh] bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
         Getting out of bed...
       </div>
     );
+
   if (!user) return <Auth />;
+
   if (!isDataLoaded)
     return (
       <div className="min-h-[100dvh] bg-app-base text-tx-main flex items-center justify-center font-mono uppercase tracking-widest">
@@ -126,6 +141,7 @@ export default function App() {
       </div>
     );
 
+  // Force new users through the character creation flow
   if (!username || username === "Player") {
     return (
       <div className="min-h-[100dvh] bg-app-base flex items-center justify-center relative">
@@ -156,8 +172,12 @@ export default function App() {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // MAIN GAME UI RENDER
+  // ---------------------------------------------------------------------------
   return (
     <div className="h-[100dvh] w-full bg-app-base text-tx-main font-sans flex flex-col md:flex-row overflow-hidden relative">
+      {/* Global Overlays & Notifications */}
       <NotificationManager />
       <RewardModal />
       <QuestModal isOpen={showQuests} onClose={() => setShowQuests(false)} />
@@ -193,7 +213,7 @@ export default function App() {
         />
       )}
 
-      {/* --- MOBIILI HEADER --- */}
+      {/* Mobile Top Navigation Bar */}
       <div className="md:hidden flex shrink-0 items-center justify-between p-4 border-b border-border/50 bg-panel/90 backdrop-blur-md z-50">
         <h1 className="text-xl font-bold uppercase tracking-widest flex items-center gap-1">
           Nexus<span className="text-accent">Idle</span>
@@ -210,7 +230,7 @@ export default function App() {
         </button>
       </div>
 
-      {/* --- SIDEBAR WRAPPER --- */}
+      {/* Left Sidebar Navigation */}
       <div
         className={`
         fixed inset-0 top-[65px] md:top-0 z-[60] bg-black/80 md:bg-transparent md:relative md:flex md:w-72 md:translate-x-0 transition-transform duration-300 ease-in-out backdrop-blur-sm md:backdrop-blur-none
@@ -235,8 +255,9 @@ export default function App() {
         />
       </div>
 
-      {/* --- CONTENT AREA --- */}
+      {/* Main Dynamic Viewport */}
       <main className="flex-1 bg-app-base relative overflow-y-auto custom-scrollbar h-full min-h-0">
+        {/* Floating Cloud Sync Indicator */}
         <div className="fixed top-4 right-6 z-[40] pointer-events-none uppercase font-black text-[10px] tracking-tighter text-right hidden md:block">
           {saveStatus === "saving" && (
             <span className="text-tx-muted animate-pulse">Syncing...</span>

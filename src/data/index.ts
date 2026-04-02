@@ -5,7 +5,7 @@ import { SHOP_ITEMS } from "./shop";
 import { ACHIEVEMENTS } from "./achievements";
 import { RUNES_DATA } from "./runes";
 import { SCROLLS_DATA } from "./scrolls";
-import { MYSTERY_POUCHES } from "./pouches"; // 1. UUSI IMPORT
+import { MYSTERY_POUCHES } from "./pouches";
 import { WORLD_BOSS_DROPS } from "./bossLoot";
 import {
   getBaseId,
@@ -13,7 +13,7 @@ import {
   applyEnchantStats,
 } from "../utils/enchanting";
 import type { Resource } from "../types";
-import { CHAT_COLORS } from "./chatColors"; // LISÄTTY: Tuodaan värit
+import { CHAT_COLORS } from "./chatColors";
 
 export {
   WORLD_INFO,
@@ -269,14 +269,14 @@ export const getItemDetails = (id: string): Resource | null => {
 
   const factories = [
     RuneFactory,
-    PouchFactory, // 3. LISÄTTY TEHDAS LISTAAN
-    BossLootFactory, // REKISTERÖITY TÄHÄN!
+    PouchFactory,
+    BossLootFactory,
     KeyFactory,
     EnchantScrollFactory,
     WorldLootFactory,
     SkillResourceFactory,
-    ExperienceFactory, // UUSI
-    ChatColorFactory, // UUSI
+    ExperienceFactory,
+    ChatColorFactory,
     PremiumStatFactory,
   ];
 

@@ -78,74 +78,11 @@ Curious about how the game works under the hood? I have documented the core engi
 
 - [Robust Game Logic: Testing Strategy](./docs/testing-strategy.md) - How Vitest is used to guarantee data integrity, balance RNG math, and protect player save files.
 
-## Getting Started (Local Development)
+## Gameplay Guide
 
-### Prerequisites
-
-- Node.js (v18 or higher recommended)
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-
-```bash
-git clone https://github.com/TomasVaralaDev/silet-idle.git
-cd silet-idle
-```
-
-2. **Install dependencies**
-
-3. **Configure Firebase**
-
-Create a file named .env in the root directory and add your Firebase credentials:
-
-```
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-```
-
-4. **Run the development server**
-
-```
-npm run dev
-```
-
-5. **Run tests**
-
-```
-npm run test
-```
-
-### Project Structure (Overview)
-
-```
-src/
-├── assets/         # Game images, sprites, UI icons
-├── components/     # React UI components separated by domain (inventory, combat, enchanting)
-├── config/         # Constant variables and skill definitions
-├── data/           # Static game databases (Loot tables, Quests, Items, Enemies)
-├── hooks/          # Core game loops (useGameEngine) and utility hooks
-├── services/       # External API and Firebase logic (Leaderboard, Marketplace)
-├── store/          # Zustand global store and individual feature slices
-├── systems/        # Pure business logic (Skill, Combat, Offline, Quest systems)
-└── utils/          # Math, scaling formulas, and mechanics
-```
-
-### Gameplay Guide
-
-1. Start: Choose a unique Unit ID.
-
-2. Gather: Use Woodcutting or Mining to collect base materials.
-
-3. Refine & Queue: Use Smithing (ingots) or Crafting (planks) to process materials. Utilize the Queue system to automate production.
-
-4. Gear Up: Craft armor and weapons, and risk enchanting them for massive power boosts.
-
-5. Fight: Enter the Stabilization Zone. Defeat enemies, monitor your auto-eat thresholds, and collect loot.
-
-6. Bosses: Hunt for Zone Keys to unlock and challenge powerful World Bosses to progress to new cosmic zones.
+1. **Start:** Choose a unique Unit ID.
+2. **Gather:** Use Woodcutting or Mining to collect base materials.
+3. **Refine & Queue:** Use Smithing (ingots) or Crafting (planks) to process materials. Utilize the Queue system to automate production.
+4. **Gear Up:** Craft armor and weapons, and risk enchanting them for massive power boosts.
+5. **Fight:** Enter the Stabilization Zone. Defeat enemies, monitor your auto-eat thresholds, and collect loot.
+6. **Bosses:** Hunt for Zone Keys to unlock and challenge powerful World Bosses to progress to new cosmic zones.

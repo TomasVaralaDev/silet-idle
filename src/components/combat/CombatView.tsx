@@ -8,11 +8,19 @@ import CombatLog from "./CombatLog";
 import FoodSelector from "./FoodSelector";
 import { formatRemainingTime } from "../../utils/formatUtils";
 
+/**
+ * CombatView Component
+ * Responsible strictly for UI orchestration and layout of the combat system.
+ * Demonstrates Separation of Concerns: It does NOT calculate damage or XP,
+ * it only observes the global state and renders visual components accordingly.
+ */
 export default function CombatView() {
   const combatStats = useGameStore((s) => s.combatStats);
   const [now, setNow] = useState(() => Date.now());
 
-  // Update local timer to render real-time cooldown countdowns
+  // Isolated local interval specifically for the UI cooldown timer.
+  // We avoid putting this in the global 100ms game engine loop to prevent
+  // the entire application from re-rendering unnecessarily.
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
 
@@ -37,7 +45,8 @@ export default function CombatView() {
     ? COMBAT_DATA.find((m) => m.id === combatStats.currentMapId)
     : null;
 
-  // Determine the active world based on the current map or fallback to calculated progress
+  // Determine the active visual world tab based on the current ongoing battle,
+  // or fallback to the highest unlocked threshold.
   const activeWorldId =
     currentMap?.world ||
     (combatStats.currentMapId
@@ -51,7 +60,7 @@ export default function CombatView() {
     return Math.ceil(maxMap / 10) || 1;
   });
 
-  // Sync selected world when the active map changes (e.g. advancing to a new zone)
+  // Synchronize the sidebar selector automatically when a player advances to a new region
   if (activeWorldId !== prevActiveWorldId) {
     setPrevActiveWorldId(activeWorldId);
     setSelectedWorld(activeWorldId || 1);
@@ -72,7 +81,8 @@ export default function CombatView() {
       }
       <div className="flex-1 flex flex-col min-w-0 h-auto lg:h-full relative border-y lg:border-y-0 border-border/50">
         {
-          // Recovery Overlay - Blocks interaction during death or retreat cooldowns
+          // Recovery Overlay
+          // Blocks interaction and displays a CSS-animated countdown during death or retreat cooldowns
         }
         {isRecovering && !combatStats.currentMapId && (
           <div className="absolute inset-0 z-[40] bg-app-base/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
@@ -108,13 +118,15 @@ export default function CombatView() {
         )}
 
         {
-          // Top Section: Visual Battle Arena
+          // Top Section: Visual Battle Arena Rendering
         }
         <div className="min-h-[35vh] lg:min-h-0 lg:h-[45%] shrink-0 relative bg-panel overflow-hidden border-b border-border shadow-inner">
           <BattleArena selectedWorldId={selectedWorld} />
         </div>
 
-        {/* Bottom Section: Consumables and Logs */}
+        {
+          // Bottom Section: Consumables and Logs
+        }
         <div className="flex-1 min-h-[40vh] lg:min-h-0 bg-app-base flex flex-col md:flex-row z-20">
           <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-border p-3 md:p-5 flex flex-col bg-panel/30">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-2 md:mb-4 shrink-0">
@@ -125,9 +137,6 @@ export default function CombatView() {
             </div>
           </div>
 
-          {
-            // Bottom Right: Combat Log Stream
-          }
           <div className="w-full md:w-1/2 flex flex-col bg-app-base min-h-[200px] md:min-h-0">
             <div className="flex-1 overflow-hidden relative">
               <div className="absolute inset-0">
@@ -139,7 +148,7 @@ export default function CombatView() {
       </div>
 
       {
-        // Right Column: Zone Selection and Combat Initiation
+        // Right Column: Zone Selection and Encounters
       }
       <div className="w-full lg:w-80 flex-shrink-0 lg:border-l border-border bg-panel/80 backdrop-blur-sm z-20 flex flex-col h-auto lg:h-full">
         <ZoneSelector selectedWorldId={selectedWorld} />

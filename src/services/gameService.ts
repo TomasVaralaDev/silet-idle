@@ -4,7 +4,7 @@ import { DEFAULT_STATE } from "../store/useGameStore";
 import type { GameState } from "../types";
 
 // Key used for LocalStorage backup when offline or cloud is unavailable
-const getLocalKey = (uid: string) => `melvor_clone_save_${uid}`;
+const getLocalKey = (uid: string) => `nexus_idle_save_${uid}`;
 
 /**
  * loadGameData

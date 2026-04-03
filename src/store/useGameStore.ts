@@ -393,7 +393,7 @@ export const useGameStore = create<FullStoreState>()(
         }),
     }),
     {
-      name: "ggez-idle-storage",
+      name: "nexus_idle_storage",
       version: 1,
       // Pass retrieved local storage payload through the deep-merge reconciler
       merge: (persisted, current) =>

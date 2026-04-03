@@ -47,7 +47,7 @@ export const useGameStore = create<FullStoreState>()(
       // ...
     }),
     {
-      name: "ggez-idle-storage",
+      name: "nexus_idle_storage",
       version: 1,
       merge: (persisted, current) => customMerge(persisted, current as FullStoreState),
     }

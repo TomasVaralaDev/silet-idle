@@ -119,8 +119,40 @@ export interface TowerCombatStats {
   combatLog: string[];
   combatTimer: number; //
   damagePopUps: DamagePopUp[];
+  skillCooldownTimer?: number;
+  enemyDebuffs?: { name: string; effectValue: number; durationMs?: number }[];
+  manualSkillQueue?: boolean;
   status: "fighting" | "victory" | "defeat" | null;
 }
+// skills
+export type DebuffType = "freeze" | "poison";
+
+// Kuinka skilli aktivoituu
+export type SkillTrigger = "cooldown" | "on_hit";
+
+// Itse skillin vaikutuksen rakenne
+export interface SkillEffect {
+  trigger: SkillTrigger;
+
+  // Laukaisimen ehdot
+  cooldownMs?: number;
+  procChance?: number;
+  damageScaling?: number;
+  healPercent?: number;
+
+  // Viholliseen asetettava Debuff (status-efekti)
+  debuff?: {
+    name: DebuffType;
+    durationMs?: number;
+    effectValue: number;
+  };
+}
+export interface ActiveDebuff {
+  name: DebuffType;
+  effectValue: number;
+  expiresAt: number; // Millisekunteina (Date.now() + durationMs)
+}
+
 // --- COMBAT TYPES ---
 
 export interface Enemy {
@@ -188,6 +220,7 @@ export interface Resource {
   category?: string;
   level?: number;
   xpReward?: number;
+  skillEffect?: SkillEffect;
   interval?: number;
   area?: number;
   inputs?: Ingredient[];

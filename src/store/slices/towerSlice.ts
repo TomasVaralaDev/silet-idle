@@ -1,13 +1,15 @@
 import type { StateCreator } from "zustand";
 import type { FullStoreState } from "../useGameStore";
 import { TOWER_FLOORS } from "../../data/tower";
-import { calculateTowerCombatTick } from "../../systems/towerCombatSystem";
+import { getItemDetails } from "../../data";
+import type { Resource } from "../../types";
 
 export interface TowerSlice {
   startTowerCombat: (floorNumber: number) => void;
-  processTowerTick: () => void;
+  // processTowerTick poistettu, koska useGameEngine hoitaa tikityksen nykyään!
   leaveTowerCombat: () => void;
   claimTowerVictory: () => void;
+  castTowerSkill: () => void;
 }
 
 export const createTowerSlice: StateCreator<
@@ -21,12 +23,17 @@ export const createTowerSlice: StateCreator<
     const floorData = TOWER_FLOORS.find((f) => f.floorNumber === floorNumber);
     if (!floorData) return;
 
-    // Laske pelaajan maksimi HP
+    // Lasketaan pelaajan maksimi HP (Perus HP + Skillien taso + Varusteet)
     const hitpointsLevel = state.skills.hitpoints?.level || 1;
-    // let hpBonus = 0;
-    // Voit halutessasi laskea tähän varusteiden tuoman hpBonuksen,
-    // mutta pelkkä baseHp toimii alkuun hyvin.
-    const maxHp = 100 + hitpointsLevel * 10;
+    const gearHpBonus = (
+      Object.values(state.equipment) as (string | null)[]
+    ).reduce((acc, itemId) => {
+      if (!itemId) return acc;
+      const item = getItemDetails(itemId) as Resource;
+      return acc + (item?.stats?.hpBonus || 0);
+    }, 0);
+
+    const maxHp = 100 + hitpointsLevel * 10 + gearHpBonus;
 
     set({
       tower: {
@@ -38,7 +45,7 @@ export const createTowerSlice: StateCreator<
           enemyCurrentHp: floorData.enemy.maxHp,
           playerAttackTimer: 1000,
           enemyAttackTimer: 1500,
-          combatTimer: 60000, // ⏳ TÄMÄ PUUTTUI: Asetetaan 60 sekunnin aikaraja (60 000ms)
+          combatTimer: 60000,
           combatLog: [`Engaged ${floorData.enemy.name}!`],
           damagePopUps: [],
           status: "fighting",
@@ -47,22 +54,24 @@ export const createTowerSlice: StateCreator<
     });
   },
 
-  processTowerTick: () => {
-    const state = get();
-    const newCombatState = calculateTowerCombatTick(state, 100);
-
-    if (newCombatState) {
-      set({
+  castTowerSkill: () => {
+    set((state) => {
+      // Varmistetaan, että taistelu on käynnissä
+      if (
+        !state.tower.combat.isActive ||
+        state.tower.combat.status !== "fighting"
+      )
+        return state;
+      return {
         tower: {
           ...state.tower,
-          // Yhdistetään olemassa oleva state ja uusi tick turvallisesti
           combat: {
             ...state.tower.combat,
-            ...newCombatState,
-          } as typeof state.tower.combat,
+            manualSkillQueue: true, // Tämä käskee seuraavaa tikkiä laukaisemaan taidon!
+          },
         },
-      });
-    }
+      };
+    });
   },
 
   leaveTowerCombat: () => {

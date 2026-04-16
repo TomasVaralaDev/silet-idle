@@ -7,6 +7,7 @@ import { RUNES_DATA } from "./runes";
 import { SCROLLS_DATA } from "./scrolls";
 import { MYSTERY_POUCHES } from "./pouches";
 import { WORLD_BOSS_DROPS } from "./bossLoot";
+import { ACTION_SKILLS } from "./actionSkills"; // <-- 1. LISÄÄ TÄMÄ IMPORT
 import {
   getBaseId,
   getEnchantLevel,
@@ -26,6 +27,7 @@ export {
   SCROLLS_DATA,
   MYSTERY_POUCHES,
   WORLD_BOSS_DROPS,
+  ACTION_SKILLS,
 };
 
 // --- APUMUUTTUJA: Litistetään bossi-lootit kerran suorituskyvyn parantamiseksi ---
@@ -164,6 +166,17 @@ const SkillResourceFactory: ItemSubFactory = {
   },
 };
 
+//**
+//
+//11. Action skill factory
+const ActionSkillFactory: ItemSubFactory = {
+  // Oletamme, että kaikki taitosi ID:t alkavat sanalla "skill_" (esim. "skill_fireball")
+  canHandle: (id) => id.startsWith("skill_"),
+  create: (id) => {
+    const skill = ACTION_SKILLS.find((s) => s.id === id);
+    return skill || {};
+  },
+};
 // ==========================================
 // --- UUDET VIRTUAALI-TEHTAAT (Rewards) ---
 // ==========================================
@@ -278,6 +291,7 @@ export const getItemDetails = (id: string): Resource | null => {
     ExperienceFactory,
     ChatColorFactory,
     PremiumStatFactory,
+    ActionSkillFactory, // <-- LISÄÄ TÄMÄ TÄNNE!
   ];
 
   const factory = factories.find((f) => f.canHandle(baseId));

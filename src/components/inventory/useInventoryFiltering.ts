@@ -11,6 +11,7 @@ export type FilterType =
   | "weapons"
   | "armor"
   | "runes"
+  | "skills"
   | "pouches"
   | "potions"
   | "materials"
@@ -76,7 +77,7 @@ export function useInventoryFiltering() {
         ].includes(i.slot as string);
         const isRune = i.id.startsWith("rune_") || i.slot === "rune";
         const isPouch = i.id.startsWith("pouch_mystery_");
-
+        const isSkill = i.slot === "skill";
         // Consumables category includes both food items and alchemy potions
         const isConsumable =
           i.slot === "food" || i.category === "potion" || i.category === "Food";
@@ -96,6 +97,8 @@ export function useInventoryFiltering() {
             return isArmor;
           case "runes":
             return isRune;
+          case "skills": // <-- UUSI
+            return isSkill;
           case "pouches":
             return isPouch;
           case "potions":
@@ -107,6 +110,7 @@ export function useInventoryFiltering() {
               !isWeapon &&
               !isArmor &&
               !isRune &&
+              !isSkill &&
               !isPouch &&
               !isConsumable &&
               !isMaterial

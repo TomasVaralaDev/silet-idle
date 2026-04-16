@@ -8,7 +8,7 @@ import { GAME_DATA, getItemDetails } from "../data";
 import { calculateXpGain, getSpeedMultiplier } from "../utils/gameUtils";
 import { processQuestProgress } from "../systems/questSystem";
 import type { GameState, Resource, SkillType } from "../types";
-
+import { calculateTowerCombatTick } from "../systems/towerCombatSystem"; // <-- LISÄTTY IMPORT
 /**
  * useGameEngine Hook
  * The core heartbeat of the idle game. This hook manages the master 100ms tick,
@@ -88,6 +88,30 @@ export const useGameEngine = () => {
               ...state.unlockedAchievements,
               ...newUnlockIds,
             ];
+          }
+        }
+
+        // ==========================================
+        // --- 1. TOWER COMBAT PROCESSING (UUSI) ---
+        // ==========================================
+        // Ajetaan tornitaistelun logiikka moottorissa deltaMs:n perusteella.
+        // Näin taistelu etenee, vaikka olisit toisella välilehdellä!
+        if (
+          state.tower.combat.isActive &&
+          state.tower.combat.status === "fighting"
+        ) {
+          const towerUpdates = calculateTowerCombatTick(
+            state as unknown as GameState,
+            deltaMs,
+          );
+          if (towerUpdates) {
+            updates.tower = {
+              ...state.tower,
+              combat: {
+                ...(updates.tower?.combat || state.tower.combat),
+                ...towerUpdates,
+              },
+            };
           }
         }
 

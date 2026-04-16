@@ -4,7 +4,6 @@ import {
   calculateHit,
 } from "../utils/combatMechanics";
 import { TOWER_FLOORS } from "../data/tower";
-// KORJATTU: Tuodaan getItemById
 import { getItemById } from "../utils/itemUtils";
 import type {
   GameState,
@@ -36,8 +35,12 @@ export const calculateTowerCombatTick = (
     (p) => now - p.createdAt < 500,
   );
 
-  // Pelaajan statsit
-  // KORJATTU: Käytetään getItemById
+  // KORJATTU: Haetaan varusteiden Skill-esine
+  const skillItem = equipment.skill
+    ? (getItemById(equipment.skill) as Resource)
+    : null;
+  const skillEffect = skillItem?.skillEffect;
+
   const weaponItem = equipment.weapon
     ? (getItemById(equipment.weapon) as Resource)
     : null;
@@ -46,7 +49,6 @@ export const calculateTowerCombatTick = (
   const gearStats = (Object.values(equipment) as (string | null)[]).reduce(
     (acc, itemId) => {
       if (!itemId) return acc;
-      // KORJATTU: Käytetään getItemById
       const item = getItemById(itemId) as Resource;
       if (item?.stats) {
         acc.damage += item.stats.attack || 0;
@@ -78,14 +80,16 @@ export const calculateTowerCombatTick = (
     attack: floorData.enemy.attack,
   });
 
+  // Lasketaan maksimi HP (esim. Heal-skilliä varten)
+  const playerMaxHp =
+    100 + (skills.hitpoints?.level || 1) * 10 + gearStats.hpBonus;
+
+  // AIKAJASTIMET (Attack & Auto-Defeat)
   newCombat.playerAttackTimer = Math.max(
     0,
     newCombat.playerAttackTimer - tickMs,
   );
   newCombat.enemyAttackTimer = Math.max(0, newCombat.enemyAttackTimer - tickMs);
-
-  // ⏳ VÄHÄNNETÄÄN AIKAA JA TARKISTETAAN AUTO-DEFEAT
-  // Käytetään varmuuden vuoksi nollaa oletuksena, ettei undefined riko laskutoimitusta vanhoilla tallennuksilla
   newCombat.combatTimer = Math.max(0, (newCombat.combatTimer || 0) - tickMs);
 
   if (newCombat.combatTimer <= 0 && newCombat.status === "fighting") {
@@ -97,24 +101,142 @@ export const calculateTowerCombatTick = (
     return newCombat;
   }
 
+  // --- SKILL & DEBUFF TARKISTUKSET ---
+  newCombat.skillCooldownTimer = Math.max(
+    0,
+    (newCombat.skillCooldownTimer || 0) - tickMs,
+  );
+  newCombat.enemyDebuffs = newCombat.enemyDebuffs || [];
+
+  // Pienennetään debuffien kestoja
+  newCombat.enemyDebuffs.forEach((d) => {
+    if (d.durationMs !== undefined) d.durationMs -= tickMs;
+  });
+  // Poistetaan vanhentuneet
+  newCombat.enemyDebuffs = newCombat.enemyDebuffs.filter(
+    (d) => d.durationMs === undefined || d.durationMs > 0,
+  );
+
+  const hasFreeze = newCombat.enemyDebuffs.find((d) => d.name === "freeze");
+  const hasPoison = newCombat.enemyDebuffs.find((d) => d.name === "poison");
+
+  // === MANUAL SKILL TRIGGER (Esim. Fireball tai Heal) ===
+  if (
+    newCombat.manualSkillQueue &&
+    skillEffect?.trigger === "cooldown" &&
+    newCombat.skillCooldownTimer <= 0
+  ) {
+    if (skillEffect.damageScaling) {
+      // Fireball
+      // Oletetaan, että playerStats sisältää total attackin, fallback gear damage
+      const baseAtk =
+        (playerStats as { attack?: number }).attack || gearStats.damage || 50;
+      const bonusDmg = Math.floor(baseAtk * skillEffect.damageScaling);
+
+      newCombat.enemyCurrentHp = Math.max(
+        0,
+        newCombat.enemyCurrentHp - bonusDmg,
+      );
+      newCombat.damagePopUps.push({
+        id: `skill_dmg_${now}`,
+        amount: bonusDmg,
+        isCrit: true,
+        type: "enemy",
+        createdAt: now,
+      });
+      newCombat.combatLog = [
+        `🔥 Cast ${skillItem?.name}! Dealt ${bonusDmg} DMG!`,
+        ...newCombat.combatLog,
+      ].slice(0, 10);
+    }
+
+    if (skillEffect.healPercent) {
+      // Heal
+      const healAmt = Math.floor(playerMaxHp * skillEffect.healPercent);
+      newCombat.playerHp = Math.min(playerMaxHp, newCombat.playerHp + healAmt);
+      newCombat.damagePopUps.push({
+        id: `skill_heal_${now}`,
+        amount: `+${healAmt}`,
+        isCrit: false,
+        type: "player",
+        createdAt: now,
+      });
+      newCombat.combatLog = [
+        `✨ Cast ${skillItem?.name}! Restored ${healAmt} HP!`,
+        ...newCombat.combatLog,
+      ].slice(0, 10);
+    }
+
+    newCombat.skillCooldownTimer = skillEffect.cooldownMs || 10000; // Reset Cooldown
+    newCombat.manualSkillQueue = false; // Tyhjennetään jono
+
+    // Pikavoittotarkistus (jos vihollinen kuoli Fireballiin)
+    if (newCombat.enemyCurrentHp <= 0) {
+      newCombat.status = "victory";
+      newCombat.combatLog = [
+        "Victory! The enemy is defeated.",
+        ...newCombat.combatLog,
+      ].slice(0, 10);
+      return newCombat;
+    }
+  }
+
+  // Tyhjennetään jono, vaikka taito ei olisikaan laennut (suoja)
+  newCombat.manualSkillQueue = false;
+
   // 1. PELAAJA LYÖ
   if (newCombat.playerAttackTimer <= 0 && newCombat.enemyCurrentHp > 0) {
     const hit = calculateHit(playerStats, enemyStats);
+    let finalDamage = hit.finalDamage;
+
+    // --- Myrkky (Poison) vahinko osuessa ---
+    if (hasPoison) {
+      const poisonDmg = Math.floor(
+        floorData.enemy.maxHp * hasPoison.effectValue,
+      );
+      finalDamage += poisonDmg;
+      newCombat.damagePopUps.push({
+        id: `poison_tick_${now}`,
+        amount: poisonDmg,
+        isCrit: false,
+        type: "enemy",
+        createdAt: now,
+      });
+    }
+
+    // --- On-Hit -kyvyt (esim. Freeze ja Poison levitys) ---
+    if (skillEffect?.trigger === "on_hit" && skillEffect.procChance) {
+      if (Math.random() < skillEffect.procChance && skillEffect.debuff) {
+        const existing = newCombat.enemyDebuffs.find(
+          (d) => d.name === skillEffect.debuff!.name,
+        );
+        if (!existing) {
+          newCombat.enemyDebuffs.push({ ...skillEffect.debuff });
+          newCombat.combatLog = [
+            `Target is afflicted with ${skillEffect.debuff.name.toUpperCase()}!`,
+            ...newCombat.combatLog,
+          ].slice(0, 10);
+        } else {
+          existing.durationMs = skillEffect.debuff.durationMs; // Virkistää aikarajan
+        }
+      }
+    }
+
     newCombat.enemyCurrentHp = Math.max(
       0,
-      newCombat.enemyCurrentHp - hit.finalDamage,
+      newCombat.enemyCurrentHp - finalDamage,
     );
     newCombat.playerAttackTimer = playerStats.attackSpeed;
 
     newCombat.damagePopUps.push({
       id: `p_hit_${now}_${Math.random()}`,
-      amount: hit.finalDamage,
+      amount: finalDamage,
       isCrit: hit.isCrit,
       type: "enemy",
       createdAt: now,
     });
     newCombat.combatLog = [
-      `You hit for ${hit.finalDamage} DMG!`,
+      `You hit for ${finalDamage} DMG!`,
       ...newCombat.combatLog,
     ].slice(0, 10);
   }
@@ -133,7 +255,16 @@ export const calculateTowerCombatTick = (
   if (newCombat.enemyAttackTimer <= 0 && newCombat.playerHp > 0) {
     const hit = calculateHit(enemyStats, playerStats);
     newCombat.playerHp = Math.max(0, newCombat.playerHp - hit.finalDamage);
-    newCombat.enemyAttackTimer = enemyStats.attackSpeed;
+
+    // --- Freeze (Jäädytys) hidastaa hyökkäystä ---
+    let actualEnemySpeed = enemyStats.attackSpeed;
+    if (hasFreeze) {
+      // Hidastus: esim. 0.30 tekee nopeudesta 30% hitaamman (aika pitenee)
+      actualEnemySpeed = Math.floor(
+        actualEnemySpeed * (1 + hasFreeze.effectValue),
+      );
+    }
+    newCombat.enemyAttackTimer = actualEnemySpeed;
 
     newCombat.damagePopUps.push({
       id: `e_hit_${now}_${Math.random()}`,

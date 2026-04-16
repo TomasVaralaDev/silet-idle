@@ -28,6 +28,7 @@ export default function InventoryControls({
     { id: "pouches", label: "Pouches" },
     { id: "potions", label: "Potions" },
     { id: "materials", label: "Mats" },
+    { id: "skills", label: "Skills" },
     { id: "misc", label: "Misc" },
   ];
 

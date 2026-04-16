@@ -12,8 +12,8 @@ export const TOWER_FLOORS: TowerFloor[] = [
     floorNumber: 1,
     enemy: {
       id: "tower_guard_1",
-      name: "Corrupted Sentinel",
-      icon: "./assets/enemies/sentinel.png", // Varmista että sinulla on joku ikoni
+      name: "Thorn Crawler",
+      icon: "./assets/enemies/world1_greenvale/enemy_crawler_thorn.png", // Varmista että sinulla on joku ikoni
       maxHp: 250,
       currentHp: 250,
       level: 5,
@@ -22,20 +22,20 @@ export const TOWER_FLOORS: TowerFloor[] = [
       xpReward: 100,
     },
     firstClearRewards: [
-      { itemId: "iron_sword_e1", amount: 1 }, // Esimerkki uniikista dropista
-      { itemId: "gems", amount: 10 },
+      { itemId: "armor_adamantite_body_e5", amount: 10 }, // Esimerkki uniikista dropista
+      { itemId: "coins", amount: 100 },
     ],
     sweepRewards: [
       { itemId: "iron_ore", amount: 10 },
-      { itemId: "coins", amount: 50 },
+      { itemId: "coins", amount: 500 },
     ],
   },
   {
     floorNumber: 2,
     enemy: {
       id: "tower_guard_2",
-      name: "Abyssal Hound",
-      icon: "./assets/enemies/hound.png",
+      name: "Woodland Stalker",
+      icon: "./assets/enemies/world1_greenvale/enemy_stalker_woodland.png",
       maxHp: 500,
       currentHp: 500,
       level: 10,
@@ -45,7 +45,7 @@ export const TOWER_FLOORS: TowerFloor[] = [
     },
     firstClearRewards: [
       { itemId: "iron_armor_e1", amount: 1 },
-      { itemId: "gems", amount: 20 },
+      { itemId: "coins", amount: 50 },
     ],
     sweepRewards: [
       { itemId: "iron_ingot", amount: 5 },
@@ -56,8 +56,8 @@ export const TOWER_FLOORS: TowerFloor[] = [
     floorNumber: 3,
     enemy: {
       id: "tower_boss_1",
-      name: "The Gatekeeper",
-      icon: "./assets/enemies/gatekeeper.png",
+      name: "Lava Beetle",
+      icon: "./assets/enemies/world3_ashridge/enemy_beetle_lava.png",
       maxHp: 1200,
       currentHp: 1200,
       level: 15,
@@ -67,7 +67,7 @@ export const TOWER_FLOORS: TowerFloor[] = [
     },
     firstClearRewards: [
       { itemId: "steel_sword_e1", amount: 1 },
-      { itemId: "gems", amount: 50 },
+      { itemId: "coins", amount: 100 },
     ],
     sweepRewards: [
       { itemId: "steel_ingot", amount: 3 },

@@ -2,6 +2,7 @@ import { processCombatTick } from "./combatSystem";
 import { calculateXpGain, getSpeedMultiplier } from "../utils/gameUtils";
 import { GAME_DATA } from "../data";
 import type { GameState, SkillType, Resource, Ingredient } from "../types";
+import { calculateTowerCombatTick } from "./towerCombatSystem";
 
 export interface OfflineSummary {
   seconds: number;
@@ -47,7 +48,45 @@ export const calculateOfflineProgress = (
   if (!currentState.activeAction && currentState.queue.length === 0) {
     return { updatedState: currentState, summary };
   }
+  // =====================================================================
+  // SCENARIO 0: TOWER COMBAT SIMULATION
+  // Player left the game while actively fighting in the Endless Tower.
+  // We simulate the fight tick-by-tick until victory, defeat, or time runs out.
+  // =====================================================================
+  if (
+    currentState.tower?.combat?.isActive &&
+    currentState.tower?.combat?.status === "fighting"
+  ) {
+    for (let i = 0; i < remainingSeconds; i++) {
+      // Abort simulation if the fight ended
+      if (
+        currentState.tower.combat.status !== "fighting" ||
+        !currentState.tower.combat.isActive
+      ) {
+        break;
+      }
 
+      // Simulate 1 full second (1000ms) of combat
+      // Note: calculateTowerCombatTick expects the full GameState and ms.
+      const updates = calculateTowerCombatTick(currentState, 1000);
+
+      if (updates) {
+        currentState.tower.combat = {
+          ...currentState.tower.combat,
+          ...updates,
+        };
+      }
+    }
+
+    // Finalize the clock so the rest of the offline system can process other things if needed
+    currentState.lastTimestamp = Date.now();
+    return { updatedState: currentState, summary };
+  }
+
+  // If the player left with no active tasks, return immediately with empty summary
+  if (!currentState.activeAction && currentState.queue.length === 0) {
+    return { updatedState: currentState, summary };
+  }
   // =====================================================================
   // SCENARIO 1: QUEUE PROCESSING
   // Player left tasks in the automated sequence queue.

@@ -51,6 +51,14 @@ export const loadGameData = async (userId: string): Promise<GameState> => {
           ...DEFAULT_STATE.combatStats,
           ...(cloudData.combatStats || {}),
         },
+        tower: {
+          ...DEFAULT_STATE.tower,
+          ...(cloudData.tower || {}),
+          combat: {
+            ...DEFAULT_STATE.tower.combat,
+            ...(cloudData.tower?.combat || {}),
+          },
+        },
         unlockedAchievements: cloudData.unlockedAchievements || [],
         settings: { ...DEFAULT_STATE.settings, ...(cloudData.settings || {}) },
       };
@@ -84,15 +92,26 @@ export const saveGameData = async (
 ): Promise<boolean> => {
   try {
     // Separate transient UI states that do not need cloud persistence
-    const { combatStats, ...otherState } = state;
+    const { combatStats, tower, ...otherState } = state;
 
     // Strip out the massive combatLog array to save database capacity
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { combatLog, ...statsWithoutLog } = combatStats;
 
+    // KORJATTU: Siivotaan myös Tornin aktiivinen taistelulogi tallennuksesta
+    const sanitizedTower = {
+      ...tower,
+      combat: {
+        ...tower.combat,
+        combatLog: [],
+        damagePopUps: [],
+      },
+    };
+
     const dataToSave = {
       ...otherState,
       combatStats: statsWithoutLog,
+      tower: sanitizedTower,
     };
 
     // Commit to Firestore (JSON parsing ensures no undefined/function values crash the SDK)

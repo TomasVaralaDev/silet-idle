@@ -84,6 +84,19 @@ export const calculateTowerCombatTick = (
   );
   newCombat.enemyAttackTimer = Math.max(0, newCombat.enemyAttackTimer - tickMs);
 
+  // ⏳ VÄHÄNNETÄÄN AIKAA JA TARKISTETAAN AUTO-DEFEAT
+  // Käytetään varmuuden vuoksi nollaa oletuksena, ettei undefined riko laskutoimitusta vanhoilla tallennuksilla
+  newCombat.combatTimer = Math.max(0, (newCombat.combatTimer || 0) - tickMs);
+
+  if (newCombat.combatTimer <= 0 && newCombat.status === "fighting") {
+    newCombat.status = "defeat";
+    newCombat.combatLog = [
+      "Time's up! You couldn't defeat the enemy fast enough.",
+      ...newCombat.combatLog,
+    ].slice(0, 10);
+    return newCombat;
+  }
+
   // 1. PELAAJA LYÖ
   if (newCombat.playerAttackTimer <= 0 && newCombat.enemyCurrentHp > 0) {
     const hit = calculateHit(playerStats, enemyStats);

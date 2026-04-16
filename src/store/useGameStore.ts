@@ -186,6 +186,7 @@ export const DEFAULT_STATE: GameState = {
     highestFloorCompleted: 0,
     lastSweepTime: 0,
     combat: {
+      combatTimer: 60000,
       isActive: false,
       floorNumber: null,
       playerHp: 0,

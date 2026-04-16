@@ -38,6 +38,7 @@ export const createTowerSlice: StateCreator<
           enemyCurrentHp: floorData.enemy.maxHp,
           playerAttackTimer: 1000,
           enemyAttackTimer: 1500,
+          combatTimer: 60000, // ⏳ TÄMÄ PUUTTUI: Asetetaan 60 sekunnin aikaraja (60 000ms)
           combatLog: [`Engaged ${floorData.enemy.name}!`],
           damagePopUps: [],
           status: "fighting",
@@ -54,7 +55,11 @@ export const createTowerSlice: StateCreator<
       set({
         tower: {
           ...state.tower,
-          combat: newCombatState as any,
+          // Yhdistetään olemassa oleva state ja uusi tick turvallisesti
+          combat: {
+            ...state.tower.combat,
+            ...newCombatState,
+          } as typeof state.tower.combat,
         },
       });
     }

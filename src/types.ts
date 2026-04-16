@@ -117,6 +117,7 @@ export interface TowerCombatStats {
   playerAttackTimer: number;
   enemyAttackTimer: number;
   combatLog: string[];
+  combatTimer: number; //
   damagePopUps: DamagePopUp[];
   status: "fighting" | "victory" | "defeat" | null;
 }

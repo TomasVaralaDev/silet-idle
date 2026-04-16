@@ -1,55 +1,110 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { TOWER_FLOORS } from "../../data/tower";
-import { ShieldAlert, Trophy, Skull, LogOut, ArrowRight } from "lucide-react";
+import { getItemById } from "../../utils/itemUtils";
+import { Trophy, Skull, LogOut, ArrowRight, ShieldAlert } from "lucide-react";
 
 export default function TowerCombatView() {
-  const combatState = useGameStore((state) => state.tower.combat);
+  const tower = useGameStore((state) => state.tower) || {};
+  const combatState = tower.combat;
+
   const processTowerTick = useGameStore((state) => state.processTowerTick);
   const leaveTowerCombat = useGameStore((state) => state.leaveTowerCombat);
   const claimTowerVictory = useGameStore((state) => state.claimTowerVictory);
 
-  const playerAvatar = useGameStore((state) => state.avatar);
-  const playerUsername = useGameStore((state) => state.username);
-
-  // Pelaajan maksimi HP (visuaalista palkkia varten)
+  const avatar = useGameStore((state) => state.avatar);
   const hitpointsLevel = useGameStore(
     (state) => state.skills.hitpoints?.level || 1,
   );
-  const playerMaxHp = 100 + hitpointsLevel * 10; // Yksinkertaistettu maksimi HP
+  // Oletusarvona 100, jotta ei voi olla 0
+  const playerMaxHp = 100 + hitpointsLevel * 10;
 
-  // Automaattinen scrollaus logille
+  // --- VFX STATES (Kopioitu BattleArenasta) ---
+  const [isShaking, setIsShaking] = useState(false);
+  const [playerFlash, setPlayerFlash] = useState(false);
+  const [enemyFlash, setEnemyFlash] = useState(false);
+  const processedIds = useRef<Set<string>>(new Set());
   const logEndRef = useRef<HTMLDivElement>(null);
 
+  // Automaattinen scrollaus logille
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [combatState.combatLog]);
+  }, [combatState?.combatLog]);
 
-  // Taistelun "Sydänlyönti" (Tick)
+  // Taistelun Moottori (100ms Tick)
   useEffect(() => {
-    if (!combatState.isActive || combatState.status !== "fighting") return;
+    // Varmistetaan, että taistelu on olemassa, käynnissä, JA että hp > 0 ennen tikitystä
+    if (
+      !combatState?.isActive ||
+      combatState.status !== "fighting" ||
+      combatState.playerHp <= 0
+    )
+      return;
 
     const interval = setInterval(() => {
       processTowerTick();
-    }, 100); // 100ms välein kuten normaalissakin taistelussa
-
+    }, 100);
     return () => clearInterval(interval);
-  }, [combatState.isActive, combatState.status, processTowerTick]);
+  }, [
+    combatState?.isActive,
+    combatState?.status,
+    combatState?.playerHp,
+    processTowerTick,
+  ]);
 
-  // Jos pelaaja eksyy tänne vahingossa, palautetaan hänet takaisin
-  if (!combatState.isActive || !combatState.floorNumber) {
+  // VFX Logic: Kuuntelee uusia popuppeja ja laukaisee animaatiot
+  useEffect(() => {
+    const popUps = combatState?.damagePopUps || [];
+    if (popUps.length === 0) return;
+
+    let triggeredShake = false;
+    let triggeredPlayerFlash = false;
+    let triggeredEnemyFlash = false;
+
+    popUps.forEach((p) => {
+      if (!processedIds.current.has(p.id)) {
+        processedIds.current.add(p.id);
+        if (p.type === "player") {
+          triggeredPlayerFlash = true;
+          triggeredShake = true;
+        } else if (p.type === "enemy") {
+          triggeredEnemyFlash = true;
+        }
+      }
+    });
+
+    requestAnimationFrame(() => {
+      if (triggeredShake) {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 150);
+      }
+      if (triggeredPlayerFlash) {
+        setPlayerFlash(true);
+        setTimeout(() => setPlayerFlash(false), 200);
+      }
+      if (triggeredEnemyFlash) {
+        setEnemyFlash(true);
+        setTimeout(() => setEnemyFlash(false), 150);
+      }
+    });
+
+    if (processedIds.current.size > 50) processedIds.current.clear();
+  }, [combatState?.damagePopUps]);
+
+  // Turvatarkistus
+  if (!combatState || !combatState.isActive || !combatState.floorNumber) {
     return (
-      <div className="h-full flex items-center justify-center p-6 text-center">
+      <div className="h-full w-full flex items-center justify-center bg-app-base p-6 text-center">
         <div className="animate-pulse flex flex-col items-center">
           <ShieldAlert size={48} className="text-warning mb-4" />
           <p className="text-tx-muted uppercase tracking-widest font-black">
-            Combat not initialized.
+            Combat sequence aborted.
           </p>
           <button
             onClick={leaveTowerCombat}
             className="mt-4 px-6 py-2 bg-panel border border-border rounded uppercase text-[10px] font-bold"
           >
-            Return
+            Return to Tower
           </button>
         </div>
       </div>
@@ -61,214 +116,306 @@ export default function TowerCombatView() {
   );
   if (!floorData) return null;
 
-  // Laske HP prosentit
-  const playerHpPct = Math.max(
+  const currentHp = Math.max(0, Math.min(combatState.playerHp, playerMaxHp));
+  const playerHpPercent = Math.max(0, (currentHp / playerMaxHp) * 100);
+  const enemyCurrentHp = Math.max(0, combatState.enemyCurrentHp);
+  const enemyHpPercent = Math.max(
     0,
-    Math.min(100, (combatState.playerHp / playerMaxHp) * 100),
+    (enemyCurrentHp / floorData.enemy.maxHp) * 100,
   );
-  const enemyHpPct = Math.max(
-    0,
-    Math.min(100, (combatState.enemyCurrentHp / floorData.enemy.maxHp) * 100),
-  );
+
+  // Ajastin (combatTimer on millisekunteina)
+  // Defaultataan 60 000 (60s), jos undefined
+  const timerMs = combatState.combatTimer ?? 60000;
+
+  // Apufunktio popupien renderöintiin (1:1 BattleArenan kanssa)
+  const renderPopUps = (targetType: "player" | "enemy") => {
+    if (combatState.playerHp <= 0 && targetType === "player") return null;
+    return (
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-full h-32 pointer-events-none z-[60] mb-2 flex items-end justify-center">
+        {(combatState.damagePopUps || [])
+          .filter((p) => p.type === targetType)
+          .map((p, index) => {
+            const offsetPx = -15 + ((index * 15) % 30);
+            return (
+              <div
+                key={p.id}
+                className={`absolute bottom-0 font-black animate-damage-pop whitespace-nowrap
+                  ${p.amount.toString().startsWith("+") ? "text-emerald-400 text-xl" : p.isCrit ? "text-amber-400 text-4xl" : targetType === "player" ? "text-red-500 text-3xl" : "text-white text-3xl"}
+                `}
+                style={{
+                  left: "50%",
+                  marginLeft: `${offsetPx}px`,
+                  textShadow:
+                    "2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 4px 6px rgba(0,0,0,0.5)",
+                }}
+              >
+                {p.amount}
+                {p.isCrit && (
+                  <span className="block text-[12px] uppercase -mt-2 text-center text-amber-200">
+                    CRIT!
+                  </span>
+                )}
+              </div>
+            );
+          })}
+      </div>
+    );
+  };
 
   return (
-    <div className="h-full flex flex-col bg-app-base relative animate-in fade-in zoom-in-95 duration-300">
-      {/* --- HEADER --- */}
-      <div className="shrink-0 p-4 border-b border-border/50 bg-panel/50 flex justify-between items-center shadow-md z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-danger/20 border border-danger/50 rounded flex items-center justify-center text-danger font-black">
-            {combatState.floorNumber}
-          </div>
-          <h2 className="text-sm font-black text-tx-main uppercase tracking-widest">
-            Tower Combat
-          </h2>
-        </div>
-
-        {combatState.status === "fighting" && (
-          <button
-            onClick={leaveTowerCombat}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase text-tx-muted hover:text-danger transition-colors px-3 py-1.5 border border-transparent hover:border-danger/30 rounded"
-          >
-            <LogOut size={14} /> Retreat
-          </button>
-        )}
-      </div>
-
-      {/* --- ARENA (VS SCREEN) --- */}
-      <div className="flex-1 flex flex-col justify-center p-4 md:p-10 relative overflow-hidden">
-        {/* Taustagrafiikka / Vinoviiva erottamaan puolet */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-          <div className="w-[150%] h-32 bg-tx-main -rotate-12 transform origin-center"></div>
-        </div>
-
-        <div className="flex justify-between items-center max-w-4xl mx-auto w-full relative z-10 gap-4">
-          {/* PLAYER SIDE */}
-          <div className="flex-1 flex flex-col items-center">
-            <div className="relative w-24 h-24 md:w-32 md:h-32 bg-panel border-2 border-accent rounded-xl shadow-[0_0_20px_rgba(var(--color-accent),0.2)] mb-4 flex items-center justify-center">
-              <img
-                src={playerAvatar || "./assets/ui/icon_user_avatar.png"}
-                alt="Player"
-                className="w-3/4 h-3/4 object-contain pixelated"
-              />
-              {/* Player Damage Popups */}
-              {combatState.damagePopUps
-                .filter((p) => p.type === "player")
-                .map((p) => (
-                  <span
-                    key={p.id}
-                    className="absolute font-black text-danger text-lg md:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,1)] animate-in slide-in-from-bottom-4 fade-out duration-500 pointer-events-none"
-                    style={{
-                      left: `${40 + Math.random() * 20}%`,
-                      top: `${-10 - Math.random() * 20}%`,
-                    }}
-                  >
-                    -{p.amount}
-                  </span>
-                ))}
+    <div className="h-full w-full flex flex-col lg:flex-row bg-app-base overflow-hidden text-tx-main font-sans">
+      {/* CENTER COLUMN: BATTLE ARENA & LOGS */}
+      <div className="flex-1 flex flex-col min-w-0 h-full relative border-y lg:border-y-0 border-border/50">
+        {/* VICTORY OVERLAY */}
+        {combatState.status === "victory" && (
+          <div className="absolute inset-0 z-[70] bg-app-base/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+            <div className="w-16 h-16 md:w-20 md:h-20 mb-6 rounded-full border-4 border-success/20 border-t-success shadow-[0_0_30px_rgba(34,197,94,0.3)] flex items-center justify-center">
+              <Trophy size={32} className="text-success" />
             </div>
-            <h3 className="font-black text-tx-main uppercase tracking-widest mb-1">
-              {playerUsername}
-            </h3>
-
-            {/* Player HP Bar */}
-            <div className="w-full max-w-[200px]">
-              <div className="flex justify-between text-[10px] font-mono font-bold mb-1">
-                <span className="text-success">HP</span>
-                <span className="text-tx-main">
-                  {Math.floor(combatState.playerHp)} / {playerMaxHp}
-                </span>
-              </div>
-              <div className="w-full h-2 bg-panel border border-border/50 rounded-sm overflow-hidden">
-                <div
-                  className="h-full bg-success transition-all duration-100 ease-linear"
-                  style={{ width: `${playerHpPct}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* VS BADGE */}
-          <div className="shrink-0 flex flex-col items-center justify-center px-4">
-            <div className="w-10 h-10 md:w-14 md:h-14 bg-app-base border-2 border-danger/50 rounded-full flex items-center justify-center text-danger font-black italic text-xl md:text-2xl shadow-[0_0_15px_rgba(220,38,38,0.3)] z-10">
-              VS
-            </div>
-          </div>
-
-          {/* ENEMY SIDE */}
-          <div className="flex-1 flex flex-col items-center">
-            <div className="relative w-24 h-24 md:w-32 md:h-32 bg-panel border-2 border-danger rounded-xl shadow-[0_0_20px_rgba(220,38,38,0.2)] mb-4 flex items-center justify-center">
-              <img
-                src={floorData.enemy.icon}
-                alt={floorData.enemy.name}
-                className={`w-3/4 h-3/4 object-contain pixelated ${combatState.status === "victory" ? "grayscale opacity-50" : "animate-pulse"}`}
-                onError={(e) =>
-                  (e.currentTarget.src = "./assets/ui/icon_boss.png")
-                }
-              />
-              {/* Enemy Damage Popups */}
-              {combatState.damagePopUps
-                .filter((p) => p.type === "enemy")
-                .map((p) => (
-                  <span
-                    key={p.id}
-                    className={`absolute font-black text-lg md:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,1)] animate-in slide-in-from-bottom-4 fade-out duration-500 pointer-events-none ${p.isCrit ? "text-warning text-2xl scale-125" : "text-white"}`}
-                    style={{
-                      left: `${40 + Math.random() * 20}%`,
-                      top: `${-10 - Math.random() * 20}%`,
-                    }}
-                  >
-                    {p.isCrit ? "CRIT " : ""}-{p.amount}
-                  </span>
-                ))}
-            </div>
-            <h3 className="font-black text-tx-main uppercase tracking-widest mb-1 text-center">
-              {floorData.enemy.name}
-            </h3>
-
-            {/* Enemy HP Bar */}
-            <div className="w-full max-w-[200px]">
-              <div className="flex justify-between text-[10px] font-mono font-bold mb-1">
-                <span className="text-danger">HP</span>
-                <span className="text-tx-main">
-                  {Math.floor(combatState.enemyCurrentHp)} /{" "}
-                  {floorData.enemy.maxHp}
-                </span>
-              </div>
-              <div className="w-full h-2 bg-panel border border-border/50 rounded-sm overflow-hidden">
-                <div
-                  className="h-full bg-danger transition-all duration-100 ease-linear"
-                  style={{ width: `${enemyHpPct}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* --- COMBAT LOG --- */}
-      <div className="shrink-0 h-32 md:h-40 bg-panel/80 border-t border-border/50 p-2 md:p-4 overflow-y-auto custom-scrollbar font-mono text-[9px] md:text-[10px] flex flex-col-reverse shadow-inner relative z-10">
-        <div ref={logEndRef} />
-        {combatState.combatLog.map((log, i) => (
-          <div
-            key={i}
-            className={`py-1 border-b border-border/20 ${i === 0 ? "text-tx-main font-bold" : "text-tx-muted"}`}
-          >
-            <span className="opacity-50 mr-2">
-              [{new Date().toLocaleTimeString()}]
-            </span>
-            <span
-              className={`${log.includes("Victory") ? "text-success" : log.includes("Defeated") ? "text-danger" : log.includes("CRIT") ? "text-warning" : ""}`}
-            >
-              {log}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* --- OVERLAYS FOR END CONDITIONS --- */}
-      {combatState.status === "victory" && (
-        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-500">
-          <div className="bg-panel border border-success/50 p-8 rounded-2xl flex flex-col items-center text-center max-w-md w-full shadow-[0_0_50px_rgba(34,197,94,0.2)] transform animate-in zoom-in-90">
-            <div className="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center mb-6">
-              <Trophy size={40} className="text-success" />
-            </div>
-            <h2 className="text-2xl font-black text-success uppercase tracking-widest mb-2">
-              Floor Cleared!
+            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] mb-2 text-success">
+              Floor Cleared
             </h2>
-            <p className="text-tx-muted text-xs uppercase tracking-widest mb-8">
-              You have conquered the {floorData.enemy.name}.
+            <p className="text-tx-muted text-xs md:text-sm max-w-xs font-medium italic mb-6">
+              The {floorData.enemy.name} has been vanquished.
             </p>
             <button
               onClick={claimTowerVictory}
-              className="w-full py-4 bg-success hover:bg-success/80 text-white rounded-xl font-black uppercase tracking-[0.2em] flex justify-center items-center gap-3 transition-colors shadow-lg"
+              className="px-8 py-4 bg-success hover:bg-success/80 text-white rounded-xl font-black uppercase tracking-[0.2em] flex justify-center items-center gap-3 transition-all shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105"
             >
               Claim Rewards <ArrowRight size={18} />
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {combatState.status === "defeat" && (
-        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-500">
-          <div className="bg-panel border border-danger/50 p-8 rounded-2xl flex flex-col items-center text-center max-w-md w-full shadow-[0_0_50px_rgba(220,38,38,0.2)] transform animate-in zoom-in-90">
-            <div className="w-20 h-20 bg-danger/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
-              <Skull size={40} className="text-danger" />
+        {/* DEFEAT OVERLAY */}
+        {combatState.status === "defeat" && (
+          <div className="absolute inset-0 z-[70] bg-app-base/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+            <div className="w-16 h-16 md:w-20 md:h-20 mb-6 rounded-full border-4 border-danger/20 border-t-danger shadow-[0_0_30px_rgba(220,38,38,0.3)] flex items-center justify-center">
+              <Skull size={32} className="text-danger" />
             </div>
-            <h2 className="text-2xl font-black text-danger uppercase tracking-widest mb-2">
+            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] mb-2 text-danger">
               Defeated
             </h2>
-            <p className="text-tx-muted text-xs uppercase tracking-widest mb-8">
-              You were struck down by the {floorData.enemy.name}.
+            <p className="text-tx-muted text-xs md:text-sm max-w-xs font-medium italic mb-6">
+              {combatState.combatLog[0]?.includes("Time's up")
+                ? "Time ran out before you could defeat the enemy."
+                : `You were struck down by the ${floorData.enemy.name}.`}
             </p>
             <button
               onClick={leaveTowerCombat}
-              className="w-full py-4 border border-border hover:bg-panel-hover text-tx-main rounded-xl font-black uppercase tracking-[0.2em] flex justify-center items-center gap-3 transition-colors"
+              className="px-8 py-4 border border-border hover:bg-panel text-tx-main rounded-xl font-black uppercase tracking-[0.2em] flex justify-center items-center gap-3 transition-colors"
             >
-              <LogOut size={18} /> Retreat & Recover
+              <LogOut size={18} /> Return to Tower
             </button>
           </div>
+        )}
+
+        {/* TOP SECTION: BATTLE ARENA */}
+        <div
+          className={`min-h-[35vh] lg:min-h-0 lg:h-[55%] shrink-0 relative bg-panel overflow-hidden border-b border-border shadow-inner ${isShaking ? "animate-shake" : ""}`}
+        >
+          <div className="absolute inset-0 bg-[url('./assets/backgrounds/bg_abyss.jpg')] bg-cover bg-center transition-all duration-1000 opacity-20 scale-105">
+            <div className="absolute inset-0 bg-gradient-to-t from-app-base via-transparent to-app-base/40"></div>
+          </div>
+
+          {/* TIMER */}
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center">
+            <div
+              className={`
+              px-6 py-2 rounded-full border-2 font-mono font-black text-2xl shadow-lg transition-all
+              ${
+                timerMs <= 10000
+                  ? "bg-danger/20 border-danger text-danger animate-pulse scale-110"
+                  : "bg-panel/80 border-border text-tx-main"
+              }
+            `}
+            >
+              {Math.max(0, timerMs / 1000).toFixed(1)}s
+            </div>
+            <p className="text-[10px] uppercase font-black tracking-[0.3em] text-tx-muted mt-2 drop-shadow-md">
+              Time Remaining
+            </p>
+          </div>
+
+          <div className="relative h-full w-full flex justify-between items-end pb-12 px-10 md:px-24 max-w-5xl mx-auto">
+            {/* PLAYER AREA */}
+            <div className="flex flex-col items-center gap-3 relative w-32 z-10">
+              {renderPopUps("player")}
+              <div className="w-32 h-2.5 bg-panel/80 rounded border border-border overflow-hidden mb-1 relative">
+                <div
+                  className="h-full bg-success transition-all duration-300"
+                  style={{ width: `${playerHpPercent}%` }}
+                />
+              </div>
+              <div className="text-[10px] font-black text-tx-muted mb-2 font-mono">
+                {Math.ceil(currentHp)} / {playerMaxHp}
+              </div>
+              <div className="w-24 h-24 relative flex items-center justify-center">
+                <img
+                  src={avatar || "./assets/ui/icon_user_avatar.png"}
+                  alt="Player"
+                  className={`w-20 h-20 object-contain pixelated transform scale-x-[-1] transition-transform ${playerFlash ? "animate-flash-red" : ""}`}
+                />
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/40 blur-md rounded-full"></div>
+              </div>
+              <button
+                onClick={leaveTowerCombat}
+                disabled={combatState.status !== "fighting"}
+                className={`mt-2 text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded border transition-all
+                  ${combatState.status !== "fighting" ? "opacity-0 cursor-default" : "text-danger hover:text-white bg-danger/10 hover:bg-danger border-danger/20 active:scale-95"}`}
+              >
+                Retreat
+              </button>
+            </div>
+
+            {/* ENEMY AREA */}
+            <div className="flex flex-col items-center justify-end gap-3 relative w-32 z-10 min-h-[180px]">
+              {renderPopUps("enemy")}
+              <div className="flex flex-col items-center w-full">
+                <div className="w-32 h-2.5 bg-panel/80 rounded border border-border overflow-hidden mb-1 relative">
+                  <div
+                    className="h-full bg-danger transition-all duration-150"
+                    style={{ width: `${enemyHpPercent}%` }}
+                  />
+                </div>
+                <div className="text-[10px] font-black text-tx-muted mb-2 font-mono">
+                  {Math.ceil(enemyCurrentHp)} / {floorData.enemy.maxHp}
+                </div>
+                <div className="w-24 h-24 relative flex items-center justify-center">
+                  <div className={enemyFlash ? "animate-flash-white" : ""}>
+                    <img
+                      src={floorData.enemy.icon}
+                      className={`w-20 h-20 object-contain pixelated ${combatState.status === "victory" ? "grayscale opacity-50" : ""}`}
+                      alt={floorData.enemy.name}
+                      onError={(e) =>
+                        (e.currentTarget.src = "./assets/ui/icon_boss.png")
+                      }
+                    />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-black/40 blur-md rounded-full"></div>
+                </div>
+                <div className="bg-panel/60 px-3 py-1.5 rounded border border-border text-[10px] font-black uppercase tracking-widest text-tx-main mt-2 backdrop-blur-md text-center leading-tight">
+                  {floorData.enemy.name} <br />
+                  <span className="text-danger ml-1 font-mono">
+                    Lvl {floorData.enemy.level}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* BOTTOM SECTION: COMBAT LOG */}
+        <div className="flex-1 bg-app-base flex flex-col min-h-[30vh] lg:min-h-0 z-20">
+          <div className="p-3 bg-panel/80 border-b border-border shadow-sm flex items-center justify-between shrink-0">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted">
+              Combat Log
+            </h3>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-3 bg-[#0a0a0c] font-mono text-[10px] md:text-xs leading-relaxed flex flex-col-reverse relative">
+            <div ref={logEndRef} />
+            {combatState.combatLog.map((log, index) => (
+              <div
+                key={index}
+                className="py-1.5 border-b border-white/5 opacity-90 hover:opacity-100 transition-opacity"
+              >
+                <span className="text-tx-muted/50 mr-3 select-none">
+                  [{new Date().toLocaleTimeString([], { hour12: false })}]
+                </span>
+                <span
+                  className={`
+                      ${log.includes("Victory") ? "text-success font-bold" : ""}
+                      ${log.includes("Defeated") || log.includes("Time's up") ? "text-danger font-bold" : ""}
+                      ${log.includes("You hit") ? "text-amber-200" : ""}
+                      ${log.includes("Enemy hit") ? "text-red-400" : ""}
+                      ${log.includes("Engaged") ? "text-accent font-bold" : ""}
+                   `}
+                >
+                  {log}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: TOWER INTEL */}
+      <div className="w-full lg:w-80 flex-shrink-0 lg:border-l border-border bg-panel/80 backdrop-blur-sm z-20 flex flex-col h-auto lg:h-full">
+        <div className="p-4 border-b border-border bg-panel/90 shadow-sm shrink-0">
+          <span className="text-[10px] font-black uppercase tracking-widest text-danger block mb-1">
+            Endless Tower
+          </span>
+          <span className="text-sm font-bold text-tx-main">
+            Floor {floorData.floorNumber}
+          </span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+          <div className="mb-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-3 border-b border-border pb-1">
+              Target Intel
+            </h3>
+            <div className="bg-app-base border border-border p-3 rounded-lg flex flex-col gap-2">
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-tx-muted">Target:</span>
+                <span className="text-tx-main font-bold">
+                  {floorData.enemy.name}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-tx-muted">Health:</span>
+                <span className="text-success">{floorData.enemy.maxHp}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-tx-muted">Attack:</span>
+                <span className="text-danger">{floorData.enemy.attack}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-tx-muted">Defense:</span>
+                <span className="text-warning">{floorData.enemy.defense}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-tx-muted mb-3 border-b border-border pb-1">
+              Bounty
+            </h3>
+            <div className="flex flex-col gap-2">
+              {floorData.firstClearRewards.map((reward, i) => {
+                const item = getItemById(reward.itemId);
+                if (!item) return null;
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 bg-app-base border border-border p-2 rounded-lg hover:bg-panel-hover transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-panel border border-border rounded flex items-center justify-center shrink-0">
+                      <img
+                        src={item.icon}
+                        className="w-5 h-5 pixelated"
+                        alt=""
+                      />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span
+                        className="text-[10px] font-black uppercase tracking-widest truncate"
+                        style={{ color: item.color || "white" }}
+                      >
+                        {item.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-tx-muted">
+                        QTY: {reward.amount}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

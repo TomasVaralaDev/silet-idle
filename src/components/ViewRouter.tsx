@@ -16,7 +16,7 @@ import {
 } from "./meta/MetaViews";
 import WikiView from "./wiki/wikiView";
 import type { ViewType, SkillType } from "../types";
-import TowerView from "./tower/towerView";
+import TowerView from "./tower/TowerView";
 interface Props {
   currentView: ViewType;
   onSellClick: (id: string) => void;

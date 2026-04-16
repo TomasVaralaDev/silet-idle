@@ -39,7 +39,7 @@ import {
 } from "./slices/achievementSlice";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import type { OfflineSummary } from "../systems/offlineSystem";
-
+import { createTowerSlice, type TowerSlice } from "./slices/towerSlice";
 interface RewardModalState {
   isOpen: boolean;
   title: string;
@@ -61,6 +61,7 @@ export type FullStoreState = GameState &
   SocialSlice &
   PremiumShopSlice &
   QuestSlice &
+  TowerSlice &
   AchievementSlice & {
     enemy: Enemy | null;
     offlineSummary: OfflineSummary | null;
@@ -160,6 +161,7 @@ export const DEFAULT_STATE: GameState = {
   queue: [],
   coins: 0,
   gems: 0,
+
   upgrades: [],
   premiumPurchases: {},
   maxOfflineHoursIncrement: 0,
@@ -180,6 +182,21 @@ export const DEFAULT_STATE: GameState = {
   },
   enemy: null,
   tutorial: { step: 0, isActive: true, isComplete: false },
+  tower: {
+    highestFloorCompleted: 0,
+    lastSweepTime: 0,
+    combat: {
+      isActive: false,
+      floorNumber: null,
+      playerHp: 0,
+      enemyCurrentHp: 0,
+      playerAttackTimer: 0,
+      enemyAttackTimer: 0,
+      combatLog: [],
+      damagePopUps: [],
+      status: null,
+    },
+  },
 };
 
 /**
@@ -250,6 +267,14 @@ export const customMerge = (
       ...(typedPersisted.quests || {}),
       dailyQuests: typedPersisted.quests?.dailyQuests || [],
     },
+    tower: {
+      ...DEFAULT_STATE.tower,
+      ...(typedPersisted.tower || {}),
+      combat: {
+        ...DEFAULT_STATE.tower.combat,
+        ...(typedPersisted.tower?.combat || {}),
+      },
+    },
     // Assign completed tutorial flag to older legacy players dynamically
     tutorial:
       typedPersisted.tutorial ||
@@ -284,7 +309,7 @@ export const useGameStore = create<FullStoreState>()(
       ...createQuestSlice(set, get, ...args),
       ...createPremiumShopSlice(set, get, ...args),
       ...createAchievementSlice(set, get, ...args),
-
+      ...createTowerSlice(set, get, ...args),
       // --- TUTORIAL LOGIC ---
       nextTutorialStep: () =>
         set((state) => ({

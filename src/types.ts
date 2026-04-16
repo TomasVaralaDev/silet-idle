@@ -49,7 +49,8 @@ export type ViewType =
   | "privacy_policy"
   | "leaderboard"
   | "wiki"
-  | "premium_shop";
+  | "premium_shop"
+  | "tower";
 
 // Hardware equipping restrictions
 export type EquipmentSlot =
@@ -103,6 +104,22 @@ export interface ActiveAction {
   targetTime: number;
 }
 
+export interface TowerState {
+  highestFloorCompleted: number;
+  lastSweepTime: number;
+  combat: TowerCombatStats; // <-- LISÄTTY TÄMÄ
+}
+export interface TowerCombatStats {
+  isActive: boolean;
+  floorNumber: number | null;
+  playerHp: number;
+  enemyCurrentHp: number;
+  playerAttackTimer: number;
+  enemyAttackTimer: number;
+  combatLog: string[];
+  damagePopUps: DamagePopUp[];
+  status: "fighting" | "victory" | "defeat" | null;
+}
 // --- COMBAT TYPES ---
 
 export interface Enemy {
@@ -454,6 +471,7 @@ export interface GameState {
   activeAction: ActiveAction | null;
   coins: number;
   gems: number;
+  tower: TowerState;
   upgrades: string[];
   premiumPurchases: Record<string, number>;
   maxOfflineHoursIncrement?: number;

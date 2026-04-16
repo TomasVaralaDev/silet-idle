@@ -16,7 +16,7 @@ import {
 } from "./meta/MetaViews";
 import WikiView from "./wiki/wikiView";
 import type { ViewType, SkillType } from "../types";
-
+import TowerView from "./tower/towerView";
 interface Props {
   currentView: ViewType;
   onSellClick: (id: string) => void;
@@ -35,7 +35,7 @@ export default function ViewRouter({ currentView, onSellClick }: Props) {
   if (currentView === "worldmarket") return <WorldShopView />;
   if (currentView === "marketplace") return <MarketplaceView />;
   if (currentView === "premium_shop") return <PremiumShopView />;
-
+  if (currentView === "tower") return <TowerView />;
   {
     // META SYSTEMS
   }

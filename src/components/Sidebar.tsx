@@ -373,6 +373,13 @@ export default function Sidebar({
             Combat
           </p>
           <NavButton
+            view="tower"
+            label="The Tower"
+            icon="./assets/ui/icon_tower.png" // Varmista, että sinulla on joku ikoni tähän (esim. icon_dungeon.png tai icon_tower.png)
+            isActive={currentView === "tower"}
+            onClick={setView}
+          />
+          <NavButton
             view="combat"
             label="Worlds"
             icon="./assets/skills/combat.png"

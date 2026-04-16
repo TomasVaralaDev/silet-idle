@@ -23,7 +23,7 @@ export const createTowerSlice: StateCreator<
 
     // Laske pelaajan maksimi HP
     const hitpointsLevel = state.skills.hitpoints?.level || 1;
-    let hpBonus = 0;
+    // let hpBonus = 0;
     // Voit halutessasi laskea tähän varusteiden tuoman hpBonuksen,
     // mutta pelkkä baseHp toimii alkuun hyvin.
     const maxHp = 100 + hitpointsLevel * 10;

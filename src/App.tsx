@@ -9,7 +9,7 @@ import { useAuth } from "./hooks/useAuth";
 import { useGameInitialization } from "./hooks/useGameInitialization";
 import { useGameSync } from "./hooks/useGameSync";
 import { useGameEngine } from "./hooks/useGameEngine";
-
+import DevManager from "./components/DevManager";
 import type { ViewType } from "./types";
 import SocialOverlay from "./components/social/SocialOverlay";
 import Sidebar from "./components/Sidebar";
@@ -300,6 +300,7 @@ export default function App() {
       <TutorialOverlay />
       <SocialOverlay />
       <ItemTooltip />
+      <DevManager />
     </div>
   );
 }

@@ -1,12 +1,12 @@
 import type { StateCreator } from "zustand";
 import type { FullStoreState } from "../useGameStore";
-import { TOWER_FLOORS } from "../../data/tower";
+import { TOWER_DATA, type TowerTier } from "../../data/tower";
 import { getItemDetails } from "../../data";
 import type { Resource } from "../../types";
 
 export interface TowerSlice {
+  setTowerTier: (tier: TowerTier) => void;
   startTowerCombat: (floorNumber: number) => void;
-  // processTowerTick poistettu, koska useGameEngine hoitaa tikityksen nykyään!
   leaveTowerCombat: () => void;
   claimTowerVictory: () => void;
   castTowerSkill: () => void;
@@ -18,12 +18,23 @@ export const createTowerSlice: StateCreator<
   [],
   TowerSlice
 > = (set, get) => ({
+  setTowerTier: (tier: TowerTier) => {
+    set((state) => ({
+      tower: {
+        ...state.tower,
+        activeTier: tier,
+      },
+    }));
+  },
+
   startTowerCombat: (floorNumber: number) => {
     const state = get();
-    const floorData = TOWER_FLOORS.find((f) => f.floorNumber === floorNumber);
+    const activeTier = state.tower.activeTier || "easy";
+    const currentTower = TOWER_DATA[activeTier as TowerTier];
+
+    const floorData = currentTower.find((f) => f.floorNumber === floorNumber);
     if (!floorData) return;
 
-    // Lasketaan pelaajan maksimi HP (Perus HP + Skillien taso + Varusteet)
     const hitpointsLevel = state.skills.hitpoints?.level || 1;
     const gearHpBonus = (
       Object.values(state.equipment) as (string | null)[]
@@ -46,7 +57,9 @@ export const createTowerSlice: StateCreator<
           playerAttackTimer: 1000,
           enemyAttackTimer: 1500,
           combatTimer: 60000,
-          combatLog: [`Engaged ${floorData.enemy.name}!`],
+          combatLog: [
+            `Engaged ${floorData.enemy.name} (Lvl ${floorData.enemy.level})!`,
+          ],
           damagePopUps: [],
           status: "fighting",
         },
@@ -56,7 +69,6 @@ export const createTowerSlice: StateCreator<
 
   castTowerSkill: () => {
     set((state) => {
-      // Varmistetaan, että taistelu on käynnissä
       if (
         !state.tower.combat.isActive ||
         state.tower.combat.status !== "fighting"
@@ -67,7 +79,7 @@ export const createTowerSlice: StateCreator<
           ...state.tower,
           combat: {
             ...state.tower.combat,
-            manualSkillQueue: true, // Tämä käskee seuraavaa tikkiä laukaisemaan taidon!
+            manualSkillQueue: true,
           },
         },
       };
@@ -90,19 +102,30 @@ export const createTowerSlice: StateCreator<
 
   claimTowerVictory: () => {
     const state = get();
-    const { combat, highestFloorCompleted } = state.tower;
+    const activeTier = state.tower.activeTier || "easy";
+    const currentTower = TOWER_DATA[activeTier as TowerTier];
+    const { combat } = state.tower;
+
+    // Yhteensopivuus vanhojen tallennusten kanssa
+    const highestFloors =
+      typeof state.tower.highestFloorCompleted === "object"
+        ? state.tower.highestFloorCompleted
+        : { easy: state.tower.highestFloorCompleted || 0, medium: 0, hard: 0 };
+
+    const currentHighest = highestFloors[activeTier as TowerTier] || 0;
+
     if (combat.status !== "victory" || !combat.floorNumber) return;
 
-    const floorData = TOWER_FLOORS.find(
+    const floorData = currentTower.find(
       (f) => f.floorNumber === combat.floorNumber,
     );
     if (!floorData) return;
 
     const newInventory = { ...state.inventory };
     let newCoins = state.coins;
+    let newRewardsToDisplay = undefined;
 
-    // Tarkista onko tämä ensimmäinen läpäisy!
-    if (combat.floorNumber > highestFloorCompleted) {
+    if (combat.floorNumber > currentHighest) {
       floorData.firstClearRewards.forEach((reward) => {
         if (reward.itemId === "coins") {
           newCoins += reward.amount;
@@ -111,10 +134,7 @@ export const createTowerSlice: StateCreator<
             (newInventory[reward.itemId] || 0) + reward.amount;
         }
       });
-      state.emitEvent(
-        "success",
-        `Floor ${combat.floorNumber} cleared! Rewards claimed.`,
-      );
+      newRewardsToDisplay = floorData.firstClearRewards;
     }
 
     set((state) => ({
@@ -122,16 +142,23 @@ export const createTowerSlice: StateCreator<
       inventory: newInventory,
       tower: {
         ...state.tower,
-        highestFloorCompleted: Math.max(
-          state.tower.highestFloorCompleted,
-          combat.floorNumber!,
-        ),
+        highestFloorCompleted: {
+          ...highestFloors,
+          [activeTier]: Math.max(currentHighest, combat.floorNumber!),
+        },
         combat: {
           ...state.tower.combat,
           isActive: false,
           status: null,
         },
       },
+      ...(newRewardsToDisplay && {
+        rewardModal: {
+          isOpen: true,
+          title: `${activeTier.toUpperCase()} Floor ${combat.floorNumber} Cleared!`,
+          rewards: newRewardsToDisplay,
+        },
+      }),
     }));
   },
 });

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "../../store/useGameStore";
-import { TOWER_FLOORS } from "../../data/tower";
+import { TOWER_DATA, type TowerTier } from "../../data/tower"; // <-- MUUTETTU
 import { getItemById } from "../../utils/itemUtils";
 import type { Resource } from "../../types";
 
@@ -12,6 +12,9 @@ export default function TowerCombatView() {
   const combatState = tower.combat;
   const equipment = useGameStore((state) => state.equipment);
 
+  // <-- LISÄTTY: Haetaan aktiivinen vaikeustaso
+  const activeTier = (tower.activeTier || "easy") as TowerTier;
+
   const leaveTowerCombat = useGameStore((state) => state.leaveTowerCombat);
   const claimTowerVictory = useGameStore((state) => state.claimTowerVictory);
   const castTowerSkill = useGameStore((state) => state.castTowerSkill);
@@ -21,7 +24,6 @@ export default function TowerCombatView() {
     (state) => state.skills.hitpoints?.level || 1,
   );
 
-  // KORJAUS: Haetaan myös varusteiden tuoma HP-bonus, jotta palkin maksimiraja on oikein!
   const gearHpBonus = (Object.values(equipment) as (string | null)[]).reduce(
     (acc, itemId) => {
       if (!itemId) return acc;
@@ -52,7 +54,6 @@ export default function TowerCombatView() {
   const [enemyFlash, setEnemyFlash] = useState(false);
   const processedIds = useRef<Set<string>>(new Set());
 
-  // VFX Logic: Kuuntelee uusia popuppeja ja laukaisee animaatiot
   useEffect(() => {
     const popUps = combatState?.damagePopUps || [];
     if (popUps.length === 0) return;
@@ -91,7 +92,6 @@ export default function TowerCombatView() {
     if (processedIds.current.size > 50) processedIds.current.clear();
   }, [combatState?.damagePopUps]);
 
-  // Turvatarkistus
   if (!combatState || !combatState.isActive || !combatState.floorNumber) {
     return (
       <div className="h-full w-full flex items-center justify-center bg-app-base p-6 text-center">
@@ -115,9 +115,11 @@ export default function TowerCombatView() {
     );
   }
 
-  const floorData = TOWER_FLOORS.find(
+  // <-- KORJATTU: Haetaan oikea kerrosdata valitun tierin listasta
+  const floorData = TOWER_DATA[activeTier].find(
     (f) => f.floorNumber === combatState.floorNumber,
   );
+
   if (!floorData) return null;
 
   const currentHp = Math.max(0, Math.min(combatState.playerHp, playerMaxHp));
@@ -129,6 +131,19 @@ export default function TowerCombatView() {
   );
 
   const timerMs = combatState.combatTimer ?? 60000;
+
+  // <-- LISÄTTY: Dynaaminen taustakuva combat-näkymään
+  const getBackgroundImage = () => {
+    switch (activeTier) {
+      case "hard":
+        return "./assets/backgrounds/bg_tower_hard.png";
+      case "medium":
+        return "./assets/backgrounds/bg_tower_medium.png";
+      case "easy":
+      default:
+        return "./assets/backgrounds/bg_tower.png";
+    }
+  };
 
   const renderPopUps = (targetType: "player" | "enemy") => {
     if (combatState.playerHp <= 0 && targetType === "player") return null;
@@ -179,7 +194,7 @@ export default function TowerCombatView() {
               />
             </div>
             <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] mb-2 text-success">
-              Floor Cleared
+              {activeTier} Floor Cleared
             </h2>
             <p className="text-tx-muted text-xs md:text-sm max-w-xs font-medium italic mb-6">
               The {floorData.enemy.name} has been vanquished.
@@ -234,7 +249,11 @@ export default function TowerCombatView() {
         <div
           className={`min-h-[35vh] lg:min-h-0 lg:h-[55%] shrink-0 relative bg-panel overflow-hidden border-b border-border shadow-inner ${isShaking ? "animate-shake" : ""}`}
         >
-          <div className="absolute inset-0 bg-[url('./assets/backgrounds/bg_tower.png')] bg-cover bg-center transition-all duration-1000 opacity-20 scale-105">
+          {/* <-- KORJATTU: Käytetään getBackgroundImage funktiota --> */}
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 opacity-20 scale-105"
+            style={{ backgroundImage: `url(${getBackgroundImage()})` }}
+          >
             <div className="absolute inset-0 bg-gradient-to-t from-app-base via-transparent to-app-base/40"></div>
           </div>
 

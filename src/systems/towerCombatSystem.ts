@@ -3,7 +3,7 @@ import {
   getEnemyStats,
   calculateHit,
 } from "../utils/combatMechanics";
-import { TOWER_FLOORS } from "../data/tower";
+import { TOWER_DATA, type TowerTier } from "../data/tower"; // <-- MUUTETTU
 import { getItemById } from "../utils/itemUtils";
 import type {
   GameState,
@@ -16,15 +16,18 @@ export const calculateTowerCombatTick = (
   state: GameState,
   tickMs: number,
 ): Partial<TowerCombatStats> | null => {
-  const { combat } = state.tower;
+  const { combat, activeTier } = state.tower;
   const { skills, equipment } = state;
 
   if (!combat.isActive || combat.status !== "fighting" || !combat.floorNumber)
     return null;
 
-  const floorData = TOWER_FLOORS.find(
+  // LISÄTTY: Haetaan oikea data aktiivisen vaikeustason (tierin) perusteella
+  const currentTier = (activeTier || "easy") as TowerTier;
+  const floorData = TOWER_DATA[currentTier].find(
     (f) => f.floorNumber === combat.floorNumber,
   );
+
   if (!floorData) return null;
 
   const newCombat = { ...combat };
@@ -35,7 +38,7 @@ export const calculateTowerCombatTick = (
     (p) => now - p.createdAt < 500,
   );
 
-  // KORJATTU: Haetaan varusteiden Skill-esine
+  // Haetaan varusteiden Skill-esine
   const skillItem = equipment.skill
     ? (getItemById(equipment.skill) as Resource)
     : null;

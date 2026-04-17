@@ -183,7 +183,8 @@ export const DEFAULT_STATE: GameState = {
   enemy: null,
   tutorial: { step: 0, isActive: true, isComplete: false },
   tower: {
-    highestFloorCompleted: 0,
+    highestFloorCompleted: { easy: 0, medium: 0, hard: 0 }, // Muutettu nollasta objektiksi
+    activeTier: "easy", // Oletuksena easy
     lastSweepTime: 0,
     combat: {
       combatTimer: 60000,
@@ -271,6 +272,15 @@ export const customMerge = (
     tower: {
       ...DEFAULT_STATE.tower,
       ...(typedPersisted.tower || {}),
+      // CRITICAL: Muuta vanhan tallennuksen numero-muotoinen highestFloorCompleted uudeksi objektiksi
+      highestFloorCompleted:
+        typeof typedPersisted.tower?.highestFloorCompleted === "object"
+          ? typedPersisted.tower.highestFloorCompleted
+          : {
+              easy: typedPersisted.tower?.highestFloorCompleted || 0,
+              medium: 0,
+              hard: 0,
+            },
       combat: {
         ...DEFAULT_STATE.tower.combat,
         ...(typedPersisted.tower?.combat || {}),

@@ -1,3 +1,5 @@
+export type TowerTier = "easy" | "medium" | "hard";
+
 export interface TowerReward {
   itemId: string;
   amount: number;
@@ -17,14 +19,13 @@ export interface TowerEnemy {
 
 export interface TowerFloor {
   floorNumber: number;
+  tier: TowerTier;
   enemy: TowerEnemy;
   firstClearRewards: TowerReward[];
   sweepRewards: TowerReward[];
 }
 
-// 50 tarkkaan valittua ja uudelleennimettyä vihollista tornin kiipeämistä varten.
 const TOWER_ENEMY_POOL = [
-  // World 1 - Teema: Kasvillisuus / Luonto
   {
     name: "Verdant Ooze",
     icon: "./assets/enemies/world1_greenvale/enemy_slime_harmless.png",
@@ -49,8 +50,6 @@ const TOWER_ENEMY_POOL = [
     name: "Elder Treant",
     icon: "./assets/enemies/world1_greenvale/enemy_boss_guardian_oakroot.png",
   },
-
-  // World 2 - Teema: Kivi / Luolat
   {
     name: "Cavern Screecher",
     icon: "./assets/enemies/world2_stonefall/enemy_bat_cave.png",
@@ -75,8 +74,6 @@ const TOWER_ENEMY_POOL = [
     name: "Monolith Titan",
     icon: "./assets/enemies/world2_stonefall/enemy_boss_drake_stone.png",
   },
-
-  // World 3 - Teema: Tuli / Tuhka
   {
     name: "Soot Fiend",
     icon: "./assets/enemies/world3_ashridge/enemy_imp_ash.png",
@@ -101,8 +98,6 @@ const TOWER_ENEMY_POOL = [
     name: "Blaze Sentinel",
     icon: "./assets/enemies/world3_ashridge/enemy_boss_warden_inferno.png",
   },
-
-  // World 4 - Teema: Jää / Lumi
   {
     name: "Glacial Weaver",
     icon: "./assets/enemies/world4_frostreach/enemy_spider_frost.png",
@@ -127,8 +122,6 @@ const TOWER_ENEMY_POOL = [
     name: "Cryomancer Supreme",
     icon: "./assets/enemies/world4_frostreach/enemy_boss_mage_frost.png",
   },
-
-  // World 5 - Teema: Pimeys / Rappeutuminen
   {
     name: "Gloom Vermin",
     icon: "./assets/enemies/world5_duskwood/enemy_rat_shadow.png",
@@ -153,8 +146,6 @@ const TOWER_ENEMY_POOL = [
     name: "Monarch of Decay",
     icon: "./assets/enemies/world5_duskwood/enemy_boss_king_shadow.png",
   },
-
-  // World 6 - Teema: Myrsky / Meri
   {
     name: "Surge Crab",
     icon: "./assets/enemies/world6_stormcoast/enemy_crab_lightning.png",
@@ -179,8 +170,6 @@ const TOWER_ENEMY_POOL = [
     name: "Leviathan Prime",
     icon: "./assets/enemies/world6_stormcoast/enemy_boss_serpent.png",
   },
-
-  // World 7 - Teema: Tyhjyys
   {
     name: "Null Spawn",
     icon: "./assets/enemies/world7_voidexpanse/enemy_slime_void.png",
@@ -209,8 +198,6 @@ const TOWER_ENEMY_POOL = [
     name: "Creator of Nothing",
     icon: "./assets/enemies/world7_voidexpanse/enemy_boss_void.png",
   },
-
-  // World 8 - Teema: Aika / Avaruus / Finaali
   {
     name: "Epoch Automaton",
     icon: "./assets/enemies/world8_eternalnexus/enemy_imp_fire.png",
@@ -241,58 +228,54 @@ const TOWER_ENEMY_POOL = [
   },
 ];
 
-/**
- * Generoi täsmälleen 50 kerroksen tornin lennosta.
- * Skaalautuu eksponentiaalisesti kerros kerrokselta.
- */
-const generateTowerFloors = (): TowerFloor[] => {
+const generateTier = (
+  tier: TowerTier,
+  startLevel: number,
+  baseHp: number,
+  baseDmg: number,
+  baseDef: number,
+  baseCoins: number,
+): TowerFloor[] => {
   const floors: TowerFloor[] = [];
   const totalFloors = 50;
 
-  // --- PERUSARVOT (Kerros 1 / Taso 10) ---
-  const HP_BASE = 250;
-  const DMG_BASE = 15;
-  const DEF_BASE = 5;
-  const XP_BASE = 100;
-  const COINS_BASE = 100;
-
   for (let i = 1; i <= totalFloors; i++) {
-    // Taso alkaa 10:stä ja nousee 1 per kerros, finaali (kerros 50) = taso 59
-    const level = 9 + i;
+    const level = startLevel + i - 1;
 
-    // --- SKAALAUSKERTOIMET ---
     const hpMult = Math.pow(1.15, i - 1);
-    const dmgMult = Math.pow(1.2, i - 1);
-    const defMult = Math.pow(1.12, i - 1);
-    const coinMult = Math.pow(1.25, i - 1);
+    const dmgMult = Math.pow(1.18, i - 1);
+    const defMult = Math.pow(1.1, i - 1);
+    const coinMult = Math.pow(1.2, i - 1);
 
-    // Haetaan suoraan indexillä, koska poolissa on nyt tasan 50 vihollista.
     const enemyConfig = TOWER_ENEMY_POOL[i - 1];
 
     floors.push({
       floorNumber: i,
+      tier: tier,
       enemy: {
-        id: `tower_enemy_${i}`,
+        id: `tower_${tier}_enemy_${i}`,
         name: enemyConfig.name,
         icon: enemyConfig.icon,
-        maxHp: Math.floor(HP_BASE * hpMult),
-        currentHp: Math.floor(HP_BASE * hpMult),
+        maxHp: Math.floor(baseHp * hpMult),
+        currentHp: Math.floor(baseHp * hpMult),
         level: level,
-        attack: Math.floor(DMG_BASE * dmgMult),
-        defense: Math.floor(DEF_BASE * defMult),
-        xpReward: Math.floor(XP_BASE * hpMult),
+        attack: Math.floor(baseDmg * dmgMult),
+        defense: Math.floor(baseDef * defMult),
+        xpReward: Math.floor(100 * hpMult),
       },
       firstClearRewards: [
-        { itemId: "coins", amount: Math.floor(COINS_BASE * coinMult) },
+        { itemId: "coins", amount: Math.floor(baseCoins * coinMult) },
       ],
       sweepRewards: [
-        { itemId: "coins", amount: Math.floor(COINS_BASE * 0.5 * coinMult) },
+        { itemId: "coins", amount: Math.floor(baseCoins * 0.5 * coinMult) },
       ],
     });
   }
-
   return floors;
 };
 
-// Generoidaan 50 kerroksen mittainen lopputorni
-export const TOWER_FLOORS: TowerFloor[] = generateTowerFloors();
+export const TOWER_DATA: Record<TowerTier, TowerFloor[]> = {
+  easy: generateTier("easy", 1, 100, 10, 2, 50),
+  medium: generateTier("medium", 31, 5000, 250, 50, 500),
+  hard: generateTier("hard", 61, 150000, 2000, 300, 5000),
+};

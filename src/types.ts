@@ -3,6 +3,8 @@
  * Centralizes all data structures, enums, and state interfaces used across the game engine.
  */
 
+import type { TowerTier } from "./data/tower";
+
 // --- CORE IDENTIFIERS ---
 
 export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
@@ -105,9 +107,10 @@ export interface ActiveAction {
 }
 
 export interface TowerState {
-  highestFloorCompleted: number;
+  highestFloorCompleted: Record<TowerTier, number>; // Muutettu numerosta objektiksi
+  activeTier?: TowerTier; // Lisätty aktiivinen tier (valinnainen, oletus on easy)
   lastSweepTime: number;
-  combat: TowerCombatStats; // <-- LISÄTTY TÄMÄ
+  combat: TowerCombatStats;
 }
 export interface TowerCombatStats {
   isActive: boolean;
